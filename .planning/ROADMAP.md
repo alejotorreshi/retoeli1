@@ -31,14 +31,14 @@ Decimal phases appear between their surrounding integers in numeric order.
   4. Las 5 herramientas `proveedor_*` se importan sin servidor ni secretos y nunca lanzan. Con args inválidos, un `mapeo` que trae valores, un `caso` con path traversal, un caso inexistente o una plantilla corrupta devuelven `{ ok: false, error }` con código estable y mensaje en español, sin traza cruda. `simular_envio` sin confirmación devuelve "requiere confirmación explícita". Cada llamada queda registrada, con resumen redactado, en `out/log.jsonl` y en `out/<caso>/log.jsonl`.
   5. `bun run check` (tsc estricto sin `any` y con `noUncheckedIndexedAccess`, más Biome) y `bun test` pasan. Eso incluye los golden tests por caso, los fixtures sintéticos de `tests/fixtures/` (una etiqueta ambigua da `requiere_confirmacion` con el equivalente del país) y el test de arquitectura que verifica la dirección de los imports. El código no tiene comentarios, y las constantes y la configuración viven centralizadas y validadas con zod.
 
-**Plans:** 1/11 plans executed
+**Plans:** 2/11 plans executed
 
 Plans:
 **Wave 1**
 - [x] 01-01-PLAN.md — Compuerta de cadena de suministro y runtime (con la actualización opcional de Bun), `reto-01/` versionado intacto, toolchain fijado y guardas de arquitectura y sin comentarios
 
 **Wave 2** *(blocked on Wave 1 completion)*
-- [ ] 01-02-PLAN.md — Compuerta del contrato de herramientas (D-11, D-16) y trazador: invocador → `proveedor_leer_solicitud` → config → fixtures validados → dominio → JSON, con sus estados de error
+- [x] 01-02-PLAN.md — Compuerta del contrato de herramientas (D-11, D-16) y trazador: invocador → `proveedor_leer_solicitud` → config → fixtures validados → dominio → JSON, con sus estados de error
 
 **Wave 3** *(blocked on Wave 2 completion)*
 - [ ] 01-03-PLAN.md — Expansión del trazador: resolución con realpath, listado de casos (D-14), plantilla corrupta (D-17), env por ejecución, reloj inyectable, ambos `log.jsonl` y `demo.ts` mínimo
@@ -120,7 +120,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Núcleo determinista | 1/11 | In Progress | - |
+| 1. Núcleo determinista | 2/11 | In Progress | - |
 | 2. Agente y compuerta de confirmación | 0/TBD | Not started | - |
 | 3. Chat web, API SSE y despliegue | 0/TBD | Not started | - |
 | 4. Módulo, documentación y defensa | 0/TBD | Not started | - |

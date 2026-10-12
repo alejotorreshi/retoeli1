@@ -3,16 +3,16 @@ gsd_state_version: "1.0"
 current_phase: 01
 current_phase_name: Núcleo determinista
 status: executing
-stopped_at: Completed 01-01-PLAN.md
-last_updated: "2026-10-12T21:50:15.436Z"
+stopped_at: Completed 01-02-PLAN.md
+last_updated: "2026-10-12T22:00:21.224Z"
 last_activity: 2026-10-12
 last_activity_desc: Phase 01 execution started
-state_head: bdfecd3696a22366a7545599ad3fc397d50fb179
+state_head: ea264e9695973b360f5fb8d833b24d7acfd5350d
 progress:
   total_phases: 4
   completed_phases: 0
   total_plans: 11
-  completed_plans: 1
+  completed_plans: 2
   percent: 0
 ---
 
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-10-12)
 ## Current Position
 
 Phase: 01 (Núcleo determinista) — EXECUTING
-Plan: 2 of 11
+Plan: 3 of 11
 Status: Ready to execute
 Last activity: 2026-10-12 — Phase 01 execution started
 
@@ -57,6 +57,7 @@ Progress: [░░░░░░░░░░] 0%
 | Plan | Duration | Tasks | Files |
 |------|----------|-------|-------|
 | Phase 01 P01 | 3min | 2 tasks | 9 files |
+| Phase 01 P02 | 6min | 3 tasks | 14 files |
 
 ## Accumulated Context
 
@@ -72,6 +73,8 @@ Recent decisions affecting current work:
 - [Roadmap]: El layout de `modulo/` (rutas canónicas de prompt, conocimiento y herramientas sin imports del servidor) se respeta desde la Phase 1, aunque `modulo/` se construye en la Phase 4.
 - [Phase 01]: 01-01: Supply-chain gate approved with D-35 pins unchanged; Bun upgraded to 1.4.3 before first install
 - [Phase 01]: 01-01: Any src/ folder outside the architecture layer table fails tests/architecture.test.ts; new layers must be declared in PERMITIDOS
+- [Phase 01]: 01-02: Tool contract v1 locked as option-a (uniform parcial carrier); codigo/parcial/resumen are additive supersets of PRD 6.2
+- [Phase 01]: 01-02: caso regex reaches application via Entorno.patronCaso; node:path only in infra; Plantilla discriminated by tipo; ports return Lectura<T>
 
 ### Pending Todos
 
@@ -94,6 +97,6 @@ Items acknowledged and deferred at milestone close, most recent first:
 
 ## Session Continuity
 
-Last session: 2026-10-12T21:50:15.417Z
-Stopped at: Completed 01-01-PLAN.md
+Last session: 2026-10-12T22:00:21.204Z
+Stopped at: Completed 01-02-PLAN.md
 Resume file: None
