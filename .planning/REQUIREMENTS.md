@@ -10,7 +10,7 @@ Fuente vinculante: `reto-01/PRD.md`, sin modificar. Fixtures: `reto-01/fixtures/
 ### Herramientas y contrato (§6.2)
 
 - [ ] **HERR-01**: `src/tools/proveedor.ts` exporta exactamente 5 herramientas (`leer_solicitud`, `mapear_campos`, `generar_formulario`, `armar_paquete`, `simular_envio`). El modelo ve cada una como `proveedor_<export>`, con una `description` de una frase.
-- [ ] **HERR-02**: Cada herramienta declara sus `args` como esquemas zod con `.describe()` en cada campo. El backend valida antes de ejecutar y, si los args no cumplen, devuelve el error al modelo.
+- [x] **HERR-02**: Cada herramienta declara sus `args` como esquemas zod con `.describe()` en cada campo. El backend valida antes de ejecutar y, si los args no cumplen, devuelve el error al modelo.
 - [ ] **HERR-03**: `execute(args, ctx)` devuelve siempre un string JSON con `{ ok: true, data }` o `{ ok: false, error }`, y nunca lanza hacia el agente. Los códigos de error son estables y los mensajes van en español, sin traza cruda.
 - [ ] **HERR-04**: Las herramientas resuelven rutas desde `ctx.directory`, nunca como absolutas. Validan `caso` contra path traversal y nunca ejecutan comandos de shell.
 - [ ] **HERR-05**: Las herramientas se importan sin el servidor ni secretos, y las reutilizan `demo.ts` y `modulo/`. El contexto acepta `sessionId` o `sessionID`.
@@ -176,7 +176,7 @@ Cada requisito v1 está asignado a exactamente una fase del roadmap (`.planning/
 | Requirement | Phase | Status |
 |-------------|-------|--------|
 | HERR-01 | Phase 1 | Pending |
-| HERR-02 | Phase 1 | Pending |
+| HERR-02 | Phase 1 | Complete |
 | HERR-03 | Phase 1 | Pending |
 | HERR-04 | Phase 1 | Pending |
 | HERR-05 | Phase 1 | Pending |
