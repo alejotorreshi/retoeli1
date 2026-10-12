@@ -23,12 +23,12 @@ Fuente vinculante: `reto-01/PRD.md`, sin modificar. Fixtures: `reto-01/fixtures/
 
 ### Mapeo al maestro (HU-2, RN1)
 
-- [ ] **MAP-01**: Cada campo solicitado termina en un estado: `lleno` (con la `ruta` del dato en el maestro), `faltante` (sin fuente) o `requiere_confirmacion` (confianza < 0.8 o regla de país).
+- [x] **MAP-01**: Cada campo solicitado termina en un estado: `lleno` (con la `ruta` del dato en el maestro), `faltante` (sin fuente) o `requiere_confirmacion` (confianza < 0.8 o regla de país).
 - [ ] **MAP-02**: Los sinónimos se resuelven solo por el glosario, con normalización (minúsculas, sin tildes, trim, sin `:` ni `*` finales). No hay fuzzy matching ni mapeo hecho por el LLM. Un campo sin fuente es `faltante` y nunca recibe un valor inventado: "Número de contribuyente especial" y "Referencias comerciales" quedan como `faltante`.
-- [ ] **MAP-03**: Se aplica RN1. Para CO, el NIT queda `lleno`. Para EC, PE, PA y HN, el campo se llena con el NIT, queda `requiere_confirmacion` y lleva la nota "identificador extranjero".
-- [ ] **MAP-04**: Se leen rutas anidadas del maestro (`representante_legal.nombre`, `ingresos_ultimo_ano.valor`, datos bancarios). Una ruta inexistente da `faltante`.
-- [ ] **MAP-05**: El LLM nunca recibe valores reales. Las herramientas le devuelven `{ etiqueta, ruta, estado, confianza, valor_enmascarado }`.
-- [ ] **MAP-06**: Cada valor queda trazado con `ruta`, `regla` (glosario exacto, glosario normalizado, clave directa o regla de país) y `confianza`. Todo se persiste en `out/<caso>/mapeo.json`.
+- [x] **MAP-03**: Se aplica RN1. Para CO, el NIT queda `lleno`. Para EC, PE, PA y HN, el campo se llena con el NIT, queda `requiere_confirmacion` y lleva la nota "identificador extranjero".
+- [x] **MAP-04**: Se leen rutas anidadas del maestro (`representante_legal.nombre`, `ingresos_ultimo_ano.valor`, datos bancarios). Una ruta inexistente da `faltante`.
+- [x] **MAP-05**: El LLM nunca recibe valores reales. Las herramientas le devuelven `{ etiqueta, ruta, estado, confianza, valor_enmascarado }`.
+- [x] **MAP-06**: Cada valor queda trazado con `ruta`, `regla` (glosario exacto, glosario normalizado, clave directa o regla de país) y `confianza`. Todo se persiste en `out/<caso>/mapeo.json`.
 - [ ] **MAP-07**: Los valores compuestos llevan notas de contexto. Por ejemplo, "Ingresos anuales" va con moneda y año para clientes no-CO, y "País" con su nota.
 
 ### Generación del formulario (HU-3)
@@ -183,12 +183,12 @@ Cada requisito v1 está asignado a exactamente una fase del roadmap (`.planning/
 | SOLI-01 | Phase 1 | Pending |
 | SOLI-02 | Phase 1 | Pending |
 | SOLI-03 | Phase 2 | Pending |
-| MAP-01 | Phase 1 | Pending |
+| MAP-01 | Phase 1 | Complete |
 | MAP-02 | Phase 1 | Pending |
-| MAP-03 | Phase 1 | Pending |
-| MAP-04 | Phase 1 | Pending |
-| MAP-05 | Phase 1 | Pending |
-| MAP-06 | Phase 1 | Pending |
+| MAP-03 | Phase 1 | Complete |
+| MAP-04 | Phase 1 | Complete |
+| MAP-05 | Phase 1 | Complete |
+| MAP-06 | Phase 1 | Complete |
 | MAP-07 | Phase 1 | Pending |
 | FORM-01 | Phase 1 | Pending |
 | FORM-02 | Phase 1 | Pending |

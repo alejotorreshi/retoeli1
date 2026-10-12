@@ -3,16 +3,16 @@ gsd_state_version: "1.0"
 current_phase: 01
 current_phase_name: Núcleo determinista
 status: executing
-stopped_at: Completed 01-04-PLAN.md
-last_updated: "2026-10-12T22:18:51.547Z"
+stopped_at: Completed 01-05-PLAN.md
+last_updated: "2026-10-12T22:27:55.767Z"
 last_activity: 2026-10-12
 last_activity_desc: Phase 01 execution started
-state_head: 8b119aaaeeeedd52f344eff1f57bcb055d0c6a43
+state_head: 9d933138cc83e50754493daa80c14f589f1ca831
 progress:
   total_phases: 4
   completed_phases: 0
   total_plans: 11
-  completed_plans: 4
+  completed_plans: 5
   percent: 0
 ---
 
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-10-12)
 ## Current Position
 
 Phase: 01 (Núcleo determinista) — EXECUTING
-Plan: 5 of 11
+Plan: 6 of 11
 Status: Ready to execute
 Last activity: 2026-10-12 — Phase 01 execution started
 
@@ -60,6 +60,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 01 P02 | 6min | 3 tasks | 14 files |
 | Phase 01 P03 | 6min | 3 tasks | 17 files |
 | Phase 01 P04 | 6min | 2 tasks | 10 files |
+| Phase 01 P05 | 6min | 2 tasks | 19 files |
 
 ## Accumulated Context
 
@@ -83,6 +84,10 @@ Recent decisions affecting current work:
 - [Phase 01]: 01-04: SWIFT mask follows D-07 last-4 (COLOCOBM gives ••••COBM); the plan literal ••••OCBM was a typo
 - [Phase 01]: 01-04: mapearCampos computes moneda/ano/pais/identificador itself; variablesNota only adds allowlisted extras (pais_emisor) and cannot override them
 - [Phase 01]: 01-04: multiple notes on a field join with '. '; RN1 leaves propuesta null; clave_directa is single-segment only
+- [Phase 01]: 01-05: CAMPOS_FUERA_DE_PLANTILLA carries parcial.etiquetas_esperadas plus parcial.indices_fuera_de_plantilla (positions only, never the unknown text)
+- [Phase 01]: 01-05: Application addresses output files by the ArchivoSalida key; writers run inside entorno.candado(caso) and call entorno.salida.escribir, which returns the relative path
+- [Phase 01]: 01-05: reglas.json is loaded per execution via cargarReglas (z.literal version, REGLAS_INVALIDAS with key path); crearHerramientas({ directorioConocimiento }) is the code-only seam
+- [Phase 01]: 01-05: For a subset request conteo counts the returned subset; mapeo.json always persists the full canonical mapping and a bad subset writes nothing
 
 ### Pending Todos
 
@@ -105,6 +110,6 @@ Items acknowledged and deferred at milestone close, most recent first:
 
 ## Session Continuity
 
-Last session: 2026-10-12T22:18:51.527Z
-Stopped at: Completed 01-04-PLAN.md
+Last session: 2026-10-12T22:27:55.745Z
+Stopped at: Completed 01-05-PLAN.md
 Resume file: None
