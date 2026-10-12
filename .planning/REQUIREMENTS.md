@@ -171,17 +171,89 @@ Diferidos: se registran, pero no entran al roadmap actual.
 
 ## Traceability
 
-Se llena al crear el roadmap.
+Cada requisito v1 está asignado a exactamente una fase del roadmap (`.planning/ROADMAP.md`).
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| (pendiente) | — | — |
+| HERR-01 | Phase 1 | Pending |
+| HERR-02 | Phase 1 | Pending |
+| HERR-03 | Phase 1 | Pending |
+| HERR-04 | Phase 1 | Pending |
+| HERR-05 | Phase 1 | Pending |
+| SOLI-01 | Phase 1 | Pending |
+| SOLI-02 | Phase 1 | Pending |
+| SOLI-03 | Phase 2 | Pending |
+| MAP-01 | Phase 1 | Pending |
+| MAP-02 | Phase 1 | Pending |
+| MAP-03 | Phase 1 | Pending |
+| MAP-04 | Phase 1 | Pending |
+| MAP-05 | Phase 1 | Pending |
+| MAP-06 | Phase 1 | Pending |
+| MAP-07 | Phase 1 | Pending |
+| FORM-01 | Phase 1 | Pending |
+| FORM-02 | Phase 1 | Pending |
+| FORM-03 | Phase 1 | Pending |
+| FORM-04 | Phase 1 | Pending |
+| PAQ-01 | Phase 1 | Pending |
+| PAQ-02 | Phase 1 | Pending |
+| PAQ-03 | Phase 1 | Pending |
+| PAQ-04 | Phase 1 | Pending |
+| PAQ-05 | Phase 1 | Pending |
+| ENV-01 | Phase 1 | Pending |
+| ENV-02 | Phase 2 | Pending |
+| ENV-03 | Phase 2 | Pending |
+| AGT-01 | Phase 2 | Pending |
+| AGT-02 | Phase 2 | Pending |
+| AGT-03 | Phase 2 | Pending |
+| AGT-04 | Phase 2 | Pending |
+| AGT-05 | Phase 2 | Pending |
+| LLM-01 | Phase 2 | Pending |
+| LLM-02 | Phase 2 | Pending |
+| LLM-03 | Phase 2 | Pending |
+| LLM-04 | Phase 2 | Pending |
+| LLM-05 | Phase 2 | Pending |
+| LLM-06 | Phase 3 | Pending |
+| API-01 | Phase 3 | Pending |
+| API-02 | Phase 3 | Pending |
+| API-03 | Phase 3 | Pending |
+| API-04 | Phase 3 | Pending |
+| API-05 | Phase 3 | Pending |
+| UI-01 | Phase 3 | Pending |
+| UI-02 | Phase 3 | Pending |
+| UI-03 | Phase 3 | Pending |
+| UI-04 | Phase 3 | Pending |
+| UI-05 | Phase 3 | Pending |
+| UI-06 | Phase 3 | Pending |
+| UI-07 | Phase 3 | Pending |
+| UI-08 | Phase 3 | Pending |
+| UI-09 | Phase 3 | Pending |
+| SEG-01 | Phase 3 | Pending |
+| SEG-02 | Phase 1 | Pending |
+| SEG-03 | Phase 2 | Pending |
+| SEG-04 | Phase 1 | Pending |
+| DEMO-01 | Phase 1 | Pending |
+| DEMO-02 | Phase 1 | Pending |
+| DEMO-03 | Phase 2 | Pending |
+| DEMO-04 | Phase 1 | Pending |
+| DEMO-05 | Phase 4 | Pending |
+| CAL-01 | Phase 1 | Pending |
+| CAL-02 | Phase 1 | Pending |
+| CAL-03 | Phase 1 | Pending |
+| CAL-04 | Phase 1 | Pending |
+| CAL-05 | Phase 4 | Pending |
+| DEP-01 | Phase 3 | Pending |
+| DEP-02 | Phase 3 | Pending |
+| DEP-03 | Phase 4 | Pending |
+| DOC-01 | Phase 4 | Pending |
+| DOC-02 | Phase 4 | Pending |
+| MOD-01 | Phase 4 | Pending |
+| MOD-02 | Phase 4 | Pending |
 
 **Coverage:**
 - v1 requirements: 73 total
-- Mapped to phases: 0 (pendiente roadmap)
-- Unmapped: 73 ⚠️
+- Mapped to phases: 73 (Phase 1: 33 · Phase 2: 15 · Phase 3: 18 · Phase 4: 7)
+- Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-10-12*
-*Last updated: 2026-10-12 after initial definition*
+*Last updated: 2026-10-12 after roadmap creation (traceability filled)*
