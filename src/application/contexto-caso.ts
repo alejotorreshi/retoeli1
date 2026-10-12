@@ -63,7 +63,13 @@ export async function cargarSolicitudCaso(caso: string, entorno: Entorno): Promi
 export async function cargarContextoCaso(caso: string, entorno: Entorno): Promise<Resultado<ContextoCaso>> {
   const cargada = await cargarSolicitudCaso(caso, entorno);
   if (!cargada.ok) return cargada;
+  return completarContextoCaso(cargada.data, entorno);
+}
 
+export async function completarContextoCaso(
+  cargada: SolicitudCaso,
+  entorno: Entorno,
+): Promise<Resultado<ContextoCaso>> {
   const reglas = await entorno.reglas();
   if (!reglas.ok) return reglas;
 
@@ -76,5 +82,5 @@ export async function cargarContextoCaso(caso: string, entorno: Entorno): Promis
   const indice = construirIndiceGlosario(glosario.valor);
   if (!indice.ok) return indice;
 
-  return exito({ ...cargada.data, maestro: maestro.valor, indice: indice.data, reglas: reglas.data });
+  return exito({ ...cargada, maestro: maestro.valor, indice: indice.data, reglas: reglas.data });
 }

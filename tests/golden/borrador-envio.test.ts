@@ -88,7 +88,7 @@ afterAll(async () => {
   ]);
 });
 
-describe("golden: borrador-correo.md (PAQ-04, D-25, D-26, RN2)", () => {
+describe("golden: borrador-correo.md y ENVIO-SIMULADO.md (PAQ-04, ENV-01, D-25, D-26, RN2)", () => {
   test("co responde al cliente y lo firma la analista con la razón social del maestro", async () => {
     const borrador = await leerPaquete(compartido.raiz, CO, "borrador-correo.md");
     const lineas = borrador.split("\n");
@@ -129,6 +129,18 @@ describe("golden: borrador-correo.md (PAQ-04, D-25, D-26, RN2)", () => {
     const borrador = await leerPaquete(compartido.raiz, HN, "borrador-correo.md");
     expect(borrador).toContain("- parafiscales (vencido, enviaremos la versión actualizada)");
     expect(borrador).not.toContain("parafiscales-2026-07.txt");
+  });
+
+  test("ENVIO-SIMULADO.md de co confirmado no trae datos bancarios ni identificaciones (RN2)", async () => {
+    const crudo = await herramientas.simular_envio.execute(
+      { caso: CO, confirmado: true },
+      ctx(compartido.raiz),
+    );
+    expect(JSON.parse(crudo).ok).toBe(true);
+    const registro = await readFile(join(compartido.raiz, "out", CO, "ENVIO-SIMULADO.md"), "utf8");
+    expect(registro).toContain("Destinatario: compras@industrias-delta-ficticia.com");
+    expect(prohibidosEn(registro)).toEqual([]);
+    expect(prohibidosEn(crudo)).toEqual([]);
   });
 
   test("una plantilla editada con {{banco.numero_cuenta}} da REGLAS_INVALIDAS y no escribe el borrador", async () => {

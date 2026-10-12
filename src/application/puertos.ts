@@ -62,6 +62,7 @@ export type SalidaCaso = {
   existe(caso: string, archivo: ArchivoFormulario | ArchivoSalida): Promise<boolean>;
   nombre(archivo: ArchivoFormulario): string;
   reiniciarPaquete(caso: string): Promise<string>;
+  listarPaquete(caso: string): Promise<readonly string[]>;
   copiar(caso: string, origen: OrigenCopia): Promise<string>;
 };
 

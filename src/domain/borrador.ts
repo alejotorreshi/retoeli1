@@ -75,3 +75,30 @@ export function construirDatosBorrador(
     hay_pendientes: pendientes.length === 0 ? [] : [{}],
   };
 }
+
+export type DatosEnvioSimulado = {
+  readonly caso: string;
+  readonly cliente: string;
+  readonly destinatario: string;
+  readonly asunto: string;
+  readonly fecha_ejecucion: string;
+  readonly archivos: readonly { readonly archivo: string }[];
+  readonly bloqueos: readonly { readonly bloqueo: string }[];
+};
+
+export function construirDatosEnvio(
+  caso: string,
+  solicitud: Solicitud,
+  checklist: Checklist,
+  archivos: readonly string[],
+): DatosEnvioSimulado {
+  return {
+    caso,
+    cliente: solicitud.cliente,
+    destinatario: solicitud.de,
+    asunto: asuntoRespuesta(solicitud),
+    fecha_ejecucion: checklist.fecha_ejecucion,
+    archivos: archivos.map((archivo) => ({ archivo })),
+    bloqueos: checklist.bloqueos.map((bloqueo) => ({ bloqueo })),
+  };
+}

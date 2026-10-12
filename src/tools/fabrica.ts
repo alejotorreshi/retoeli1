@@ -2,11 +2,13 @@ import { armarPaquete } from "../application/armar-paquete.ts";
 import { generarFormulario } from "../application/generar-formulario.ts";
 import { leerSolicitud } from "../application/leer-solicitud.ts";
 import { mapearCamposCaso } from "../application/mapear-campos.ts";
+import { simularEnvio } from "../application/simular-envio.ts";
 import {
   argsArmarPaquete,
   argsGenerarFormulario,
   argsLeerSolicitud,
   argsMapearCampos,
+  argsSimularEnvio,
 } from "./argumentos.ts";
 import { defineTool } from "./define-tool.ts";
 import type { OpcionesEntorno } from "./wiring.ts";
@@ -81,5 +83,21 @@ export function crearHerramientas(opciones: OpcionesHerramientas = {}) {
     opciones,
   );
 
-  return { leer_solicitud, mapear_campos, generar_formulario, armar_paquete };
+  const simular_envio = defineTool(
+    {
+      nombre: "simular_envio",
+      description:
+        "Registra un envío simulado del paquete armado de un caso escribiendo solo ENVIO-SIMULADO.md con los bloqueos vigentes, sin enviar ningún correo real, y exige la confirmación explícita de la analista.",
+      args: argsSimularEnvio,
+      ejecutar: simularEnvio,
+      presentar: ({ ruta, bloqueos }) => ({ ruta, bloqueos }),
+      resumir: ({ caso, bloqueos }) =>
+        bloqueos.length === 0
+          ? `${caso}: envío simulado registrado sin bloqueos`
+          : `${caso}: envío simulado registrado con bloqueos (${bloqueos.join("; ")})`,
+    },
+    opciones,
+  );
+
+  return { leer_solicitud, mapear_campos, generar_formulario, armar_paquete, simular_envio };
 }

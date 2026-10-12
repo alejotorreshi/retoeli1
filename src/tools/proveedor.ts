@@ -1,3 +1,4 @@
 import { crearHerramientas } from "./fabrica.ts";
 
-export const { leer_solicitud, mapear_campos, generar_formulario, armar_paquete } = crearHerramientas();
+export const { leer_solicitud, mapear_campos, generar_formulario, armar_paquete, simular_envio } =
+  crearHerramientas();

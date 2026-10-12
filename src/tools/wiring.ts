@@ -33,6 +33,7 @@ import {
   escribirArchivoSalida,
   escribirBinarioSalida,
   limpiarArtefactosPrevios,
+  listarPaquete,
   reiniciarPaquete,
 } from "../infra/salida/archivos.ts";
 import { copiarAlPaquete } from "../infra/salida/copias.ts";
@@ -110,6 +111,7 @@ function entornoDeFixtures(raiz: string, reloj: Reloj, directorioConocimiento: s
         existeArchivo(rutaEnCaso(directorioSalidaCaso(raiz, caso), ARCHIVOS_SALIDA[archivo])),
       nombre: (archivo) => ARCHIVOS_SALIDA[archivo],
       reiniciarPaquete: (caso) => reiniciarPaquete(raiz, caso),
+      listarPaquete: (caso) => listarPaquete(raiz, caso),
       copiar: (caso, origen) => copiar(raiz, caso, origen),
     },
     soportes: {

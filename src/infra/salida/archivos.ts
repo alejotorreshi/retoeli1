@@ -1,4 +1,4 @@
-import { mkdir, realpath, rm, writeFile } from "node:fs/promises";
+import { mkdir, readdir, realpath, rm, writeFile } from "node:fs/promises";
 import { dirname, join, sep } from "node:path";
 import { ARCHIVOS_SALIDA, OUT_DIR, PATRON_CASO } from "../../config/constantes.ts";
 import { directorioSalidaCaso, rutaRelativa } from "./rutas-seguras.ts";
@@ -74,6 +74,16 @@ export async function reiniciarPaquete(raiz: string, caso: string): Promise<stri
   await rm(paquete, { recursive: true, force: true });
   await mkdir(paquete);
   return rutaRelativa(raiz, join(directorioSalidaCaso(raiz, caso), ARCHIVOS_SALIDA.paquete));
+}
+
+export async function listarPaquete(raiz: string, caso: string): Promise<readonly string[]> {
+  if (!PATRON_CASO.test(caso)) throw new RangeError("El caso no es válido para listar un paquete.");
+  const casoReal = await casoRealDentroDeSalida(raiz, caso);
+  const entradas = await readdir(join(casoReal, ARCHIVOS_SALIDA.paquete), { withFileTypes: true });
+  return entradas
+    .filter((entrada) => entrada.isFile())
+    .map((entrada) => entrada.name)
+    .sort();
 }
 
 export async function limpiarArtefactosPrevios(raiz: string, caso: string): Promise<void> {

@@ -122,6 +122,18 @@ function violacionesDeHerramientas(modulo: Readonly<Record<string, unknown>>): s
   });
 }
 
+function contratoIncompleto(nombre: string, valor: unknown): string[] {
+  if (typeof valor !== "object" || valor === null) return [`${nombre}: no es un objeto`];
+  const descripcion = "description" in valor ? valor.description : undefined;
+  const args = "args" in valor ? valor.args : undefined;
+  const execute = "execute" in valor ? valor.execute : undefined;
+  return [
+    ...(typeof descripcion === "string" && esUnaOracion(descripcion) ? [] : [`${nombre}: description`]),
+    ...(typeof args === "object" && args !== null ? [] : [`${nombre}: args`]),
+    ...(typeof execute === "function" ? [] : [`${nombre}: execute`]),
+  ];
+}
+
 function leer(ruta: string): string {
   return readFileSync(join(RAIZ, ruta), "utf8");
 }
@@ -143,6 +155,21 @@ describe("superficie pública de herramientas (CAL-04)", () => {
     const modulo = Object.fromEntries(Object.entries(await import("../src/tools/proveedor.ts")));
     expect(Object.keys(modulo).length).toBeGreaterThan(0);
     expect(violacionesDeHerramientas(modulo)).toEqual([]);
+  });
+
+  test("proveedor.ts exporta exactamente las cinco herramientas con description, args y execute (HERR-01)", async () => {
+    const modulo = Object.fromEntries(Object.entries(await import("../src/tools/proveedor.ts")));
+    expect(Object.keys(modulo).sort()).toEqual([...HERRAMIENTAS_PRD].sort());
+    expect(Object.keys(modulo).sort()).toEqual([
+      "armar_paquete",
+      "generar_formulario",
+      "leer_solicitud",
+      "mapear_campos",
+      "simular_envio",
+    ]);
+    expect(Object.entries(modulo).flatMap(([nombre, valor]) => contratoIncompleto(nombre, valor))).toEqual(
+      [],
+    );
   });
 
   test("la regla de capas de src/demo se aplica a archivos reales", () => {
