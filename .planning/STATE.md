@@ -3,16 +3,16 @@ gsd_state_version: "1.0"
 current_phase: 01
 current_phase_name: Núcleo determinista
 status: executing
-stopped_at: Completed 01-05-PLAN.md
-last_updated: "2026-10-12T22:27:55.767Z"
+stopped_at: Completed 01-06-PLAN.md
+last_updated: "2026-10-12T22:32:39.599Z"
 last_activity: 2026-10-12
 last_activity_desc: Phase 01 execution started
-state_head: 9d933138cc83e50754493daa80c14f589f1ca831
+state_head: d60e000e72cf3dc079908ea74e06bb3b8d48294a
 progress:
   total_phases: 4
   completed_phases: 0
   total_plans: 11
-  completed_plans: 5
+  completed_plans: 6
   percent: 0
 ---
 
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-10-12)
 ## Current Position
 
 Phase: 01 (Núcleo determinista) — EXECUTING
-Plan: 6 of 11
+Plan: 7 of 11
 Status: Ready to execute
 Last activity: 2026-10-12 — Phase 01 execution started
 
@@ -61,6 +61,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 01 P03 | 6min | 3 tasks | 17 files |
 | Phase 01 P04 | 6min | 2 tasks | 10 files |
 | Phase 01 P05 | 6min | 2 tasks | 19 files |
+| Phase 01 P06 | 2min | 2 tasks | 14 files |
 
 ## Accumulated Context
 
@@ -88,6 +89,8 @@ Recent decisions affecting current work:
 - [Phase 01]: 01-05: Application addresses output files by the ArchivoSalida key; writers run inside entorno.candado(caso) and call entorno.salida.escribir, which returns the relative path
 - [Phase 01]: 01-05: reglas.json is loaded per execution via cargarReglas (z.literal version, REGLAS_INVALIDAS with key path); crearHerramientas({ directorioConocimiento }) is the code-only seam
 - [Phase 01]: 01-05: For a subset request conteo counts the returned subset; mapeo.json always persists the full canonical mapping and a bad subset writes nothing
+- [Phase 01]: 01-06: leer_solicitud loads reglas.json after the case loads, so CASO_*/DATOS_INVALIDOS/PLANTILLA_INVALIDA take precedence over REGLAS_INVALIDAS
+- [Phase 01]: 01-06: detectarAmbiguos keeps template label text and order and looks up por_pais with Object.hasOwn (unknown country gives propuesta null)
 
 ### Pending Todos
 
@@ -110,6 +113,6 @@ Items acknowledged and deferred at milestone close, most recent first:
 
 ## Session Continuity
 
-Last session: 2026-10-12T22:27:55.745Z
-Stopped at: Completed 01-05-PLAN.md
+Last session: 2026-10-12T22:32:39.578Z
+Stopped at: Completed 01-06-PLAN.md
 Resume file: None

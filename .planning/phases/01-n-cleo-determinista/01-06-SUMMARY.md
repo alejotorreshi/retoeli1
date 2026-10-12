@@ -172,7 +172,7 @@ status: complete
 
 - `src/domain/solicitud.ts`: adds `CampoAmbiguo` and `detectarAmbiguos`.
 - `src/application/leer-solicitud.ts`: loads reglas per execution and adds `ambiguos` to `DatosSolicitud`.
-- `tests/unit/solicitud.test.ts`: the six-row matrix and the `detectarAmbiguos` cases, 13 tests.
+- `tests/unit/solicitud.test.ts`: the six-row matrix and the `detectarAmbiguos` cases, 16 tests.
 - `tests/contract/sinteticos.test.ts`: synthetic cases, corrupt plantilla and concurrency, 13 tests.
 - `tests/contract/reglas.test.ts`: invalid, hot-edited and threshold-shifted rules, 6 tests.
 - `tests/fixtures/casos/zz-generica-co/`, `zz-generica-ec/` and `zz-plantilla-corrupta/`: fictitious synthetic cases with only labels, ids, country codes and `.example` addresses.

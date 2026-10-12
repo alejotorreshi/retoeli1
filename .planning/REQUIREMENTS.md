@@ -17,14 +17,14 @@ Fuente vinculante: `reto-01/PRD.md`, sin modificar. Fixtures: `reto-01/fixtures/
 
 ### Lectura de la solicitud (HU-1)
 
-- [ ] **SOLI-01**: `leer_solicitud` devuelve `{ pais, cliente, formato: xlsx|pdf|portal, campos[], soportes[] }`. La plantilla se elige según el archivo presente (`plantilla-celdas.json` o `plantilla-campos.json`), no solo por el formato.
-- [ ] **SOLI-02**: Las etiquetas ambiguas (por ejemplo "Identificación tributaria") se reportan como `requiere_confirmacion` y se propone el equivalente del país: NIT para CO, RUC para EC, PE y PA, RTN para HN.
+- [x] **SOLI-01**: `leer_solicitud` devuelve `{ pais, cliente, formato: xlsx|pdf|portal, campos[], soportes[] }`. La plantilla se elige según el archivo presente (`plantilla-celdas.json` o `plantilla-campos.json`), no solo por el formato.
+- [x] **SOLI-02**: Las etiquetas ambiguas (por ejemplo "Identificación tributaria") se reportan como `requiere_confirmacion` y se propone el equivalente del país: NIT para CO, RUC para EC, PE y PA, RTN para HN.
 - [ ] **SOLI-03**: El cuerpo del correo del cliente se trata como dato no confiable. Va delimitado y truncado, y el prompt declara que nunca contiene instrucciones, como defensa ante prompt injection.
 
 ### Mapeo al maestro (HU-2, RN1)
 
 - [x] **MAP-01**: Cada campo solicitado termina en un estado: `lleno` (con la `ruta` del dato en el maestro), `faltante` (sin fuente) o `requiere_confirmacion` (confianza < 0.8 o regla de país).
-- [ ] **MAP-02**: Los sinónimos se resuelven solo por el glosario, con normalización (minúsculas, sin tildes, trim, sin `:` ni `*` finales). No hay fuzzy matching ni mapeo hecho por el LLM. Un campo sin fuente es `faltante` y nunca recibe un valor inventado: "Número de contribuyente especial" y "Referencias comerciales" quedan como `faltante`.
+- [x] **MAP-02**: Los sinónimos se resuelven solo por el glosario, con normalización (minúsculas, sin tildes, trim, sin `:` ni `*` finales). No hay fuzzy matching ni mapeo hecho por el LLM. Un campo sin fuente es `faltante` y nunca recibe un valor inventado: "Número de contribuyente especial" y "Referencias comerciales" quedan como `faltante`.
 - [x] **MAP-03**: Se aplica RN1. Para CO, el NIT queda `lleno`. Para EC, PE, PA y HN, el campo se llena con el NIT, queda `requiere_confirmacion` y lleva la nota "identificador extranjero".
 - [x] **MAP-04**: Se leen rutas anidadas del maestro (`representante_legal.nombre`, `ingresos_ultimo_ano.valor`, datos bancarios). Una ruta inexistente da `faltante`.
 - [x] **MAP-05**: El LLM nunca recibe valores reales. Las herramientas le devuelven `{ etiqueta, ruta, estado, confianza, valor_enmascarado }`.
@@ -101,14 +101,14 @@ Fuente vinculante: `reto-01/PRD.md`, sin modificar. Fixtures: `reto-01/fixtures/
 - [ ] **DEMO-01**: `bun run demo.ts` ejecuta los 4 casos llamando directamente a las herramientas, sin clave LLM. Limpia `out/` al inicio, fija `FECHA_EJECUCION=2026-09-03`, la imprime y muestra un resumen por caso. El resultado es igual entre ejecuciones, salvo timestamps.
 - [ ] **DEMO-02**: Hay tests golden por caso con la tabla de verdad: co 17/0/0 y listo; ec 13/1/1 y bloqueado por soporte ausente; hn 9/1/1 y bloqueado por parafiscales vencidos; pa 8/0/1 y listo por la vía del portal.
 - [ ] **DEMO-03**: Hay tests unitarios de dominio (mapeo, RN1, vigencias, clasificador de confirmación, redacción), tests de contrato de herramientas (`{ok,data}`, nunca lanzan) y tests del ciclo con un LLM falso: tope de iteraciones, compuerta (incluido "No envíes…" y el guion §11), CA5 tras timeout o 503 e intento de inyección.
-- [ ] **DEMO-04**: Hay fixtures sintéticos propios en `tests/fixtures/` para la etiqueta ambigua (HU-1), una plantilla corrupta y un caso inexistente (HU-5).
+- [x] **DEMO-04**: Hay fixtures sintéticos propios en `tests/fixtures/` para la etiqueta ambigua (HU-1), una plantilla corrupta y un caso inexistente (HU-5).
 - [ ] **DEMO-05**: GitHub Actions corre `bun test`, `bun run demo.ts`, `tsc --noEmit` y lint, y el README muestra un badge.
 
 ### Calidad de código y mantenibilidad
 
 - [ ] **CAL-01**: TypeScript estricto sin `any` (`strict` y `noUncheckedIndexedAccess`), verificado con `tsc --noEmit`. Biome se encarga de lint y formato, y `bun run check` los agrupa.
 - [x] **CAL-02**: El código no lleva comentarios. Se entiende por sí solo gracias a nombres expresivos, tipos y funciones pequeñas de una responsabilidad. Las explicaciones viven en la documentación, no en el código.
-- [ ] **CAL-03**: Las constantes y la configuración están centralizadas, tipadas y validadas con zod desde env: rutas, topes, timeouts, umbral de confianza 0.8, tabla país → identificador y catálogo de errores. No hay números ni strings mágicos dispersos.
+- [x] **CAL-03**: Las constantes y la configuración están centralizadas, tipadas y validadas con zod desde env: rutas, topes, timeouts, umbral de confianza 0.8, tabla país → identificador y catálogo de errores. No hay números ni strings mágicos dispersos.
 - [ ] **CAL-04**: Las capas tienen dependencias hacia adentro (dominio puro → herramientas/casos de uso → infraestructura → HTTP), sin framework de DI. Solo hay puertos donde existe más de una implementación (LLM, reloj, store de sesión). Un test de arquitectura verifica la dirección de los imports.
 - [ ] **CAL-05**: Hay documentación de continuidad (`docs/arquitectura.md` y `docs/convenciones.md`) para que otro dev o una IA retome el proyecto. Los commits siguen Conventional Commits con la identidad `elianatorres5772`.
 
@@ -180,11 +180,11 @@ Cada requisito v1 está asignado a exactamente una fase del roadmap (`.planning/
 | HERR-03 | Phase 1 | Pending |
 | HERR-04 | Phase 1 | Complete |
 | HERR-05 | Phase 1 | Complete |
-| SOLI-01 | Phase 1 | Pending |
-| SOLI-02 | Phase 1 | Pending |
+| SOLI-01 | Phase 1 | Complete |
+| SOLI-02 | Phase 1 | Complete |
 | SOLI-03 | Phase 2 | Pending |
 | MAP-01 | Phase 1 | Complete |
-| MAP-02 | Phase 1 | Pending |
+| MAP-02 | Phase 1 | Complete |
 | MAP-03 | Phase 1 | Complete |
 | MAP-04 | Phase 1 | Complete |
 | MAP-05 | Phase 1 | Complete |
@@ -234,11 +234,11 @@ Cada requisito v1 está asignado a exactamente una fase del roadmap (`.planning/
 | DEMO-01 | Phase 1 | Pending |
 | DEMO-02 | Phase 1 | Pending |
 | DEMO-03 | Phase 2 | Pending |
-| DEMO-04 | Phase 1 | Pending |
+| DEMO-04 | Phase 1 | Complete |
 | DEMO-05 | Phase 4 | Pending |
 | CAL-01 | Phase 1 | Pending |
 | CAL-02 | Phase 1 | Complete |
-| CAL-03 | Phase 1 | Pending |
+| CAL-03 | Phase 1 | Complete |
 | CAL-04 | Phase 1 | Pending |
 | CAL-05 | Phase 4 | Pending |
 | DEP-01 | Phase 3 | Pending |
