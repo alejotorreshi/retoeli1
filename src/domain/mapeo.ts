@@ -56,6 +56,7 @@ type ContextoMapeo = {
 const SEGMENTO_RUTA = /^[a-z_]+$/;
 const CLAVES_PROHIBIDAS: ReadonlySet<string> = new Set(["__proto__", "constructor", "prototype"]);
 const ESPACIO = / /g;
+const TEXTO_CON_CONTENIDO = /\S/;
 const SEPARADOR_NOTAS = ". ";
 
 function agregarSinColision(mapa: Map<string, string>, clave: string, ruta: string): boolean {
@@ -90,7 +91,8 @@ export function leerRuta(maestro: Maestro, ruta: string): string | null {
     if (descriptor === undefined || !("value" in descriptor)) return null;
     actual = descriptor.value;
   }
-  return typeof actual === "string" || typeof actual === "number" ? aTexto(actual) : null;
+  if (typeof actual === "number") return aTexto(actual);
+  return typeof actual === "string" && TEXTO_CON_CONTENIDO.test(actual) ? actual : null;
 }
 
 function rutaCandidata(etiqueta: string, indice: IndiceGlosario): Fuente | null {

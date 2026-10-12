@@ -92,6 +92,14 @@ describe("leerRuta", () => {
     }
   });
 
+  test("un texto vacío o solo con espacios no tiene fuente", () => {
+    const enBlanco: Maestro = { ...maestro, ciudad: "", ciiu_principal: "   ", sitio_web: "\t\n" };
+    for (const ruta of ["ciudad", "ciiu_principal", "sitio_web"]) {
+      expect(leerRuta(enBlanco, ruta)).toBeNull();
+    }
+    expect(leerRuta({ ...maestro, ciudad: " Medellín " }, "ciudad")).toBe(" Medellín ");
+  });
+
   test("las claves del prototipo no tienen fuente", () => {
     for (const ruta of ["constructor", "__proto__", "toString", "banco.constructor", "hasOwnProperty"]) {
       expect(leerRuta(maestro, ruta)).toBeNull();
@@ -318,6 +326,24 @@ describe("reglas sobre etiquetas sintéticas", () => {
       expect(campo(campos, etiqueta)).toMatchObject({ ruta: null, estado: "faltante", valor: null });
     }
     expect(contarEstados(campos)).toEqual({ lleno: 3, faltante: 4, requiere_confirmacion: 1 });
+  });
+
+  test("un dato del maestro vacío o en blanco queda faltante y sin valor", () => {
+    const enBlanco: Maestro = { ...maestro, ciudad: "  ", ciiu_principal: "" };
+    const campos = mapear(entrada(["Ciudad", "Código CIIU", "Sitio web"], "CO", { maestro: enBlanco }));
+    for (const etiqueta of ["Ciudad", "Código CIIU"]) {
+      expect(campo(campos, etiqueta)).toEqual({
+        etiqueta,
+        ruta: null,
+        estado: "faltante",
+        regla: "sin_fuente",
+        confianza: 0,
+        valor: null,
+        nota: null,
+        propuesta: null,
+      });
+    }
+    expect(contarEstados(campos)).toEqual({ lleno: 1, faltante: 2, requiere_confirmacion: 0 });
   });
 
   test("una etiqueta escrita en NFD resuelve igual que en NFC", () => {
