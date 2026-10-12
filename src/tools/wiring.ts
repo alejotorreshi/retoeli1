@@ -25,7 +25,11 @@ import {
 } from "../infra/fixtures/lector.ts";
 import { cargarReglas, DIRECTORIO_CONOCIMIENTO_POR_DEFECTO } from "../infra/knowledge/reglas.ts";
 import { relojFijo, relojSistema } from "../infra/reloj.ts";
-import { escribirArchivoSalida, escribirBinarioSalida } from "../infra/salida/archivos.ts";
+import {
+  escribirArchivoSalida,
+  escribirBinarioSalida,
+  limpiarArtefactosPrevios,
+} from "../infra/salida/archivos.ts";
 import { conCandadoCaso } from "../infra/salida/mutex.ts";
 import { directorioSalidaCaso, listarCasos, resolverCaso } from "../infra/salida/rutas-seguras.ts";
 import { escribirXlsx } from "../infra/salida/xlsx.ts";
@@ -86,6 +90,7 @@ function entornoDeFixtures(raiz: string, reloj: Reloj, directorioConocimiento: s
       escribir: (caso, archivo, contenido) =>
         escribirArchivoSalida(raiz, caso, ARCHIVOS_SALIDA[archivo], contenido),
       binario: (caso, archivo, bytes) => escribirBinarioSalida(raiz, caso, ARCHIVOS_SALIDA[archivo], bytes),
+      limpiarPrevios: (caso) => limpiarArtefactosPrevios(raiz, caso),
     },
     formularios: { xlsx: escribirXlsx },
     candado: (caso, seccion) => conCandadoCaso(directorioSalidaCaso(raiz, caso), seccion),

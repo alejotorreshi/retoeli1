@@ -51,6 +51,7 @@ export type ArchivoBinario = "formularioXlsx";
 export type SalidaCaso = {
   escribir(caso: string, archivo: ArchivoSalida, contenido: string): Promise<string>;
   binario(caso: string, archivo: ArchivoBinario, bytes: Uint8Array): Promise<string>;
+  limpiarPrevios(caso: string): Promise<void>;
 };
 
 export type GeneradoresFormulario = {

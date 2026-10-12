@@ -134,3 +134,34 @@ describe("compararMapeo (D-11)", () => {
     });
   });
 });
+
+describe("compararMapeo con etiquetas repetidas en la plantilla", () => {
+  const telefono = campo("Teléfono", "telefono", "lleno");
+  const repetido: readonly CampoMapeado[] = [campo("Banco", "banco.nombre", "lleno"), telefono, telefono];
+
+  test("la proyección fiel con la misma multiplicidad es igual", () => {
+    expect(compararMapeo(repetido, proyectar(repetido))).toEqual({ iguales: true });
+  });
+
+  test("una copia de menos es falta y una de más es duplicado", () => {
+    expect(compararMapeo(repetido, proyectar(repetido.slice(0, 2)))).toEqual({
+      iguales: false,
+      diferencias: ["falta: Teléfono"],
+    });
+    expect(compararMapeo(repetido, proyectar([...repetido, telefono]))).toEqual({
+      iguales: false,
+      diferencias: ["duplicado: Teléfono"],
+    });
+  });
+
+  test("una copia adulterada es una ruta distinta", () => {
+    const recibido = [
+      ...proyectar(repetido.slice(0, 2)),
+      { etiqueta: "Teléfono", estado: "lleno" as const, ruta: "nit" },
+    ];
+    expect(compararMapeo(repetido, recibido)).toEqual({
+      iguales: false,
+      diferencias: ["ruta distinta: Teléfono"],
+    });
+  });
+});

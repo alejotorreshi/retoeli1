@@ -1,9 +1,9 @@
 import { afterAll, describe, expect, test } from "bun:test";
 import { existsSync } from "node:fs";
-import { mkdir, mkdtemp, readFile, rm, symlink } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, rm, symlink, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { escribirArchivoSalida } from "../../src/infra/salida/archivos.ts";
+import { escribirArchivoSalida, limpiarArtefactosPrevios } from "../../src/infra/salida/archivos.ts";
 import { conCandadoCaso } from "../../src/infra/salida/mutex.ts";
 
 const temporales: string[] = [];
@@ -61,6 +61,53 @@ describe("escribirArchivoSalida (D-33.3)", () => {
     await expect(escribirArchivoSalida(raiz, "escape", "mapeo.json", "x")).rejects.toThrow(RangeError);
     expect(existsSync(join(afuera, "mapeo.json"))).toBe(false);
   });
+});
+
+describe("limpiarArtefactosPrevios (D-12)", () => {
+  test("no falla cuando out/<caso> no existe", async () => {
+    const raiz = await raizTemporal();
+    await limpiarArtefactosPrevios(raiz, "co-industrias-delta");
+    expect(existsSync(join(raiz, "out"))).toBe(false);
+  });
+
+  test("borra paquete/ y ENVIO-SIMULADO.md y deja log.jsonl, mapeo.json y el formulario", async () => {
+    const raiz = await raizTemporal();
+    const caso = join(raiz, "out", "co-industrias-delta");
+    await mkdir(join(caso, "paquete"), { recursive: true });
+    for (const nombre of [
+      "paquete/x.txt",
+      "ENVIO-SIMULADO.md",
+      "log.jsonl",
+      "mapeo.json",
+      "formulario.xlsx",
+    ]) {
+      await writeFile(join(caso, nombre), "x");
+    }
+    await limpiarArtefactosPrevios(raiz, "co-industrias-delta");
+    expect(existsSync(join(caso, "paquete"))).toBe(false);
+    expect(existsSync(join(caso, "ENVIO-SIMULADO.md"))).toBe(false);
+    for (const nombre of ["log.jsonl", "mapeo.json", "formulario.xlsx"]) {
+      expect(existsSync(join(caso, nombre))).toBe(true);
+    }
+  });
+
+  test("rechaza out/<caso> cuando es un symlink que sale de out/ sin borrar afuera", async () => {
+    const raiz = await raizTemporal();
+    const afuera = await raizTemporal();
+    await mkdir(join(afuera, "paquete"), { recursive: true });
+    await writeFile(join(afuera, "paquete", "x.txt"), "ajeno");
+    await mkdir(join(raiz, "out"), { recursive: true });
+    await symlink(afuera, join(raiz, "out", "escape"));
+    await expect(limpiarArtefactosPrevios(raiz, "escape")).rejects.toThrow(RangeError);
+    expect(existsSync(join(afuera, "paquete", "x.txt"))).toBe(true);
+  });
+
+  for (const caso of ["../x", "a/b", ""]) {
+    test(`rechaza el caso "${caso}"`, async () => {
+      const raiz = await raizTemporal();
+      await expect(limpiarArtefactosPrevios(raiz, caso)).rejects.toThrow(RangeError);
+    });
+  }
 });
 
 describe("conCandadoCaso", () => {

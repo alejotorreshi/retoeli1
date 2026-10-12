@@ -1,21 +1,15 @@
+import { compararMapeo, type ItemMapeo } from "../domain/comparar-mapeo.ts";
 import { construirFilas } from "../domain/formulario.ts";
 import { type CampoMapeado, type ConteoEstados, contarEstados } from "../domain/mapeo.ts";
-import type { EstadoCampo } from "../domain/reglas.ts";
 import { exito, fallo, type Resultado } from "../domain/resultado.ts";
 import type { Formato } from "../domain/tipos.ts";
 import { type ContextoCaso, cargarContextoCaso } from "./contexto-caso.ts";
 import { escribirMapeo, mapeoCanonico } from "./mapear-campos.ts";
 import type { Entorno } from "./puertos.ts";
 
-export type ItemMapeoRecibido = {
-  readonly etiqueta: string;
-  readonly estado: EstadoCampo;
-  readonly ruta: string | null;
-};
-
 export type ArgsGenerarFormulario = {
   readonly caso: string;
-  readonly mapeo: readonly ItemMapeoRecibido[];
+  readonly mapeo: readonly ItemMapeo[];
 };
 
 export type DatosFormulario = {
@@ -61,6 +55,11 @@ async function generarBajoCandado(
   if (!contexto.ok) return contexto;
   const canonico = mapeoCanonico(contexto.data);
   if (!canonico.ok) return canonico;
+  const comparacion = compararMapeo(canonico.data, args.mapeo);
+  if (!comparacion.iguales) {
+    return fallo("MAPEO_INCONSISTENTE", { parcial: { diferencias: comparacion.diferencias } });
+  }
+  await entorno.salida.limpiarPrevios(contexto.data.caso);
   return despachar(contexto.data, canonico.data, entorno);
 }
 
