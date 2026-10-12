@@ -2,7 +2,9 @@ import { readFile, stat } from "node:fs/promises";
 import { join, resolve } from "node:path";
 import type { z } from "zod";
 import type { Lectura } from "../../application/puertos.ts";
-import { LIMITE_LECTURA_BYTES } from "../../config/constantes.ts";
+import { ARCHIVOS_REPOSITORIO, FIXTURES_DIR, LIMITE_LECTURA_BYTES } from "../../config/constantes.ts";
+import type { Glosario, Maestro } from "../../domain/mapeo.ts";
+import { esquemaGlosario, esquemaMaestro } from "./esquemas.ts";
 
 const NO_ENCONTRADO = { estado: "no_encontrado" } as const;
 const INVALIDO = { estado: "invalido" } as const;
@@ -48,4 +50,12 @@ export async function leerJsonValidado<T>(rutaAbs: string, esquema: z.ZodType<T>
   } catch (error) {
     return esNoEncontrado(error) ? NO_ENCONTRADO : INVALIDO;
   }
+}
+
+export function leerMaestro(raiz: string): Promise<Lectura<Maestro>> {
+  return leerJsonValidado(resolve(raiz, FIXTURES_DIR, ARCHIVOS_REPOSITORIO.maestro), esquemaMaestro);
+}
+
+export function leerGlosario(raiz: string): Promise<Lectura<Glosario>> {
+  return leerJsonValidado(resolve(raiz, FIXTURES_DIR, ARCHIVOS_REPOSITORIO.glosario), esquemaGlosario);
 }

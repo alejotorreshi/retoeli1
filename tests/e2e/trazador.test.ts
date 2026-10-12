@@ -248,7 +248,7 @@ describe("trazador: excepciones internas", () => {
     expect(llamadas.join("\n")).not.toContain("secreto-123");
   });
 
-  test("importar proveedor.ts con el entorno vacío expone leer_solicitud", async () => {
+  test("importar proveedor.ts con el entorno vacío expone las herramientas sin leer el entorno", async () => {
     const proceso = Bun.spawn(
       [
         process.execPath,
@@ -259,7 +259,7 @@ describe("trazador: excepciones internas", () => {
     );
     const salida = await new Response(proceso.stdout).text();
     expect(await proceso.exited).toBe(0);
-    expect(salida.trim()).toBe("leer_solicitud");
+    expect(salida.trim()).toBe("leer_solicitud,mapear_campos");
   });
 });
 

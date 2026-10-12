@@ -11,7 +11,9 @@ export type ReglaMapeo = (typeof REGLAS_MAPEO)[number];
 
 export type EstadoCampo = "lleno" | "faltante" | "requiere_confirmacion";
 
-export type AplicaNota = "siempre" | "extranjero";
+export const APLICACIONES_NOTA = ["siempre", "extranjero"] as const;
+
+export type AplicaNota = (typeof APLICACIONES_NOTA)[number];
 
 export type EscalaConfianza = Readonly<Record<ReglaMapeo, number>> & { readonly umbral: number };
 

@@ -3,7 +3,7 @@ import type { Entorno, EntradaBitacora } from "../application/puertos.ts";
 import { PATRON_CASO, PREFIJO_HERRAMIENTA, SESION_POR_DEFECTO } from "../config/constantes.ts";
 import { exito, type Fallo, fallo, type Resultado } from "../domain/resultado.ts";
 import { formatearIssues } from "./issues.ts";
-import { crearEntorno } from "./wiring.ts";
+import { crearEntorno, type OpcionesEntorno } from "./wiring.ts";
 
 export type ContextoHerramienta = { directory: string; sessionId?: string; sessionID?: string };
 
@@ -69,7 +69,10 @@ function serializarFallo(nombre: string, resultado: Fallo): string {
   );
 }
 
-export function defineTool<A extends z.ZodRawShape, D>(spec: EspecHerramienta<A, D>): Herramienta<A> {
+export function defineTool<A extends z.ZodRawShape, D>(
+  spec: EspecHerramienta<A, D>,
+  opciones: OpcionesEntorno = {},
+): Herramienta<A> {
   const esquema = z.object(spec.args).strict();
   const herramienta = `${PREFIJO_HERRAMIENTA}${spec.nombre}`;
 
@@ -121,7 +124,7 @@ export function defineTool<A extends z.ZodRawShape, D>(spec: EspecHerramienta<A,
   async function ejecutarYRegistrar(crudos: unknown, ctx: ContextoHerramienta): Promise<string> {
     const contexto = normalizarContexto(ctx);
     if (!contexto.ok) return serializarFallo(spec.nombre, contexto);
-    const { entorno, registrar } = crearEntorno(contexto.data);
+    const { entorno, registrar } = crearEntorno(contexto.data, opciones);
     const desenlace: Desenlace<D> = entorno.ok
       ? await desenlazar(crudos, entorno.data)
       : { resultado: entorno };

@@ -1,5 +1,10 @@
 import type { Entorno, Lectura, Registrar, Reloj } from "../application/puertos.ts";
-import { ARCHIVOS_CASO, PATRON_CASO, ZONA_HORARIA_POR_DEFECTO } from "../config/constantes.ts";
+import {
+  ARCHIVOS_CASO,
+  ARCHIVOS_SALIDA,
+  PATRON_CASO,
+  ZONA_HORARIA_POR_DEFECTO,
+} from "../config/constantes.ts";
 import { parseToolEnv, type ToolEnv } from "../config/env.ts";
 import { exito, fallo, type Resultado } from "../domain/resultado.ts";
 import type { Plantilla, TipoPlantilla } from "../domain/tipos.ts";
@@ -10,11 +15,26 @@ import {
   esquemaSolicitud,
   esquemaSoportesExigidos,
 } from "../infra/fixtures/esquemas.ts";
-import { existeArchivo, leerJsonValidado, resolverRaiz, rutaEnCaso } from "../infra/fixtures/lector.ts";
+import {
+  existeArchivo,
+  leerGlosario,
+  leerJsonValidado,
+  leerMaestro,
+  resolverRaiz,
+  rutaEnCaso,
+} from "../infra/fixtures/lector.ts";
+import { cargarReglas, DIRECTORIO_CONOCIMIENTO_POR_DEFECTO } from "../infra/knowledge/reglas.ts";
 import { relojFijo, relojSistema } from "../infra/reloj.ts";
-import { listarCasos, resolverCaso } from "../infra/salida/rutas-seguras.ts";
+import {
+  directorioSalidaCaso,
+  listarCasos,
+  resolverCaso,
+  rutaRelativa,
+} from "../infra/salida/rutas-seguras.ts";
 import type { ContextoNormalizado } from "./define-tool.ts";
 import { formatearIssues } from "./issues.ts";
+
+export type OpcionesEntorno = { readonly directorioConocimiento?: string };
 
 export type EntornoEjecucion = {
   readonly registrar: Registrar;
@@ -47,7 +67,7 @@ function relojDe(config: ToolEnv): Reloj {
     : relojFijo(config.FECHA_EJECUCION);
 }
 
-function entornoDeFixtures(raiz: string, reloj: Reloj): Entorno {
+function entornoDeFixtures(raiz: string, reloj: Reloj, directorioConocimiento: string): Entorno {
   return {
     raiz,
     patronCaso: PATRON_CASO,
@@ -64,10 +84,20 @@ function entornoDeFixtures(raiz: string, reloj: Reloj): Entorno {
       existePlantilla: (directorio, tipo) => existeArchivo(rutaEnCaso(directorio, ARCHIVO_PLANTILLA[tipo])),
       leerPlantilla,
     },
+    salida: {
+      ruta: (caso, archivo) =>
+        rutaRelativa(raiz, rutaEnCaso(directorioSalidaCaso(raiz, caso), ARCHIVOS_SALIDA[archivo])),
+    },
+    reglas: () => cargarReglas(directorioConocimiento),
+    maestro: () => leerMaestro(raiz),
+    glosario: () => leerGlosario(raiz),
   };
 }
 
-export function crearEntorno(contexto: ContextoNormalizado): EntornoEjecucion {
+export function crearEntorno(
+  contexto: ContextoNormalizado,
+  opciones: OpcionesEntorno = {},
+): EntornoEjecucion {
   const raiz = resolverRaiz(contexto.directorio);
   const config = parseToolEnv(process.env);
   if (!config.success) {
@@ -77,5 +107,9 @@ export function crearEntorno(contexto: ContextoNormalizado): EntornoEjecucion {
     };
   }
   const reloj = relojDe(config.data);
-  return { registrar: crearBitacora(raiz, reloj), entorno: exito(entornoDeFixtures(raiz, reloj)) };
+  const directorioConocimiento = opciones.directorioConocimiento ?? DIRECTORIO_CONOCIMIENTO_POR_DEFECTO;
+  return {
+    registrar: crearBitacora(raiz, reloj),
+    entorno: exito(entornoDeFixtures(raiz, reloj, directorioConocimiento)),
+  };
 }

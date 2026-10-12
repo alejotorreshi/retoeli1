@@ -13,6 +13,24 @@ export const ARCHIVOS_CASO = {
   soportesExigidos: "soportes-exigidos.json",
 } as const;
 
+export const ARCHIVOS_REPOSITORIO = {
+  glosario: "glosario-campos.json",
+  maestro: "repositorio/maestro.json",
+} as const;
+
+export const ARCHIVO_REGLAS = "reglas.json";
+export const VERSION_REGLAS = 1;
+export const PATRON_PLANTILLA_CONOCIMIENTO: RegExp = /^plantillas\/[a-z-]+\.md$/;
+export const PATRON_TEXTO_NO_VACIO: RegExp = /\S/;
+
+export const LIMITES_REGLAS = {
+  texto: 500,
+  etiqueta: 200,
+  identificador: 20,
+  elementos: 200,
+  diasAvisoMaximo: 365,
+} as const;
+
 export const ARCHIVOS_SALIDA = {
   formularioXlsx: "formulario.xlsx",
   formularioPdf: "formulario.pdf",
@@ -36,6 +54,7 @@ export const LIMITES_ARGS = {
 export const LIMITES_FIXTURES = {
   camposPlantilla: 500,
   etiqueta: 200,
+  textoMaestro: 2_000,
   textoCorto: 500,
   cuerpo: 20_000,
   adjuntos: 50,

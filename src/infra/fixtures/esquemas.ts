@@ -5,6 +5,7 @@ import {
   PATRON_CELDA,
   PATRON_FECHA,
   PATRON_PAIS,
+  PATRON_RUTA_MAESTRO,
   PATRON_TIPO_SOPORTE,
 } from "../../config/constantes.ts";
 
@@ -49,3 +50,26 @@ export const esquemaPlantillaCampos = z
 export const esquemaSoportesExigidos = z
   .array(z.string().regex(PATRON_TIPO_SOPORTE))
   .max(LIMITES_FIXTURES.soportes);
+
+export type ValorMaestro =
+  | string
+  | number
+  | boolean
+  | null
+  | readonly ValorMaestro[]
+  | { readonly [clave: string]: ValorMaestro };
+
+const esquemaValorMaestro: z.ZodType<ValorMaestro> = z.lazy(() =>
+  z.union([
+    z.string().max(LIMITES_FIXTURES.textoMaestro),
+    z.number(),
+    z.boolean(),
+    z.null(),
+    z.array(esquemaValorMaestro),
+    z.record(z.string(), esquemaValorMaestro),
+  ]),
+);
+
+export const esquemaMaestro = z.record(z.string(), esquemaValorMaestro);
+
+export const esquemaGlosario = z.record(etiqueta, z.string().regex(PATRON_RUTA_MAESTRO));

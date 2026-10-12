@@ -1,4 +1,7 @@
 import type { CodigoError } from "../domain/errores.ts";
+import type { Glosario, Maestro } from "../domain/mapeo.ts";
+import type { Reglas } from "../domain/reglas.ts";
+import type { Resultado } from "../domain/resultado.ts";
 import type { FechaISO, Plantilla, Solicitud, TipoPlantilla } from "../domain/tipos.ts";
 
 export type Lectura<T> =
@@ -40,10 +43,20 @@ export type EntradaBitacora = {
 
 export type Registrar = (entrada: EntradaBitacora) => Promise<void>;
 
+export type ArchivoSalida = "mapeo";
+
+export type SalidaCaso = {
+  ruta(caso: string, archivo: ArchivoSalida): string;
+};
+
 export type Entorno = {
   readonly raiz: string;
   readonly patronCaso: RegExp;
   readonly reloj: Reloj;
   readonly casos: CasosDisponibles;
   readonly fixtures: FixturesCaso;
+  readonly salida: SalidaCaso;
+  reglas(): Promise<Resultado<Reglas>>;
+  maestro(): Promise<Lectura<Maestro>>;
+  glosario(): Promise<Lectura<Glosario>>;
 };
