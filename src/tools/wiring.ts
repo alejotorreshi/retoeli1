@@ -31,6 +31,7 @@ import {
   limpiarArtefactosPrevios,
 } from "../infra/salida/archivos.ts";
 import { conCandadoCaso } from "../infra/salida/mutex.ts";
+import { renderizarPdf } from "../infra/salida/pdf/render.ts";
 import { directorioSalidaCaso, listarCasos, resolverCaso } from "../infra/salida/rutas-seguras.ts";
 import { escribirXlsx } from "../infra/salida/xlsx.ts";
 import type { ContextoNormalizado } from "./define-tool.ts";
@@ -92,7 +93,7 @@ function entornoDeFixtures(raiz: string, reloj: Reloj, directorioConocimiento: s
       binario: (caso, archivo, bytes) => escribirBinarioSalida(raiz, caso, ARCHIVOS_SALIDA[archivo], bytes),
       limpiarPrevios: (caso) => limpiarArtefactosPrevios(raiz, caso),
     },
-    formularios: { xlsx: escribirXlsx },
+    formularios: { xlsx: escribirXlsx, pdf: renderizarPdf },
     candado: (caso, seccion) => conCandadoCaso(directorioSalidaCaso(raiz, caso), seccion),
     reglas: () => cargarReglas(directorioConocimiento),
     maestro: () => leerMaestro(raiz),

@@ -1,5 +1,5 @@
 import type { CodigoError } from "../domain/errores.ts";
-import type { FilaCelda } from "../domain/formulario.ts";
+import type { FilaCelda, FilaFormulario } from "../domain/formulario.ts";
 import type { Glosario, Maestro } from "../domain/mapeo.ts";
 import type { Reglas } from "../domain/reglas.ts";
 import type { Resultado } from "../domain/resultado.ts";
@@ -46,7 +46,7 @@ export type Registrar = (entrada: EntradaBitacora) => Promise<void>;
 
 export type ArchivoSalida = "mapeo";
 
-export type ArchivoBinario = "formularioXlsx";
+export type ArchivoBinario = "formularioXlsx" | "formularioPdf";
 
 export type SalidaCaso = {
   escribir(caso: string, archivo: ArchivoSalida, contenido: string): Promise<string>;
@@ -54,8 +54,15 @@ export type SalidaCaso = {
   limpiarPrevios(caso: string): Promise<void>;
 };
 
+export type EntradaFormularioPdf = {
+  readonly caso: string;
+  readonly cliente: string;
+  readonly filas: readonly FilaFormulario[];
+};
+
 export type GeneradoresFormulario = {
   xlsx(filas: readonly FilaCelda[], fecha: FechaISO): Promise<Uint8Array>;
+  pdf(entrada: EntradaFormularioPdf, fecha: FechaISO): Promise<Uint8Array>;
 };
 
 export type Candado = <T>(caso: string, seccion: () => Promise<T>) => Promise<T>;

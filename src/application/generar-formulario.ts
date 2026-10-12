@@ -19,6 +19,17 @@ export type DatosFormulario = {
   readonly conteo: ConteoEstados;
 };
 
+async function cerrar(
+  contexto: ContextoCaso,
+  canonico: readonly CampoMapeado[],
+  entorno: Entorno,
+  ruta: string,
+  formato: Formato,
+): Promise<Resultado<DatosFormulario>> {
+  await escribirMapeo(contexto, canonico, entorno);
+  return exito({ caso: contexto.caso, ruta, formato, conteo: contarEstados(canonico) });
+}
+
 async function generarXlsx(
   contexto: ContextoCaso,
   canonico: readonly CampoMapeado[],
@@ -29,8 +40,20 @@ async function generarXlsx(
   if (formulario.data.tipo !== "celdas") return fallo("PLANTILLA_INVALIDA");
   const bytes = await entorno.formularios.xlsx(formulario.data.filas, entorno.reloj.hoy());
   const ruta = await entorno.salida.binario(contexto.caso, "formularioXlsx", bytes);
-  await escribirMapeo(contexto, canonico, entorno);
-  return exito({ caso: contexto.caso, ruta, formato: "xlsx", conteo: contarEstados(canonico) });
+  return cerrar(contexto, canonico, entorno, ruta, "xlsx");
+}
+
+async function generarPdf(
+  contexto: ContextoCaso,
+  canonico: readonly CampoMapeado[],
+  entorno: Entorno,
+): Promise<Resultado<DatosFormulario>> {
+  const formulario = construirFilas(contexto.plantilla, canonico);
+  if (!formulario.ok) return formulario;
+  const entrada = { caso: contexto.caso, cliente: contexto.solicitud.cliente, filas: formulario.data.filas };
+  const bytes = await entorno.formularios.pdf(entrada, entorno.reloj.hoy());
+  const ruta = await entorno.salida.binario(contexto.caso, "formularioPdf", bytes);
+  return cerrar(contexto, canonico, entorno, ruta, "pdf");
 }
 
 async function despachar(
@@ -42,6 +65,7 @@ async function despachar(
     case "xlsx":
       return generarXlsx(contexto, canonico, entorno);
     case "pdf":
+      return generarPdf(contexto, canonico, entorno);
     case "portal":
       return fallo("ERROR_INTERNO");
   }
