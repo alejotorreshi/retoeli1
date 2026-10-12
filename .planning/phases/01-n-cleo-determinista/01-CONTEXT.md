@@ -31,6 +31,7 @@ Quedan fuera de esta fase el ciclo del agente, el adaptador LLM, la compuerta de
   - Teléfonos: "+57 ••• ••• 0101".
   - Montos: "[monto oculto]".
   - La cuenta bancaria y el SWIFT nunca muestran más de 4 caracteres.
+- **D-36 (post-research):** Las notas de contexto que ve el LLM pueden incluir datos no sensibles, tomados de una **lista blanca en código** junto a la política de PII: `ingresos_ultimo_ano.moneda`, `ingresos_ultimo_ano.ano`, `pais` y los textos fijos de `reglas.json` ("identificador extranjero", etc.). El monto sigue como "[monto oculto]".
 - **D-08:** La política de PII (lista blanca y patrones) **vive en código** (`src/domain`), no como dato editable. Es una decisión de seguridad y no se puede relajar editando un archivo.
 - **D-09:** El rol del LLM, aclarado con la usuaria: orquesta la secuencia de herramientas, conversa y explica en español, responde seguimientos y llega a la pregunta de confirmación. **Nunca** aporta valores, mapea campos, decide vigencias ni autoriza envíos. Este trade-off se documenta en `SOLUCION.md` §6 (Fase 4).
 
@@ -99,6 +100,8 @@ Quedan fuera de esta fase el ciclo del agente, el adaptador LLM, la compuerta de
 
   La usuaria pidió validar siempre versiones y vulnerabilidades y usar lo recomendado y reciente: el planner o el executor deben volver a correr `npm view` y `bun audit` al instalar.
 - **D-32:** **Bun 1.4.3 fijo**, en `.bun-version`, `engines` y la imagen `oven/bun:1.4.3-slim`. La máquina local tiene 1.3.10, así que el plan debe incluir `bun upgrade` (o avisar a la usuaria) antes de depender de `bun check`.
+
+- **D-35 (enmienda a D-30, post-research 2026-10-12):** Se aplica una política de **madurez de 7 días o más**: no se fija ninguna versión publicada hace menos de 7 días, como protección de cadena de suministro. Versiones fijadas: **zod 4.6.5** (2026-09-13), **@types/bun 1.4.2** (2026-09-08), **@biomejs/biome 2.5.15** (2026-09-30), **typescript 7.0.2**, **exceljs 4.4.0** y **pdf-lib 1.17.1**. zod 4.6.7 y @types/bun 1.4.3 se descartan porque se publicaron el mismo día. El runtime Bun 1.4.3 (D-32) se mantiene porque corrige regresiones de 1.4.x y la investigación lo verificó. Al instalar se corre `npm view <pkg> time` y `bun audit --audit-level=moderate`.
 
 ### Validación zero-trust
 - **D-33:** No se confía en ninguna entrada, y hay validación zod en cada frontera del backend:
