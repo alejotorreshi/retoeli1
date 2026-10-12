@@ -3,16 +3,16 @@ gsd_state_version: "1.0"
 current_phase: 01
 current_phase_name: Núcleo determinista
 status: executing
-stopped_at: Completed 01-08-PLAN.md
-last_updated: "2026-10-12T22:51:00.908Z"
+stopped_at: Completed 01-09-PLAN.md
+last_updated: "2026-10-12T23:01:01.246Z"
 last_activity: 2026-10-12
 last_activity_desc: Phase 01 execution started
-state_head: 7da5fe70ff73344398e039c992935647289e5f60
+state_head: c9701b21e8b82d4f27ffa3caf2f6d947ea820e2c
 progress:
   total_phases: 4
   completed_phases: 0
   total_plans: 11
-  completed_plans: 8
+  completed_plans: 9
   percent: 0
 ---
 
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-10-12)
 ## Current Position
 
 Phase: 01 (Núcleo determinista) — EXECUTING
-Plan: 9 of 11
+Plan: 10 of 11
 Status: Ready to execute
 Last activity: 2026-10-12 — Phase 01 execution started
 
@@ -64,6 +64,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 01 P06 | 2min | 2 tasks | 14 files |
 | Phase 01 P07 | 5min | 2 tasks | 18 files |
 | Phase 01 P08 | 6min | 2 tasks | 17 files |
+| Phase 01 P09 | 8min | 2 tasks | 18 files |
 
 ## Accumulated Context
 
@@ -100,6 +101,9 @@ Recent decisions affecting current work:
 - [Phase 01]: PDF metadata fixed to registro-proveedor and FECHA_EJECUCION 00:00Z; renders are byte-identical
 - [Phase 01]: Knowledge templates load per call via Entorno.plantillas.cargar(reglas, clave) and render against a code-built allowlisted context (valores-portal: caso, cliente, fecha_ejecucion, aviso, campos, pendientes)
 - [Phase 01]: generar_formulario presents aviso only for portal: {ruta, formato, aviso: 'formato no soportado'}; xlsx/pdf stay {ruta, formato}
+- [Phase 01]: 01-09: Port salida.copiar(caso, origen: OrigenCopia) derives the destination from a typed origin; copiarAlPaquete realpath-checks it inside repositorio/soportes or out/<caso> outside paquete/
+- [Phase 01]: 01-09: evaluarSoportes returns Resultado because the D-22 emitter warning renders from reglas.json; ausente soportes carry archivo and vigencia null and render as —
+- [Phase 01]: 01-09: armar_paquete renders checklist.md before touching disk, then recreates only paquete/; index.json entries cannot use reserved paquete names or impossible dates
 
 ### Pending Todos
 
@@ -122,6 +126,6 @@ Items acknowledged and deferred at milestone close, most recent first:
 
 ## Session Continuity
 
-Last session: 2026-10-12T22:51:00.886Z
-Stopped at: Completed 01-08-PLAN.md
+Last session: 2026-10-12T23:01:01.224Z
+Stopped at: Completed 01-09-PLAN.md
 Resume file: None

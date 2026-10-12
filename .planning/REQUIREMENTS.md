@@ -41,10 +41,10 @@ Fuente vinculante: `reto-01/PRD.md`, sin modificar. Fixtures: `reto-01/fixtures/
 ### Paquete para firma (HU-4, RN2, RN3)
 
 - [ ] **PAQ-01**: `armar_paquete` crea `out/<caso>/paquete/` con el formulario (o `valores-portal.md`), copias de los soportes exigidos que existan en `repositorio/soportes/`, `checklist.md` y `borrador-correo.md`. Devuelve `{ ruta, listo_para_firma, checklist }`.
-- [ ] **PAQ-02**: `checklist.md` lista los soportes presentes, ausentes y vencidos, los campos faltantes y los que requieren confirmación. Muestra la fecha de ejecución efectiva y avisa cuando un soporte vence pronto ("vence en N días").
-- [ ] **PAQ-03**: Un soporte vencido (`vigencia_hasta` anterior a la fecha de ejecución) o un soporte exigido ausente bloquea `listo_para_firma`. Un campo `faltante` no bloquea, pero aparece en el checklist.
+- [x] **PAQ-02**: `checklist.md` lista los soportes presentes, ausentes y vencidos, los campos faltantes y los que requieren confirmación. Muestra la fecha de ejecución efectiva y avisa cuando un soporte vence pronto ("vence en N días").
+- [x] **PAQ-03**: Un soporte vencido (`vigencia_hasta` anterior a la fecha de ejecución) o un soporte exigido ausente bloquea `listo_para_firma`. Un campo `faltante` no bloquea, pero aparece en el checklist.
 - [ ] **PAQ-04**: `borrador-correo.md` es una respuesta al cliente: va dirigido a `solicitud.de`, con asunto "RE: <asunto>", y lista el formulario firmado y los soportes. Se arma con una lista blanca de campos, así que nunca contiene datos bancarios.
-- [ ] **PAQ-05**: La fecha de ejecución sale de un reloj inyectable. Por defecto es la fecha real en `America/Bogota` y se sobrescribe con `FECHA_EJECUCION`. La comparación se hace sobre fechas ISO, y `vigencia_hasta: null` significa "no aplica" (válido).
+- [x] **PAQ-05**: La fecha de ejecución sale de un reloj inyectable. Por defecto es la fecha real en `America/Bogota` y se sobrescribe con `FECHA_EJECUCION`. La comparación se hace sobre fechas ISO, y `vigencia_hasta: null` significa "no aplica" (válido).
 
 ### Confirmación y envío simulado (CA3, RN4)
 
@@ -195,10 +195,10 @@ Cada requisito v1 está asignado a exactamente una fase del roadmap (`.planning/
 | FORM-03 | Phase 1 | Complete |
 | FORM-04 | Phase 1 | Complete |
 | PAQ-01 | Phase 1 | Pending |
-| PAQ-02 | Phase 1 | Pending |
-| PAQ-03 | Phase 1 | Pending |
+| PAQ-02 | Phase 1 | Complete |
+| PAQ-03 | Phase 1 | Complete |
 | PAQ-04 | Phase 1 | Pending |
-| PAQ-05 | Phase 1 | Pending |
+| PAQ-05 | Phase 1 | Complete |
 | ENV-01 | Phase 1 | Pending |
 | ENV-02 | Phase 2 | Pending |
 | ENV-03 | Phase 2 | Pending |
