@@ -23,6 +23,7 @@ const ESPERADO: Readonly<Record<string, { listo: boolean; bloqueos: readonly str
 };
 
 const ARCHIVOS_CO = [
+  "borrador-correo.md",
   "camara-comercio-2026-08.txt",
   "certificacion-bancaria-2026-08.txt",
   "checklist.md",
@@ -140,7 +141,7 @@ describe("golden: proveedor_armar_paquete (PAQ-01, PAQ-02, PAQ-03, D-21)", () =>
     expect(respuestaDe(HN).resumen).toBe(`${HN}: BLOQUEADO (vencido: parafiscales (2026-08-31))`);
   });
 
-  test("co: paquete/ trae el formulario, los cuatro soportes y el checklist, y data.archivos los lista", async () => {
+  test("co: paquete/ trae el formulario, los cuatro soportes, el checklist y el borrador, y data.archivos los lista", async () => {
     expect(await archivosPaquete(compartido.raiz, CO)).toEqual(ARCHIVOS_CO);
     expect(respuestaDe(CO).data?.archivos).toEqual(
       ARCHIVOS_CO.map((nombre) => `out/${CO}/paquete/${nombre}`),

@@ -1,3 +1,4 @@
+import { construirDatosBorrador } from "../domain/borrador.ts";
 import {
   type CampoPorConfirmar,
   type Checklist,
@@ -71,6 +72,19 @@ async function renderizarChecklist(
   return renderizarPlantilla(plantilla.data, datos, contexto.reglas.plantillas.checklist);
 }
 
+async function renderizarBorrador(
+  contexto: ContextoCaso,
+  checklist: Checklist,
+  formulario: ArchivoFormulario,
+  entorno: Entorno,
+): Promise<Resultado<string>> {
+  const plantilla = await entorno.plantillas.cargar(contexto.reglas, "borrador_correo");
+  if (!plantilla.ok) return plantilla;
+  const nombreFormulario = entorno.salida.nombre(formulario);
+  const datos = construirDatosBorrador(contexto.solicitud, contexto.maestro, checklist, nombreFormulario);
+  return renderizarPlantilla(plantilla.data, datos, contexto.reglas.plantillas.borrador_correo);
+}
+
 async function copiarContenido(
   caso: string,
   formulario: ArchivoFormulario,
@@ -103,10 +117,13 @@ async function armarBajoCandado(args: ArgsArmarPaquete, entorno: Entorno): Promi
   if (!checklist.ok) return checklist;
   const texto = await renderizarChecklist(contexto.data, checklist.data, entorno);
   if (!texto.ok) return texto;
+  const borrador = await renderizarBorrador(contexto.data, checklist.data, formulario, entorno);
+  if (!borrador.ok) return borrador;
 
   const ruta = await entorno.salida.reiniciarPaquete(caso);
   const copias = await copiarContenido(caso, formulario, checklist.data.soportes, entorno);
   const rutaChecklist = await entorno.salida.escribir(caso, "checklist", texto.data);
+  const rutaBorrador = await entorno.salida.escribir(caso, "borradorCorreo", borrador.data);
 
   return exito({
     caso,
@@ -114,7 +131,7 @@ async function armarBajoCandado(args: ArgsArmarPaquete, entorno: Entorno): Promi
     listo_para_firma: checklist.data.listo_para_firma,
     bloqueos: checklist.data.bloqueos,
     checklist: resumenChecklist(checklist.data),
-    archivos: [...copias, rutaChecklist].sort(),
+    archivos: [...copias, rutaChecklist, rutaBorrador].sort(),
   });
 }
 

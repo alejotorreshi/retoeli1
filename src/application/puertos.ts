@@ -45,7 +45,7 @@ export type EntradaBitacora = {
 
 export type Registrar = (entrada: EntradaBitacora) => Promise<void>;
 
-export type ArchivoSalida = "mapeo" | "valoresPortal" | "checklist";
+export type ArchivoSalida = "mapeo" | "valoresPortal" | "checklist" | "borradorCorreo" | "envioSimulado";
 
 export type ArchivoBinario = "formularioXlsx" | "formularioPdf";
 
@@ -59,7 +59,8 @@ export type SalidaCaso = {
   escribir(caso: string, archivo: ArchivoSalida, contenido: string): Promise<string>;
   binario(caso: string, archivo: ArchivoBinario, bytes: Uint8Array): Promise<string>;
   limpiarPrevios(caso: string): Promise<void>;
-  existe(caso: string, archivo: ArchivoFormulario): Promise<boolean>;
+  existe(caso: string, archivo: ArchivoFormulario | ArchivoSalida): Promise<boolean>;
+  nombre(archivo: ArchivoFormulario): string;
   reiniciarPaquete(caso: string): Promise<string>;
   copiar(caso: string, origen: OrigenCopia): Promise<string>;
 };

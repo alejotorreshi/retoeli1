@@ -108,6 +108,7 @@ function entornoDeFixtures(raiz: string, reloj: Reloj, directorioConocimiento: s
       limpiarPrevios: (caso) => limpiarArtefactosPrevios(raiz, caso),
       existe: (caso, archivo) =>
         existeArchivo(rutaEnCaso(directorioSalidaCaso(raiz, caso), ARCHIVOS_SALIDA[archivo])),
+      nombre: (archivo) => ARCHIVOS_SALIDA[archivo],
       reiniciarPaquete: (caso) => reiniciarPaquete(raiz, caso),
       copiar: (caso, origen) => copiar(raiz, caso, origen),
     },
