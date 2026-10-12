@@ -1,7 +1,9 @@
 import type { CampoMapeado } from "./mapeo.ts";
+import { renderizarPlantilla } from "./plantillas.ts";
 import type { ReglasSoportes } from "./reglas.ts";
 import { exito, type Resultado } from "./resultado.ts";
 import type { FechaISO } from "./tipos.ts";
+import { evaluarVigencia } from "./vigencias.ts";
 
 export type SoporteIndice = {
   readonly tipo: string;
@@ -33,28 +35,148 @@ export type Checklist = {
   readonly requiere_confirmacion: readonly CampoPorConfirmar[];
 };
 
+export type FilaSoporteChecklist = {
+  readonly tipo: string;
+  readonly archivo: string;
+  readonly vigencia: string;
+  readonly estado: EstadoSoporte;
+  readonly aviso: string;
+  readonly pais_emisor: string;
+};
+
+export type DatosChecklist = {
+  readonly caso: string;
+  readonly cliente: string;
+  readonly fecha_ejecucion: string;
+  readonly estado: string;
+  readonly motivos: readonly { readonly motivo: string }[];
+  readonly soportes: readonly FilaSoporteChecklist[];
+  readonly faltantes: readonly { readonly etiqueta: string }[];
+  readonly por_confirmar: readonly CampoPorConfirmar[];
+  readonly ausentes: readonly { readonly tipo: string }[];
+  readonly vencidos: readonly { readonly tipo: string; readonly vigencia: string }[];
+};
+
+export type CasoChecklist = { readonly caso: string; readonly cliente: string };
+
+export const TEXTO_SIN_VIGENCIA = "no aplica";
+export const TEXTO_CELDA_VACIA = "—";
+export const ESTADO_LISTO = "LISTO";
+export const ESTADO_BLOQUEADO = "BLOQUEADO";
+export const NOTA_POR_CONFIRMAR = "confirmar con el cliente";
+const NOMBRE_AVISO_EMISOR = "soportes.aviso_emisor_distinto";
+
+function avisoEmisor(
+  entrada: SoporteIndice,
+  paisCliente: string,
+  reglas: ReglasSoportes,
+): Resultado<string | null> {
+  if (entrada.pais_emisor === paisCliente) return exito(null);
+  return renderizarPlantilla(
+    reglas.aviso_emisor_distinto,
+    { pais_emisor: entrada.pais_emisor },
+    NOMBRE_AVISO_EMISOR,
+  );
+}
+
+function soporteAusente(tipo: string): SoporteEvaluado {
+  return { tipo, estado: "ausente", vigencia_hasta: null, archivo: null, aviso: null, aviso_emisor: null };
+}
+
+function evaluarSoporte(
+  tipo: string,
+  indice: readonly SoporteIndice[],
+  presentes: ReadonlySet<string>,
+  hoy: FechaISO,
+  paisCliente: string,
+  reglas: ReglasSoportes,
+): Resultado<SoporteEvaluado> {
+  const entrada = indice.find((candidata) => candidata.tipo === tipo);
+  if (entrada === undefined || !presentes.has(entrada.archivo)) return exito(soporteAusente(tipo));
+  const vigencia = evaluarVigencia(entrada.vigencia_hasta, hoy, reglas.dias_aviso_vencimiento);
+  const emisor = avisoEmisor(entrada, paisCliente, reglas);
+  if (!emisor.ok) return emisor;
+  return exito({
+    tipo,
+    estado: vigencia.estado === "vencido" ? "vencido" : "presente",
+    vigencia_hasta: entrada.vigencia_hasta,
+    archivo: entrada.archivo,
+    aviso: vigencia.aviso,
+    aviso_emisor: emisor.data,
+  });
+}
+
 export function evaluarSoportes(
-  _exigidos: readonly string[],
-  _indice: readonly SoporteIndice[],
-  _presentes: ReadonlySet<string>,
-  _hoy: FechaISO,
-  _paisCliente: string,
-  _reglas: ReglasSoportes,
+  exigidos: readonly string[],
+  indice: readonly SoporteIndice[],
+  presentes: ReadonlySet<string>,
+  hoy: FechaISO,
+  paisCliente: string,
+  reglas: ReglasSoportes,
 ): Resultado<readonly SoporteEvaluado[]> {
-  return exito([]);
+  const evaluados: SoporteEvaluado[] = [];
+  for (const tipo of exigidos) {
+    const soporte = evaluarSoporte(tipo, indice, presentes, hoy, paisCliente, reglas);
+    if (!soporte.ok) return soporte;
+    evaluados.push(soporte.data);
+  }
+  return exito(evaluados);
+}
+
+function bloqueoDe(soporte: SoporteEvaluado): readonly string[] {
+  if (soporte.estado === "ausente") return [`ausente: ${soporte.tipo}`];
+  if (soporte.estado === "vencido") return [`vencido: ${soporte.tipo} (${soporte.vigencia_hasta ?? ""})`];
+  return [];
 }
 
 export function construirChecklist(
-  _soportes: readonly SoporteEvaluado[],
-  _campos: readonly CampoMapeado[],
+  soportes: readonly SoporteEvaluado[],
+  campos: readonly CampoMapeado[],
   hoy: FechaISO,
 ): Checklist {
+  const bloqueos = soportes.flatMap(bloqueoDe);
   return {
     fecha_ejecucion: hoy,
-    listo_para_firma: true,
-    bloqueos: [],
-    soportes: [],
-    faltantes: [],
-    requiere_confirmacion: [],
+    listo_para_firma: bloqueos.length === 0,
+    bloqueos,
+    soportes,
+    faltantes: campos.filter((campo) => campo.estado === "faltante").map((campo) => campo.etiqueta),
+    requiere_confirmacion: campos
+      .filter((campo) => campo.estado === "requiere_confirmacion")
+      .map((campo) => ({ etiqueta: campo.etiqueta, nota: campo.nota ?? NOTA_POR_CONFIRMAR })),
+  };
+}
+
+function vigenciaVisible(soporte: SoporteEvaluado): string {
+  if (soporte.estado === "ausente") return TEXTO_CELDA_VACIA;
+  return soporte.vigencia_hasta ?? TEXTO_SIN_VIGENCIA;
+}
+
+function filaSoporte(soporte: SoporteEvaluado): FilaSoporteChecklist {
+  return {
+    tipo: soporte.tipo,
+    archivo: soporte.archivo ?? TEXTO_CELDA_VACIA,
+    vigencia: vigenciaVisible(soporte),
+    estado: soporte.estado,
+    aviso: soporte.aviso ?? TEXTO_CELDA_VACIA,
+    pais_emisor: soporte.aviso_emisor ?? TEXTO_CELDA_VACIA,
+  };
+}
+
+export function construirDatosChecklist(caso: CasoChecklist, checklist: Checklist): DatosChecklist {
+  const { soportes } = checklist;
+  return {
+    caso: caso.caso,
+    cliente: caso.cliente,
+    fecha_ejecucion: checklist.fecha_ejecucion,
+    estado: checklist.listo_para_firma ? ESTADO_LISTO : ESTADO_BLOQUEADO,
+    motivos: checklist.bloqueos.map((motivo) => ({ motivo })),
+    soportes: soportes.map(filaSoporte),
+    faltantes: checklist.faltantes.map((etiqueta) => ({ etiqueta })),
+    por_confirmar: checklist.requiere_confirmacion,
+    ausentes: soportes.filter((soporte) => soporte.estado === "ausente").map(({ tipo }) => ({ tipo })),
+    vencidos: soportes
+      .filter((soporte) => soporte.estado === "vencido")
+      .map((soporte) => ({ tipo: soporte.tipo, vigencia: vigenciaVisible(soporte) })),
   };
 }

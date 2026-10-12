@@ -6,6 +6,20 @@ export type Vigencia = {
   readonly aviso: string | null;
 };
 
-export function evaluarVigencia(_vigenciaHasta: string | null, _hoy: string, _diasAviso: number): Vigencia {
-  return { estado: "vigente", dias_restantes: null, aviso: null };
+const MILISEGUNDOS_POR_DIA = 86_400_000;
+
+export function textoVence(dias: number): string {
+  return `vence en ${dias} días`;
+}
+
+function diasEntre(desde: string, hasta: string): number {
+  return Math.round((Date.parse(hasta) - Date.parse(desde)) / MILISEGUNDOS_POR_DIA);
+}
+
+export function evaluarVigencia(vigenciaHasta: string | null, hoy: string, diasAviso: number): Vigencia {
+  if (vigenciaHasta === null) return { estado: "vigente", dias_restantes: null, aviso: null };
+  const dias = diasEntre(hoy, vigenciaHasta);
+  if (vigenciaHasta < hoy) return { estado: "vencido", dias_restantes: dias, aviso: null };
+  const aviso = dias >= 0 && dias <= diasAviso ? textoVence(dias) : null;
+  return { estado: "vigente", dias_restantes: dias, aviso };
 }
