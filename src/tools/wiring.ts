@@ -25,12 +25,9 @@ import {
 } from "../infra/fixtures/lector.ts";
 import { cargarReglas, DIRECTORIO_CONOCIMIENTO_POR_DEFECTO } from "../infra/knowledge/reglas.ts";
 import { relojFijo, relojSistema } from "../infra/reloj.ts";
-import {
-  directorioSalidaCaso,
-  listarCasos,
-  resolverCaso,
-  rutaRelativa,
-} from "../infra/salida/rutas-seguras.ts";
+import { escribirArchivoSalida } from "../infra/salida/archivos.ts";
+import { conCandadoCaso } from "../infra/salida/mutex.ts";
+import { directorioSalidaCaso, listarCasos, resolverCaso } from "../infra/salida/rutas-seguras.ts";
 import type { ContextoNormalizado } from "./define-tool.ts";
 import { formatearIssues } from "./issues.ts";
 
@@ -85,9 +82,10 @@ function entornoDeFixtures(raiz: string, reloj: Reloj, directorioConocimiento: s
       leerPlantilla,
     },
     salida: {
-      ruta: (caso, archivo) =>
-        rutaRelativa(raiz, rutaEnCaso(directorioSalidaCaso(raiz, caso), ARCHIVOS_SALIDA[archivo])),
+      escribir: (caso, archivo, contenido) =>
+        escribirArchivoSalida(raiz, caso, ARCHIVOS_SALIDA[archivo], contenido),
     },
+    candado: (caso, seccion) => conCandadoCaso(directorioSalidaCaso(raiz, caso), seccion),
     reglas: () => cargarReglas(directorioConocimiento),
     maestro: () => leerMaestro(raiz),
     glosario: () => leerGlosario(raiz),

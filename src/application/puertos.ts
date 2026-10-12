@@ -46,8 +46,10 @@ export type Registrar = (entrada: EntradaBitacora) => Promise<void>;
 export type ArchivoSalida = "mapeo";
 
 export type SalidaCaso = {
-  ruta(caso: string, archivo: ArchivoSalida): string;
+  escribir(caso: string, archivo: ArchivoSalida, contenido: string): Promise<string>;
 };
+
+export type Candado = <T>(caso: string, seccion: () => Promise<T>) => Promise<T>;
 
 export type Entorno = {
   readonly raiz: string;
@@ -56,6 +58,7 @@ export type Entorno = {
   readonly casos: CasosDisponibles;
   readonly fixtures: FixturesCaso;
   readonly salida: SalidaCaso;
+  readonly candado: Candado;
   reglas(): Promise<Resultado<Reglas>>;
   maestro(): Promise<Lectura<Maestro>>;
   glosario(): Promise<Lectura<Glosario>>;

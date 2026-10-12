@@ -5,6 +5,7 @@ import { CASOS_DIR, FIXTURES_DIR } from "../../src/config/constantes.ts";
 
 const RAIZ_REPO = join(import.meta.dir, "..", "..");
 const CASOS_SINTETICOS = join(RAIZ_REPO, "tests", "fixtures", "casos");
+const CONOCIMIENTO = join(RAIZ_REPO, "src", "knowledge");
 
 export type ProyectoTemporal = {
   readonly raiz: string;
@@ -27,5 +28,20 @@ export async function crearProyectoTemporal(opciones: OpcionesProyecto = {}): Pr
     raiz,
     casosDir,
     limpiar: () => rm(raiz, { recursive: true, force: true }),
+  };
+}
+
+export type ConocimientoTemporal = {
+  readonly directorio: string;
+  limpiar(): Promise<void>;
+};
+
+export async function copiarConocimiento(): Promise<ConocimientoTemporal> {
+  const base = await mkdtemp(join(tmpdir(), "conocimiento-"));
+  const directorio = join(base, "knowledge");
+  await cp(CONOCIMIENTO, directorio, { recursive: true });
+  return {
+    directorio,
+    limpiar: () => rm(base, { recursive: true, force: true }),
   };
 }
