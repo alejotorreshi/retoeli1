@@ -1,0 +1,1 @@
+{"content":"Bun SSE guide: Bun.serve closes idle connections after 10s by default; call server.timeout(req, 0) per SSE request (or send heartbeats); async generator finally runs on client disconnect; ReadableStream cancel() called on disconnect.","source":"web","provider":"webfetch","confidence":"LOW","fetched_at":"2026-10-12T19:18:02.376Z","ttl":86400000,"kind":"docs"}
