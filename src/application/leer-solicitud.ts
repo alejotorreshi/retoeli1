@@ -1,5 +1,5 @@
 import { exito, type Resultado } from "../domain/resultado.ts";
-import { camposSolicitados } from "../domain/solicitud.ts";
+import { type CampoAmbiguo, camposSolicitados, detectarAmbiguos } from "../domain/solicitud.ts";
 import type { CampoSolicitado, Formato } from "../domain/tipos.ts";
 import { cargarSolicitudCaso } from "./contexto-caso.ts";
 import type { Entorno } from "./puertos.ts";
@@ -13,6 +13,7 @@ export type DatosSolicitud = {
   readonly formato: Formato;
   readonly plantilla: string;
   readonly campos: readonly CampoSolicitado[];
+  readonly ambiguos: readonly CampoAmbiguo[];
   readonly soportes: readonly string[];
 };
 
@@ -22,14 +23,18 @@ export async function leerSolicitud(
 ): Promise<Resultado<DatosSolicitud>> {
   const cargada = await cargarSolicitudCaso(args.caso, entorno);
   if (!cargada.ok) return cargada;
+  const reglas = await entorno.reglas();
+  if (!reglas.ok) return reglas;
   const { caso, solicitud, soportesExigidos, plantilla } = cargada.data;
+  const campos = camposSolicitados(plantilla);
   return exito({
     caso,
     pais: solicitud.pais,
     cliente: solicitud.cliente,
     formato: solicitud.formato,
     plantilla: plantilla.archivo,
-    campos: camposSolicitados(plantilla),
+    campos,
+    ambiguos: detectarAmbiguos(campos, reglas.data, solicitud.pais),
     soportes: soportesExigidos,
   });
 }

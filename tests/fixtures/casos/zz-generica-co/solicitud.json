@@ -1,0 +1,12 @@
+{
+  "id": "zz-generica-co",
+  "de": "compras@cliente-sintetico-co.example",
+  "para": "recepcion@periferia-ficticia.com",
+  "asunto": "Registro de proveedor - formulario sintético CO",
+  "fecha": "2026-08-20",
+  "pais": "CO",
+  "cliente": "Cliente Sintético Colombia S.A.S.",
+  "formato": "pdf",
+  "cuerpo": "Caso sintético de prueba con etiquetas genéricas, normalizadas, de clave directa y sin fuente. No contiene datos reales.",
+  "adjuntos": ["Formulario_Sintetico_CO.pdf"]
+}

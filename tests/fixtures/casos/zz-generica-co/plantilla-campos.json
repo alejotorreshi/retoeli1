@@ -1,0 +1,8 @@
+[
+  { "etiqueta": "Identificación tributaria", "obligatorio": true },
+  { "etiqueta": "RAZON SOCIAL:", "obligatorio": true },
+  { "etiqueta": "Teléfono *", "obligatorio": true },
+  { "etiqueta": "Sitio web", "obligatorio": true },
+  { "etiqueta": "Gran contribuyente", "obligatorio": true },
+  { "etiqueta": "constructor", "obligatorio": true }
+]

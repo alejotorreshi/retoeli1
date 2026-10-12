@@ -1,0 +1,4 @@
+[
+  { "etiqueta": "Número de identificación fiscal", "obligatorio": true },
+  { "etiqueta": "Nombre de la empresa", "obligatorio": true }
+]

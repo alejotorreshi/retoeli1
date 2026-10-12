@@ -1,0 +1,12 @@
+{
+  "id": "zz-generica-ec",
+  "de": "proveedores@cliente-sintetico-ec.example",
+  "para": "recepcion@periferia-ficticia.com",
+  "asunto": "Calificación de proveedor - formulario sintético EC",
+  "fecha": "2026-08-21",
+  "pais": "EC",
+  "cliente": "Cliente Sintético Ecuador S.A.",
+  "formato": "pdf",
+  "cuerpo": "Caso sintético de prueba con una etiqueta tributaria genérica en un país extranjero. No contiene datos reales.",
+  "adjuntos": ["Formulario_Sintetico_EC.pdf"]
+}
