@@ -29,7 +29,14 @@ Decimal phases appear between their surrounding integers in numeric order.
   3. Cada `out/<caso>/paquete/` trae el formulario, las copias de los soportes existentes, `checklist.md` (presentes, ausentes, vencidos, faltantes, por confirmar, fecha efectiva y avisos "vence en N días") y `borrador-correo.md`, dirigido a `solicitud.de` con asunto "RE: <asunto>" y sin datos bancarios. `out/<caso>/mapeo.json` traza cada valor con `ruta`, `regla` y `confianza`. Un grep de `71555123|03100012345|COLOCOBM` sobre los logs, los borradores y las respuestas de las herramientas no devuelve nada.
   4. Las 5 herramientas `proveedor_*` se importan sin servidor ni secretos y nunca lanzan. Con args inválidos, un `mapeo` que trae valores, un `caso` con path traversal, un caso inexistente o una plantilla corrupta devuelven `{ ok: false, error }` con código estable y mensaje en español, sin traza cruda. `simular_envio` sin confirmación devuelve "requiere confirmación explícita". Cada llamada queda registrada, con resumen redactado, en `out/log.jsonl` y en `out/<caso>/log.jsonl`.
   5. `bun run check` (tsc estricto sin `any` y con `noUncheckedIndexedAccess`, más Biome) y `bun test` pasan. Eso incluye los golden tests por caso, los fixtures sintéticos de `tests/fixtures/` (una etiqueta ambigua da `requiere_confirmacion` con el equivalente del país) y el test de arquitectura que verifica la dirección de los imports. El código no tiene comentarios, y las constantes y la configuración viven centralizadas y validadas con zod.
-**Plans**: TBD
+**Plans:** 5 plans
+
+Plans:
+- [ ] 01-01-PLAN.md — Compuertas (cadena de suministro y contrato de herramientas) y trazador `demo.ts` → `proveedor_leer_solicitud` → fixtures → `out/log.jsonl`, con andamiaje y guardas de arquitectura y sin comentarios
+- [ ] 01-02-PLAN.md — Mapeo al maestro: motor puro y política de PII, `proveedor_mapear_campos` con `mapeo.json` sin valores, reglas como datos y fixtures sintéticos
+- [ ] 01-03-PLAN.md — `proveedor_generar_formulario` en xlsx, pdf y portal, con recálculo canónico del mapeo (D-11) y limpieza al reprocesar (D-12)
+- [ ] 01-04-PLAN.md — `proveedor_armar_paquete` (vigencias, checklist, copias y borrador sin datos bancarios) y `proveedor_simular_envio` con confirmación explícita
+- [ ] 01-05-PLAN.md — `demo.ts` completo con la tabla de verdad, prueba de determinismo y grep de PII con control positivo
 
 ### Phase 2: Agente y compuerta de confirmación
 **Goal**: Un mensaje de chat como "procesa el caso X" recorre el ciclo propio prompt → DeepSeek → herramientas → respuesta, con topes de costo, resiliencia ante fallas del proveedor y una compuerta de confirmación que el servidor hace cumplir. El modelo nunca ve ni afirma valores reales.
@@ -78,7 +85,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Núcleo determinista | 0/TBD | Not started | - |
+| 1. Núcleo determinista | 0/5 | Planned | - |
 | 2. Agente y compuerta de confirmación | 0/TBD | Not started | - |
 | 3. Chat web, API SSE y despliegue | 0/TBD | Not started | - |
 | 4. Módulo, documentación y defensa | 0/TBD | Not started | - |
