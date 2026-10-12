@@ -22,7 +22,7 @@ export type RespuestaMapear = {
 
 export type RespuestaGenerar = {
   readonly ok: boolean;
-  readonly data?: { readonly ruta: string; readonly formato: string };
+  readonly data?: { readonly ruta: string; readonly formato: string; readonly aviso?: string };
   readonly error?: string;
   readonly codigo?: string;
   readonly parcial?: { readonly diferencias?: readonly string[] };

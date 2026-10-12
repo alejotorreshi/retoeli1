@@ -23,6 +23,7 @@ import {
   resolverRaiz,
   rutaEnCaso,
 } from "../infra/fixtures/lector.ts";
+import { cargarPlantillaTexto } from "../infra/knowledge/plantillas.ts";
 import { cargarReglas, DIRECTORIO_CONOCIMIENTO_POR_DEFECTO } from "../infra/knowledge/reglas.ts";
 import { relojFijo, relojSistema } from "../infra/reloj.ts";
 import {
@@ -94,6 +95,9 @@ function entornoDeFixtures(raiz: string, reloj: Reloj, directorioConocimiento: s
       limpiarPrevios: (caso) => limpiarArtefactosPrevios(raiz, caso),
     },
     formularios: { xlsx: escribirXlsx, pdf: renderizarPdf },
+    plantillas: {
+      cargar: (reglas, clave) => cargarPlantillaTexto(directorioConocimiento, reglas, clave),
+    },
     candado: (caso, seccion) => conCandadoCaso(directorioSalidaCaso(raiz, caso), seccion),
     reglas: () => cargarReglas(directorioConocimiento),
     maestro: () => leerMaestro(raiz),

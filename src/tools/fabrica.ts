@@ -43,9 +43,14 @@ export function crearHerramientas(opciones: OpcionesHerramientas = {}) {
         "Genera el formulario del caso en el formato pedido releyendo cada valor del maestro, y su mapeo lleva solo las etiquetas, estados y rutas que devolvió proveedor_mapear_campos.",
       args: argsGenerarFormulario,
       ejecutar: generarFormulario,
-      presentar: ({ ruta, formato }) => ({ ruta, formato }),
-      resumir: ({ caso, formato, conteo }) =>
-        `${caso}: formulario ${formato} generado (${conteo.lleno} llenos, ${conteo.faltante} faltantes, ${conteo.requiere_confirmacion} por confirmar)`,
+      presentar: ({ ruta, formato, aviso }) =>
+        aviso === null ? { ruta, formato } : { ruta, formato, aviso },
+      resumir: ({ caso, formato, conteo, aviso }) => {
+        const cuenta = `(${conteo.lleno} llenos, ${conteo.faltante} faltantes, ${conteo.requiere_confirmacion} por confirmar)`;
+        return aviso === null
+          ? `${caso}: formulario ${formato} generado ${cuenta}`
+          : `${caso}: valores para ${formato} generados, ${aviso} ${cuenta}`;
+      },
     },
     opciones,
   );

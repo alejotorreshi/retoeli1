@@ -82,7 +82,7 @@ function detalleDe(issues: readonly z.core.$ZodIssue[]): string {
   return `${ruta}: ${primero.message}`;
 }
 
-async function leerTexto(ruta: string): Promise<string | null> {
+export async function leerTexto(ruta: string): Promise<string | null> {
   try {
     const info = await stat(ruta);
     if (!info.isFile() || info.size > LIMITE_LECTURA_BYTES) return null;

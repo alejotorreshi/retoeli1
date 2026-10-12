@@ -43,6 +43,8 @@ export type RutasPlantillas = {
   readonly valores_portal: string;
 };
 
+export type ClavePlantilla = keyof RutasPlantillas;
+
 export type Reglas = {
   readonly version: number;
   readonly confianza: EscalaConfianza;

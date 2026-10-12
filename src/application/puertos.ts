@@ -1,7 +1,7 @@
 import type { CodigoError } from "../domain/errores.ts";
 import type { FilaCelda, FilaFormulario } from "../domain/formulario.ts";
 import type { Glosario, Maestro } from "../domain/mapeo.ts";
-import type { Reglas } from "../domain/reglas.ts";
+import type { ClavePlantilla, Reglas } from "../domain/reglas.ts";
 import type { Resultado } from "../domain/resultado.ts";
 import type { FechaISO, Plantilla, Solicitud, TipoPlantilla } from "../domain/tipos.ts";
 
@@ -44,7 +44,7 @@ export type EntradaBitacora = {
 
 export type Registrar = (entrada: EntradaBitacora) => Promise<void>;
 
-export type ArchivoSalida = "mapeo";
+export type ArchivoSalida = "mapeo" | "valoresPortal";
 
 export type ArchivoBinario = "formularioXlsx" | "formularioPdf";
 
@@ -65,6 +65,10 @@ export type GeneradoresFormulario = {
   pdf(entrada: EntradaFormularioPdf, fecha: FechaISO): Promise<Uint8Array>;
 };
 
+export type PlantillasConocimiento = {
+  cargar(reglas: Reglas, clave: ClavePlantilla): Promise<Resultado<string>>;
+};
+
 export type Candado = <T>(caso: string, seccion: () => Promise<T>) => Promise<T>;
 
 export type Entorno = {
@@ -75,6 +79,7 @@ export type Entorno = {
   readonly fixtures: FixturesCaso;
   readonly salida: SalidaCaso;
   readonly formularios: GeneradoresFormulario;
+  readonly plantillas: PlantillasConocimiento;
   readonly candado: Candado;
   reglas(): Promise<Resultado<Reglas>>;
   maestro(): Promise<Lectura<Maestro>>;
