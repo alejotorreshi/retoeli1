@@ -6,6 +6,7 @@ import { join } from "node:path";
 import { z } from "zod";
 import { LIMITE_LECTURA_BYTES, MAX_ISSUES_ARGS } from "../../src/config/constantes.ts";
 import { exito } from "../../src/domain/resultado.ts";
+import { relojFijo, relojSistema } from "../../src/infra/reloj.ts";
 import { type ContextoHerramienta, defineTool, normalizarContexto } from "../../src/tools/define-tool.ts";
 import { leer_solicitud } from "../../src/tools/proveedor.ts";
 import { crearProyectoTemporal, type ProyectoTemporal } from "../helpers/proyecto-temporal.ts";
@@ -465,13 +466,11 @@ describe("trazador: configuración por ejecución", () => {
 });
 
 describe("reloj inyectable", () => {
-  test('relojFijo("2026-09-03").hoy() es 2026-09-03', async () => {
-    const { relojFijo } = await import("../../src/infra/reloj.ts");
+  test('relojFijo("2026-09-03").hoy() es 2026-09-03', () => {
     expect(relojFijo("2026-09-03").hoy()).toBe("2026-09-03");
   });
 
-  test("relojSistema en America/Bogota da una fecha YYYY-MM-DD y ahora() es ISO", async () => {
-    const { relojSistema } = await import("../../src/infra/reloj.ts");
+  test("relojSistema en America/Bogota da una fecha YYYY-MM-DD y ahora() es ISO", () => {
     const reloj = relojSistema("America/Bogota");
     expect(reloj.hoy()).toMatch(/^\d{4}-\d{2}-\d{2}$/);
     expect(Number.isNaN(Date.parse(reloj.ahora()))).toBe(false);

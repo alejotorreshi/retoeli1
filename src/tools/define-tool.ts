@@ -1,7 +1,8 @@
 import { z } from "zod";
-import type { Entorno } from "../application/puertos.ts";
-import { MAX_ISSUES_ARGS, PREFIJO_HERRAMIENTA, SESION_POR_DEFECTO } from "../config/constantes.ts";
+import type { Entorno, EntradaBitacora } from "../application/puertos.ts";
+import { PATRON_CASO, PREFIJO_HERRAMIENTA, SESION_POR_DEFECTO } from "../config/constantes.ts";
 import { exito, type Fallo, fallo, type Resultado } from "../domain/resultado.ts";
+import { formatearIssues } from "./issues.ts";
 import { crearEntorno } from "./wiring.ts";
 
 export type ContextoHerramienta = { directory: string; sessionId?: string; sessionID?: string };
@@ -23,6 +24,14 @@ export type EspecHerramienta<A extends z.ZodRawShape, D> = {
   resumir(data: D): string;
 };
 
+type Desenlace<D> = {
+  readonly resultado: Resultado<D>;
+  readonly caso?: string;
+  readonly casoResuelto?: string;
+};
+
+type Respuesta = { readonly texto: string; readonly resumen: string };
+
 const mensajesEs = z.locales.es().localeError;
 
 const sesionOpcional = z.string().min(1).optional().catch(undefined);
@@ -33,18 +42,14 @@ const esquemaContexto = z.object({
   sessionID: sesionOpcional,
 });
 
-function formatearIssues(issues: readonly z.core.$ZodIssue[]): string {
-  return issues
-    .slice(0, MAX_ISSUES_ARGS)
-    .map((issue) => {
-      const ruta = issue.path.length === 0 ? "(raíz)" : issue.path.map(String).join(".");
-      return `${ruta}: ${issue.message}`;
-    })
-    .join("; ");
-}
-
 function nombreDeError(error: unknown): string {
   return error instanceof Error ? error.name : typeof error;
+}
+
+function casoValidoDe(datos: unknown): string | undefined {
+  if (typeof datos !== "object" || datos === null || !("caso" in datos)) return undefined;
+  const { caso } = datos;
+  return typeof caso === "string" && PATRON_CASO.test(caso) ? caso : undefined;
 }
 
 export function normalizarContexto(ctx: ContextoHerramienta): Resultado<ContextoNormalizado> {
@@ -66,25 +71,63 @@ function serializarFallo(nombre: string, resultado: Fallo): string {
 
 export function defineTool<A extends z.ZodRawShape, D>(spec: EspecHerramienta<A, D>): Herramienta<A> {
   const esquema = z.object(spec.args).strict();
+  const herramienta = `${PREFIJO_HERRAMIENTA}${spec.nombre}`;
 
-  async function ejecutarSinFirewall(crudos: unknown, ctx: ContextoHerramienta): Promise<string> {
-    const contexto = normalizarContexto(ctx);
-    if (!contexto.ok) return serializarFallo(spec.nombre, contexto);
-    const entorno = crearEntorno(contexto.data);
+  async function ejecutarProtegido(datos: z.output<z.ZodObject<A>>, entorno: Entorno): Promise<Resultado<D>> {
+    try {
+      return await spec.ejecutar(datos, entorno);
+    } catch (error) {
+      console.error(`${herramienta}: ${nombreDeError(error)}`);
+      return fallo("ERROR_INTERNO");
+    }
+  }
+
+  async function desenlazar(crudos: unknown, entorno: Entorno): Promise<Desenlace<D>> {
     const parseado = esquema.safeParse(crudos, { error: mensajesEs });
     if (!parseado.success) {
-      return serializarFallo(
-        spec.nombre,
-        fallo("ARGS_INVALIDOS", { detalle: formatearIssues(parseado.error.issues) }),
-      );
+      return { resultado: fallo("ARGS_INVALIDOS", { detalle: formatearIssues(parseado.error.issues) }) };
     }
-    const resultado = await spec.ejecutar(parseado.data, entorno);
-    if (!resultado.ok) return serializarFallo(spec.nombre, resultado);
-    return JSON.stringify({
-      ok: true,
-      data: spec.presentar(resultado.data),
-      resumen: spec.resumir(resultado.data),
-    });
+    const resultado = await ejecutarProtegido(parseado.data, entorno);
+    const caso = casoValidoDe(parseado.data);
+    if (caso === undefined) return { resultado };
+    const resolucion = await entorno.casos.resolver(caso);
+    return resolucion.estado === "ok" ? { resultado, caso, casoResuelto: caso } : { resultado, caso };
+  }
+
+  function responder(resultado: Resultado<D>): Respuesta {
+    if (!resultado.ok) {
+      return {
+        texto: serializarFallo(spec.nombre, resultado),
+        resumen: `${spec.nombre}: ${resultado.codigo}`,
+      };
+    }
+    const resumen = spec.resumir(resultado.data);
+    return { texto: JSON.stringify({ ok: true, data: spec.presentar(resultado.data), resumen }), resumen };
+  }
+
+  function entradaBitacora(desenlace: Desenlace<D>, resumen: string, sesion: string): EntradaBitacora {
+    const { resultado, caso, casoResuelto } = desenlace;
+    return {
+      herramienta,
+      ok: resultado.ok,
+      resumen,
+      sesion,
+      ...(caso === undefined ? {} : { caso }),
+      ...(casoResuelto === undefined ? {} : { casoResuelto }),
+      ...(resultado.ok ? {} : { codigo: resultado.codigo }),
+    };
+  }
+
+  async function ejecutarYRegistrar(crudos: unknown, ctx: ContextoHerramienta): Promise<string> {
+    const contexto = normalizarContexto(ctx);
+    if (!contexto.ok) return serializarFallo(spec.nombre, contexto);
+    const { entorno, registrar } = crearEntorno(contexto.data);
+    const desenlace: Desenlace<D> = entorno.ok
+      ? await desenlazar(crudos, entorno.data)
+      : { resultado: entorno };
+    const respuesta = responder(desenlace.resultado);
+    await registrar(entradaBitacora(desenlace, respuesta.resumen, contexto.data.sesion));
+    return respuesta.texto;
   }
 
   return {
@@ -92,9 +135,9 @@ export function defineTool<A extends z.ZodRawShape, D>(spec: EspecHerramienta<A,
     args: spec.args,
     async execute(crudos, ctx) {
       try {
-        return await ejecutarSinFirewall(crudos, ctx);
+        return await ejecutarYRegistrar(crudos, ctx);
       } catch (error) {
-        console.error(`${PREFIJO_HERRAMIENTA}${spec.nombre}: ${nombreDeError(error)}`);
+        console.error(`${herramienta}: ${nombreDeError(error)}`);
         return serializarFallo(spec.nombre, fallo("ERROR_INTERNO"));
       }
     },
