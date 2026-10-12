@@ -107,7 +107,7 @@ Fuente vinculante: `reto-01/PRD.md`, sin modificar. Fixtures: `reto-01/fixtures/
 ### Calidad de código y mantenibilidad
 
 - [ ] **CAL-01**: TypeScript estricto sin `any` (`strict` y `noUncheckedIndexedAccess`), verificado con `tsc --noEmit`. Biome se encarga de lint y formato, y `bun run check` los agrupa.
-- [ ] **CAL-02**: El código no lleva comentarios. Se entiende por sí solo gracias a nombres expresivos, tipos y funciones pequeñas de una responsabilidad. Las explicaciones viven en la documentación, no en el código.
+- [x] **CAL-02**: El código no lleva comentarios. Se entiende por sí solo gracias a nombres expresivos, tipos y funciones pequeñas de una responsabilidad. Las explicaciones viven en la documentación, no en el código.
 - [ ] **CAL-03**: Las constantes y la configuración están centralizadas, tipadas y validadas con zod desde env: rutas, topes, timeouts, umbral de confianza 0.8, tabla país → identificador y catálogo de errores. No hay números ni strings mágicos dispersos.
 - [ ] **CAL-04**: Las capas tienen dependencias hacia adentro (dominio puro → herramientas/casos de uso → infraestructura → HTTP), sin framework de DI. Solo hay puertos donde existe más de una implementación (LLM, reloj, store de sesión). Un test de arquitectura verifica la dirección de los imports.
 - [ ] **CAL-05**: Hay documentación de continuidad (`docs/arquitectura.md` y `docs/convenciones.md`) para que otro dev o una IA retome el proyecto. Los commits siguen Conventional Commits con la identidad `elianatorres5772`.
@@ -237,7 +237,7 @@ Cada requisito v1 está asignado a exactamente una fase del roadmap (`.planning/
 | DEMO-04 | Phase 1 | Pending |
 | DEMO-05 | Phase 4 | Pending |
 | CAL-01 | Phase 1 | Pending |
-| CAL-02 | Phase 1 | Pending |
+| CAL-02 | Phase 1 | Complete |
 | CAL-03 | Phase 1 | Pending |
 | CAL-04 | Phase 1 | Pending |
 | CAL-05 | Phase 4 | Pending |

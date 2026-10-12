@@ -1,18 +1,18 @@
 ---
 gsd_state_version: "1.0"
-current_phase: 1
+current_phase: 01
 current_phase_name: Núcleo determinista
 status: executing
-stopped_at: Phase 1 context gathered
-last_updated: "2026-10-12T21:39:40.350Z"
+stopped_at: Completed 01-01-PLAN.md
+last_updated: "2026-10-12T21:50:15.436Z"
 last_activity: 2026-10-12
-last_activity_desc: Roadmap creado (4 fases, 73/73 requisitos v1 mapeados)
-state_head: f826b57ab8f4702ea3737d5200e14b3ea53becb3
+last_activity_desc: Phase 01 execution started
+state_head: bdfecd3696a22366a7545599ad3fc397d50fb179
 progress:
   total_phases: 4
   completed_phases: 0
   total_plans: 11
-  completed_plans: 0
+  completed_plans: 1
   percent: 0
 ---
 
@@ -23,14 +23,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-10-12)
 
 **Core value:** El agente nunca inventa un dato: cada valor sale de una herramienta tipada que lo lee del maestro, y ninguna acción externa ocurre sin confirmación humana explícita.
-**Current focus:** Phase 1: Núcleo determinista
+**Current focus:** Phase 01 — Núcleo determinista
 
 ## Current Position
 
-Phase: 1 (Núcleo determinista) — READY TO EXECUTE
-Plan: 0 of TBD in current phase
+Phase: 01 (Núcleo determinista) — EXECUTING
+Plan: 2 of 11
 Status: Ready to execute
-Last activity: 2026-10-12 — Roadmap creado (4 fases, 73/73 requisitos v1 mapeados)
+Last activity: 2026-10-12 — Phase 01 execution started
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -52,6 +52,11 @@ Progress: [░░░░░░░░░░] 0%
 - Trend: -
 
 *Updated after each plan completion*
+**Per-Plan Metrics:**
+
+| Plan | Duration | Tasks | Files |
+|------|----------|-------|-------|
+| Phase 01 P01 | 3min | 2 tasks | 9 files |
 
 ## Accumulated Context
 
@@ -65,6 +70,8 @@ Recent decisions affecting current work:
 - [Init]: El caso portal devuelve `ok: true` con el aviso "formato no soportado" y el flujo sigue hasta el paquete.
 - [Init]: `borrador-correo.md` es una respuesta al cliente (`solicitud.de`, "RE: <asunto>") y nunca lleva datos bancarios.
 - [Roadmap]: El layout de `modulo/` (rutas canónicas de prompt, conocimiento y herramientas sin imports del servidor) se respeta desde la Phase 1, aunque `modulo/` se construye en la Phase 4.
+- [Phase 01]: 01-01: Supply-chain gate approved with D-35 pins unchanged; Bun upgraded to 1.4.3 before first install
+- [Phase 01]: 01-01: Any src/ folder outside the architecture layer table fails tests/architecture.test.ts; new layers must be declared in PERMITIDOS
 
 ### Pending Todos
 
@@ -87,6 +94,6 @@ Items acknowledged and deferred at milestone close, most recent first:
 
 ## Session Continuity
 
-Last session: 2026-10-12T20:18:40.164Z
-Stopped at: Phase 1 context gathered
-Resume file: .planning/phases/01-n-cleo-determinista/01-CONTEXT.md
+Last session: 2026-10-12T21:50:15.417Z
+Stopped at: Completed 01-01-PLAN.md
+Resume file: None
