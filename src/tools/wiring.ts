@@ -7,7 +7,8 @@ import {
   esquemaSolicitud,
   esquemaSoportesExigidos,
 } from "../infra/fixtures/esquemas.ts";
-import { existeArchivo, leerJsonValidado, resolverRaiz, rutaArchivoCaso } from "../infra/fixtures/lector.ts";
+import { existeArchivo, leerJsonValidado, resolverRaiz, rutaEnCaso } from "../infra/fixtures/lector.ts";
+import { listarCasos, resolverCaso } from "../infra/salida/rutas-seguras.ts";
 import type { ContextoNormalizado } from "./define-tool.ts";
 
 const ARCHIVO_PLANTILLA: Readonly<Record<TipoPlantilla, string>> = {
@@ -15,9 +16,9 @@ const ARCHIVO_PLANTILLA: Readonly<Record<TipoPlantilla, string>> = {
   campos: ARCHIVOS_CASO.plantillaCampos,
 };
 
-async function leerPlantilla(raiz: string, caso: string, tipo: TipoPlantilla): Promise<Lectura<Plantilla>> {
+async function leerPlantilla(directorioCaso: string, tipo: TipoPlantilla): Promise<Lectura<Plantilla>> {
   const archivo = ARCHIVO_PLANTILLA[tipo];
-  const ruta = rutaArchivoCaso(raiz, caso, archivo);
+  const ruta = rutaEnCaso(directorioCaso, archivo);
   if (tipo === "celdas") {
     const lectura = await leerJsonValidado(ruta, esquemaPlantillaCeldas);
     return lectura.estado === "ok"
@@ -35,16 +36,17 @@ export function crearEntorno(contexto: ContextoNormalizado): Entorno {
   return {
     raiz,
     patronCaso: PATRON_CASO,
+    casos: {
+      resolver: (caso) => resolverCaso(raiz, caso),
+      disponibles: () => listarCasos(raiz),
+    },
     fixtures: {
-      leerSolicitud: (caso) =>
-        leerJsonValidado(rutaArchivoCaso(raiz, caso, ARCHIVOS_CASO.solicitud), esquemaSolicitud),
-      leerSoportesExigidos: (caso) =>
-        leerJsonValidado(
-          rutaArchivoCaso(raiz, caso, ARCHIVOS_CASO.soportesExigidos),
-          esquemaSoportesExigidos,
-        ),
-      existePlantilla: (caso, tipo) => existeArchivo(rutaArchivoCaso(raiz, caso, ARCHIVO_PLANTILLA[tipo])),
-      leerPlantilla: (caso, tipo) => leerPlantilla(raiz, caso, tipo),
+      leerSolicitud: (directorio) =>
+        leerJsonValidado(rutaEnCaso(directorio, ARCHIVOS_CASO.solicitud), esquemaSolicitud),
+      leerSoportesExigidos: (directorio) =>
+        leerJsonValidado(rutaEnCaso(directorio, ARCHIVOS_CASO.soportesExigidos), esquemaSoportesExigidos),
+      existePlantilla: (directorio, tipo) => existeArchivo(rutaEnCaso(directorio, ARCHIVO_PLANTILLA[tipo])),
+      leerPlantilla,
     },
   };
 }
