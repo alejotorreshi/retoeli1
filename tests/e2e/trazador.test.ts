@@ -330,3 +330,150 @@ describe("trazador: fixtures inválidos en un proyecto temporal", () => {
     expect(respuesta.parcial?.soportes).toHaveLength(4);
   });
 });
+
+type LineaLog = Record<string, unknown>;
+
+async function lineasDe(ruta: string): Promise<LineaLog[]> {
+  if (!existsSync(ruta)) return [];
+  const texto = await readFile(ruta, "utf8");
+  return texto
+    .split("\n")
+    .filter((linea) => linea !== "")
+    .map((linea) => JSON.parse(linea));
+}
+
+function logGlobal(proyecto: ProyectoTemporal): Promise<LineaLog[]> {
+  return lineasDe(join(proyecto.raiz, "out", "log.jsonl"));
+}
+
+function logCaso(proyecto: ProyectoTemporal, caso: string): Promise<LineaLog[]> {
+  return lineasDe(join(proyecto.raiz, "out", caso, "log.jsonl"));
+}
+
+async function conVariables<T>(
+  variables: Readonly<Record<string, string>>,
+  accion: () => Promise<T>,
+): Promise<T> {
+  const previas = Object.fromEntries(Object.keys(variables).map((clave) => [clave, process.env[clave]]));
+  Object.assign(process.env, variables);
+  try {
+    return await accion();
+  } finally {
+    for (const [clave, valor] of Object.entries(previas)) {
+      if (valor === undefined) delete process.env[clave];
+      else process.env[clave] = valor;
+    }
+  }
+}
+
+describe("trazador: bitácora global y por caso", () => {
+  test("una llamada a co agrega una línea a cada log y la del caso solo trae ts, herramienta, ok, resumen y sesion", async () => {
+    const proyecto = await nuevoProyecto();
+    await ejecutarCon({ caso: "co-industrias-delta" }, { directory: proyecto.raiz, sessionId: "s-1" });
+    const global = await logGlobal(proyecto);
+    const delCaso = await logCaso(proyecto, "co-industrias-delta");
+    expect(global).toHaveLength(1);
+    expect(delCaso).toHaveLength(1);
+    expect(global[0]).toMatchObject({
+      herramienta: "proveedor_leer_solicitud",
+      ok: true,
+      sesion: "s-1",
+      caso: "co-industrias-delta",
+    });
+    expect(Object.keys(delCaso[0] ?? {}).sort()).toEqual(["herramienta", "ok", "resumen", "sesion", "ts"]);
+    expect(delCaso[0]?.herramienta).toBe("proveedor_leer_solicitud");
+    expect(typeof delCaso[0]?.ts).toBe("string");
+  });
+
+  test("una llave extra deja una línea global con ARGS_INVALIDOS, sin caso y sin log del caso", async () => {
+    const proyecto = await nuevoProyecto();
+    await ejecutarCon({ caso: "co-industrias-delta", extra: 1 }, { directory: proyecto.raiz });
+    const global = await logGlobal(proyecto);
+    expect(global).toHaveLength(1);
+    expect(global[0]?.codigo).toBe("ARGS_INVALIDOS");
+    expect(global[0]?.ok).toBe(false);
+    expect("caso" in (global[0] ?? {})).toBe(false);
+    expect(existsSync(join(proyecto.raiz, "out", "co-industrias-delta"))).toBe(false);
+  });
+
+  test("un ctx con solo sessionID registra esa sesion", async () => {
+    const proyecto = await nuevoProyecto();
+    await ejecutarCon({ caso: "co-industrias-delta" }, { directory: proyecto.raiz, sessionID: "s-7" });
+    const global = await logGlobal(proyecto);
+    const delCaso = await logCaso(proyecto, "co-industrias-delta");
+    expect(global[0]?.sesion).toBe("s-7");
+    expect(delCaso[0]?.sesion).toBe("s-7");
+  });
+
+  test("un caso inexistente se registra solo en el log global con su código", async () => {
+    const proyecto = await nuevoProyecto();
+    await ejecutarCon({ caso: "no-existe" }, { directory: proyecto.raiz });
+    const global = await logGlobal(proyecto);
+    expect(global).toHaveLength(1);
+    expect(global[0]).toMatchObject({ ok: false, codigo: "CASO_NO_ENCONTRADO", caso: "no-existe" });
+    expect(existsSync(join(proyecto.raiz, "out", "no-existe"))).toBe(false);
+  });
+
+  test("ningún log contiene el valor crudo de un argumento", async () => {
+    const proyecto = await nuevoProyecto();
+    await ejecutarCon({ caso: "co-industrias-delta", extra: "zzz-marca" }, { directory: proyecto.raiz });
+    await ejecutarCon({ caso: "co-industrias-delta" }, { directory: proyecto.raiz });
+    const archivos = [...new Bun.Glob("out/**/*.jsonl").scanSync({ cwd: proyecto.raiz })];
+    expect(archivos.length).toBeGreaterThan(0);
+    for (const archivo of archivos) {
+      expect(await readFile(join(proyecto.raiz, archivo), "utf8")).not.toContain("zzz-marca");
+    }
+  });
+
+  test("un ctx inválido no escribe ningún log", async () => {
+    const respuesta = await ejecutarCon({ caso: "co-industrias-delta" }, { directory: "" });
+    expect(respuesta.codigo).toBe("CONFIGURACION_INVALIDA");
+  });
+});
+
+describe("trazador: configuración por ejecución", () => {
+  test('FECHA_EJECUCION "" equivale a no definida', async () => {
+    const respuesta = await conVariables({ FECHA_EJECUCION: "" }, () =>
+      leer({ caso: "co-industrias-delta" }),
+    );
+    expect(respuesta.ok).toBe(true);
+  });
+
+  test('FECHA_EJECUCION "2026-02-30" da CONFIGURACION_INVALIDA', async () => {
+    const respuesta = await conVariables({ FECHA_EJECUCION: "2026-02-30" }, () =>
+      leer({ caso: "co-industrias-delta" }),
+    );
+    expect(respuesta.codigo).toBe("CONFIGURACION_INVALIDA");
+  });
+
+  test("una zona horaria inexistente da CONFIGURACION_INVALIDA", async () => {
+    const respuesta = await conVariables({ TZ_NEGOCIO: "Marte/Olimpo" }, () =>
+      leer({ caso: "co-industrias-delta" }),
+    );
+    expect(respuesta.codigo).toBe("CONFIGURACION_INVALIDA");
+  });
+
+  test("la configuración inválida también queda en el log global", async () => {
+    const proyecto = await nuevoProyecto();
+    await conVariables({ FECHA_EJECUCION: "2026-13-01" }, () =>
+      ejecutarCon({ caso: "co-industrias-delta" }, { directory: proyecto.raiz }),
+    );
+    const global = await logGlobal(proyecto);
+    expect(global).toHaveLength(1);
+    expect(global[0]?.codigo).toBe("CONFIGURACION_INVALIDA");
+  });
+});
+
+describe("reloj inyectable", () => {
+  test('relojFijo("2026-09-03").hoy() es 2026-09-03', async () => {
+    const { relojFijo } = await import("../../src/infra/reloj.ts");
+    expect(relojFijo("2026-09-03").hoy()).toBe("2026-09-03");
+  });
+
+  test("relojSistema en America/Bogota da una fecha YYYY-MM-DD y ahora() es ISO", async () => {
+    const { relojSistema } = await import("../../src/infra/reloj.ts");
+    const reloj = relojSistema("America/Bogota");
+    expect(reloj.hoy()).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    expect(Number.isNaN(Date.parse(reloj.ahora()))).toBe(false);
+  });
+});
