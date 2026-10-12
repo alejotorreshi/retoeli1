@@ -1,0 +1,12 @@
+{
+  "id": "zz-plantilla-corrupta",
+  "de": "compras@cliente-sintetico-corrupto.example",
+  "para": "recepcion@periferia-ficticia.com",
+  "asunto": "Registro de proveedor - plantilla sintética con forma inválida",
+  "fecha": "2026-08-22",
+  "pais": "CO",
+  "cliente": "Cliente Sintético Plantilla Corrupta S.A.S.",
+  "formato": "xlsx",
+  "cuerpo": "Caso sintético de prueba cuya plantilla de celdas es JSON válido con una forma incorrecta. No contiene datos reales.",
+  "adjuntos": ["Formato_Sintetico_Corrupto.xlsx"]
+}

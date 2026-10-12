@@ -1,0 +1,4 @@
+[
+  { "hoja": "Datos Proveedor", "celda_etiqueta": "B3", "etiqueta": "Razón social" },
+  { "hoja": "Datos Proveedor", "celda_etiqueta": "B4", "etiqueta": "NIT" }
+]

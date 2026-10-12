@@ -1,4 +1,6 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
+import { readFile } from "node:fs/promises";
+import { join } from "node:path";
 import { leer_solicitud, mapear_campos } from "../../src/tools/proveedor.ts";
 import { crearProyectoTemporal, type ProyectoTemporal } from "../helpers/proyecto-temporal.ts";
 
@@ -35,9 +37,10 @@ type Respuesta<D> = {
 };
 
 const CASOS_REALES = ["co-industrias-delta", "ec-corp-andina", "hn-agroexport-sula", "pa-logistica-istmo"];
-const SINTETICOS = ["zz-generica-co", "zz-generica-ec"];
+const SINTETICOS = ["zz-generica-co", "zz-generica-ec", "zz-plantilla-corrupta"];
 
 let proyecto: ProyectoTemporal;
+const adicionales: ProyectoTemporal[] = [];
 const fechaPrevia = process.env.FECHA_EJECUCION;
 
 beforeAll(async () => {
@@ -49,6 +52,7 @@ afterAll(async () => {
   if (fechaPrevia === undefined) delete process.env.FECHA_EJECUCION;
   else process.env.FECHA_EJECUCION = fechaPrevia;
   await proyecto.limpiar();
+  await Promise.all(adicionales.map((adicional) => adicional.limpiar()));
 });
 
 function ctx(raiz: string = proyecto.raiz) {
@@ -147,5 +151,48 @@ describe("sintéticos: mapear_campos ejercita las reglas que los casos reales no
     });
     expect(generica.nota).toContain("Identificador extranjero");
     expect(item(datos, "Nombre de la empresa")).toMatchObject({ estado: "lleno", regla: "glosario_exacto" });
+  });
+});
+
+describe("sintéticos: plantilla con forma inválida (D-17)", () => {
+  const parcialEsperado = {
+    pais: "CO",
+    cliente: "Cliente Sintético Plantilla Corrupta S.A.S.",
+    formato: "xlsx",
+    soportes: ["camara_comercio", "rut"],
+  };
+
+  test("leer_solicitud da PLANTILLA_INVALIDA con país, cliente, formato y soportes", async () => {
+    const respuesta = await leer("zz-plantilla-corrupta");
+    expect(respuesta.ok).toBe(false);
+    expect(respuesta.codigo).toBe("PLANTILLA_INVALIDA");
+    expect(respuesta.parcial).toEqual(parcialEsperado);
+  });
+
+  test("mapear_campos da PLANTILLA_INVALIDA con el mismo parcial", async () => {
+    const respuesta = await mapear("zz-plantilla-corrupta");
+    expect(respuesta.ok).toBe(false);
+    expect(respuesta.codigo).toBe("PLANTILLA_INVALIDA");
+    expect(respuesta.parcial).toEqual(parcialEsperado);
+  });
+});
+
+describe("sintéticos: concurrencia sobre el mismo caso (SEG-02)", () => {
+  test("dos mapear_campos simultáneos sobre co dejan un mapeo.json completo y dos líneas de log válidas", async () => {
+    const aislado = await crearProyectoTemporal();
+    adicionales.push(aislado);
+    const respuestas = await Promise.all([
+      mapear("co-industrias-delta", aislado.raiz),
+      mapear("co-industrias-delta", aislado.raiz),
+    ]);
+    for (const respuesta of respuestas) expect(respuesta.ok).toBe(true);
+    const carpeta = join(aislado.raiz, "out", "co-industrias-delta");
+    const mapeo = JSON.parse(await readFile(join(carpeta, "mapeo.json"), "utf8"));
+    expect(mapeo.campos).toHaveLength(17);
+    const lineas = (await readFile(join(carpeta, "log.jsonl"), "utf8"))
+      .split("\n")
+      .filter((linea) => linea !== "");
+    expect(lineas).toHaveLength(2);
+    for (const linea of lineas) expect(() => JSON.parse(linea)).not.toThrow();
   });
 });
