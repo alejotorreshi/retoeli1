@@ -25,6 +25,14 @@ const PERMITIDOS: Readonly<Record<string, readonly string[]>> = {
   "raiz-demo": ["demo", "proveedor", "config", "node"],
 };
 
+const HERRAMIENTAS_PRD: readonly string[] = [
+  "leer_solicitud",
+  "mapear_campos",
+  "generar_formulario",
+  "armar_paquete",
+  "simular_envio",
+];
+
 const CAPAS_FUTURAS = /^src\/(?:server[^/]*|http|loop|llm)(?:\/|$)/;
 
 function sinExtension(ruta: string): string {
@@ -87,6 +95,33 @@ function listarFuentes(): string[] {
   return rutas.map((ruta) => ruta.split("\\").join("/")).sort();
 }
 
+function esUnaOracion(texto: string): boolean {
+  return (
+    texto.trim() === texto &&
+    /^[A-ZÁÉÍÓÚÑ¿¡]/.test(texto) &&
+    texto.endsWith(".") &&
+    !/[.!?:;]\s/.test(texto) &&
+    !texto.includes("\n")
+  );
+}
+
+function descripcionDe(valor: unknown): unknown {
+  return typeof valor === "object" && valor !== null && "description" in valor
+    ? valor.description
+    : undefined;
+}
+
+function violacionesDeHerramientas(modulo: Readonly<Record<string, unknown>>): string[] {
+  return Object.entries(modulo).flatMap(([nombre, valor]) => {
+    if (!HERRAMIENTAS_PRD.includes(nombre)) return [`${nombre}: no es una de las cinco herramientas del PRD`];
+    const descripcion = descripcionDe(valor);
+    if (typeof descripcion !== "string" || !esUnaOracion(descripcion)) {
+      return [`${nombre}: la descripción no es exactamente una oración`];
+    }
+    return [];
+  });
+}
+
 function leer(ruta: string): string {
   return readFileSync(join(RAIZ, ruta), "utf8");
 }
@@ -100,6 +135,36 @@ describe("reglas de capas sobre el código real", () => {
   test("src/ y demo.ts no usan APIs de shell", () => {
     const violaciones = listarFuentes().flatMap((ruta) => violacionesDeShell(ruta, leer(ruta)));
     expect(violaciones).toEqual([]);
+  });
+});
+
+describe("superficie pública de herramientas (CAL-04)", () => {
+  test("proveedor.ts solo exporta nombres del PRD con descripción de una oración", async () => {
+    const modulo = Object.fromEntries(Object.entries(await import("../src/tools/proveedor.ts")));
+    expect(Object.keys(modulo).length).toBeGreaterThan(0);
+    expect(violacionesDeHerramientas(modulo)).toEqual([]);
+  });
+
+  test("la regla de capas de src/demo se aplica a archivos reales", () => {
+    const fuentes = listarFuentes();
+    expect(fuentes).toContain("src/demo/ejecutar-demo.ts");
+    expect(fuentes).toContain("demo.ts");
+    for (const ruta of ["src/demo/ejecutar-demo.ts", "demo.ts"]) {
+      expect(violacionesDeCapas(ruta, leer(ruta))).toEqual([]);
+    }
+  });
+
+  test("el guardián muerde con un nombre ajeno y una descripción de dos oraciones", () => {
+    const modulo = {
+      leer_solicitud: { description: "Lee la solicitud. Luego la resume." },
+      listar_casos: { description: "Lista los casos." },
+      mapear_campos: { description: "Mapea campos sin punto final" },
+    };
+    expect(violacionesDeHerramientas(modulo)).toEqual([
+      "leer_solicitud: la descripción no es exactamente una oración",
+      "listar_casos: no es una de las cinco herramientas del PRD",
+      "mapear_campos: la descripción no es exactamente una oración",
+    ]);
   });
 });
 

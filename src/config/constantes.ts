@@ -52,6 +52,7 @@ export const ESTADOS_CAMPO = ["lleno", "faltante", "requiere_confirmacion"] as c
 
 export const PREFIJO_HERRAMIENTA = "proveedor_";
 export const SESION_POR_DEFECTO = "sin-sesion";
+export const SESION_DEMO = "demo";
 export const MAX_ISSUES_ARGS = 5;
 export const ZONA_HORARIA_POR_DEFECTO = "America/Bogota";
 export const FECHA_DEMO = "2026-09-03";
