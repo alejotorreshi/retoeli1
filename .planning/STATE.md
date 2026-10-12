@@ -3,16 +3,16 @@ gsd_state_version: "1.0"
 current_phase: 01
 current_phase_name: Núcleo determinista
 status: executing
-stopped_at: Completed 01-09-PLAN.md
-last_updated: "2026-10-12T23:01:01.246Z"
+stopped_at: Completed 01-10-PLAN.md
+last_updated: "2026-10-12T23:07:30.519Z"
 last_activity: 2026-10-12
 last_activity_desc: Phase 01 execution started
-state_head: c9701b21e8b82d4f27ffa3caf2f6d947ea820e2c
+state_head: 33334a6825af4443164847bd405860eea54bfb57
 progress:
   total_phases: 4
   completed_phases: 0
   total_plans: 11
-  completed_plans: 9
+  completed_plans: 10
   percent: 0
 ---
 
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-10-12)
 ## Current Position
 
 Phase: 01 (Núcleo determinista) — EXECUTING
-Plan: 10 of 11
+Plan: 11 of 11
 Status: Ready to execute
 Last activity: 2026-10-12 — Phase 01 execution started
 
@@ -65,6 +65,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 01 P07 | 5min | 2 tasks | 18 files |
 | Phase 01 P08 | 6min | 2 tasks | 17 files |
 | Phase 01 P09 | 8min | 2 tasks | 18 files |
+| Phase 01 P10 | 4min | 2 tasks | 16 files |
 
 ## Accumulated Context
 
@@ -104,6 +105,9 @@ Recent decisions affecting current work:
 - [Phase 01]: 01-09: Port salida.copiar(caso, origen: OrigenCopia) derives the destination from a typed origin; copiarAlPaquete realpath-checks it inside repositorio/soportes or out/<caso> outside paquete/
 - [Phase 01]: 01-09: evaluarSoportes returns Resultado because the D-22 emitter warning renders from reglas.json; ausente soportes carry archivo and vigencia null and render as —
 - [Phase 01]: 01-09: armar_paquete renders checklist.md before touching disk, then recreates only paquete/; index.json entries cannot use reserved paquete names or impossible dates
+- [Phase 01]: 01-10: borrador-correo.md reads only RUTAS_BORRADOR (razon_social, contacto_financiero.nombre/cargo); vencido soportes join pendientes and are never announced as attached
+- [Phase 01]: 01-10: simular_envio order is caso guard (cargarSolicitudCaso), confirmado, paquete/checklist.md, then completarContextoCaso; it writes only ENVIO-SIMULADO.md with bloqueos recomputed at confirmation
+- [Phase 01]: 01-10: ports salida.nombre and salida.listarPaquete let application name the formulario and list paquete/ without importing config
 
 ### Pending Todos
 
@@ -126,6 +130,6 @@ Items acknowledged and deferred at milestone close, most recent first:
 
 ## Session Continuity
 
-Last session: 2026-10-12T23:01:01.224Z
-Stopped at: Completed 01-09-PLAN.md
+Last session: 2026-10-12T23:07:30.495Z
+Stopped at: Completed 01-10-PLAN.md
 Resume file: None

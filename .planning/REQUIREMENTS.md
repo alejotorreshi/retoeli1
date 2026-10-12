@@ -9,7 +9,7 @@ Fuente vinculante: `reto-01/PRD.md`, sin modificar. Fixtures: `reto-01/fixtures/
 
 ### Herramientas y contrato (§6.2)
 
-- [ ] **HERR-01**: `src/tools/proveedor.ts` exporta exactamente 5 herramientas (`leer_solicitud`, `mapear_campos`, `generar_formulario`, `armar_paquete`, `simular_envio`). El modelo ve cada una como `proveedor_<export>`, con una `description` de una frase.
+- [x] **HERR-01**: `src/tools/proveedor.ts` exporta exactamente 5 herramientas (`leer_solicitud`, `mapear_campos`, `generar_formulario`, `armar_paquete`, `simular_envio`). El modelo ve cada una como `proveedor_<export>`, con una `description` de una frase.
 - [x] **HERR-02**: Cada herramienta declara sus `args` como esquemas zod con `.describe()` en cada campo. El backend valida antes de ejecutar y, si los args no cumplen, devuelve el error al modelo.
 - [x] **HERR-03**: `execute(args, ctx)` devuelve siempre un string JSON con `{ ok: true, data }` o `{ ok: false, error }`, y nunca lanza hacia el agente. Los códigos de error son estables y los mensajes van en español, sin traza cruda.
 - [x] **HERR-04**: Las herramientas resuelven rutas desde `ctx.directory`, nunca como absolutas. Validan `caso` contra path traversal y nunca ejecutan comandos de shell.
@@ -40,15 +40,15 @@ Fuente vinculante: `reto-01/PRD.md`, sin modificar. Fixtures: `reto-01/fixtures/
 
 ### Paquete para firma (HU-4, RN2, RN3)
 
-- [ ] **PAQ-01**: `armar_paquete` crea `out/<caso>/paquete/` con el formulario (o `valores-portal.md`), copias de los soportes exigidos que existan en `repositorio/soportes/`, `checklist.md` y `borrador-correo.md`. Devuelve `{ ruta, listo_para_firma, checklist }`.
+- [x] **PAQ-01**: `armar_paquete` crea `out/<caso>/paquete/` con el formulario (o `valores-portal.md`), copias de los soportes exigidos que existan en `repositorio/soportes/`, `checklist.md` y `borrador-correo.md`. Devuelve `{ ruta, listo_para_firma, checklist }`.
 - [x] **PAQ-02**: `checklist.md` lista los soportes presentes, ausentes y vencidos, los campos faltantes y los que requieren confirmación. Muestra la fecha de ejecución efectiva y avisa cuando un soporte vence pronto ("vence en N días").
 - [x] **PAQ-03**: Un soporte vencido (`vigencia_hasta` anterior a la fecha de ejecución) o un soporte exigido ausente bloquea `listo_para_firma`. Un campo `faltante` no bloquea, pero aparece en el checklist.
-- [ ] **PAQ-04**: `borrador-correo.md` es una respuesta al cliente: va dirigido a `solicitud.de`, con asunto "RE: <asunto>", y lista el formulario firmado y los soportes. Se arma con una lista blanca de campos, así que nunca contiene datos bancarios.
+- [x] **PAQ-04**: `borrador-correo.md` es una respuesta al cliente: va dirigido a `solicitud.de`, con asunto "RE: <asunto>", y lista el formulario firmado y los soportes. Se arma con una lista blanca de campos, así que nunca contiene datos bancarios.
 - [x] **PAQ-05**: La fecha de ejecución sale de un reloj inyectable. Por defecto es la fecha real en `America/Bogota` y se sobrescribe con `FECHA_EJECUCION`. La comparación se hace sobre fechas ISO, y `vigencia_hasta: null` significa "no aplica" (válido).
 
 ### Confirmación y envío simulado (CA3, RN4)
 
-- [ ] **ENV-01**: Si `simular_envio` se llama sin confirmación válida, devuelve `{ ok: false, error: "requiere confirmación explícita" }`. Con confirmación, escribe solo `out/<caso>/ENVIO-SIMULADO.md` y deja registrados los bloqueos vigentes. No exige `listo_para_firma`.
+- [x] **ENV-01**: Si `simular_envio` se llama sin confirmación válida, devuelve `{ ok: false, error: "requiere confirmación explícita" }`. Con confirmación, escribe solo `out/<caso>/ENVIO-SIMULADO.md` y deja registrados los bloqueos vigentes. No exige `listo_para_firma`.
 - [ ] **ENV-02**: El servidor hace cumplir la compuerta de confirmación. La sesión guarda la confirmación pendiente `{ caso, accion }`, y la autorización vale una sola vez, para ese caso y solo si llega en el mensaje inmediatamente siguiente del usuario. La decide un clasificador determinista que entiende negaciones ("No envíes nada todavía" no confirma) o el botón de la UI. El servidor nunca confía solo en `confirmado: true` del modelo.
 - [ ] **ENV-03**: Cuando una acción requiere confirmación, el turno termina con una pregunta explícita que lista los bloqueos. El servidor calcula `needsConfirmation`.
 
@@ -94,7 +94,7 @@ Fuente vinculante: `reto-01/PRD.md`, sin modificar. Fixtures: `reto-01/fixtures/
 - [ ] **SEG-01**: La clave del LLM vive solo en una env var del backend y nunca aparece en el front (sin el prefijo `VITE_`), los logs, las respuestas de la API ni el repo. Existe un `.env.example` sin valores y un test verifica que la clave no esté en `web/dist` ni en las respuestas.
 - [ ] **SEG-02**: Una única función `redactar()`, basada en una política de rutas sensibles, se aplica a los logs, la API, el SSE y los resúmenes de tool calls. Un test busca con grep valores PII conocidos y verifica que no aparezcan fuera de los archivos de salida.
 - [ ] **SEG-03**: Los logs son JSON estructurados, con IDs de correlación por sesión, turno y tool call, y nunca registran la clave ni PII.
-- [ ] **SEG-04**: Cada tool call queda registrada en `out/log.jsonl` (CA4) y en `out/<caso>/log.jsonl` (RN5) con `{ ts, herramienta, ok, resumen }`, con el resumen redactado.
+- [x] **SEG-04**: Cada tool call queda registrada en `out/log.jsonl` (CA4) y en `out/<caso>/log.jsonl` (RN5) con `{ ts, herramienta, ok, resumen }`, con el resumen redactado.
 
 ### Demo y pruebas (§6.6, §8)
 
@@ -175,7 +175,7 @@ Cada requisito v1 está asignado a exactamente una fase del roadmap (`.planning/
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| HERR-01 | Phase 1 | Pending |
+| HERR-01 | Phase 1 | Complete |
 | HERR-02 | Phase 1 | Complete |
 | HERR-03 | Phase 1 | Complete |
 | HERR-04 | Phase 1 | Complete |
@@ -194,12 +194,12 @@ Cada requisito v1 está asignado a exactamente una fase del roadmap (`.planning/
 | FORM-02 | Phase 1 | Complete |
 | FORM-03 | Phase 1 | Complete |
 | FORM-04 | Phase 1 | Complete |
-| PAQ-01 | Phase 1 | Pending |
+| PAQ-01 | Phase 1 | Complete |
 | PAQ-02 | Phase 1 | Complete |
 | PAQ-03 | Phase 1 | Complete |
-| PAQ-04 | Phase 1 | Pending |
+| PAQ-04 | Phase 1 | Complete |
 | PAQ-05 | Phase 1 | Complete |
-| ENV-01 | Phase 1 | Pending |
+| ENV-01 | Phase 1 | Complete |
 | ENV-02 | Phase 2 | Pending |
 | ENV-03 | Phase 2 | Pending |
 | AGT-01 | Phase 2 | Pending |
@@ -230,7 +230,7 @@ Cada requisito v1 está asignado a exactamente una fase del roadmap (`.planning/
 | SEG-01 | Phase 3 | Pending |
 | SEG-02 | Phase 1 | Pending |
 | SEG-03 | Phase 2 | Pending |
-| SEG-04 | Phase 1 | Pending |
+| SEG-04 | Phase 1 | Complete |
 | DEMO-01 | Phase 1 | Pending |
 | DEMO-02 | Phase 1 | Pending |
 | DEMO-03 | Phase 2 | Pending |
