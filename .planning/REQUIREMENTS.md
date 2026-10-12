@@ -92,24 +92,24 @@ Fuente vinculante: `reto-01/PRD.md`, sin modificar. Fixtures: `reto-01/fixtures/
 ### Seguridad, PII y observabilidad (§8, RN5, CA4)
 
 - [ ] **SEG-01**: La clave del LLM vive solo en una env var del backend y nunca aparece en el front (sin el prefijo `VITE_`), los logs, las respuestas de la API ni el repo. Existe un `.env.example` sin valores y un test verifica que la clave no esté en `web/dist` ni en las respuestas.
-- [ ] **SEG-02**: Una única función `redactar()`, basada en una política de rutas sensibles, se aplica a los logs, la API, el SSE y los resúmenes de tool calls. Un test busca con grep valores PII conocidos y verifica que no aparezcan fuera de los archivos de salida.
+- [x] **SEG-02**: Una única función `redactar()`, basada en una política de rutas sensibles, se aplica a los logs, la API, el SSE y los resúmenes de tool calls. Un test busca con grep valores PII conocidos y verifica que no aparezcan fuera de los archivos de salida.
 - [ ] **SEG-03**: Los logs son JSON estructurados, con IDs de correlación por sesión, turno y tool call, y nunca registran la clave ni PII.
 - [x] **SEG-04**: Cada tool call queda registrada en `out/log.jsonl` (CA4) y en `out/<caso>/log.jsonl` (RN5) con `{ ts, herramienta, ok, resumen }`, con el resumen redactado.
 
 ### Demo y pruebas (§6.6, §8)
 
-- [ ] **DEMO-01**: `bun run demo.ts` ejecuta los 4 casos llamando directamente a las herramientas, sin clave LLM. Limpia `out/` al inicio, fija `FECHA_EJECUCION=2026-09-03`, la imprime y muestra un resumen por caso. El resultado es igual entre ejecuciones, salvo timestamps.
-- [ ] **DEMO-02**: Hay tests golden por caso con la tabla de verdad: co 17/0/0 y listo; ec 13/1/1 y bloqueado por soporte ausente; hn 9/1/1 y bloqueado por parafiscales vencidos; pa 8/0/1 y listo por la vía del portal.
+- [x] **DEMO-01**: `bun run demo.ts` ejecuta los 4 casos llamando directamente a las herramientas, sin clave LLM. Limpia `out/` al inicio, fija `FECHA_EJECUCION=2026-09-03`, la imprime y muestra un resumen por caso. El resultado es igual entre ejecuciones, salvo timestamps.
+- [x] **DEMO-02**: Hay tests golden por caso con la tabla de verdad: co 17/0/0 y listo; ec 13/1/1 y bloqueado por soporte ausente; hn 9/1/1 y bloqueado por parafiscales vencidos; pa 8/0/1 y listo por la vía del portal.
 - [ ] **DEMO-03**: Hay tests unitarios de dominio (mapeo, RN1, vigencias, clasificador de confirmación, redacción), tests de contrato de herramientas (`{ok,data}`, nunca lanzan) y tests del ciclo con un LLM falso: tope de iteraciones, compuerta (incluido "No envíes…" y el guion §11), CA5 tras timeout o 503 e intento de inyección.
 - [x] **DEMO-04**: Hay fixtures sintéticos propios en `tests/fixtures/` para la etiqueta ambigua (HU-1), una plantilla corrupta y un caso inexistente (HU-5).
 - [ ] **DEMO-05**: GitHub Actions corre `bun test`, `bun run demo.ts`, `tsc --noEmit` y lint, y el README muestra un badge.
 
 ### Calidad de código y mantenibilidad
 
-- [ ] **CAL-01**: TypeScript estricto sin `any` (`strict` y `noUncheckedIndexedAccess`), verificado con `tsc --noEmit`. Biome se encarga de lint y formato, y `bun run check` los agrupa.
+- [x] **CAL-01**: TypeScript estricto sin `any` (`strict` y `noUncheckedIndexedAccess`), verificado con `tsc --noEmit`. Biome se encarga de lint y formato, y `bun run check` los agrupa.
 - [x] **CAL-02**: El código no lleva comentarios. Se entiende por sí solo gracias a nombres expresivos, tipos y funciones pequeñas de una responsabilidad. Las explicaciones viven en la documentación, no en el código.
 - [x] **CAL-03**: Las constantes y la configuración están centralizadas, tipadas y validadas con zod desde env: rutas, topes, timeouts, umbral de confianza 0.8, tabla país → identificador y catálogo de errores. No hay números ni strings mágicos dispersos.
-- [ ] **CAL-04**: Las capas tienen dependencias hacia adentro (dominio puro → herramientas/casos de uso → infraestructura → HTTP), sin framework de DI. Solo hay puertos donde existe más de una implementación (LLM, reloj, store de sesión). Un test de arquitectura verifica la dirección de los imports.
+- [x] **CAL-04**: Las capas tienen dependencias hacia adentro (dominio puro → herramientas/casos de uso → infraestructura → HTTP), sin framework de DI. Solo hay puertos donde existe más de una implementación (LLM, reloj, store de sesión). Un test de arquitectura verifica la dirección de los imports.
 - [ ] **CAL-05**: Hay documentación de continuidad (`docs/arquitectura.md` y `docs/convenciones.md`) para que otro dev o una IA retome el proyecto. Los commits siguen Conventional Commits con la identidad `elianatorres5772`.
 
 ### Despliegue (§8, §9.3)
@@ -228,18 +228,18 @@ Cada requisito v1 está asignado a exactamente una fase del roadmap (`.planning/
 | UI-08 | Phase 3 | Pending |
 | UI-09 | Phase 3 | Pending |
 | SEG-01 | Phase 3 | Pending |
-| SEG-02 | Phase 1 | Pending |
+| SEG-02 | Phase 1 | Complete |
 | SEG-03 | Phase 2 | Pending |
 | SEG-04 | Phase 1 | Complete |
-| DEMO-01 | Phase 1 | Pending |
-| DEMO-02 | Phase 1 | Pending |
+| DEMO-01 | Phase 1 | Complete |
+| DEMO-02 | Phase 1 | Complete |
 | DEMO-03 | Phase 2 | Pending |
 | DEMO-04 | Phase 1 | Complete |
 | DEMO-05 | Phase 4 | Pending |
-| CAL-01 | Phase 1 | Pending |
+| CAL-01 | Phase 1 | Complete |
 | CAL-02 | Phase 1 | Complete |
 | CAL-03 | Phase 1 | Complete |
-| CAL-04 | Phase 1 | Pending |
+| CAL-04 | Phase 1 | Complete |
 | CAL-05 | Phase 4 | Pending |
 | DEP-01 | Phase 3 | Pending |
 | DEP-02 | Phase 3 | Pending |
