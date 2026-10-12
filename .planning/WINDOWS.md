@@ -1,10 +1,10 @@
 ---
 schema_version: 1
-open_count: 1
+open_count: 0
 waived_count: 0
-fixed_count: 0
+fixed_count: 1
 total_count: 1
-last_updated: 2026-10-12T22:41:13.736Z
+last_updated: 2026-10-12T22:49:40.868Z
 ---
 
 # Broken Windows Ledger
@@ -15,7 +15,7 @@ last_updated: 2026-10-12T22:41:13.736Z
 
 | id | phase | kind | file | line | description | status | reason | recorded_at | resolved_at |
 |----|-------|------|------|------|-------------|--------|--------|-------------|-------------|
-| 1 | 01 | stub | src/application/generar-formulario.ts |  | generar_formulario pdf and portal arms return ERROR_INTERNO until plan 01-08 | open |  | 2026-10-12T22:41:13.736Z |  |
+| 1 | 01 | stub | src/application/generar-formulario.ts |  | generar_formulario pdf and portal arms return ERROR_INTERNO until plan 01-08 | fixed |  | 2026-10-12T22:41:13.736Z | 2026-10-12T22:49:40.868Z |
 
 ````json
 [
@@ -26,10 +26,10 @@ last_updated: 2026-10-12T22:41:13.736Z
     "file": "src/application/generar-formulario.ts",
     "line": null,
     "description": "generar_formulario pdf and portal arms return ERROR_INTERNO until plan 01-08",
-    "status": "open",
+    "status": "fixed",
     "reason": "",
     "recorded_at": "2026-10-12T22:41:13.736Z",
-    "resolved_at": null,
+    "resolved_at": "2026-10-12T22:49:40.868Z",
     "milestone": null
   }
 ]
