@@ -230,6 +230,8 @@ Then add `"overrides": { "uuid": "^11.1.1" }` to `package.json` and run `bun ins
 
 **Version verification (2026-10-12, this session):** `npm view` returned `zod 4.6.7`, `exceljs 4.4.0`, `pdf-lib 1.17.1`, `typescript 7.0.2`, `@biomejs/biome 2.5.15`, `@types/bun 1.4.3`. All are the current `latest` [VERIFIED: npm registry].
 
+> **Superseded by D-35 (post-research, user decision):** pin `zod@4.6.5` and `@types/bun@1.4.2` instead of 4.6.7 and 1.4.3 (maturity policy of 7 days or more). The other pins above are unchanged. See "Open Questions (RESOLVED)" Q1.
+
 ## Package Legitimacy Audit
 
 Seam: `gsd-tools query package-legitimacy check --ecosystem npm` (gsd-core 1.16.0, identity verified).
@@ -283,6 +285,7 @@ So the gate flag is **`bun audit --audit-level=moderate`**, and it fails with ex
 }
 ```
 Notes:
+- **D-35 supersedes the two same-day pins in this snippet:** use `"zod": "4.6.5"` and `"@types/bun": "1.4.2"`. Everything else in the snippet stands.
 - D-31 locks `"uuid": "^11.1.1"` verbatim. With `bun.lock` committed and `--frozen-lockfile`, the resolution is frozen at `11.1.1` anyway.
 - **`bun check` runs the package.json `check` script** in 1.4.3 (observed: `bun check --help` executed the script). Always document `bun run check`.
 - `bun audit` needs network access to the registry. An offline `bun run check` fails at the audit step. Document this.
@@ -870,7 +873,7 @@ Scan `src/**/*.ts`, `demo.ts` and `tests/**/*.ts` with a small state machine tha
 |---|-------|---------|---------------|
 | A1 | `glosario["constructor"]` / `__proto__` hazards (standard JS semantics, not exec-tested this session) | Pattern 4, Pitfall 3 | Low. The mitigation (`Map` + `hasOwn`) is harmless either way |
 | A2 | `[dato oculto]` as the literal for the default mask | Pattern 5 | Low. Cosmetic, but it is part of the `mapear_campos` output contract (D-05 costly) |
-| A3 | Note variables (`moneda`, `ano`, `pais`) may reach the LLM through `nota` | Pattern 5 | Medium. If the user reads D-05 strictly, notes toward the LLM must be static text |
+| A3 | Note variables (`moneda`, `ano`, `pais`) may reach the LLM through `nota` | Pattern 5 | Medium. If the user reads D-05 strictly, notes toward the LLM must be static text. **RESOLVED by D-36:** allowed through a code allowlist; amounts stay masked |
 | A4 | `campos: []` in `mapear_campos` means "all template labels" | Tool Contract | Low. Convenience semantics; must be documented in `.describe()` |
 | A5 | Template-selection edge cases (xlsx with only campos → error; pdf with only celdas → pdf; both or none → error) | Tool Contract | Low. No real fixture hits them |
 | A6 | Vencido soportes are copied into `paquete/` (they "exist") | Tool Contract | Low-Medium. The PRD wording supports it; the user might prefer to exclude them |
@@ -880,16 +883,19 @@ Scan `src/**/*.ts`, `demo.ts` and `tests/**/*.ts` with a small state machine tha
 | A10 | pdf-lib's stable font suffixes come from a seeded RNG (the equality itself is exec-verified) | Pattern 8 | None for the plan. The determinism test verifies equality directly |
 | A11 | `CONFIGURACION_INVALIDA` and `DATOS_INVALIDOS` as extra codes beyond D-18's minimum | Pattern 2/4 | Low. D-18 says "como mínimo" |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
-1. **zod 4.6.7 is hours old (supply-chain cooldown).**
+1. **zod 4.6.7 is hours old (supply-chain cooldown).** RESOLVED by the user in D-35.
    - What we know: it was published 2026-10-12T16:29Z by the GitHub Actions trusted publisher with SLSA provenance and maintainer approval, `bun audit` is clean, and the seam verdict is SUS (too-new). 4.6.6 is from the day before, and 4.6.5 from 2026-09-13.
-   - What's unclear: whether the user wants a cooldown policy on top of "latest".
-   - Recommendation: keep 4.6.7 (D-30 locked) behind a `checkpoint:human-verify`, and offer 4.6.5 as the cooldown alternative there.
-2. **Should notes that reach the LLM carry resolved variables (A3)?**
-   - Recommendation: allow only `moneda`, `ano` and `pais` (non-personal corporate context) via a code-owned allowlist, and confirm at the human-verify checkpoint.
-3. **Bun upgrade on the user's machine (D-32).**
-   - Recommendation: a `checkpoint:human-action` in plan 01 (`bun upgrade`, or the official installer pinned to `bun-v1.4.3` [ASSUMED syntax]). Phase 1 code doesn't depend on 1.4-only APIs, so work isn't blocked if the upgrade is postponed.
+   - What was unclear: whether the user wants a cooldown policy on top of "latest".
+   - Original recommendation: keep 4.6.7 (D-30 locked) behind a `checkpoint:human-verify`, and offer 4.6.5 as the cooldown alternative there.
+   - **RESOLVED (D-35, amends D-30):** the user adopted a maturity policy of 7 days or more. The pins are zod **4.6.5**, @types/bun **1.4.2**, @biomejs/biome 2.5.15, typescript 7.0.2, exceljs 4.4.0 and pdf-lib 1.17.1. zod 4.6.7 and @types/bun 1.4.3 are rejected because they were published the same day. Plan 01-01 Task 1 re-checks the publish dates at its legitimacy gate before the first install.
+2. **Should notes that reach the LLM carry resolved variables (A3)?** RESOLVED by the user in D-36.
+   - Original recommendation: allow only `moneda`, `ano` and `pais` (non-personal corporate context) via a code-owned allowlist, and confirm at the human-verify checkpoint.
+   - **RESOLVED (D-36):** notes visible to the LLM may include `ingresos_ultimo_ano.moneda`, `ingresos_ultimo_ano.ano`, `pais` and the fixed `reglas.json` texts, through a code allowlist next to the PII policy. Amounts stay "[monto oculto]". The plans implement this as `VARIABLES_NOTA_PERMITIDAS` in `src/domain/pii.ts` (plan 01-04). That list also carries `identificador` (from reglas) and `pais_emisor` (a country code of the same class as `pais`, needed by D-22).
+3. **Bun upgrade on the user's machine (D-32).** RESOLVED as a user action.
+   - Original recommendation: a `checkpoint:human-action` in plan 01 (`bun upgrade`, or the official installer pinned to `bun-v1.4.3` [ASSUMED syntax]). Phase 1 code doesn't depend on 1.4-only APIs, so work isn't blocked if the upgrade is postponed.
+   - **RESOLVED:** the upgrade is a user action (`bun upgrade`), and the executor never runs it. It is folded into the human gate of plan 01-01 Task 1 as an optional, non-blocking step, and the SUMMARY records `bun --version` after the gate. Phase 1 works on 1.3.10 in the meantime. The end-of-phase human check (plan 01-11) repeats the reminder before Phase 3's Docker image.
 
 ## Environment Availability
 
