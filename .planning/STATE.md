@@ -1,6 +1,13 @@
 ---
-gsd_state_version: '1.0'
+gsd_state_version: "1.0"
+current_phase: 1
+current_phase_name: Núcleo determinista
 status: planning
+stopped_at: Phase 1 context gathered
+last_updated: "2026-10-12T20:18:40.178Z"
+last_activity: 2026-10-12
+last_activity_desc: Roadmap creado (4 fases, 73/73 requisitos v1 mapeados)
+state_head: a221ca052397d56a166c203f7682050718dacd05
 progress:
   total_phases: 4
   completed_phases: 0
@@ -80,6 +87,6 @@ Items acknowledged and deferred at milestone close, most recent first:
 
 ## Session Continuity
 
-Last session: 2026-10-12
-Stopped at: Roadmap y STATE inicializados; siguiente paso, planear la Phase 1
-Resume file: None
+Last session: 2026-10-12T20:18:40.164Z
+Stopped at: Phase 1 context gathered
+Resume file: .planning/phases/01-n-cleo-determinista/01-CONTEXT.md
