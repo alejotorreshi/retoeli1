@@ -3,16 +3,16 @@ gsd_state_version: "1.0"
 current_phase: 01
 current_phase_name: Núcleo determinista
 status: executing
-stopped_at: Completed 01-03-PLAN.md
-last_updated: "2026-10-12T22:10:01.363Z"
+stopped_at: Completed 01-04-PLAN.md
+last_updated: "2026-10-12T22:18:51.547Z"
 last_activity: 2026-10-12
 last_activity_desc: Phase 01 execution started
-state_head: 58b6eded27f6cb450367298af5c0f80ceb92bf60
+state_head: 8b119aaaeeeedd52f344eff1f57bcb055d0c6a43
 progress:
   total_phases: 4
   completed_phases: 0
   total_plans: 11
-  completed_plans: 3
+  completed_plans: 4
   percent: 0
 ---
 
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-10-12)
 ## Current Position
 
 Phase: 01 (Núcleo determinista) — EXECUTING
-Plan: 4 of 11
+Plan: 5 of 11
 Status: Ready to execute
 Last activity: 2026-10-12 — Phase 01 execution started
 
@@ -59,6 +59,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 01 P01 | 3min | 2 tasks | 9 files |
 | Phase 01 P02 | 6min | 3 tasks | 14 files |
 | Phase 01 P03 | 6min | 3 tasks | 17 files |
+| Phase 01 P04 | 6min | 2 tasks | 10 files |
 
 ## Accumulated Context
 
@@ -79,6 +80,9 @@ Recent decisions affecting current work:
 - [Phase 01]: 01-03: crearEntorno returns {registrar, entorno: Resultado<Entorno>}; invalid env is still logged globally
 - [Phase 01]: 01-03: defineTool re-resolves the caso after the use case to decide the per-caso log; listarCasos offers only real directories
 - [Phase 01]: 01-03: formatearIssues lives in src/tools/issues.ts, shared by defineTool and wiring
+- [Phase 01]: 01-04: SWIFT mask follows D-07 last-4 (COLOCOBM gives ••••COBM); the plan literal ••••OCBM was a typo
+- [Phase 01]: 01-04: mapearCampos computes moneda/ano/pais/identificador itself; variablesNota only adds allowlisted extras (pais_emisor) and cannot override them
+- [Phase 01]: 01-04: multiple notes on a field join with '. '; RN1 leaves propuesta null; clave_directa is single-segment only
 
 ### Pending Todos
 
@@ -101,6 +105,6 @@ Items acknowledged and deferred at milestone close, most recent first:
 
 ## Session Continuity
 
-Last session: 2026-10-12T22:10:01.337Z
-Stopped at: Completed 01-03-PLAN.md
+Last session: 2026-10-12T22:18:51.527Z
+Stopped at: Completed 01-04-PLAN.md
 Resume file: None

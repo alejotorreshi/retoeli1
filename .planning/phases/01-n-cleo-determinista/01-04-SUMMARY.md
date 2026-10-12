@@ -173,7 +173,7 @@ No REFACTOR commits were made, because both GREEN implementations were already i
 - `src/domain/plantillas.ts`: `renderizarPlantilla` and the `ContextoPlantilla` types.
 - `src/domain/mapeo.ts`: glossary index, `leerRuta`, `mapearCampos`, `contarEstados`.
 - `src/domain/pii.ts`: `POLITICA_PII`, `enmascarar`, `presentarCampo`, `VARIABLES_NOTA_PERMITIDAS`, `VARIABLES_NOTA_DEL_MAESTRO`.
-- `tests/unit/{normalizar,plantillas,mapeo,pii}.test.ts`: 4 suites with 85 tests. The full suite has 132 tests.
+- `tests/unit/{normalizar,plantillas,mapeo,pii}.test.ts`: 4 suites with 61 tests. The full suite has 132 tests.
 
 ## Decisions Made
 
@@ -219,7 +219,7 @@ None. No new network, filesystem or auth surface was added. All six modules are 
 
 ## Verification
 
-- `bun test tests/unit`: 85 pass, 0 fail.
+- `bun test tests/unit`: 61 pass, 0 fail.
 - `bun test`: 132 pass, 0 fail across 8 files.
 - `bun run check` (tsc + biome + bun audit): exit 0, no vulnerabilities.
 - The engine counts for the four real cases equal the truth table (17/0/0, 13/1/1, 9/1/1, 8/0/1).
