@@ -34,7 +34,7 @@ describe("enmascarar (D-06, D-07)", () => {
   test("números y códigos muestran solo los últimos 4", () => {
     expect(enmascarar("nit", "900123456")).toBe("•••••3456");
     expect(enmascarar("banco.numero_cuenta", "03100012345")).toBe("•••••••2345");
-    expect(enmascarar("banco.swift", "COLOCOBM")).toBe("••••OCBM");
+    expect(enmascarar("banco.swift", "COLOCOBM")).toBe("••••COBM");
     expect(enmascarar("representante_legal.identificacion", "71555123")).toBe("••••5123");
     expect(enmascarar("codigo_postal", "050021")).toBe("••0021");
     expect(enmascarar("matricula_mercantil", "21-345678-12")).toBe("••••••••8-12");
