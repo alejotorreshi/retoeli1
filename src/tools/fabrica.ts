@@ -1,6 +1,7 @@
+import { generarFormulario } from "../application/generar-formulario.ts";
 import { leerSolicitud } from "../application/leer-solicitud.ts";
 import { mapearCamposCaso } from "../application/mapear-campos.ts";
-import { argsLeerSolicitud, argsMapearCampos } from "./argumentos.ts";
+import { argsGenerarFormulario, argsLeerSolicitud, argsMapearCampos } from "./argumentos.ts";
 import { defineTool } from "./define-tool.ts";
 import type { OpcionesEntorno } from "./wiring.ts";
 
@@ -35,5 +36,19 @@ export function crearHerramientas(opciones: OpcionesHerramientas = {}) {
     opciones,
   );
 
-  return { leer_solicitud, mapear_campos };
+  const generar_formulario = defineTool(
+    {
+      nombre: "generar_formulario",
+      description:
+        "Genera el formulario del caso en el formato pedido releyendo cada valor del maestro, y su mapeo lleva solo las etiquetas, estados y rutas que devolvió proveedor_mapear_campos.",
+      args: argsGenerarFormulario,
+      ejecutar: generarFormulario,
+      presentar: ({ ruta, formato }) => ({ ruta, formato }),
+      resumir: ({ caso, formato, conteo }) =>
+        `${caso}: formulario ${formato} generado (${conteo.lleno} llenos, ${conteo.faltante} faltantes, ${conteo.requiere_confirmacion} por confirmar)`,
+    },
+    opciones,
+  );
+
+  return { leer_solicitud, mapear_campos, generar_formulario };
 }

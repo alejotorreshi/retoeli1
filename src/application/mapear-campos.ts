@@ -3,7 +3,7 @@ import { normalizarEtiqueta } from "../domain/normalizar.ts";
 import { type CampoPresentado, presentarCampo } from "../domain/pii.ts";
 import type { EstadoCampo } from "../domain/reglas.ts";
 import { exito, fallo, type Resultado } from "../domain/resultado.ts";
-import { cargarContextoCaso } from "./contexto-caso.ts";
+import { type ContextoCaso, cargarContextoCaso } from "./contexto-caso.ts";
 import type { Entorno } from "./puertos.ts";
 
 export type ArgsMapearCampos = { readonly caso: string; readonly campos: readonly string[] };
@@ -55,12 +55,9 @@ function serializar(documento: DocumentoMapeo): string {
   return `${JSON.stringify(documento, null, SANGRIA_JSON)}\n`;
 }
 
-async function mapearBajoCandado(args: ArgsMapearCampos, entorno: Entorno): Promise<Resultado<DatosMapeo>> {
-  const contexto = await cargarContextoCaso(args.caso, entorno);
-  if (!contexto.ok) return contexto;
-  const { caso, solicitud, plantilla, maestro, indice, reglas } = contexto.data;
-
-  const canonico = mapearCampos({
+export function mapeoCanonico(contexto: ContextoCaso): Resultado<readonly CampoMapeado[]> {
+  const { solicitud, plantilla, maestro, indice, reglas } = contexto;
+  return mapearCampos({
     etiquetas: plantilla.campos.map((campo) => campo.etiqueta),
     pais: solicitud.pais,
     indice,
@@ -68,21 +65,37 @@ async function mapearBajoCandado(args: ArgsMapearCampos, entorno: Entorno): Prom
     reglas,
     variablesNota: {},
   });
+}
+
+export function escribirMapeo(
+  contexto: ContextoCaso,
+  canonico: readonly CampoMapeado[],
+  entorno: Entorno,
+): Promise<string> {
+  return entorno.salida.escribir(
+    contexto.caso,
+    "mapeo",
+    serializar({
+      caso: contexto.caso,
+      pais: contexto.solicitud.pais,
+      fecha_ejecucion: entorno.reloj.hoy(),
+      campos: canonico.map(presentarCampo),
+    }),
+  );
+}
+
+async function mapearBajoCandado(args: ArgsMapearCampos, entorno: Entorno): Promise<Resultado<DatosMapeo>> {
+  const contexto = await cargarContextoCaso(args.caso, entorno);
+  if (!contexto.ok) return contexto;
+  const { caso, solicitud } = contexto.data;
+
+  const canonico = mapeoCanonico(contexto.data);
   if (!canonico.ok) return canonico;
 
   const seleccion = seleccionar(canonico.data, args.campos);
   if (!seleccion.ok) return seleccion;
 
-  const mapeo = await entorno.salida.escribir(
-    caso,
-    "mapeo",
-    serializar({
-      caso,
-      pais: solicitud.pais,
-      fecha_ejecucion: entorno.reloj.hoy(),
-      campos: canonico.data.map(presentarCampo),
-    }),
-  );
+  const mapeo = await escribirMapeo(contexto.data, canonico.data, entorno);
 
   const presentados = seleccion.data.map(presentarCampo);
   return exito({

@@ -9,7 +9,7 @@ function dentroDe(base: string, destino: string): boolean {
   return destino.startsWith(base + sep);
 }
 
-export async function escribirArchivoSalida(
+async function escribirContenido(
   raiz: string,
   caso: string,
   nombre: string,
@@ -29,4 +29,22 @@ export async function escribirArchivoSalida(
   await mkdir(dirname(destino), { recursive: true });
   await writeFile(destino, contenido);
   return rutaRelativa(raiz, destino);
+}
+
+export function escribirArchivoSalida(
+  raiz: string,
+  caso: string,
+  nombre: string,
+  contenido: string,
+): Promise<string> {
+  return escribirContenido(raiz, caso, nombre, contenido);
+}
+
+export function escribirBinarioSalida(
+  raiz: string,
+  caso: string,
+  nombre: string,
+  bytes: Uint8Array,
+): Promise<string> {
+  return escribirContenido(raiz, caso, nombre, bytes);
 }

@@ -31,8 +31,9 @@ const TIPOS: ReadonlyMap<ValueType, TipoCelda> = new Map([
 ]);
 
 async function cargar(ruta: string): Promise<Workbook> {
+  const bytes = await readFile(ruta);
   const libro = new Workbook();
-  await libro.xlsx.load(await readFile(ruta));
+  await libro.xlsx.load(bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength));
   return libro;
 }
 

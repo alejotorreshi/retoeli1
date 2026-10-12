@@ -75,3 +75,11 @@ export const SESION_DEMO = "demo";
 export const MAX_ISSUES_ARGS = 5;
 export const ZONA_HORARIA_POR_DEFECTO = "America/Bogota";
 export const FECHA_DEMO = "2026-09-03";
+
+export const AUTOR_DOCUMENTOS = "registro-proveedor";
+
+export const MARCAS_XLSX = {
+  rellenoFaltante: "FFFFC7CE",
+  rellenoPorConfirmar: "FFFFEB9C",
+  notaFaltante: "Faltante: no existe en el maestro",
+} as const;

@@ -259,7 +259,7 @@ describe("trazador: excepciones internas", () => {
     );
     const salida = await new Response(proceso.stdout).text();
     expect(await proceso.exited).toBe(0);
-    expect(salida.trim()).toBe("leer_solicitud,mapear_campos");
+    expect(salida.trim()).toBe("generar_formulario,leer_solicitud,mapear_campos");
   });
 });
 
