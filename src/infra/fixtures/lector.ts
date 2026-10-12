@@ -1,10 +1,18 @@
-import { readFile, stat } from "node:fs/promises";
+import { readdir, readFile, stat } from "node:fs/promises";
 import { join, resolve } from "node:path";
 import type { z } from "zod";
 import type { Lectura } from "../../application/puertos.ts";
-import { ARCHIVOS_REPOSITORIO, FIXTURES_DIR, LIMITE_LECTURA_BYTES } from "../../config/constantes.ts";
+import {
+  ARCHIVOS_REPOSITORIO,
+  FIXTURES_DIR,
+  INDICE_SOPORTES,
+  LIMITE_LECTURA_BYTES,
+  PATRON_ARCHIVO_SOPORTE,
+  SOPORTES_DIR,
+} from "../../config/constantes.ts";
+import type { SoporteIndice } from "../../domain/checklist.ts";
 import type { Glosario, Maestro } from "../../domain/mapeo.ts";
-import { esquemaGlosario, esquemaMaestro } from "./esquemas.ts";
+import { esquemaGlosario, esquemaIndiceSoportes, esquemaMaestro } from "./esquemas.ts";
 
 const NO_ENCONTRADO = { estado: "no_encontrado" } as const;
 const INVALIDO = { estado: "invalido" } as const;
@@ -58,4 +66,28 @@ export function leerMaestro(raiz: string): Promise<Lectura<Maestro>> {
 
 export function leerGlosario(raiz: string): Promise<Lectura<Glosario>> {
   return leerJsonValidado(resolve(raiz, FIXTURES_DIR, ARCHIVOS_REPOSITORIO.glosario), esquemaGlosario);
+}
+
+export function directorioSoportes(raiz: string): string {
+  return resolve(raiz, FIXTURES_DIR, SOPORTES_DIR);
+}
+
+export function leerIndiceSoportes(raiz: string): Promise<Lectura<readonly SoporteIndice[]>> {
+  return leerJsonValidado(join(directorioSoportes(raiz), INDICE_SOPORTES), esquemaIndiceSoportes);
+}
+
+export async function soportesPresentes(raiz: string): Promise<ReadonlySet<string>> {
+  try {
+    const entradas = await readdir(directorioSoportes(raiz), { withFileTypes: true });
+    return new Set(
+      entradas
+        .filter(
+          (entrada) =>
+            entrada.isFile() && entrada.name !== INDICE_SOPORTES && PATRON_ARCHIVO_SOPORTE.test(entrada.name),
+        )
+        .map((entrada) => entrada.name),
+    );
+  } catch {
+    return new Set();
+  }
 }

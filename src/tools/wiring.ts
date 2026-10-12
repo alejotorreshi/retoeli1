@@ -1,4 +1,4 @@
-import type { Entorno, Lectura, Registrar, Reloj } from "../application/puertos.ts";
+import type { Entorno, Lectura, OrigenCopia, Registrar, Reloj } from "../application/puertos.ts";
 import {
   ARCHIVOS_CASO,
   ARCHIVOS_SALIDA,
@@ -16,12 +16,15 @@ import {
   esquemaSoportesExigidos,
 } from "../infra/fixtures/esquemas.ts";
 import {
+  directorioSoportes,
   existeArchivo,
   leerGlosario,
+  leerIndiceSoportes,
   leerJsonValidado,
   leerMaestro,
   resolverRaiz,
   rutaEnCaso,
+  soportesPresentes,
 } from "../infra/fixtures/lector.ts";
 import { cargarPlantillaTexto } from "../infra/knowledge/plantillas.ts";
 import { cargarReglas, DIRECTORIO_CONOCIMIENTO_POR_DEFECTO } from "../infra/knowledge/reglas.ts";
@@ -30,7 +33,9 @@ import {
   escribirArchivoSalida,
   escribirBinarioSalida,
   limpiarArtefactosPrevios,
+  reiniciarPaquete,
 } from "../infra/salida/archivos.ts";
+import { copiarAlPaquete } from "../infra/salida/copias.ts";
 import { conCandadoCaso } from "../infra/salida/mutex.ts";
 import { renderizarPdf } from "../infra/salida/pdf/render.ts";
 import { directorioSalidaCaso, listarCasos, resolverCaso } from "../infra/salida/rutas-seguras.ts";
@@ -65,6 +70,14 @@ async function leerPlantilla(directorioCaso: string, tipo: TipoPlantilla): Promi
     : lectura;
 }
 
+function copiar(raiz: string, caso: string, origen: OrigenCopia): Promise<string> {
+  if (origen.tipo === "soporte") {
+    return copiarAlPaquete(raiz, caso, rutaEnCaso(directorioSoportes(raiz), origen.archivo), origen.archivo);
+  }
+  const nombre = ARCHIVOS_SALIDA[origen.archivo];
+  return copiarAlPaquete(raiz, caso, rutaEnCaso(directorioSalidaCaso(raiz, caso), nombre), nombre);
+}
+
 function relojDe(config: ToolEnv): Reloj {
   return config.FECHA_EJECUCION === undefined
     ? relojSistema(config.TZ_NEGOCIO)
@@ -93,6 +106,14 @@ function entornoDeFixtures(raiz: string, reloj: Reloj, directorioConocimiento: s
         escribirArchivoSalida(raiz, caso, ARCHIVOS_SALIDA[archivo], contenido),
       binario: (caso, archivo, bytes) => escribirBinarioSalida(raiz, caso, ARCHIVOS_SALIDA[archivo], bytes),
       limpiarPrevios: (caso) => limpiarArtefactosPrevios(raiz, caso),
+      existe: (caso, archivo) =>
+        existeArchivo(rutaEnCaso(directorioSalidaCaso(raiz, caso), ARCHIVOS_SALIDA[archivo])),
+      reiniciarPaquete: (caso) => reiniciarPaquete(raiz, caso),
+      copiar: (caso, origen) => copiar(raiz, caso, origen),
+    },
+    soportes: {
+      indice: () => leerIndiceSoportes(raiz),
+      presentes: () => soportesPresentes(raiz),
     },
     formularios: { xlsx: escribirXlsx, pdf: renderizarPdf },
     plantillas: {

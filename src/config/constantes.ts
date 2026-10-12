@@ -18,6 +18,9 @@ export const ARCHIVOS_REPOSITORIO = {
   maestro: "repositorio/maestro.json",
 } as const;
 
+export const SOPORTES_DIR = "repositorio/soportes";
+export const INDICE_SOPORTES = "index.json";
+
 export const ARCHIVO_REGLAS = "reglas.json";
 export const VERSION_REGLAS = 1;
 export const PATRON_PLANTILLA_CONOCIMIENTO: RegExp = /^plantillas\/[a-z-]+\.md$/;
@@ -39,9 +42,20 @@ export const ARCHIVOS_SALIDA = {
   bitacora: "log.jsonl",
   envioSimulado: "ENVIO-SIMULADO.md",
   paquete: "paquete",
+  paqueteFormularioXlsx: "paquete/formulario.xlsx",
+  paqueteFormularioPdf: "paquete/formulario.pdf",
+  paqueteValoresPortal: "paquete/valores-portal.md",
   checklist: "paquete/checklist.md",
   borradorCorreo: "paquete/borrador-correo.md",
 } as const;
+
+const PREFIJO_PAQUETE = `${ARCHIVOS_SALIDA.paquete}/`;
+
+export const NOMBRES_RESERVADOS_PAQUETE: ReadonlySet<string> = new Set(
+  Object.values(ARCHIVOS_SALIDA)
+    .filter((nombre) => nombre.startsWith(PREFIJO_PAQUETE))
+    .map((nombre) => nombre.slice(PREFIJO_PAQUETE.length)),
+);
 
 export const PATRON_ARCHIVO_SOPORTE: RegExp = /^[a-z0-9][a-z0-9._-]{0,100}$/;
 export const PATRON_RUTA_MAESTRO: RegExp = /^[a-z_]+(\.[a-z_]+)*$/;

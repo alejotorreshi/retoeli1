@@ -1,3 +1,4 @@
+import type { SoporteIndice } from "../domain/checklist.ts";
 import type { CodigoError } from "../domain/errores.ts";
 import type { FilaCelda, FilaFormulario } from "../domain/formulario.ts";
 import type { Glosario, Maestro } from "../domain/mapeo.ts";
@@ -44,14 +45,28 @@ export type EntradaBitacora = {
 
 export type Registrar = (entrada: EntradaBitacora) => Promise<void>;
 
-export type ArchivoSalida = "mapeo" | "valoresPortal";
+export type ArchivoSalida = "mapeo" | "valoresPortal" | "checklist";
 
 export type ArchivoBinario = "formularioXlsx" | "formularioPdf";
+
+export type ArchivoFormulario = "formularioXlsx" | "formularioPdf" | "valoresPortal";
+
+export type OrigenCopia =
+  | { readonly tipo: "formulario"; readonly archivo: ArchivoFormulario }
+  | { readonly tipo: "soporte"; readonly archivo: string };
 
 export type SalidaCaso = {
   escribir(caso: string, archivo: ArchivoSalida, contenido: string): Promise<string>;
   binario(caso: string, archivo: ArchivoBinario, bytes: Uint8Array): Promise<string>;
   limpiarPrevios(caso: string): Promise<void>;
+  existe(caso: string, archivo: ArchivoFormulario): Promise<boolean>;
+  reiniciarPaquete(caso: string): Promise<string>;
+  copiar(caso: string, origen: OrigenCopia): Promise<string>;
+};
+
+export type SoportesRepositorio = {
+  indice(): Promise<Lectura<readonly SoporteIndice[]>>;
+  presentes(): Promise<ReadonlySet<string>>;
 };
 
 export type EntradaFormularioPdf = {
@@ -78,6 +93,7 @@ export type Entorno = {
   readonly casos: CasosDisponibles;
   readonly fixtures: FixturesCaso;
   readonly salida: SalidaCaso;
+  readonly soportes: SoportesRepositorio;
   readonly formularios: GeneradoresFormulario;
   readonly plantillas: PlantillasConocimiento;
   readonly candado: Candado;

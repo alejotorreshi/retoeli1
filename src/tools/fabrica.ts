@@ -1,7 +1,13 @@
+import { armarPaquete } from "../application/armar-paquete.ts";
 import { generarFormulario } from "../application/generar-formulario.ts";
 import { leerSolicitud } from "../application/leer-solicitud.ts";
 import { mapearCamposCaso } from "../application/mapear-campos.ts";
-import { argsGenerarFormulario, argsLeerSolicitud, argsMapearCampos } from "./argumentos.ts";
+import {
+  argsArmarPaquete,
+  argsGenerarFormulario,
+  argsLeerSolicitud,
+  argsMapearCampos,
+} from "./argumentos.ts";
 import { defineTool } from "./define-tool.ts";
 import type { OpcionesEntorno } from "./wiring.ts";
 
@@ -55,5 +61,25 @@ export function crearHerramientas(opciones: OpcionesHerramientas = {}) {
     opciones,
   );
 
-  return { leer_solicitud, mapear_campos, generar_formulario };
+  const armar_paquete = defineTool(
+    {
+      nombre: "armar_paquete",
+      description:
+        "Arma el paquete para firma de un caso ya generado con el formulario, las copias de los soportes exigidos y el checklist, e indica si queda listo para firma y por qué.",
+      args: argsArmarPaquete,
+      ejecutar: armarPaquete,
+      presentar: ({ ruta, listo_para_firma, bloqueos, checklist, archivos }) => ({
+        ruta,
+        listo_para_firma,
+        bloqueos,
+        checklist,
+        archivos,
+      }),
+      resumir: ({ caso, listo_para_firma, bloqueos }) =>
+        listo_para_firma ? `${caso}: LISTO` : `${caso}: BLOQUEADO (${bloqueos.join("; ")})`,
+    },
+    opciones,
+  );
+
+  return { leer_solicitud, mapear_campos, generar_formulario, armar_paquete };
 }
