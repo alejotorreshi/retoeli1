@@ -1,10 +1,15 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
-import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
-import { tmpdir } from "node:os";
+import { existsSync } from "node:fs";
+import { readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { crearHerramientas } from "../../src/tools/fabrica.ts";
 import { mapear_campos } from "../../src/tools/proveedor.ts";
-import { crearProyectoTemporal, type ProyectoTemporal } from "../helpers/proyecto-temporal.ts";
+import {
+  type ConocimientoTemporal,
+  copiarConocimiento,
+  crearProyectoTemporal,
+  type ProyectoTemporal,
+} from "../helpers/proyecto-temporal.ts";
 
 const NOTA_EXTRANJERO = "Identificador extranjero: confirmar si el cliente acepta el NIT colombiano";
 const CLAVES_ITEM = [
@@ -48,8 +53,11 @@ type Respuesta = {
   resumen?: string;
 };
 
+const RUTA_REGLAS_REPO = join(import.meta.dir, "..", "..", "src", "knowledge", "reglas.json");
+const SENSIBLES = ["03100012345", "71555123", "COLOCOBM", "900123456"];
+
 const proyectos: ProyectoTemporal[] = [];
-const sueltos: string[] = [];
+const conocimientos: ConocimientoTemporal[] = [];
 let compartido: ProyectoTemporal;
 const fechaPrevia = process.env.FECHA_EJECUCION;
 
@@ -68,7 +76,7 @@ afterAll(async () => {
   if (fechaPrevia === undefined) delete process.env.FECHA_EJECUCION;
   else process.env.FECHA_EJECUCION = fechaPrevia;
   await Promise.all(proyectos.map((proyecto) => proyecto.limpiar()));
-  await Promise.all(sueltos.map((ruta) => rm(ruta, { recursive: true, force: true })));
+  await Promise.all(conocimientos.map((conocimiento) => conocimiento.limpiar()));
 });
 
 async function mapearCrudo(args: unknown, raiz: string = compartido.raiz): Promise<string> {
@@ -96,6 +104,30 @@ function item(datos: DatosMapeo, etiqueta: string): Item {
   const encontrado = todos(datos).find((candidato) => candidato.etiqueta === etiqueta);
   if (encontrado === undefined) throw new Error(`sin item ${etiqueta}`);
   return encontrado;
+}
+
+async function nuevoConocimiento(): Promise<ConocimientoTemporal> {
+  const conocimiento = await copiarConocimiento();
+  conocimientos.push(conocimiento);
+  return conocimiento;
+}
+
+type DocumentoMapeo = {
+  caso: string;
+  pais: string;
+  fecha_ejecucion: string;
+  campos: Item[];
+};
+
+async function leerMapeo(raiz: string, caso: string): Promise<{ texto: string; documento: DocumentoMapeo }> {
+  const texto = await readFile(join(raiz, "out", caso, "mapeo.json"), "utf8");
+  return { texto, documento: JSON.parse(texto) };
+}
+
+function tieneLlave(valor: unknown, llave: string): boolean {
+  if (Array.isArray(valor)) return valor.some((elemento) => tieneLlave(elemento, llave));
+  if (typeof valor !== "object" || valor === null) return false;
+  return Object.entries(valor).some(([clave, hijo]) => clave === llave || tieneLlave(hijo, llave));
 }
 
 async function lineas(ruta: string): Promise<string[]> {
@@ -180,7 +212,7 @@ describe("golden: proveedor_mapear_campos sobre los cuatro casos reales (D-21)",
 
   test("la respuesta nunca trae los valores crudos sensibles del maestro", async () => {
     const crudo = await mapearCrudo({ caso: "co-industrias-delta", campos: [] });
-    for (const sensible of ["03100012345", "71555123", "COLOCOBM", "900123456"]) {
+    for (const sensible of SENSIBLES) {
       expect(crudo).not.toContain(sensible);
     }
   });
@@ -206,15 +238,22 @@ describe("golden: bitácora de mapear_campos (SEG-04)", () => {
 });
 
 describe("golden: reglas cargadas en cada ejecución (D-28)", () => {
+  test("copiarConocimiento devuelve una copia con reglas.json idéntico byte a byte", async () => {
+    const conocimiento = await nuevoConocimiento();
+    const copia = await readFile(join(conocimiento.directorio, "reglas.json"));
+    const original = await readFile(RUTA_REGLAS_REPO);
+    expect(copia.equals(original)).toBe(true);
+  });
+
   test("crearHerramientas con un reglas.json roto da REGLAS_INVALIDAS con la ruta de la llave", async () => {
-    const directorio = await mkdtemp(join(tmpdir(), "conocimiento-"));
-    sueltos.push(directorio);
-    const reglas = JSON.parse(
-      await readFile(join(import.meta.dir, "..", "..", "src", "knowledge", "reglas.json"), "utf8"),
-    );
+    const conocimiento = await nuevoConocimiento();
+    const rutaReglas = join(conocimiento.directorio, "reglas.json");
+    const reglas = JSON.parse(await readFile(rutaReglas, "utf8"));
     reglas.confianza.umbral = 2;
-    await writeFile(join(directorio, "reglas.json"), JSON.stringify(reglas));
-    const { mapear_campos: mapearRoto } = crearHerramientas({ directorioConocimiento: directorio });
+    await writeFile(rutaReglas, JSON.stringify(reglas));
+    const { mapear_campos: mapearRoto } = crearHerramientas({
+      directorioConocimiento: conocimiento.directorio,
+    });
     const crudo = await mapearRoto.execute(
       { caso: "co-industrias-delta", campos: [] },
       { directory: compartido.raiz },
@@ -227,25 +266,125 @@ describe("golden: reglas cargadas en cada ejecución (D-28)", () => {
   });
 
   test("una edición de reglas.json entre dos llamadas se ve sin reiniciar", async () => {
-    const directorio = await mkdtemp(join(tmpdir(), "conocimiento-"));
-    sueltos.push(directorio);
-    const original = await readFile(
-      join(import.meta.dir, "..", "..", "src", "knowledge", "reglas.json"),
-      "utf8",
-    );
-    await writeFile(join(directorio, "reglas.json"), original);
-    const { mapear_campos: mapearEditable } = crearHerramientas({ directorioConocimiento: directorio });
+    const conocimiento = await nuevoConocimiento();
+    const rutaReglas = join(conocimiento.directorio, "reglas.json");
+    const { mapear_campos: mapearEditable } = crearHerramientas({
+      directorioConocimiento: conocimiento.directorio,
+    });
     const ctx = { directory: compartido.raiz };
     const antes: Respuesta = JSON.parse(
       await mapearEditable.execute({ caso: "ec-corp-andina", campos: [] }, ctx),
     );
     expect(antes.data?.conteo).toEqual({ lleno: 13, faltante: 1, requiere_confirmacion: 1 });
-    const reglas = JSON.parse(original);
+    const reglas = JSON.parse(await readFile(rutaReglas, "utf8"));
     reglas.confianza.regla_pais = 0.9;
-    await writeFile(join(directorio, "reglas.json"), JSON.stringify(reglas));
+    await writeFile(rutaReglas, JSON.stringify(reglas));
     const despues: Respuesta = JSON.parse(
       await mapearEditable.execute({ caso: "ec-corp-andina", campos: [] }, ctx),
     );
     expect(despues.data?.conteo).toEqual({ lleno: 14, faltante: 1, requiere_confirmacion: 0 });
+  });
+});
+
+describe("golden: out/<caso>/mapeo.json sin valores (MAP-06, SEG-02)", () => {
+  test("co persiste 17 campos con caso, pais y fecha_ejecucion, sin llave valor ni valores crudos", async () => {
+    const proyecto = await nuevoProyecto();
+    await mapearCrudo({ caso: "co-industrias-delta", campos: [] }, proyecto.raiz);
+    const { texto, documento } = await leerMapeo(proyecto.raiz, "co-industrias-delta");
+    expect(Object.keys(documento).sort()).toEqual(["campos", "caso", "fecha_ejecucion", "pais"]);
+    expect(documento.caso).toBe("co-industrias-delta");
+    expect(documento.pais).toBe("CO");
+    expect(documento.fecha_ejecucion).toBe("2026-09-03");
+    expect(documento.campos).toHaveLength(17);
+    expect(tieneLlave(documento, "valor")).toBe(false);
+    for (const sensible of SENSIBLES) expect(texto).not.toContain(sensible);
+    expect(texto).toBe(`${JSON.stringify(documento, null, 2)}\n`);
+  });
+
+  test("cada campo persistido trae ruta, regla y confianza en el orden de la plantilla", async () => {
+    const proyecto = await nuevoProyecto();
+    await mapearCrudo({ caso: "ec-corp-andina", campos: [] }, proyecto.raiz);
+    const { documento } = await leerMapeo(proyecto.raiz, "ec-corp-andina");
+    expect(documento.campos.map((campo) => campo.etiqueta).slice(0, 3)).toEqual([
+      "Nombre de la empresa",
+      "RUC",
+      "Número de contribuyente especial",
+    ]);
+    for (const campo of documento.campos) {
+      expect(Object.keys(campo).sort()).toEqual(CLAVES_ITEM);
+    }
+    const ruc = documento.campos.find((campo) => campo.etiqueta === "RUC");
+    expect(ruc).toMatchObject({ ruta: "nit", regla: "regla_pais", confianza: 0.6 });
+  });
+
+  test("la ruta devuelta en data.mapeo apunta al archivo escrito", async () => {
+    const proyecto = await nuevoProyecto();
+    const respuesta: Respuesta = JSON.parse(
+      await mapearCrudo({ caso: "pa-logistica-istmo", campos: [] }, proyecto.raiz),
+    );
+    expect(respuesta.data?.mapeo).toBe("out/pa-logistica-istmo/mapeo.json");
+    expect(existsSync(join(proyecto.raiz, "out", "pa-logistica-istmo", "mapeo.json"))).toBe(true);
+  });
+
+  test("llamadas concurrentes sobre el mismo caso dejan un mapeo.json completo y válido", async () => {
+    const proyecto = await nuevoProyecto();
+    const respuestas = await Promise.all(
+      Array.from({ length: 5 }, () => mapearCrudo({ caso: "hn-agroexport-sula", campos: [] }, proyecto.raiz)),
+    );
+    for (const crudo of respuestas) expect(JSON.parse(crudo).ok).toBe(true);
+    const { documento } = await leerMapeo(proyecto.raiz, "hn-agroexport-sula");
+    expect(documento.campos).toHaveLength(11);
+  });
+});
+
+describe("golden: subconjuntos de etiquetas (D-15)", () => {
+  test('ec con ["RUC"] devuelve un solo item mientras mapeo.json guarda los 15', async () => {
+    const proyecto = await nuevoProyecto();
+    const respuesta: Respuesta = JSON.parse(
+      await mapearCrudo({ caso: "ec-corp-andina", campos: ["RUC"] }, proyecto.raiz),
+    );
+    expect(respuesta.ok).toBe(true);
+    if (respuesta.data === undefined) throw new Error("sin data");
+    expect(todos(respuesta.data)).toHaveLength(1);
+    expect(respuesta.data.requiere_confirmacion[0]?.etiqueta).toBe("RUC");
+    expect(respuesta.data.conteo).toEqual({ lleno: 0, faltante: 0, requiere_confirmacion: 1 });
+    expect(respuesta.resumen).toBe("ec-corp-andina: 0 llenos, 0 faltantes, 1 por confirmar");
+    const { documento } = await leerMapeo(proyecto.raiz, "ec-corp-andina");
+    expect(documento.campos).toHaveLength(15);
+  });
+
+  test('["ruc"] coincide con "RUC" por la normalización del glosario', async () => {
+    const datos = await mapearOk("ec-corp-andina", ["ruc"]);
+    expect(todos(datos).map((campo) => campo.etiqueta)).toEqual(["RUC"]);
+  });
+
+  test("varias etiquetas con variantes de tildes y mayúsculas vuelven en el orden de la plantilla", async () => {
+    const datos = await mapearOk("ec-corp-andina", ["SWIFT", "pais", "Nombre de la empresa:"]);
+    expect(datos.llenos.map((campo) => campo.etiqueta)).toEqual(["Nombre de la empresa", "País", "SWIFT"]);
+  });
+
+  test("una etiqueta fuera de la plantilla da CAMPOS_FUERA_DE_PLANTILLA sin repetirla", async () => {
+    const proyecto = await nuevoProyecto();
+    const crudo = await mapearCrudo(
+      { caso: "ec-corp-andina", campos: ["RUC", "Etiqueta inventada"] },
+      proyecto.raiz,
+    );
+    const respuesta: Respuesta = JSON.parse(crudo);
+    expect(respuesta.ok).toBe(false);
+    expect(respuesta.codigo).toBe("CAMPOS_FUERA_DE_PLANTILLA");
+    const esperadas = respuesta.parcial?.etiquetas_esperadas as string[];
+    expect(esperadas).toHaveLength(15);
+    expect(esperadas[0]).toBe("Nombre de la empresa");
+    expect(respuesta.parcial?.indices_fuera_de_plantilla).toEqual([1]);
+    expect(crudo).not.toContain("Etiqueta inventada");
+    expect(existsSync(join(proyecto.raiz, "out", "ec-corp-andina", "mapeo.json"))).toBe(false);
+  });
+
+  test("la bitácora de una etiqueta fuera de la plantilla no la repite", async () => {
+    const proyecto = await nuevoProyecto();
+    await mapearCrudo({ caso: "ec-corp-andina", campos: ["Etiqueta inventada"] }, proyecto.raiz);
+    const global = await lineas(join(proyecto.raiz, "out", "log.jsonl"));
+    expect(global.join("\n")).not.toContain("Etiqueta inventada");
+    expect(JSON.parse(global[0] ?? "{}").codigo).toBe("CAMPOS_FUERA_DE_PLANTILLA");
   });
 });
