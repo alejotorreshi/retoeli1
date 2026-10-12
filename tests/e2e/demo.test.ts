@@ -1,6 +1,6 @@
 import { afterAll, describe, expect, test } from "bun:test";
 import { existsSync } from "node:fs";
-import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, readdir, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { ejecutarDemo } from "../../src/demo/ejecutar-demo.ts";
@@ -15,66 +15,174 @@ afterAll(async () => {
   await Promise.all(sueltos.map((ruta) => rm(ruta, { recursive: true, force: true })));
 });
 
-async function demoEn(directorio: string): Promise<{ lineas: string[]; hayFallos: boolean }> {
+type Corrida = { readonly lineas: string[]; readonly fallido: boolean };
+
+async function demoEn(directorio: string): Promise<Corrida> {
   const previa = process.env.FECHA_EJECUCION;
   const lineas: string[] = [];
   try {
-    const resultado = await ejecutarDemo({ directorio, escribir: (linea) => lineas.push(linea) });
-    return { lineas, hayFallos: resultado.hayFallos };
+    const { fallido } = await ejecutarDemo({ directorio, escribir: (linea) => lineas.push(linea) });
+    return { lineas, fallido };
   } finally {
     if (previa === undefined) delete process.env.FECHA_EJECUCION;
     else process.env.FECHA_EJECUCION = previa;
   }
 }
 
-describe("ejecutarDemo", () => {
-  test("limpia out/, imprime la fecha efectiva y una línea por caso real", async () => {
-    const proyecto = await crearProyectoTemporal();
-    proyectos.push(proyecto);
-    await mkdir(join(proyecto.raiz, "out"), { recursive: true });
-    await writeFile(join(proyecto.raiz, "out", "viejo.txt"), "residuo");
+async function proyecto(sinteticos: readonly string[] = []): Promise<ProyectoTemporal> {
+  const creado = await crearProyectoTemporal({ sinteticos });
+  proyectos.push(creado);
+  return creado;
+}
 
-    const { lineas, hayFallos } = await demoEn(proyecto.raiz);
+function bloque(lineas: readonly string[], caso: string): string {
+  const inicio = lineas.indexOf(`== ${caso} ==`);
+  if (inicio < 0) throw new Error(`sin bloque para ${caso}`);
+  const fin = lineas.indexOf("", inicio);
+  return lineas.slice(inicio, fin < 0 ? undefined : fin).join("\n");
+}
 
-    expect(hayFallos).toBe(false);
-    expect(lineas[0]).toBe("Fecha de ejecución efectiva: 2026-09-03");
-    expect(lineas).toHaveLength(1 + CASOS_REALES.length);
-    CASOS_REALES.forEach((caso, indice) => {
-      expect(lineas[indice + 1]?.startsWith(`${caso}: formato `)).toBe(true);
-    });
-    expect(existsSync(join(proyecto.raiz, "out", "viejo.txt"))).toBe(false);
-    const global = (await readFile(join(proyecto.raiz, "out", "log.jsonl"), "utf8")).trim().split("\n");
-    expect(global).toHaveLength(1 + CASOS_REALES.length);
+function filasResumen(lineas: readonly string[]): string[] {
+  const inicio = lineas.indexOf("Resumen");
+  return lineas.slice(inicio + 3).filter((linea) => linea.startsWith("| "));
+}
+
+async function listarRecursivo(raiz: string): Promise<string[]> {
+  const entradas = await readdir(raiz, { recursive: true });
+  return entradas.map((entrada) => entrada.split("\\").join("/"));
+}
+
+describe("demo de los cuatro casos (DEMO-01, DEMO-02)", () => {
+  let corrida: Corrida;
+  let base: ProyectoTemporal;
+
+  test("limpia out/, imprime la fecha efectiva y no falla", async () => {
+    base = await proyecto();
+    await mkdir(join(base.raiz, "out"), { recursive: true });
+    await writeFile(join(base.raiz, "out", "basura.txt"), "residuo");
+    corrida = await demoEn(base.raiz);
+    expect(corrida.fallido).toBe(false);
+    expect(corrida.lineas[0]).toBe("Fecha de ejecución efectiva: 2026-09-03");
+    expect(existsSync(join(base.raiz, "out", "basura.txt"))).toBe(false);
   });
 
-  test("nunca imprime valores del maestro", async () => {
-    const proyecto = await crearProyectoTemporal();
-    proyectos.push(proyecto);
-    const { lineas } = await demoEn(proyecto.raiz);
-    const salida = lineas.join("\n");
-    for (const valor of ["Periferia IT Group", "900123456", "Medellín", "+57 604"]) {
-      expect(salida).not.toContain(valor);
+  test("co: 17/0/0 y LISTO", () => {
+    const texto = bloque(corrida.lineas, "co-industrias-delta");
+    expect(texto).toContain("17 llenos · 0 faltantes · 0 por confirmar");
+    expect(texto).toContain("Estado: LISTO");
+    expect(texto).toContain("Formato: xlsx");
+    expect(texto).toContain("Salida: out/co-industrias-delta/formulario.xlsx");
+  });
+
+  test("ec: 13/1/1 y BLOQUEADO por el certificado ausente", () => {
+    const texto = bloque(corrida.lineas, "ec-corp-andina");
+    expect(texto).toContain("13 llenos · 1 faltantes · 1 por confirmar");
+    expect(texto).toContain("Estado: BLOQUEADO (ausente: certificado_cumplimiento_tributario)");
+    expect(texto).toContain("Soportes ausentes: certificado_cumplimiento_tributario · Vencidos: ninguno");
+  });
+
+  test("hn: 9/1/1 y BLOQUEADO por parafiscales vencido", () => {
+    const texto = bloque(corrida.lineas, "hn-agroexport-sula");
+    expect(texto).toContain("9 llenos · 1 faltantes · 1 por confirmar");
+    expect(texto).toContain("Estado: BLOQUEADO (vencido: parafiscales (2026-08-31))");
+    expect(texto).toContain("Soportes ausentes: ninguno · Vencidos: parafiscales");
+  });
+
+  test("pa: 8/0/1, portal con formato no soportado y LISTO", () => {
+    const texto = bloque(corrida.lineas, "pa-logistica-istmo");
+    expect(texto).toContain("8 llenos · 0 faltantes · 1 por confirmar");
+    expect(texto).toContain("Formato: portal (formato no soportado)");
+    expect(texto).toContain("Estado: LISTO");
+  });
+
+  test("cada caso muestra el envío rechazado sin confirmación (RN4)", () => {
+    for (const caso of CASOS_REALES) {
+      expect(bloque(corrida.lineas, caso)).toContain(
+        "Envío: requiere confirmación explícita (no se envía nada)",
+      );
     }
   });
 
-  test("se niega a correr donde no hay package.json y no borra nada", async () => {
+  test("la tabla Resumen trae una fila por caso, en orden", () => {
+    const filas = filasResumen(corrida.lineas);
+    expect(filas).toEqual([
+      "| co-industrias-delta | xlsx | 17 | 0 | 0 | LISTO |",
+      "| ec-corp-andina | pdf | 13 | 1 | 1 | BLOQUEADO |",
+      "| hn-agroexport-sula | xlsx | 9 | 1 | 1 | BLOQUEADO |",
+      "| pa-logistica-istmo | portal | 8 | 0 | 1 | LISTO |",
+    ]);
+  });
+
+  test("deja formularios, mapeo, checklist y borrador por caso y ningún ENVIO-SIMULADO.md", async () => {
+    const out = join(base.raiz, "out");
+    for (const archivo of [
+      "co-industrias-delta/formulario.xlsx",
+      "ec-corp-andina/formulario.pdf",
+      "hn-agroexport-sula/formulario.xlsx",
+      "pa-logistica-istmo/valores-portal.md",
+    ]) {
+      expect(existsSync(join(out, archivo))).toBe(true);
+    }
+    for (const caso of CASOS_REALES) {
+      for (const archivo of ["paquete/checklist.md", "paquete/borrador-correo.md", "mapeo.json"]) {
+        expect(existsSync(join(out, caso, archivo))).toBe(true);
+      }
+    }
+    const todos = await listarRecursivo(out);
+    expect(todos.filter((ruta) => ruta.endsWith("ENVIO-SIMULADO.md"))).toEqual([]);
+  });
+
+  test("nunca imprime valores del maestro", () => {
+    const salida = corrida.lineas.join("\n");
+    for (const valor of [
+      "Periferia IT Group",
+      "900123456",
+      "03100012345",
+      "COLOCOBM",
+      "Medellín",
+      "+57 604",
+    ]) {
+      expect(salida).not.toContain(valor);
+    }
+  });
+});
+
+describe("robustez de la demo", () => {
+  test("sin package.json no borra nada y reporta fallo", async () => {
     const raiz = await mkdtemp(join(tmpdir(), "demo-sin-paquete-"));
     sueltos.push(raiz);
     await mkdir(join(raiz, "out"), { recursive: true });
     await writeFile(join(raiz, "out", "conservar.txt"), "x");
-    await expect(demoEn(raiz)).rejects.toThrow("package.json");
+    const { lineas, fallido } = await demoEn(raiz);
+    expect(fallido).toBe(true);
+    expect(lineas.join("\n")).toContain("package.json");
     expect(existsSync(join(raiz, "out", "conservar.txt"))).toBe(true);
   });
 
-  test("un caso roto se reporta en español y la demo sigue con los demás", async () => {
-    const proyecto = await crearProyectoTemporal();
-    proyectos.push(proyecto);
-    const roto = join(proyecto.casosDir, "zz-roto");
-    await mkdir(roto, { recursive: true });
-    await writeFile(join(roto, "solicitud.json"), "{ no es json");
-    const { lineas, hayFallos } = await demoEn(proyecto.raiz);
-    expect(hayFallos).toBe(true);
-    expect(lineas.at(-1)).toStartWith("zz-roto: ERROR DATOS_INVALIDOS: ");
-    expect(lineas.filter((linea) => linea.includes(": formato "))).toHaveLength(CASOS_REALES.length);
+  test("corre sin ninguna variable de entorno con API_KEY", async () => {
+    const quitadas = Object.entries(process.env).filter(([nombre]) => nombre.includes("API_KEY"));
+    for (const [nombre] of quitadas) delete process.env[nombre];
+    try {
+      const { fallido } = await demoEn((await proyecto()).raiz);
+      expect(Object.keys(process.env).filter((nombre) => nombre.includes("API_KEY"))).toEqual([]);
+      expect(fallido).toBe(false);
+    } finally {
+      for (const [nombre, valor] of quitadas) process.env[nombre] = valor;
+    }
+  });
+
+  test("una plantilla corrupta se reporta en español, los cuatro casos reales terminan y la corrida falla", async () => {
+    const { lineas, fallido } = await demoEn((await proyecto(["zz-plantilla-corrupta"])).raiz);
+    expect(fallido).toBe(true);
+    expect(
+      lineas.some((linea) => linea.startsWith("Error en zz-plantilla-corrupta (PLANTILLA_INVALIDA): ")),
+    ).toBe(true);
+    for (const caso of CASOS_REALES) {
+      expect(bloque(lineas, caso)).toContain("Estado: ");
+    }
+    expect(filasResumen(lineas)).toHaveLength(CASOS_REALES.length + 1);
+    expect(filasResumen(lineas).at(-1)).toBe(
+      "| zz-plantilla-corrupta | — | — | — | — | ERROR (PLANTILLA_INVALIDA) |",
+    );
   });
 });
