@@ -1,9 +1,10 @@
 import { afterAll, describe, expect, test } from "bun:test";
 import { existsSync } from "node:fs";
-import { mkdir, mkdtemp, readdir, rm, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { ejecutarDemo } from "../../src/demo/ejecutar-demo.ts";
+import { type Corrida, correrDemo } from "../helpers/correr-demo.ts";
+import { listarSalida } from "../helpers/instantanea.ts";
 import { crearProyectoTemporal, type ProyectoTemporal } from "../helpers/proyecto-temporal.ts";
 
 const CASOS_REALES = ["co-industrias-delta", "ec-corp-andina", "hn-agroexport-sula", "pa-logistica-istmo"];
@@ -14,20 +15,6 @@ afterAll(async () => {
   await Promise.all(proyectos.map((proyecto) => proyecto.limpiar()));
   await Promise.all(sueltos.map((ruta) => rm(ruta, { recursive: true, force: true })));
 });
-
-type Corrida = { readonly lineas: string[]; readonly fallido: boolean };
-
-async function demoEn(directorio: string): Promise<Corrida> {
-  const previa = process.env.FECHA_EJECUCION;
-  const lineas: string[] = [];
-  try {
-    const { fallido } = await ejecutarDemo({ directorio, escribir: (linea) => lineas.push(linea) });
-    return { lineas, fallido };
-  } finally {
-    if (previa === undefined) delete process.env.FECHA_EJECUCION;
-    else process.env.FECHA_EJECUCION = previa;
-  }
-}
 
 async function proyecto(sinteticos: readonly string[] = []): Promise<ProyectoTemporal> {
   const creado = await crearProyectoTemporal({ sinteticos });
@@ -47,11 +34,6 @@ function filasResumen(lineas: readonly string[]): string[] {
   return lineas.slice(inicio + 3).filter((linea) => linea.startsWith("| "));
 }
 
-async function listarRecursivo(raiz: string): Promise<string[]> {
-  const entradas = await readdir(raiz, { recursive: true });
-  return entradas.map((entrada) => entrada.split("\\").join("/"));
-}
-
 describe("demo de los cuatro casos (DEMO-01, DEMO-02)", () => {
   let corrida: Corrida;
   let base: ProyectoTemporal;
@@ -60,7 +42,7 @@ describe("demo de los cuatro casos (DEMO-01, DEMO-02)", () => {
     base = await proyecto();
     await mkdir(join(base.raiz, "out"), { recursive: true });
     await writeFile(join(base.raiz, "out", "basura.txt"), "residuo");
-    corrida = await demoEn(base.raiz);
+    corrida = await correrDemo(base.raiz);
     expect(corrida.fallido).toBe(false);
     expect(corrida.lineas[0]).toBe("Fecha de ejecución efectiva: 2026-09-03");
     expect(existsSync(join(base.raiz, "out", "basura.txt"))).toBe(false);
@@ -128,7 +110,7 @@ describe("demo de los cuatro casos (DEMO-01, DEMO-02)", () => {
         expect(existsSync(join(out, caso, archivo))).toBe(true);
       }
     }
-    const todos = await listarRecursivo(out);
+    const todos = await listarSalida(base.raiz);
     expect(todos.filter((ruta) => ruta.endsWith("ENVIO-SIMULADO.md"))).toEqual([]);
   });
 
@@ -153,7 +135,7 @@ describe("robustez de la demo", () => {
     sueltos.push(raiz);
     await mkdir(join(raiz, "out"), { recursive: true });
     await writeFile(join(raiz, "out", "conservar.txt"), "x");
-    const { lineas, fallido } = await demoEn(raiz);
+    const { lineas, fallido } = await correrDemo(raiz);
     expect(fallido).toBe(true);
     expect(lineas.join("\n")).toContain("package.json");
     expect(existsSync(join(raiz, "out", "conservar.txt"))).toBe(true);
@@ -163,7 +145,7 @@ describe("robustez de la demo", () => {
     const quitadas = Object.entries(process.env).filter(([nombre]) => nombre.includes("API_KEY"));
     for (const [nombre] of quitadas) delete process.env[nombre];
     try {
-      const { fallido } = await demoEn((await proyecto()).raiz);
+      const { fallido } = await correrDemo((await proyecto()).raiz);
       expect(Object.keys(process.env).filter((nombre) => nombre.includes("API_KEY"))).toEqual([]);
       expect(fallido).toBe(false);
     } finally {
@@ -172,7 +154,7 @@ describe("robustez de la demo", () => {
   });
 
   test("una plantilla corrupta se reporta en español, los cuatro casos reales terminan y la corrida falla", async () => {
-    const { lineas, fallido } = await demoEn((await proyecto(["zz-plantilla-corrupta"])).raiz);
+    const { lineas, fallido } = await correrDemo((await proyecto(["zz-plantilla-corrupta"])).raiz);
     expect(fallido).toBe(true);
     expect(
       lineas.some((linea) => linea.startsWith("Error en zz-plantilla-corrupta (PLANTILLA_INVALIDA): ")),
