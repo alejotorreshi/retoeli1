@@ -3,16 +3,16 @@ gsd_state_version: "1.0"
 current_phase: 01
 current_phase_name: Núcleo determinista
 status: executing
-stopped_at: Completed 01-06-PLAN.md
-last_updated: "2026-10-12T22:32:39.599Z"
+stopped_at: Completed 01-07-PLAN.md
+last_updated: "2026-10-12T22:41:08.938Z"
 last_activity: 2026-10-12
 last_activity_desc: Phase 01 execution started
-state_head: d60e000e72cf3dc079908ea74e06bb3b8d48294a
+state_head: 8c0184f1b954afe3eb5b9107e2df332b6a791e0b
 progress:
   total_phases: 4
   completed_phases: 0
   total_plans: 11
-  completed_plans: 6
+  completed_plans: 7
   percent: 0
 ---
 
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-10-12)
 ## Current Position
 
 Phase: 01 (Núcleo determinista) — EXECUTING
-Plan: 7 of 11
+Plan: 8 of 11
 Status: Ready to execute
 Last activity: 2026-10-12 — Phase 01 execution started
 
@@ -62,6 +62,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 01 P04 | 6min | 2 tasks | 10 files |
 | Phase 01 P05 | 6min | 2 tasks | 19 files |
 | Phase 01 P06 | 2min | 2 tasks | 14 files |
+| Phase 01 P07 | 5min | 2 tasks | 18 files |
 
 ## Accumulated Context
 
@@ -91,6 +92,9 @@ Recent decisions affecting current work:
 - [Phase 01]: 01-05: For a subset request conteo counts the returned subset; mapeo.json always persists the full canonical mapping and a bad subset writes nothing
 - [Phase 01]: 01-06: leer_solicitud loads reglas.json after the case loads, so CASO_*/DATOS_INVALIDOS/PLANTILLA_INVALIDA take precedence over REGLAS_INVALIDAS
 - [Phase 01]: 01-06: detectarAmbiguos keeps template label text and order and looks up por_pais with Object.hasOwn (unknown country gives propuesta null)
+- [Phase 01]: 01-07: generar_formulario recomputes the canonical mapping, compares the rutas-only mapping (compararMapeo, per-label multiplicity) before writing or cleaning, and re-reads every value from the maestro
+- [Phase 01]: 01-07: xlsx marks are FFFFC7CE faltante / FFFFEB9C por confirmar, centralized in MARCAS_XLSX with the D-01 note and AUTOR_DOCUMENTOS
+- [Phase 01]: 01-07: limpiarArtefactosPrevios (D-12) uses the writer's realpath containment; only ENOENT counts as absent
 
 ### Pending Todos
 
@@ -113,6 +117,6 @@ Items acknowledged and deferred at milestone close, most recent first:
 
 ## Session Continuity
 
-Last session: 2026-10-12T22:32:39.578Z
-Stopped at: Completed 01-06-PLAN.md
+Last session: 2026-10-12T22:41:08.915Z
+Stopped at: Completed 01-07-PLAN.md
 Resume file: None

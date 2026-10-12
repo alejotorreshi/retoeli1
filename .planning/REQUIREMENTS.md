@@ -11,7 +11,7 @@ Fuente vinculante: `reto-01/PRD.md`, sin modificar. Fixtures: `reto-01/fixtures/
 
 - [ ] **HERR-01**: `src/tools/proveedor.ts` exporta exactamente 5 herramientas (`leer_solicitud`, `mapear_campos`, `generar_formulario`, `armar_paquete`, `simular_envio`). El modelo ve cada una como `proveedor_<export>`, con una `description` de una frase.
 - [x] **HERR-02**: Cada herramienta declara sus `args` como esquemas zod con `.describe()` en cada campo. El backend valida antes de ejecutar y, si los args no cumplen, devuelve el error al modelo.
-- [ ] **HERR-03**: `execute(args, ctx)` devuelve siempre un string JSON con `{ ok: true, data }` o `{ ok: false, error }`, y nunca lanza hacia el agente. Los códigos de error son estables y los mensajes van en español, sin traza cruda.
+- [x] **HERR-03**: `execute(args, ctx)` devuelve siempre un string JSON con `{ ok: true, data }` o `{ ok: false, error }`, y nunca lanza hacia el agente. Los códigos de error son estables y los mensajes van en español, sin traza cruda.
 - [x] **HERR-04**: Las herramientas resuelven rutas desde `ctx.directory`, nunca como absolutas. Validan `caso` contra path traversal y nunca ejecutan comandos de shell.
 - [x] **HERR-05**: Las herramientas se importan sin el servidor ni secretos, y las reutilizan `demo.ts` y `modulo/`. El contexto acepta `sessionId` o `sessionID`.
 
@@ -33,7 +33,7 @@ Fuente vinculante: `reto-01/PRD.md`, sin modificar. Fixtures: `reto-01/fixtures/
 
 ### Generación del formulario (HU-3)
 
-- [ ] **FORM-01**: Para P0 se genera `out/<caso>/formulario.xlsx`, con cada etiqueta en `celda_etiqueta` y su valor en `celda_valor`, en la hoja indicada (hay soporte para varias hojas). Los valores se escriben como texto para preservar los ceros a la izquierda.
+- [x] **FORM-01**: Para P0 se genera `out/<caso>/formulario.xlsx`, con cada etiqueta en `celda_etiqueta` y su valor en `celda_valor`, en la hoja indicada (hay soporte para varias hojas). Los valores se escriben como texto para preservar los ceros a la izquierda.
 - [ ] **FORM-02**: Para P1 se genera `out/<caso>/formulario.pdf` con todas las etiquetas y valores en el orden de `plantilla-campos.json`. Los campos `faltante` y `requiere_confirmacion` llevan una marca visible.
 - [ ] **FORM-03**: Para P2 (portal), la herramienta responde `ok: true` con `data: { ruta, formato: "portal", aviso: "formato no soportado" }` y escribe `out/<caso>/valores-portal.md` con los valores listos para copiar. El flujo sigue hasta el paquete.
 - [ ] **FORM-04**: `generar_formulario` recibe un `mapeo` que solo trae rutas: un `mapeo` con valores se rechaza con un esquema estricto. La herramienta lee los valores del maestro, de modo que CA2 se cumple por diseño.
@@ -177,7 +177,7 @@ Cada requisito v1 está asignado a exactamente una fase del roadmap (`.planning/
 |-------------|-------|--------|
 | HERR-01 | Phase 1 | Pending |
 | HERR-02 | Phase 1 | Complete |
-| HERR-03 | Phase 1 | Pending |
+| HERR-03 | Phase 1 | Complete |
 | HERR-04 | Phase 1 | Complete |
 | HERR-05 | Phase 1 | Complete |
 | SOLI-01 | Phase 1 | Complete |
@@ -190,7 +190,7 @@ Cada requisito v1 está asignado a exactamente una fase del roadmap (`.planning/
 | MAP-05 | Phase 1 | Complete |
 | MAP-06 | Phase 1 | Complete |
 | MAP-07 | Phase 1 | Pending |
-| FORM-01 | Phase 1 | Pending |
+| FORM-01 | Phase 1 | Complete |
 | FORM-02 | Phase 1 | Pending |
 | FORM-03 | Phase 1 | Pending |
 | FORM-04 | Phase 1 | Pending |
