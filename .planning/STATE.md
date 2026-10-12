@@ -3,16 +3,16 @@ gsd_state_version: "1.0"
 current_phase: 01
 current_phase_name: Núcleo determinista
 status: executing
-stopped_at: Completed 01-07-PLAN.md
-last_updated: "2026-10-12T22:41:08.938Z"
+stopped_at: Completed 01-08-PLAN.md
+last_updated: "2026-10-12T22:51:00.908Z"
 last_activity: 2026-10-12
 last_activity_desc: Phase 01 execution started
-state_head: 8c0184f1b954afe3eb5b9107e2df332b6a791e0b
+state_head: 7da5fe70ff73344398e039c992935647289e5f60
 progress:
   total_phases: 4
   completed_phases: 0
   total_plans: 11
-  completed_plans: 7
+  completed_plans: 8
   percent: 0
 ---
 
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-10-12)
 ## Current Position
 
 Phase: 01 (Núcleo determinista) — EXECUTING
-Plan: 8 of 11
+Plan: 9 of 11
 Status: Ready to execute
 Last activity: 2026-10-12 — Phase 01 execution started
 
@@ -63,6 +63,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 01 P05 | 6min | 2 tasks | 19 files |
 | Phase 01 P06 | 2min | 2 tasks | 14 files |
 | Phase 01 P07 | 5min | 2 tasks | 18 files |
+| Phase 01 P08 | 6min | 2 tasks | 17 files |
 
 ## Accumulated Context
 
@@ -95,6 +96,10 @@ Recent decisions affecting current work:
 - [Phase 01]: 01-07: generar_formulario recomputes the canonical mapping, compares the rutas-only mapping (compararMapeo, per-label multiplicity) before writing or cleaning, and re-reads every value from the maestro
 - [Phase 01]: 01-07: xlsx marks are FFFFC7CE faltante / FFFFEB9C por confirmar, centralized in MARCAS_XLSX with the D-01 note and AUTOR_DOCUMENTOS
 - [Phase 01]: 01-07: limpiarArtefactosPrevios (D-12) uses the writer's realpath containment; only ENOENT counts as absent
+- [Phase 01]: PDF layout: A4 two columns (label 190pt, value 290pt), Helvetica 10/12pt, [FALTANTE] rgb(0.75,0,0), [POR CONFIRMAR] rgb(0.8,0.5,0), final Notas section; constants in DISENO_PDF/TEXTOS_PDF
+- [Phase 01]: PDF metadata fixed to registro-proveedor and FECHA_EJECUCION 00:00Z; renders are byte-identical
+- [Phase 01]: Knowledge templates load per call via Entorno.plantillas.cargar(reglas, clave) and render against a code-built allowlisted context (valores-portal: caso, cliente, fecha_ejecucion, aviso, campos, pendientes)
+- [Phase 01]: generar_formulario presents aviso only for portal: {ruta, formato, aviso: 'formato no soportado'}; xlsx/pdf stay {ruta, formato}
 
 ### Pending Todos
 
@@ -117,6 +122,6 @@ Items acknowledged and deferred at milestone close, most recent first:
 
 ## Session Continuity
 
-Last session: 2026-10-12T22:41:08.915Z
-Stopped at: Completed 01-07-PLAN.md
+Last session: 2026-10-12T22:51:00.886Z
+Stopped at: Completed 01-08-PLAN.md
 Resume file: None

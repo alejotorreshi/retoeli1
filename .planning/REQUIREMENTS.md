@@ -29,14 +29,14 @@ Fuente vinculante: `reto-01/PRD.md`, sin modificar. Fixtures: `reto-01/fixtures/
 - [x] **MAP-04**: Se leen rutas anidadas del maestro (`representante_legal.nombre`, `ingresos_ultimo_ano.valor`, datos bancarios). Una ruta inexistente da `faltante`.
 - [x] **MAP-05**: El LLM nunca recibe valores reales. Las herramientas le devuelven `{ etiqueta, ruta, estado, confianza, valor_enmascarado }`.
 - [x] **MAP-06**: Cada valor queda trazado con `ruta`, `regla` (glosario exacto, glosario normalizado, clave directa o regla de país) y `confianza`. Todo se persiste en `out/<caso>/mapeo.json`.
-- [ ] **MAP-07**: Los valores compuestos llevan notas de contexto. Por ejemplo, "Ingresos anuales" va con moneda y año para clientes no-CO, y "País" con su nota.
+- [x] **MAP-07**: Los valores compuestos llevan notas de contexto. Por ejemplo, "Ingresos anuales" va con moneda y año para clientes no-CO, y "País" con su nota.
 
 ### Generación del formulario (HU-3)
 
 - [x] **FORM-01**: Para P0 se genera `out/<caso>/formulario.xlsx`, con cada etiqueta en `celda_etiqueta` y su valor en `celda_valor`, en la hoja indicada (hay soporte para varias hojas). Los valores se escriben como texto para preservar los ceros a la izquierda.
-- [ ] **FORM-02**: Para P1 se genera `out/<caso>/formulario.pdf` con todas las etiquetas y valores en el orden de `plantilla-campos.json`. Los campos `faltante` y `requiere_confirmacion` llevan una marca visible.
-- [ ] **FORM-03**: Para P2 (portal), la herramienta responde `ok: true` con `data: { ruta, formato: "portal", aviso: "formato no soportado" }` y escribe `out/<caso>/valores-portal.md` con los valores listos para copiar. El flujo sigue hasta el paquete.
-- [ ] **FORM-04**: `generar_formulario` recibe un `mapeo` que solo trae rutas: un `mapeo` con valores se rechaza con un esquema estricto. La herramienta lee los valores del maestro, de modo que CA2 se cumple por diseño.
+- [x] **FORM-02**: Para P1 se genera `out/<caso>/formulario.pdf` con todas las etiquetas y valores en el orden de `plantilla-campos.json`. Los campos `faltante` y `requiere_confirmacion` llevan una marca visible.
+- [x] **FORM-03**: Para P2 (portal), la herramienta responde `ok: true` con `data: { ruta, formato: "portal", aviso: "formato no soportado" }` y escribe `out/<caso>/valores-portal.md` con los valores listos para copiar. El flujo sigue hasta el paquete.
+- [x] **FORM-04**: `generar_formulario` recibe un `mapeo` que solo trae rutas: un `mapeo` con valores se rechaza con un esquema estricto. La herramienta lee los valores del maestro, de modo que CA2 se cumple por diseño.
 
 ### Paquete para firma (HU-4, RN2, RN3)
 
@@ -189,11 +189,11 @@ Cada requisito v1 está asignado a exactamente una fase del roadmap (`.planning/
 | MAP-04 | Phase 1 | Complete |
 | MAP-05 | Phase 1 | Complete |
 | MAP-06 | Phase 1 | Complete |
-| MAP-07 | Phase 1 | Pending |
+| MAP-07 | Phase 1 | Complete |
 | FORM-01 | Phase 1 | Complete |
-| FORM-02 | Phase 1 | Pending |
-| FORM-03 | Phase 1 | Pending |
-| FORM-04 | Phase 1 | Pending |
+| FORM-02 | Phase 1 | Complete |
+| FORM-03 | Phase 1 | Complete |
+| FORM-04 | Phase 1 | Complete |
 | PAQ-01 | Phase 1 | Pending |
 | PAQ-02 | Phase 1 | Pending |
 | PAQ-03 | Phase 1 | Pending |
