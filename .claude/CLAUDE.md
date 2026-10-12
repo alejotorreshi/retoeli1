@@ -197,6 +197,16 @@ Agente conversacional completo e independiente que automatiza el llenado de form
 Conventions not yet established. Will populate as patterns emerge during development.
 <!-- GSD:conventions-end -->
 
+## Reglas de código del proyecto
+
+- Sin comentarios en el código: se entiende por nombres, tipos y funciones pequeñas. Las explicaciones van en `docs/`, `README.md` o `SOLUCION.md`. Las `description` de herramientas y los `.describe()` de zod son contrato, no comentarios.
+- TypeScript estricto sin `any`; `bun run check` (tsc + Biome) debe pasar.
+- Constantes y configuración centralizadas, tipadas y validadas con zod; nada de valores mágicos dispersos.
+- Dependencias hacia adentro: dominio puro → herramientas/casos de uso → infraestructura → HTTP. Las herramientas no importan el servidor.
+- Dominio en español (contrato del PRD), infraestructura en inglés; documentación en español.
+- Nunca modificar `reto-01/` (PRD y fixtures entregados).
+- Commits con Conventional Commits bajo la identidad local `elianatorres5772 <elianatorres5772@gmail.com>`.
+
 <!-- GSD:architecture-start source:ARCHITECTURE.md -->
 
 ## Architecture
