@@ -1,6 +1,6 @@
-import { afterAll, describe, expect, spyOn, test } from "bun:test";
+import { afterAll, beforeAll, describe, expect, spyOn, test } from "bun:test";
 import { existsSync } from "node:fs";
-import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
+import { cp, mkdir, readFile, symlink, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { z } from "zod";
@@ -8,9 +8,29 @@ import { LIMITE_LECTURA_BYTES, MAX_ISSUES_ARGS } from "../../src/config/constant
 import { exito } from "../../src/domain/resultado.ts";
 import { type ContextoHerramienta, defineTool, normalizarContexto } from "../../src/tools/define-tool.ts";
 import { leer_solicitud } from "../../src/tools/proveedor.ts";
+import { crearProyectoTemporal, type ProyectoTemporal } from "../helpers/proyecto-temporal.ts";
 
-const RAIZ = join(import.meta.dir, "..", "..");
-const CTX = { directory: RAIZ, sessionId: "trazador" };
+const RAIZ_REPO = join(import.meta.dir, "..", "..");
+const CASOS_REALES = ["co-industrias-delta", "ec-corp-andina", "hn-agroexport-sula", "pa-logistica-istmo"];
+
+const proyectos: ProyectoTemporal[] = [];
+let compartido: ProyectoTemporal;
+let CTX: ContextoHerramienta;
+
+async function nuevoProyecto(): Promise<ProyectoTemporal> {
+  const proyecto = await crearProyectoTemporal();
+  proyectos.push(proyecto);
+  return proyecto;
+}
+
+beforeAll(async () => {
+  compartido = await nuevoProyecto();
+  CTX = { directory: compartido.raiz, sessionId: "trazador" };
+});
+
+afterAll(async () => {
+  await Promise.all(proyectos.map((proyecto) => proyecto.limpiar()));
+});
 
 type Respuesta = {
   ok: boolean;
@@ -64,9 +84,12 @@ describe("trazador: proveedor_leer_solicitud de punta a punta", () => {
     });
   });
 
-  test("la ejecución no escribe una carpeta out/ en el repositorio", async () => {
+  test("la ejecución nunca escribe en la carpeta out/ del repositorio", async () => {
+    const rutaLog = join(RAIZ_REPO, "out", "log.jsonl");
+    const antes = existsSync(rutaLog) ? await readFile(rutaLog, "utf8") : null;
     await leer({ caso: "co-industrias-delta" });
-    expect(existsSync(join(RAIZ, "out"))).toBe(false);
+    const despues = existsSync(rutaLog) ? await readFile(rutaLog, "utf8") : null;
+    expect(despues).toBe(antes);
   });
 });
 
@@ -148,9 +171,27 @@ describe("trazador: casos con forma de recorrido", () => {
     });
   }
 
-  test("un caso bien formado sin carpeta da CASO_NO_ENCONTRADO", async () => {
-    const respuesta = await leer({ caso: "no-existe" });
-    expect(respuesta.codigo).toBe("CASO_NO_ENCONTRADO");
+  test("un symlink dentro de casos/ que apunta fuera da CASO_INVALIDO", async () => {
+    const proyecto = await nuevoProyecto();
+    await symlink(tmpdir(), join(proyecto.casosDir, "escape"));
+    const respuesta = await ejecutarCon({ caso: "escape" }, { directory: proyecto.raiz });
+    expect(respuesta.codigo).toBe("CASO_INVALIDO");
+  });
+});
+
+describe("trazador: listado de casos (D-14)", () => {
+  for (const caso of ["no-existe", ""]) {
+    test(`"${caso}" da CASO_NO_ENCONTRADO con los casos disponibles`, async () => {
+      const respuesta = await leer({ caso });
+      expect(respuesta.ok).toBe(false);
+      expect(respuesta.codigo).toBe("CASO_NO_ENCONTRADO");
+      expect(respuesta.parcial).toEqual({ casos_disponibles: CASOS_REALES });
+    });
+  }
+
+  test("un caso inexistente no crea out/<caso>", async () => {
+    await leer({ caso: "no-existe" });
+    expect(existsSync(join(compartido.raiz, "out", "no-existe"))).toBe(false);
   });
 });
 
@@ -213,7 +254,7 @@ describe("trazador: excepciones internas", () => {
         "-e",
         'const m = await import("./src/tools/proveedor.ts"); console.log(Object.keys(m).join(","));',
       ],
-      { cwd: RAIZ, env: {}, stdout: "pipe", stderr: "pipe" },
+      { cwd: RAIZ_REPO, env: {}, stdout: "pipe", stderr: "pipe" },
     );
     const salida = await new Response(proceso.stdout).text();
     expect(await proceso.exited).toBe(0);
@@ -222,21 +263,14 @@ describe("trazador: excepciones internas", () => {
 });
 
 describe("trazador: fixtures inválidos en un proyecto temporal", () => {
-  const temporales: string[] = [];
-
-  afterAll(async () => {
-    await Promise.all(temporales.map((ruta) => rm(ruta, { recursive: true, force: true })));
-  });
-
   async function proyectoCon(archivos: Readonly<Record<string, string>>): Promise<string> {
-    const raiz = await mkdtemp(join(tmpdir(), "trazador-"));
-    temporales.push(raiz);
-    const caso = join(raiz, "reto-01", "fixtures", "reto-01", "casos", "roto");
+    const proyecto = await nuevoProyecto();
+    const caso = join(proyecto.casosDir, "roto");
     await mkdir(caso, { recursive: true });
     await Promise.all(
       Object.entries(archivos).map(([nombre, contenido]) => writeFile(join(caso, nombre), contenido)),
     );
-    return raiz;
+    return proyecto.raiz;
   }
 
   const solicitudValida = JSON.stringify({
@@ -281,5 +315,18 @@ describe("trazador: fixtures inválidos en un proyecto temporal", () => {
       formato: "xlsx",
       soportes: ["rut"],
     });
+  });
+
+  test("una copia de co con plantilla-celdas.json corrupta da PLANTILLA_INVALIDA con soportes (D-17)", async () => {
+    const proyecto = await nuevoProyecto();
+    const rota = join(proyecto.casosDir, "zz-plantilla-rota");
+    await cp(join(proyecto.casosDir, "co-industrias-delta"), rota, { recursive: true });
+    await writeFile(join(rota, "plantilla-celdas.json"), "[{ esto no es json");
+    const respuesta = await ejecutarCon({ caso: "zz-plantilla-rota" }, { directory: proyecto.raiz });
+    expect(respuesta.ok).toBe(false);
+    expect(respuesta.codigo).toBe("PLANTILLA_INVALIDA");
+    expect(respuesta.parcial?.pais).toBe("CO");
+    expect(respuesta.parcial?.formato).toBe("xlsx");
+    expect(respuesta.parcial?.soportes).toHaveLength(4);
   });
 });
