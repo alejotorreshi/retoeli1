@@ -148,6 +148,21 @@ describe("construirChecklist: confirmaciones que se le piden al cliente (WR-02, 
       "Sin ruta ficticia",
     ]);
     expect(checklist.confirmaciones_al_cliente).toEqual(["Identificador ficticio", "Sin ruta ficticia"]);
+    expect(checklist.confirmaciones_internas).toEqual(["Cuenta ficticia"]);
+  });
+
+  test("el checklist pide confirmar internamente el campo bancario y con el cliente el resto (WR-01)", () => {
+    const campos = [
+      porConfirmar("Identificador ficticio", "nit"),
+      porConfirmar("Cuenta ficticia", "banco.numero_cuenta"),
+    ];
+    const datos = construirDatosChecklist(CASO, construirChecklist([], campos, HOY));
+    expect(datos.por_confirmar.map((campo) => campo.etiqueta)).toEqual([
+      "Identificador ficticio",
+      "Cuenta ficticia",
+    ]);
+    expect(datos.confirmar_con_cliente).toEqual([{ etiqueta: "Identificador ficticio" }]);
+    expect(datos.confirmar_internamente).toEqual([{ etiqueta: "Cuenta ficticia" }]);
   });
 });
 

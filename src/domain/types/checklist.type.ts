@@ -17,6 +17,7 @@ export type Checklist = {
   readonly faltantes: readonly string[];
   readonly requiere_confirmacion: readonly CampoPorConfirmar[];
   readonly confirmaciones_al_cliente: readonly string[];
+  readonly confirmaciones_internas: readonly string[];
 };
 
 export type FilaSoporteChecklist = {
@@ -40,6 +41,8 @@ export type DatosChecklist = {
   readonly soportes: readonly FilaSoporteChecklist[];
   readonly faltantes: readonly { readonly etiqueta: string }[];
   readonly por_confirmar: readonly CampoPorConfirmar[];
+  readonly confirmar_con_cliente: readonly { readonly etiqueta: string }[];
+  readonly confirmar_internamente: readonly { readonly etiqueta: string }[];
   readonly ausentes: readonly { readonly nombre: string }[];
   readonly vencidos: readonly { readonly nombre: string; readonly vigencia: string }[];
   readonly con_aviso_emisor: readonly SoporteConAvisoEmisor[];

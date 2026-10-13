@@ -62,6 +62,8 @@ export function construirDatosBorrador(
     checklist.soportes.filter((soporte) => soporte.estado === ESTADO_SOPORTE.PRESENTE),
   );
   const hayPreguntas = hayPorConfirmar || hayCamposSinDato || conAvisoEmisor.length > 0;
+  const hayValidacionInterna = checklist.confirmaciones_internas.length > 0;
+  const listo = checklist.listo_para_firma;
   return {
     para: solicitud.de,
     asunto: asuntoRespuesta(solicitud),
@@ -80,9 +82,10 @@ export function construirDatosBorrador(
     hay_campos_sin_dato: seccionSi(hayCamposSinDato),
     soportes_pendientes: soportesPendientes.map((texto) => ({ texto })),
     hay_soportes_pendientes: seccionSi(soportesPendientes.length > 0),
-    firma_lista: seccionSi(checklist.listo_para_firma && !hayPreguntas),
-    firma_tras_confirmar: seccionSi(checklist.listo_para_firma && hayPreguntas),
-    firma_bloqueada: seccionSi(!checklist.listo_para_firma),
+    firma_lista: seccionSi(listo && !hayPreguntas && !hayValidacionInterna),
+    firma_tras_confirmar: seccionSi(listo && hayPreguntas),
+    firma_tras_validar: seccionSi(listo && !hayPreguntas && hayValidacionInterna),
+    firma_bloqueada: seccionSi(!listo),
   };
 }
 

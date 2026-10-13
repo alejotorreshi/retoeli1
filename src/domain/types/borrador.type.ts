@@ -24,6 +24,7 @@ export type DatosBorradorCorreo = {
   readonly hay_soportes_pendientes: SeccionCondicional;
   readonly firma_lista: SeccionCondicional;
   readonly firma_tras_confirmar: SeccionCondicional;
+  readonly firma_tras_validar: SeccionCondicional;
   readonly firma_bloqueada: SeccionCondicional;
 };
 

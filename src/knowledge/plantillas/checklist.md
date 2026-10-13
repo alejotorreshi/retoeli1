@@ -26,6 +26,7 @@ Estado: {{estado}}
 {{#ausentes}}- [ ] Conseguir el soporte {{nombre}} y agregarlo al paquete
 {{/ausentes}}{{#vencidos}}- [ ] Renovar el soporte {{nombre}}, vencido desde {{vigencia}}
 {{/vencidos}}{{#faltantes}}- [ ] Conseguir el dato "{{etiqueta}}" y completarlo en el formulario
-{{/faltantes}}{{#por_confirmar}}- [ ] Confirmar con el cliente el campo "{{etiqueta}}"
-{{/por_confirmar}}{{#con_aviso_emisor}}- [ ] Confirmar con el cliente si acepta el soporte {{nombre}}, emitido en {{pais_emisor}}
+{{/faltantes}}{{#confirmar_con_cliente}}- [ ] Confirmar con el cliente el campo "{{etiqueta}}"
+{{/confirmar_con_cliente}}{{#confirmar_internamente}}- [ ] Confirmar internamente el campo "{{etiqueta}}"
+{{/confirmar_internamente}}{{#con_aviso_emisor}}- [ ] Confirmar con el cliente si acepta el soporte {{nombre}}, emitido en {{pais_emisor}}
 {{/con_aviso_emisor}}- [ ] Revisar el formulario y pasarlo a firma del representante legal

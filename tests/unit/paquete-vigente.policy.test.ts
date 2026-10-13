@@ -29,6 +29,7 @@ const CHECKLIST: Checklist = {
   faltantes: [],
   requiere_confirmacion: [],
   confirmaciones_al_cliente: [],
+  confirmaciones_internas: [],
 };
 
 const COMPLETO = [

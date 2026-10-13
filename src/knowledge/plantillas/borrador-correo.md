@@ -26,7 +26,9 @@ Buenos días, equipo de {{cliente}}:
 
 {{/firma_lista}}{{#firma_tras_confirmar}}Con su confirmación pasaremos el formulario a la firma de nuestro representante legal.
 
-{{/firma_tras_confirmar}}{{#firma_bloqueada}}El formulario todavía no está listo para la firma de nuestro representante legal: faltan los soportes pendientes indicados.
+{{/firma_tras_confirmar}}{{#firma_tras_validar}}Validaremos internamente algunos datos del formulario antes de pasarlo a la firma de nuestro representante legal.
+
+{{/firma_tras_validar}}{{#firma_bloqueada}}El formulario todavía no está listo para la firma de nuestro representante legal: faltan los soportes pendientes indicados.
 
 {{/firma_bloqueada}}Quedamos atentos a cualquier comentario.
 

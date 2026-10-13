@@ -1,11 +1,13 @@
 import { describe, expect, test } from "bun:test";
 import { FORMATO } from "@/config/constants/forms.constants.ts";
+import { ESTADO_CAMPO, REGLA_MAPEO } from "@/config/constants/mapping.constants.ts";
 import { ESTADO_SOPORTE } from "@/config/constants/supports.constants.ts";
 import { TEXTO_BORRADOR } from "@/config/strings.ts";
 import { construirDatosBorrador, construirDatosEnvio } from "@/domain/builders/borrador.builder.ts";
 import { construirChecklist } from "@/domain/builders/checklist.builder.ts";
 import type { CampoPorConfirmar, Checklist } from "@/domain/types/checklist.type.ts";
 import type { Maestro } from "@/domain/types/maestro.type.ts";
+import type { CampoMapeado } from "@/domain/types/mapeo.type.ts";
 import type { Formato, Solicitud } from "@/domain/types/solicitud.type.ts";
 import type { SoporteEvaluado } from "@/domain/types/soportes.type.ts";
 
@@ -38,6 +40,7 @@ const CLAVES_BORRADOR = [
   "hay_soportes_pendientes",
   "firma_lista",
   "firma_tras_confirmar",
+  "firma_tras_validar",
   "firma_bloqueada",
 ].sort();
 
@@ -86,6 +89,7 @@ function checklist(
   listo: boolean,
   porConfirmar: readonly CampoPorConfirmar[],
   faltantes: readonly string[] = [],
+  internas: readonly string[] = [],
 ): Checklist {
   return {
     fecha_ejecucion: "2026-09-03",
@@ -98,6 +102,7 @@ function checklist(
     faltantes,
     requiere_confirmacion: porConfirmar,
     confirmaciones_al_cliente: porConfirmar.map((campo) => campo.etiqueta),
+    confirmaciones_internas: internas,
   };
 }
 
@@ -106,13 +111,23 @@ function borrador(
   porConfirmar: readonly CampoPorConfirmar[],
   formato: Formato = FORMATO.XLSX,
   faltantes: readonly string[] = [],
+  internas: readonly string[] = [],
 ) {
   return construirDatosBorrador(
     solicitud(formato),
     MAESTRO,
-    checklist(listo, porConfirmar, faltantes),
+    checklist(listo, porConfirmar, faltantes, internas),
     FORMULARIO_XLSX,
   );
+}
+
+function banderasActivas(datos: ReturnType<typeof borrador>) {
+  return [
+    datos.firma_lista,
+    datos.firma_tras_confirmar,
+    datos.firma_tras_validar,
+    datos.firma_bloqueada,
+  ].filter((bandera) => bandera.length > 0);
 }
 
 describe("construirDatosBorrador: estado de firma (GC-1, G-01-H4b)", () => {
@@ -149,11 +164,42 @@ describe("construirDatosBorrador: estado de firma (GC-1, G-01-H4b)", () => {
     const datos = construirDatosBorrador(
       solicitud(FORMATO.XLSX),
       MAESTRO,
-      { ...base, confirmaciones_al_cliente: POR_CONFIRMAR.map((campo) => campo.etiqueta) },
+      {
+        ...base,
+        confirmaciones_al_cliente: POR_CONFIRMAR.map((campo) => campo.etiqueta),
+        confirmaciones_internas: [bancario.etiqueta],
+      },
       FORMULARIO_XLSX,
     );
     expect(datos.por_confirmar.map((campo) => campo.etiqueta)).not.toContain("Cuenta ficticia");
     expect(JSON.stringify(datos)).not.toContain("Nota bancaria ficticia");
+    expect(datos.firma_tras_confirmar).toEqual([{}]);
+    expect(datos.firma_tras_validar).toEqual([]);
+  });
+
+  test("si el único campo por confirmar es bancario no declara el formulario listo para la firma (WR-01)", () => {
+    const campo: CampoMapeado = {
+      etiqueta: "Número de cuenta",
+      ruta: "banco.numero_cuenta",
+      estado: ESTADO_CAMPO.REQUIERE_CONFIRMACION,
+      regla: REGLA_MAPEO.CLAVE_DIRECTA,
+      confianza: 0.5,
+      valor: null,
+      nota: "Nota bancaria ficticia",
+      propuesta: null,
+    };
+    const listo = construirChecklist(
+      [soporte("rut", ESTADO_SOPORTE.PRESENTE, "rut-ficticio.txt")],
+      [campo],
+      "2026-09-03",
+    );
+    const datos = construirDatosBorrador(solicitud(FORMATO.XLSX), MAESTRO, listo, FORMULARIO_XLSX);
+    expect(listo.listo_para_firma).toBe(true);
+    expect(datos.firma_lista).toEqual([]);
+    expect(datos.firma_tras_confirmar).toEqual([]);
+    expect(datos.firma_tras_validar).toEqual([{}]);
+    expect(datos.hay_por_confirmar).toEqual([]);
+    expect(JSON.stringify(datos)).not.toContain("Número de cuenta");
   });
 
   test("bloqueado sin campos por confirmar solo activa firma_bloqueada", () => {
@@ -172,15 +218,15 @@ describe("construirDatosBorrador: estado de firma (GC-1, G-01-H4b)", () => {
     expect(datos.por_confirmar).toHaveLength(POR_CONFIRMAR.length);
   });
 
-  test("en las ocho combinaciones hay exactamente una bandera de firma activa", () => {
+  test("en las dieciséis combinaciones hay exactamente una bandera de firma activa", () => {
     for (const listo of [true, false]) {
       for (const porConfirmar of [[], POR_CONFIRMAR]) {
         for (const faltantes of [[], FALTANTES]) {
-          const datos = borrador(listo, porConfirmar, FORMATO.XLSX, faltantes);
-          const activas = [datos.firma_lista, datos.firma_tras_confirmar, datos.firma_bloqueada].filter(
-            (bandera) => bandera.length > 0,
-          );
-          expect(activas).toHaveLength(1);
+          for (const internas of [[], ["Cuenta ficticia"]]) {
+            const datos = borrador(listo, porConfirmar, FORMATO.XLSX, faltantes, internas);
+            expect(banderasActivas(datos)).toHaveLength(1);
+            if (internas.length > 0) expect(datos.firma_lista).toEqual([]);
+          }
         }
       }
     }

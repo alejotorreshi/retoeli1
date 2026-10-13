@@ -68,6 +68,9 @@ export function construirChecklist(
     confirmaciones_al_cliente: porConfirmar
       .filter((campo) => !esRutaBancaria(campo.ruta))
       .map((campo) => campo.etiqueta),
+    confirmaciones_internas: porConfirmar
+      .filter((campo) => esRutaBancaria(campo.ruta))
+      .map((campo) => campo.etiqueta),
   };
 }
 
@@ -109,6 +112,8 @@ export function construirDatosChecklist(caso: CasoChecklist, checklist: Checklis
     soportes: soportes.map(filaSoporte),
     faltantes: checklist.faltantes.map((etiqueta) => ({ etiqueta })),
     por_confirmar: checklist.requiere_confirmacion,
+    confirmar_con_cliente: checklist.confirmaciones_al_cliente.map((etiqueta) => ({ etiqueta })),
+    confirmar_internamente: checklist.confirmaciones_internas.map((etiqueta) => ({ etiqueta })),
     ausentes: soportes
       .filter((soporte) => soporte.estado === ESTADO_SOPORTE.AUSENTE)
       .map(({ tipo }) => ({ nombre: TEXTO_SOPORTE.nombre(tipo) })),
