@@ -6,7 +6,7 @@ import { CODIGO_ERROR } from "@/config/constants/errors.constants.ts";
 import { ARCHIVOS_PAQUETE, ARCHIVOS_SALIDA } from "@/config/constants/files.constants.ts";
 import { CLAVE_PLANTILLA } from "@/config/constants/knowledge.constants.ts";
 import { construirDatosEnvio } from "@/domain/borrador.ts";
-import { renderizarPlantilla } from "@/domain/plantillas.ts";
+import { renderizarPlantilla } from "@/domain/motor-plantillas.ts";
 import { exito, fallo } from "@/domain/resultado.ts";
 import type { Resultado } from "@/domain/types/resultado.type.ts";
 

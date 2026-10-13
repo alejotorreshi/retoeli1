@@ -16,8 +16,8 @@ import {
   PATRON_TEXTO_NO_VACIO,
 } from "@/config/constants/patterns.constants.ts";
 import { TEXTO_COMUN, TEXTO_MAPEO } from "@/config/strings.ts";
+import { renderizarTextoPlano } from "@/domain/motor-plantillas.ts";
 import { aTexto, normalizarEtiqueta } from "@/domain/normalizar.ts";
-import { renderizarTextoPlano } from "@/domain/plantillas.ts";
 import { exito, fallo } from "@/domain/resultado.ts";
 import type { Maestro } from "@/domain/types/maestro.type.ts";
 import type {

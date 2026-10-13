@@ -11,7 +11,7 @@ import { TEXTO_PORTAL } from "@/config/strings.ts";
 import { compararMapeo } from "@/domain/comparar-mapeo.ts";
 import { construirFilas } from "@/domain/formulario.ts";
 import { contarEstados } from "@/domain/mapeo.ts";
-import { renderizarPlantilla } from "@/domain/plantillas.ts";
+import { renderizarPlantilla } from "@/domain/motor-plantillas.ts";
 import { construirDatosPortal } from "@/domain/portal.ts";
 import { exito, fallo } from "@/domain/resultado.ts";
 import type { CampoMapeado } from "@/domain/types/mapeo.type.ts";

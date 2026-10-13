@@ -116,7 +116,7 @@ const LITERAL_DE_REGEX =
 
 const DUENOS_DE_REGEX: ReadonlySet<string> = new Set([
   "src/config/constants/patterns.constants.ts",
-  "src/domain/plantillas.ts",
+  "src/domain/motor-plantillas.ts",
 ]);
 
 const TEXTO_LEGIBLE = /[A-Za-zÁÉÍÓÚÑáéíóúñ]{2,}\s+[A-Za-zÁÉÍÓÚÑáéíóúñ]{2,}/;
