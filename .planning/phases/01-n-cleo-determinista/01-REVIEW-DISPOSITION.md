@@ -5,7 +5,7 @@ titles: json
 findings:
   - id: CR-01
     severity: critical
-    disposition: open
+    disposition: fixed
     title: "Empty or whitespace-only master values are mapped as `lleno`"
   - id: WR-01
     severity: warning
@@ -13,7 +13,7 @@ findings:
     title: "PDF silently replaces characters outside WinAnsi with `?` in filled values"
   - id: WR-02
     severity: warning
-    disposition: open
+    disposition: fixed
     title: "Boolean and array master values are reported as \"no existe en el maestro\""
   - id: WR-03
     severity: warning
@@ -33,11 +33,11 @@ findings:
     title: "Expired supports are copied into the package and listed as sent, while the email says they will follow"
   - id: WR-07
     severity: warning
-    disposition: open
+    disposition: fixed
     title: "Failed regeneration leaves a stale form that `armar_paquete` accepts"
   - id: WR-08
     severity: warning
-    disposition: open
+    disposition: fixed
     title: "Template schema accepts sheet names and cells that crash or corrupt the xlsx writer"
   - id: WR-09
     severity: warning
@@ -45,7 +45,7 @@ findings:
     title: "The PII-absence e2e proof only checks four identifiers"
   - id: IN-01
     severity: info
-    disposition: open
+    disposition: fixed
     title: "Spanish plural bug in the expiry notice"
   - id: IN-02
     severity: info
@@ -53,7 +53,7 @@ findings:
     title: "Markdown-table escaping is applied to the plain-text email"
   - id: IN-03
     severity: info
-    disposition: open
+    disposition: fixed
     title: "`relojFijo.ahora()` uses real wall-clock time"
   - id: IN-04
     severity: info
@@ -73,7 +73,7 @@ findings:
     title: "A case with both templates is rejected instead of choosing by format"
   - id: IN-08
     severity: info
-    disposition: open
+    disposition: fixed
     title: "`soportesPresentes` swallows directory errors"
   - id: IN-09
     severity: info
@@ -85,42 +85,42 @@ findings:
     title: "Type-only import cycle, and config enums duplicated from domain types"
   - id: IN-11
     severity: info
-    disposition: open
+    disposition: skipped
     title: "Dependency versions drift from the documented stack, and `check` needs the network"
   - id: IN-12
     severity: info
     disposition: open
     title: "`sessionId` has no length bound before it is written to every log line"
-open: 22
+open: 14
 total: 22
-recorded: 2026-10-12T23:28:01.104Z
+recorded: 2026-10-13T00:15:46.895Z
 ---
 
 # Phase 01: Code Review Disposition
 
 | Finding | Severity | Disposition | Source |
 |---------|----------|-------------|--------|
-| CR-01 | critical | open | - |
+| CR-01 | critical | fixed | 01-REVIEW-FIX.md |
 | WR-01 | warning | open | - |
-| WR-02 | warning | open | - |
+| WR-02 | warning | fixed | 01-REVIEW-FIX.md |
 | WR-03 | warning | open | - |
 | WR-04 | warning | open | - |
 | WR-05 | warning | open | - |
 | WR-06 | warning | open | - |
-| WR-07 | warning | open | - |
-| WR-08 | warning | open | - |
+| WR-07 | warning | fixed | 01-REVIEW-FIX.md |
+| WR-08 | warning | fixed | 01-REVIEW-FIX.md |
 | WR-09 | warning | open | - |
-| IN-01 | info | open | - |
+| IN-01 | info | fixed | 01-REVIEW-FIX.md |
 | IN-02 | info | open | - |
-| IN-03 | info | open | - |
+| IN-03 | info | fixed | 01-REVIEW-FIX.md |
 | IN-04 | info | open | - |
 | IN-05 | info | open | - |
 | IN-06 | info | open | - |
 | IN-07 | info | open | - |
-| IN-08 | info | open | - |
+| IN-08 | info | fixed | 01-REVIEW-FIX.md |
 | IN-09 | info | open | - |
 | IN-10 | info | open | - |
-| IN-11 | info | open | - |
+| IN-11 | info | skipped | 01-REVIEW-FIX.md |
 | IN-12 | info | open | - |
 
 Dispositions: `open` (recorded, not yet triaged), `fixed`, `skipped`, `deferred`.
