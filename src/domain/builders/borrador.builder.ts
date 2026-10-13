@@ -2,6 +2,7 @@ import { FORMATO } from "@/config/constants/forms.constants.ts";
 import { RUTA_MAESTRO } from "@/config/constants/maestro.constants.ts";
 import { ESTADO_SOPORTE } from "@/config/constants/supports.constants.ts";
 import { TEXTO_BORRADOR, TEXTO_COMUN, TEXTO_SOPORTE } from "@/config/strings.ts";
+import { motivosDeBloqueo } from "@/domain/builders/checklist.builder.ts";
 import { seccionSi } from "@/domain/engines/motor-plantillas.engine.ts";
 import { leerRuta } from "@/domain/selectors/maestro.selector.ts";
 import type { DatosBorradorCorreo, DatosEnvioSimulado, RutaBorrador } from "@/domain/types/borrador.type.ts";
@@ -104,6 +105,6 @@ export function construirDatosEnvio(
     formulario_en_portal: seccionSi(!adjuntaFormulario(solicitud.formato)),
     archivos: listado.filter((archivo) => alCliente.has(archivo)).map((archivo) => ({ archivo })),
     retenidos: listado.filter((archivo) => vencidos.has(archivo)).map((archivo) => ({ archivo })),
-    bloqueos: checklist.bloqueos.map((bloqueo) => ({ bloqueo })),
+    bloqueos: motivosDeBloqueo(checklist.soportes).map((bloqueo) => ({ bloqueo })),
   };
 }

@@ -36,6 +36,9 @@ const ENVIADOS_ESPERADOS: Readonly<Record<string, readonly string[]>> = {
 };
 const LITERAL = "requiere confirmación explícita";
 const BLOQUEO_EC = "ausente: certificado_cumplimiento_tributario";
+const LINEA_BLOQUEO_EC = "- ausente: Certificado de cumplimiento tributario";
+const LINEA_BLOQUEO_HN = "- vencido: Certificación de aportes parafiscales (2026-08-31)";
+const BLOQUEOS_VIGENTES = "## Bloqueos vigentes al confirmar";
 
 type RespuestaEnvio = {
   readonly ok: boolean;
@@ -178,7 +181,9 @@ describe("contrato: proveedor_simular_envio (ENV-01, D-13, RN4)", () => {
     const despues = await archivosBajo(carpeta);
     expect(despues.filter((archivo) => !antes.includes(archivo))).toEqual(["ENVIO-SIMULADO.md"]);
     const registro = await readFile(envioSimulado(proyecto.raiz, EC), "utf8");
-    expect(registro).toContain(`- ${BLOQUEO_EC}`);
+    const [, bloqueos = ""] = registro.split(BLOQUEOS_VIGENTES);
+    expect(bloqueos).toContain(LINEA_BLOQUEO_EC);
+    expect(registro).not.toContain("certificado_cumplimiento_tributario");
     expect(registro).toContain("Fecha de ejecución: 2026-09-03");
     expect(registro).toContain("No se envió ningún correo real");
     expect(registro).toContain("Confirmado explícitamente por la usuaria");
@@ -225,6 +230,13 @@ describe("contrato: proveedor_simular_envio (ENV-01, D-13, RN4)", () => {
     const [, retenidos = ""] = registro.split(FIN_ENVIADOS);
     expect(retenidos).toContain("- paquete/parafiscales-2026-07.txt");
     expect(existsSync(join(proyecto.raiz, "out", HN, "paquete", "parafiscales-2026-07.txt"))).toBe(true);
+  });
+
+  test("hn confirmado nombra en español el soporte vencido entre los bloqueos vigentes (GC-2)", async () => {
+    const proyecto = await armado(HN);
+    const registro = await confirmarYLeer(proyecto, HN);
+    const [, bloqueos = ""] = registro.split(BLOQUEOS_VIGENTES);
+    expect(bloqueos).toContain(LINEA_BLOQUEO_HN);
   });
 
   test("co confirmado no exige listo_para_firma y registra Sin bloqueos", async () => {
