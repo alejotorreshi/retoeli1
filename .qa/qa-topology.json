@@ -1,21 +1,51 @@
 {
-  "generated_at": "2026-10-13T02:08:13Z",
+  "generated_at": "2026-10-13T23:44:45Z",
   "project": "reto-eli-1",
-  "runtime": { "bun_pinned": "1.4.3", "bun_local": "1.4.3" },
+  "runtime": {
+    "bun_pinned": "1.4.3",
+    "bun_local": "1.4.3"
+  },
   "surfaces": [
     {
       "name": "demo-cli",
       "kind": "cli",
       "present": true,
-      "detected_by": ["demo.ts", "package.json scripts.demo"],
-      "start": { "cmd": "bun run demo.ts", "cwd": "." },
+      "detected_by": [
+        "demo.ts",
+        "package.json scripts.demo"
+      ],
+      "start": {
+        "cmd": "bun run demo.ts",
+        "cwd": "."
+      },
       "port": null,
-      "readiness": { "kind": "exit-code", "expect": 0, "timeout_s": 120 },
-      "logs": { "path": ".qa/logs/demo-cli.log" },
-      "artifacts": ["out/**", "out/log.jsonl", "out/*/log.jsonl"],
-      "env": { "required": [], "optional": ["FECHA_EJECUCION", "TZ_NEGOCIO"], "missing": [] },
+      "readiness": {
+        "kind": "exit-code",
+        "expect": 0,
+        "timeout_s": 120
+      },
+      "logs": {
+        "path": ".qa/logs/demo-cli.log"
+      },
+      "artifacts": [
+        "out/**",
+        "out/log.jsonl",
+        "out/*/log.jsonl"
+      ],
+      "env": {
+        "required": [],
+        "optional": [
+          "FECHA_EJECUCION",
+          "TZ_NEGOCIO"
+        ],
+        "missing": []
+      },
       "depends_on": [],
-      "probe": { "result": "up", "detail": "exit 0 in ~1 s", "checked_at": "2026-10-13T02:08:13Z" },
+      "probe": {
+        "result": "up",
+        "detail": "exit 0 in ~1 s",
+        "checked_at": "2026-10-13T23:44:45Z"
+      },
       "fallback": "auto",
       "in_local_qa_scope": true,
       "human_requirements": []
@@ -24,34 +54,233 @@
       "name": "tools",
       "kind": "library",
       "present": true,
-      "detected_by": ["src/tools/proveedor.ts"],
+      "detected_by": [
+        "src/tools/proveedor.ts"
+      ],
       "entry": "src/tools/proveedor.ts",
-      "exports": ["leer_solicitud", "mapear_campos", "generar_formulario", "armar_paquete", "simular_envio"],
+      "exports": [
+        "leer_solicitud",
+        "mapear_campos",
+        "generar_formulario",
+        "armar_paquete",
+        "simular_envio"
+      ],
       "invoke": "bun -e from a scratch copy, ctx = { directory: <scratch root>, sessionId }",
       "port": null,
-      "readiness": { "kind": "exit-code", "expect": 0, "timeout_s": 60 },
-      "logs": { "path": ".qa/logs/tools.log" },
-      "artifacts": ["out/**"],
-      "env": { "required": [], "optional": ["FECHA_EJECUCION", "TZ_NEGOCIO"], "missing": [] },
+      "readiness": {
+        "kind": "exit-code",
+        "expect": 0,
+        "timeout_s": 60
+      },
+      "logs": {
+        "path": ".qa/logs/tools.log"
+      },
+      "artifacts": [
+        "out/**"
+      ],
+      "env": {
+        "required": [],
+        "optional": [
+          "FECHA_EJECUCION",
+          "TZ_NEGOCIO"
+        ],
+        "missing": []
+      },
       "depends_on": [],
-      "probe": { "result": "up", "detail": "imported by the demo runner and 5 test files (codegraph)", "checked_at": "2026-10-13T02:08:13Z" },
+      "probe": {
+        "result": "up",
+        "detail": "imported by the demo runner and 5 test files (codegraph)",
+        "checked_at": "2026-10-13T23:44:45Z"
+      },
       "fallback": "auto",
       "in_local_qa_scope": true,
       "human_requirements": []
     },
     {
+      "name": "agent",
+      "kind": "library",
+      "present": true,
+      "available_from_phase": null,
+      "detected_by": [
+        "src/loop/wiring/agente.wiring.ts (crearAgente, codegraph)",
+        "tests/helpers/fetch-falso.helper.ts",
+        "tests/helpers/eventos.helper.ts"
+      ],
+      "entry": "src/loop/wiring/agente.wiring.ts",
+      "exports": [
+        "crearAgente"
+      ],
+      "invoke": "bun -e from a scratch copy of the repo (node_modules symlinked), crearAgente({ directorio: <scratch root>, fetch: crearFetchFalso(<guion>).fetch, fuenteEntorno: { LLM_API_KEY: <dummy>, LOG_LEVEL: 'silent', ...overrides } }); drive turns with agente.turno({ sesionId, mensaje }) and collect events with recoger()/textoFinal()/confirmaciones() from @tests/helpers/eventos.helper.ts. Scripted LLM = no network, no key, no cost (offline bypass, same pattern as tests/loop/*).",
+      "port": null,
+      "readiness": {
+        "kind": "exit-code",
+        "expect": 0,
+        "timeout_s": 60
+      },
+      "logs": {
+        "path": ".qa/logs/agent.log"
+      },
+      "artifacts": [
+        "out/**",
+        "out/log.jsonl",
+        "out/*/log.jsonl",
+        "out/*/ENVIO-SIMULADO.md"
+      ],
+      "env": {
+        "required": [],
+        "optional": [
+          "LLM_PROVIDER",
+          "LLM_BASE_URL",
+          "LLM_MODEL",
+          "LLM_MAX_OUTPUT_TOKENS",
+          "LLM_MAX_TOKENS_PARAM",
+          "LLM_TEMPERATURE",
+          "LLM_THINKING",
+          "LLM_REASONING_PASSBACK",
+          "LLM_TOOL_CHOICE_NONE",
+          "LLM_FALLBACK_ENABLED",
+          "LLM_FALLBACK_PROVIDER",
+          "LLM_FALLBACK_BASE_URL",
+          "LLM_FALLBACK_MODEL",
+          "LLM_FALLBACK_API_KEY",
+          "LLM_FALLBACK_MAX_TOKENS_PARAM",
+          "LLM_FALLBACK_TEMPERATURE",
+          "LLM_FALLBACK_THINKING",
+          "LLM_FALLBACK_REASONING_PASSBACK",
+          "LLM_FALLBACK_TOOL_CHOICE_NONE",
+          "LLM_TIMEOUT_MS",
+          "LLM_MAX_RETRIES",
+          "AGENT_TURN_DEADLINE_MS",
+          "AGENT_MAX_ITERATIONS",
+          "AGENT_SESSION_TOKEN_BUDGET",
+          "AGENT_SESSION_TTL_MINUTES",
+          "AGENT_MAX_SESSIONS",
+          "LOG_LEVEL",
+          "FECHA_EJECUCION",
+          "TZ_NEGOCIO"
+        ],
+        "missing": []
+      },
+      "depends_on": [
+        "tools"
+      ],
+      "probe": {
+        "result": "up",
+        "detail": "offline turn with scripted fetch: turn_start, usage, text, turn_end; 1 provider request, exit 0 in <1 s",
+        "checked_at": "2026-10-13T23:44:45Z"
+      },
+      "fallback": "auto",
+      "in_local_qa_scope": true,
+      "human_requirements": []
+    },
+    {
+      "name": "agent-live",
+      "kind": "cli",
+      "present": true,
+      "available_from_phase": null,
+      "detected_by": [
+        "package.json scripts.test:vivo",
+        "tests/live/agente-en-vivo.test.ts"
+      ],
+      "start": {
+        "cmd": "bun run test:vivo",
+        "cwd": "."
+      },
+      "port": null,
+      "readiness": {
+        "kind": "exit-code",
+        "expect": 0,
+        "timeout_s": 300
+      },
+      "logs": {
+        "path": ".qa/logs/agent-live.log"
+      },
+      "artifacts": [
+        "out/**"
+      ],
+      "env": {
+        "required": [
+          "LLM_API_KEY | DEEPSEEK_API_KEY (one of; loaded by Bun from the gitignored repo-root env file)"
+        ],
+        "optional": [
+          "LLM_PROVIDER",
+          "LLM_BASE_URL",
+          "LLM_MODEL",
+          "LLM_MAX_OUTPUT_TOKENS",
+          "LLM_MAX_TOKENS_PARAM",
+          "LLM_TEMPERATURE",
+          "LLM_THINKING",
+          "LLM_REASONING_PASSBACK",
+          "LLM_TOOL_CHOICE_NONE",
+          "LLM_FALLBACK_ENABLED",
+          "LLM_FALLBACK_PROVIDER",
+          "LLM_FALLBACK_BASE_URL",
+          "LLM_FALLBACK_MODEL",
+          "LLM_FALLBACK_API_KEY",
+          "LLM_FALLBACK_MAX_TOKENS_PARAM",
+          "LLM_FALLBACK_TEMPERATURE",
+          "LLM_FALLBACK_THINKING",
+          "LLM_FALLBACK_REASONING_PASSBACK",
+          "LLM_FALLBACK_TOOL_CHOICE_NONE",
+          "LLM_TIMEOUT_MS",
+          "LLM_MAX_RETRIES",
+          "AGENT_TURN_DEADLINE_MS",
+          "AGENT_MAX_ITERATIONS",
+          "AGENT_SESSION_TOKEN_BUDGET",
+          "AGENT_SESSION_TTL_MINUTES",
+          "AGENT_MAX_SESSIONS",
+          "LOG_LEVEL",
+          "FECHA_EJECUCION",
+          "TZ_NEGOCIO"
+        ],
+        "missing": []
+      },
+      "depends_on": [
+        "agent"
+      ],
+      "probe": {
+        "result": "not_probed",
+        "detail": "fallback human: spends the personal provider key; key presence checked as a boolean only (present)",
+        "checked_at": "2026-10-13T23:44:45Z"
+      },
+      "fallback": "human",
+      "in_local_qa_scope": true,
+      "human_requirements": [
+        "Explicit authorization per run: real DeepSeek calls on the personal key (~12 calls, ~80k tokens per run; at most 1-2 runs). Never print the key; never run a command that names the env file."
+      ]
+    },
+    {
       "name": "gate-check",
       "kind": "gate",
       "present": true,
-      "detected_by": ["package.json scripts.check"],
-      "start": { "cmd": "bun run check", "cwd": "." },
+      "detected_by": [
+        "package.json scripts.check"
+      ],
+      "start": {
+        "cmd": "bun run check",
+        "cwd": "."
+      },
       "port": null,
-      "readiness": { "kind": "exit-code", "expect": 0, "timeout_s": 180 },
-      "logs": { "path": ".qa/logs/gate-check.log" },
+      "readiness": {
+        "kind": "exit-code",
+        "expect": 0,
+        "timeout_s": 180
+      },
+      "logs": {
+        "path": ".qa/logs/gate-check.log"
+      },
       "artifacts": [],
-      "env": { "required": [], "optional": [], "missing": [] },
+      "env": {
+        "required": [],
+        "optional": [],
+        "missing": []
+      },
       "depends_on": [],
-      "probe": { "result": "up", "detail": "exit 0 (tsc, biome, bun audit)", "checked_at": "2026-10-13T02:08:13Z" },
+      "probe": {
+        "result": "up",
+        "detail": "exit 0 in ~1 s (tsc, biome, bun audit)",
+        "checked_at": "2026-10-13T23:44:45Z"
+      },
       "fallback": "auto",
       "in_local_qa_scope": true,
       "human_requirements": []
@@ -60,15 +289,34 @@
       "name": "gate-test",
       "kind": "gate",
       "present": true,
-      "detected_by": ["package.json scripts.test"],
-      "start": { "cmd": "bun test", "cwd": "." },
+      "detected_by": [
+        "package.json scripts.test"
+      ],
+      "start": {
+        "cmd": "bun test",
+        "cwd": "."
+      },
       "port": null,
-      "readiness": { "kind": "exit-code", "expect": 0, "timeout_s": 300 },
-      "logs": { "path": ".qa/logs/gate-test.log" },
+      "readiness": {
+        "kind": "exit-code",
+        "expect": 0,
+        "timeout_s": 300
+      },
+      "logs": {
+        "path": ".qa/logs/gate-test.log"
+      },
       "artifacts": [],
-      "env": { "required": [], "optional": [], "missing": [] },
+      "env": {
+        "required": [],
+        "optional": [],
+        "missing": []
+      },
       "depends_on": [],
-      "probe": { "result": "up", "detail": "exit 0", "checked_at": "2026-10-13T02:08:13Z" },
+      "probe": {
+        "result": "up",
+        "detail": "exit 0 in ~4 s (1097 pass, 1 skip: opt-in live test)",
+        "checked_at": "2026-10-13T23:44:45Z"
+      },
       "fallback": "auto",
       "in_local_qa_scope": true,
       "human_requirements": []
@@ -79,14 +327,66 @@
       "present": false,
       "available_from_phase": 3,
       "detected_by": [],
-      "start": { "cmd": "bun run dev", "cwd": "." },
+      "start": {
+        "cmd": "bun run dev",
+        "cwd": "."
+      },
       "port": 3000,
-      "readiness": { "kind": "http", "url": "/api/health", "timeout_s": 120 },
-      "logs": { "path": ".qa/logs/api.log" },
-      "artifacts": ["out/**"],
-      "env": { "required": ["DEEPSEEK_API_KEY"], "optional": ["DEEPSEEK_MODEL", "PORT"], "missing": [] },
+      "readiness": {
+        "kind": "http",
+        "url": "/api/health",
+        "timeout_s": 120
+      },
+      "logs": {
+        "path": ".qa/logs/api.log"
+      },
+      "artifacts": [
+        "out/**"
+      ],
+      "env": {
+        "required": [
+          "LLM_API_KEY | DEEPSEEK_API_KEY (one of)"
+        ],
+        "optional": [
+          "LLM_PROVIDER",
+          "LLM_BASE_URL",
+          "LLM_MODEL",
+          "LLM_MAX_OUTPUT_TOKENS",
+          "LLM_MAX_TOKENS_PARAM",
+          "LLM_TEMPERATURE",
+          "LLM_THINKING",
+          "LLM_REASONING_PASSBACK",
+          "LLM_TOOL_CHOICE_NONE",
+          "LLM_FALLBACK_ENABLED",
+          "LLM_FALLBACK_PROVIDER",
+          "LLM_FALLBACK_BASE_URL",
+          "LLM_FALLBACK_MODEL",
+          "LLM_FALLBACK_API_KEY",
+          "LLM_FALLBACK_MAX_TOKENS_PARAM",
+          "LLM_FALLBACK_TEMPERATURE",
+          "LLM_FALLBACK_THINKING",
+          "LLM_FALLBACK_REASONING_PASSBACK",
+          "LLM_FALLBACK_TOOL_CHOICE_NONE",
+          "LLM_TIMEOUT_MS",
+          "LLM_MAX_RETRIES",
+          "AGENT_TURN_DEADLINE_MS",
+          "AGENT_MAX_ITERATIONS",
+          "AGENT_SESSION_TOKEN_BUDGET",
+          "AGENT_SESSION_TTL_MINUTES",
+          "AGENT_MAX_SESSIONS",
+          "LOG_LEVEL",
+          "FECHA_EJECUCION",
+          "TZ_NEGOCIO",
+          "PORT"
+        ],
+        "missing": []
+      },
       "depends_on": [],
-      "probe": { "result": "not_present", "detail": "promised by ROADMAP phase 3", "checked_at": "2026-10-13T02:08:13Z" },
+      "probe": {
+        "result": "not_present",
+        "detail": "promised by ROADMAP phase 3",
+        "checked_at": "2026-10-13T02:08:13Z"
+      },
       "fallback": "auto",
       "in_local_qa_scope": true,
       "human_requirements": []
@@ -97,17 +397,38 @@
       "present": false,
       "available_from_phase": 3,
       "detected_by": [],
-      "start": { "cmd": "bun run dev", "cwd": "." },
+      "start": {
+        "cmd": "bun run dev",
+        "cwd": "."
+      },
       "port": 5173,
-      "readiness": { "kind": "http", "url": "/", "timeout_s": 120 },
-      "logs": { "path": ".qa/logs/web.log" },
+      "readiness": {
+        "kind": "http",
+        "url": "/",
+        "timeout_s": 120
+      },
+      "logs": {
+        "path": ".qa/logs/web.log"
+      },
       "artifacts": [],
-      "env": { "required": [], "optional": [], "missing": [] },
-      "depends_on": ["api"],
-      "probe": { "result": "not_present", "detail": "promised by ROADMAP phase 3; browser checks need Playwright-MCP", "checked_at": "2026-10-13T02:08:13Z" },
+      "env": {
+        "required": [],
+        "optional": [],
+        "missing": []
+      },
+      "depends_on": [
+        "api"
+      ],
+      "probe": {
+        "result": "not_present",
+        "detail": "promised by ROADMAP phase 3; browser checks need Playwright-MCP",
+        "checked_at": "2026-10-13T02:08:13Z"
+      },
       "fallback": "auto",
       "in_local_qa_scope": true,
-      "human_requirements": ["Configure the Playwright MCP server before Phase 3 browser tests"]
+      "human_requirements": [
+        "Configure the Playwright MCP server before Phase 3 browser tests"
+      ]
     },
     {
       "name": "deploy",
@@ -115,17 +436,36 @@
       "present": false,
       "available_from_phase": 3,
       "detected_by": [],
-      "start": { "cmd": null, "cwd": "." },
+      "start": {
+        "cmd": null,
+        "cwd": "."
+      },
       "port": null,
-      "readiness": { "kind": "http", "url": "<public Render URL>/api/health", "timeout_s": 120 },
-      "logs": { "path": ".qa/logs/deploy.log" },
+      "readiness": {
+        "kind": "http",
+        "url": "<public Render URL>/api/health",
+        "timeout_s": 120
+      },
+      "logs": {
+        "path": ".qa/logs/deploy.log"
+      },
       "artifacts": [],
-      "env": { "required": [], "optional": [], "missing": [] },
+      "env": {
+        "required": [],
+        "optional": [],
+        "missing": []
+      },
       "depends_on": [],
-      "probe": { "result": "not_present", "detail": "Render free; warm it before the defense", "checked_at": "2026-10-13T02:08:13Z" },
+      "probe": {
+        "result": "not_present",
+        "detail": "Render free; warm it before the defense",
+        "checked_at": "2026-10-13T02:08:13Z"
+      },
       "fallback": "human",
       "in_local_qa_scope": false,
-      "human_requirements": ["Provide the public URL once deployed"]
+      "human_requirements": [
+        "Provide the public URL once deployed"
+      ]
     }
   ],
   "db_connections": []
