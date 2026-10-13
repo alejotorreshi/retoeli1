@@ -45,6 +45,12 @@ describe("checklist.builder: nombres legibles solo en la salida para personas (G
     ]);
   });
 
+  test("un vencido sin fecha nunca deja un paréntesis vacío en el bloqueo (IN-02)", () => {
+    const sinFecha = [soporte("parafiscales", ESTADO_SOPORTE.VENCIDO, "parafiscales-ficticio.txt", null)];
+    expect(construirChecklist(sinFecha, [], HOY).bloqueos).toEqual(["vencido: parafiscales (no aplica)"]);
+    expect(motivosDeBloqueo(sinFecha).every((motivo) => !motivo.includes("()"))).toBe(true);
+  });
+
   test("motivosDeBloqueo da los mismos bloqueos en el mismo orden con el nombre del soporte", () => {
     expect(motivosDeBloqueo(SOPORTES)).toEqual([
       "ausente: Certificado de cumplimiento tributario",

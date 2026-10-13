@@ -16,7 +16,12 @@ function bloqueoDe(soporte: SoporteEvaluado, rotulo: (tipo: string) => string): 
   if (soporte.estado === ESTADO_SOPORTE.AUSENTE)
     return [TEXTO_CHECKLIST.bloqueoAusente(rotulo(soporte.tipo))];
   if (soporte.estado === ESTADO_SOPORTE.VENCIDO)
-    return [TEXTO_CHECKLIST.bloqueoVencido(rotulo(soporte.tipo), soporte.vigencia_hasta ?? "")];
+    return [
+      TEXTO_CHECKLIST.bloqueoVencido(
+        rotulo(soporte.tipo),
+        soporte.vigencia_hasta ?? TEXTO_CHECKLIST.sinVigencia,
+      ),
+    ];
   return [];
 }
 
