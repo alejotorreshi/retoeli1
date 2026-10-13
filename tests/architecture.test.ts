@@ -117,7 +117,6 @@ const LITERAL_DE_REGEX =
 
 const DUENOS_DE_REGEX: ReadonlySet<string> = new Set([
   "src/config/constants/patterns.constants.ts",
-  "src/domain/motor-plantillas.ts",
   "src/domain/engines/motor-plantillas.engine.ts",
 ]);
 
@@ -160,20 +159,27 @@ const NOMBRES_CON_ROL: readonly RegExp[] = [
   /^src\/tools\/proveedor\.ts$/,
   /^src\/config\/(?:strings|env)\.ts$/,
   new RegExp(`^src/config/constants/${KEBAB}\\.constants\\.ts$`),
-  new RegExp(`^src/(?:config|domain|application|infra|tools|demo)/(?:${KEBAB}/)*types/${KEBAB}\\.type\\.ts$`),
+  new RegExp(`^src/(?:config|domain|application|infra|tools|demo)/types/${KEBAB}\\.type\\.ts$`),
   new RegExp(`^tests/helpers/types/${KEBAB}\\.type\\.ts$`),
   new RegExp(`^src/(?:infra|tools)/(?:${KEBAB}/)*schemas/${KEBAB}\\.schema\\.ts$`),
   ...Object.entries(CARPETAS_DE_ROL).map(
     ([carpeta, rol]) => new RegExp(`^src/${carpeta}/${KEBAB}\\.${rol}\\.ts$`),
   ),
-  new RegExp(`^src/domain/${KEBAB}\\.ts$`),
   new RegExp(`^src/infra/${KEBAB}/(?:${KEBAB}/)*${KEBAB}\\.(?:adapter|util)\\.ts$`),
-  new RegExp(`^src/tools/${KEBAB}\\.(?:factory|wiring|util)\\.ts$`),
-  new RegExp(`^src/demo/${KEBAB}\\.runner\\.ts$`),
   new RegExp(`^tests/unit/${KEBAB}\\.(?:${ROLES_DE_PRUEBA})\\.test\\.ts$`),
-  new RegExp(`^tests/(?:${KEBAB}/)*${KEBAB}\\.test\\.ts$`),
+  new RegExp(`^tests/(?!unit/)(?:${KEBAB}/)*${KEBAB}\\.test\\.ts$`),
   new RegExp(`^tests/helpers/${KEBAB}\\.helper\\.ts$`),
 ];
+
+const SUELTO_EN_CAPA = /^src\/(?:[^/]+\/)?[^/]+\.ts$/;
+
+const SUELTOS_PERMITIDOS: ReadonlySet<string> = new Set([
+  "src/tools/proveedor.ts",
+  "src/config/env.ts",
+  "src/config/strings.ts",
+]);
+
+const PRUEBA_UNITARIA = /^tests\/unit\/([a-z0-9-]+\.[a-z-]+)\.test\.ts$/;
 
 const CASO_DE_USO = /^src\/application\/use-cases\//;
 
@@ -190,7 +196,7 @@ function sinExtension(ruta: string): string {
 function capaDeRuta(ruta: string): string {
   const base = sinExtension(ruta);
   if (base === "demo") return "raiz-demo";
-  if (base === "src/tools/entorno.wiring" || base === "src/tools/wiring/entorno.wiring") return "wiring";
+  if (base === "src/tools/wiring/entorno.wiring") return "wiring";
   if (base === "src/tools/proveedor") return "proveedor";
   if (base.startsWith("tests/")) return "tests";
   if (CONFIG_PURA.test(base)) return "config-pure";
@@ -407,6 +413,21 @@ function violacionesDeNombre(ruta: string): string[] {
     : [`${ruta}: el nombre no sigue la tabla de sufijos por carpeta`];
 }
 
+function violacionesDeArchivoSuelto(ruta: string): string[] {
+  return SUELTO_EN_CAPA.test(ruta) && !SUELTOS_PERMITIDOS.has(ruta)
+    ? [`${ruta}: archivo suelto en la raíz de su capa; va en una carpeta de rol`]
+    : [];
+}
+
+function violacionesDeEspejo(ruta: string, fuentes: readonly string[]): string[] {
+  if (!ruta.startsWith("tests/unit/")) return [];
+  const modulo = PRUEBA_UNITARIA.exec(ruta)?.[1];
+  if (modulo === undefined) return [`${ruta}: la prueba unitaria no nombra un módulo <nombre>.<rol>`];
+  return fuentes.some((fuente) => fuente.endsWith(`/${modulo}.ts`))
+    ? []
+    : [`${ruta}: no existe src/**/${modulo}.ts`];
+}
+
 function violacionesDeCasoDeUso(ruta: string, codigo: string): string[] {
   if (!CASO_DE_USO.test(ruta)) return [];
   const exportaciones = codigo.split("\n").filter((linea) => linea.startsWith("export "));
@@ -614,6 +635,17 @@ describe("reglas de capas sobre el código real", () => {
     expect(listarTodasLasFuentes().flatMap(violacionesDeNombre)).toEqual([]);
   });
 
+  test("G13: ningún .ts queda suelto en src/ ni en la raíz de una capa", () => {
+    expect(listarFuentes().flatMap(violacionesDeArchivoSuelto)).toEqual([]);
+  });
+
+  test("G14: cada prueba unitaria es espejo de un módulo de src/", () => {
+    const fuentes = listarFuentes();
+    const todas = listarTodasLasFuentes();
+    expect(todas.filter((ruta) => ruta.startsWith("tests/unit/")).length).toBeGreaterThan(0);
+    expect(todas.flatMap((ruta) => violacionesDeEspejo(ruta, fuentes))).toEqual([]);
+  });
+
   test("G5: cada caso de uso exporta exactamente una función", () => {
     const fuentes = listarFuentes().filter((ruta) => CASO_DE_USO.test(ruta));
     expect(fuentes.length).toBe(5);
@@ -729,12 +761,15 @@ describe("el escáner muerde sobre fuentes de muestra", () => {
   test("deja pasar una importación de domain a domain", () => {
     const codigo =
       'import { normalizar } from "@/domain/utils/normalizar.util";\nimport type { Campo } from "./tipos.ts";\n';
-    expect(violacionesDeCapas("src/domain/mapeo.ts", codigo)).toEqual([]);
+    expect(violacionesDeCapas("src/domain/engines/mapeo.engine.ts", codigo)).toEqual([]);
   });
 
   test("solo entorno.wiring.ts puede importar infra desde tools", () => {
     const codigo = 'import { readValidatedJson } from "@/infra/fixtures/fixtures-reader.adapter.ts";\n';
     expect(violacionesDeCapas("src/tools/wiring/entorno.wiring.ts", codigo)).toEqual([]);
+    expect(violacionesDeCapas("src/tools/wiring/otro.wiring.ts", codigo)).toEqual([
+      "src/tools/wiring/otro.wiring.ts: la capa tools no puede importar @/infra/fixtures/fixtures-reader.adapter.ts",
+    ]);
     expect(violacionesDeCapas("src/tools/factories/definir-herramienta.factory.ts", codigo)).toEqual([
       "src/tools/factories/definir-herramienta.factory.ts: la capa tools no puede importar @/infra/fixtures/fixtures-reader.adapter.ts",
     ]);
@@ -907,8 +942,17 @@ describe("el escáner muerde sobre fuentes de muestra", () => {
       "src/domain/types/x.ts",
       "src/tools/fabrica.ts",
       "tests/helpers/flujo.ts",
+      "src/domain/mapeo.ts",
+      "src/domain/engines/mapeo.policy.ts",
+      "src/domain/policies/pii.ts",
+      "src/tools/factories/entorno.wiring.ts",
+      "src/domain/policies/types/x.type.ts",
+      "tests/unit/mapeo.test.ts",
       "src/infra/output/xlsx-writer.adapter.ts",
       "src/application/use-cases/armar-paquete.use-case.ts",
+      "src/domain/engines/mapeo.engine.ts",
+      "src/tools/wiring/entorno.wiring.ts",
+      "tests/unit/mapeo.engine.test.ts",
     ];
     expect(rutas.flatMap(violacionesDeNombre)).toEqual([
       "src/domain/mapeo.service.ts: el nombre no sigue la tabla de sufijos por carpeta",
@@ -918,6 +962,45 @@ describe("el escáner muerde sobre fuentes de muestra", () => {
       "src/domain/types/x.ts: el nombre no sigue la tabla de sufijos por carpeta",
       "src/tools/fabrica.ts: el nombre no sigue la tabla de sufijos por carpeta",
       "tests/helpers/flujo.ts: el nombre no sigue la tabla de sufijos por carpeta",
+      "src/domain/mapeo.ts: el nombre no sigue la tabla de sufijos por carpeta",
+      "src/domain/engines/mapeo.policy.ts: el nombre no sigue la tabla de sufijos por carpeta",
+      "src/domain/policies/pii.ts: el nombre no sigue la tabla de sufijos por carpeta",
+      "src/tools/factories/entorno.wiring.ts: el nombre no sigue la tabla de sufijos por carpeta",
+      "src/domain/policies/types/x.type.ts: el nombre no sigue la tabla de sufijos por carpeta",
+      "tests/unit/mapeo.test.ts: el nombre no sigue la tabla de sufijos por carpeta",
+    ]);
+  });
+
+  test("G13: reporta archivos sueltos y deja pasar los fijados por el PRD y la usuaria", () => {
+    const rutas = [
+      "src/domain/mapeo.ts",
+      "src/tools/entorno.wiring.ts",
+      "src/infra/x.adapter.ts",
+      "src/x.ts",
+      "src/tools/proveedor.ts",
+      "src/config/env.ts",
+      "src/config/strings.ts",
+      "src/domain/engines/mapeo.engine.ts",
+    ];
+    expect(rutas.flatMap(violacionesDeArchivoSuelto)).toEqual([
+      "src/domain/mapeo.ts: archivo suelto en la raíz de su capa; va en una carpeta de rol",
+      "src/tools/entorno.wiring.ts: archivo suelto en la raíz de su capa; va en una carpeta de rol",
+      "src/infra/x.adapter.ts: archivo suelto en la raíz de su capa; va en una carpeta de rol",
+      "src/x.ts: archivo suelto en la raíz de su capa; va en una carpeta de rol",
+    ]);
+  });
+
+  test("G14: reporta una prueba unitaria sin módulo espejo", () => {
+    const fuentes = ["src/domain/engines/mapeo.engine.ts"];
+    expect(
+      [
+        "tests/unit/mapeo.engine.test.ts",
+        "tests/unit/mapeo.policy.test.ts",
+        "tests/unit/mapeo.test.ts",
+      ].flatMap((ruta) => violacionesDeEspejo(ruta, fuentes)),
+    ).toEqual([
+      "tests/unit/mapeo.policy.test.ts: no existe src/**/mapeo.policy.ts",
+      "tests/unit/mapeo.test.ts: la prueba unitaria no nombra un módulo <nombre>.<rol>",
     ]);
   });
 

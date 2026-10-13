@@ -206,18 +206,24 @@ Conventions not yet established. Will populate as patterns emerge during develop
 - Dominio, aplicación y herramientas en español (contrato del PRD); infraestructura y `config/env.ts` en inglés; documentación en español.
 - Tipos exportados solo en `types/<nombre>.type.ts` de su capa, con solo `type` e `import type`. Las uniones de códigos se derivan de su constante (`ValorDe<typeof X>`) y los esquemas zod se comprueban contra el tipo con `satisfies z.ZodType<T>`. Única excepción: `ToolEnv`, junto a su esquema en `config/env.ts`.
 - Códigos y estados son objetos `as const`, nunca `enum`. Toda comparación, asignación, `case` y `fallo(...)` usa el objeto (`ESTADO_CAMPO.FALTANTE`, no `"faltante"`), y los `z.enum` se construyen desde él.
-- Archivos en kebab-case, con el sufijo de rol que corresponde a su carpeta:
-  - `types/*.type.ts`, `config/constants/*.constants.ts`, `schemas/*.schema.ts`;
+- Archivos en kebab-case, cada uno en la carpeta de su rol y con el sufijo de ese rol:
+  - `src/<capa>/types/*.type.ts` y `tests/helpers/types/*.type.ts`; `config/constants/*.constants.ts`; `schemas/*.schema.ts`;
+  - `domain/engines/*.engine.ts` (algoritmo central), `domain/builders/*.builder.ts` (arma una estructura de salida),
+    `domain/policies/*.policy.ts` (decide o valida según una regla de negocio), `domain/selectors/*.selector.ts`
+    (lee o proyecta sin decidir) y `domain/utils/*.util.ts` (función genérica sin regla de negocio);
   - `application/use-cases/*.use-case.ts` (una sola función exportada) y `application/services/*.service.ts`;
-  - `infra/**/*.adapter.ts` o `*.util.ts`; `tools/*.factory.ts`, `*.wiring.ts` o `*.util.ts`; `demo/*.runner.ts`;
-  - `tests/**/*.test.ts` y `tests/helpers/*.helper.ts`.
+  - `infra/<área>/**/*.adapter.ts` o `*.util.ts`;
+  - `tools/factories/*.factory.ts`, `tools/wiring/*.wiring.ts` (único composition root que importa infra) y `demo/runners/*.runner.ts`;
+  - `tests/unit/<módulo>.<rol>.test.ts`, espejo de un `src/**/<módulo>.<rol>.ts`; el resto `tests/**/*.test.ts`; `tests/helpers/*.helper.ts`.
 
-  El dominio va sin sufijo. Los nombres que fija el PRD no cambian: `demo.ts`, `src/tools/proveedor.ts` y `src/knowledge/**`.
+  Ningún `.ts` va suelto en `src/` ni en la raíz de `src/<capa>/`; las únicas excepciones son `src/tools/proveedor.ts`,
+  `src/config/env.ts` y `src/config/strings.ts`. Los nombres que fija el PRD no cambian: `demo.ts`,
+  `src/tools/proveedor.ts` y `src/knowledge/**`.
 - Constantes por ámbito en `src/config/constants/<ámbito>.constants.ts`. Las regex van solo en `patterns.constants.ts`; la excepción es el parser de `domain/engines/motor-plantillas.engine.ts`.
 - Todo texto para personas o para el modelo (mensajes, `description`, `.describe()`) vive en un único `src/config/strings.ts`. Un texto que repite un dato se deriva de su constante, y las herramientas se nombran siempre `proveedor_<export>`.
 - La config pura (`config/constants/**`, `config/types/**`, `config/strings.ts`) no lee el entorno ni importa `node:`, `Bun` o zod, y cualquier capa puede importarla. `config/env.ts` es el único módulo que lee `process.env`, y solo lo importan infra, tools y demo.
 - Los imports internos usan solo los alias `@/` (`src/`) y `@tests/` (`tests/`); nunca `../` ni `./`. Bun resuelve los alias desde `tsconfig.json`, así que el Dockerfile debe copiarlo. Un módulo distribuible futuro debe construirse con `bun build`, para que los alias queden resueltos.
-- Cada una de estas reglas tiene su guardián en `tests/architecture.test.ts` (G1–G12), con una prueba que demuestra que detecta la violación.
+- Cada una de estas reglas tiene su guardián en `tests/architecture.test.ts` (G1–G14), con una prueba que demuestra que detecta la violación.
 - Nunca modificar `reto-01/` (PRD y fixtures entregados).
 - Commits con Conventional Commits bajo la identidad local `elianatorres5772 <elianatorres5772@gmail.com>`.
 
