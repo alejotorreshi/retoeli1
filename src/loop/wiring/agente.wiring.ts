@@ -21,12 +21,14 @@ import {
 } from "@/infra/knowledge/instructions-loader.adapter.ts";
 import { DEFAULT_KNOWLEDGE_DIRECTORY } from "@/infra/knowledge/rules-loader.adapter.ts";
 import { createAuditLog } from "@/infra/logging/audit-log.adapter.ts";
+import { createLogger } from "@/infra/logging/logger.adapter.ts";
 import { createMemorySessionStore } from "@/infra/sessions/memory-session-store.adapter.ts";
 import { createOpenAICompatibleAdapter } from "@/llm/adapters/openai-compatible.adapter.ts";
 import { withFallback } from "@/llm/decorators/fallback.decorator.ts";
+import { withObservacion } from "@/llm/decorators/observacion.decorator.ts";
 import { withRetry } from "@/llm/decorators/retry.decorator.ts";
 import { withTimeout } from "@/llm/decorators/timeout.decorator.ts";
-import type { AdaptadorLlm } from "@/llm/types/llm.type.ts";
+import type { AdaptadorLlm, ErrorLlm, OpcionesEnvio } from "@/llm/types/llm.type.ts";
 import { ejecutarTurno, sesionVacia } from "@/loop/services/ejecutar-turno.service.ts";
 import { crearRegistroHerramientas } from "@/loop/services/registro-herramientas.service.ts";
 import type { CreacionAgente, OpcionesAgente } from "@/loop/types/agente.type.ts";
@@ -60,7 +62,7 @@ function resiliente(
   opciones: OpcionesAgente,
 ): AdaptadorLlm {
   const base = createOpenAICompatibleAdapter({ ...slot, apiKey }, { fetch: opciones.fetch });
-  return withRetry(withTimeout(base, config.timeoutMs), {
+  return withRetry(withObservacion(withTimeout(base, config.timeoutMs)), {
     maxReintentos: config.maxRetries,
     baseMs: BACKOFF_BASE_MS,
     topeMs: BACKOFF_TOPE_MS,
@@ -75,15 +77,28 @@ function respaldoDe(config: AgentEnv, opciones: OpcionesAgente): AdaptadorLlm | 
   return resiliente(fallback, fallback.apiKey, config, opciones);
 }
 
-function sinAviso(): void {}
+function avisarCambio(error: ErrorLlm, envio: OpcionesEnvio): void {
+  envio.observador?.cambio(error);
+}
 
 function modeloDelAgente(opciones: OpcionesAgente, config: AgentEnv, apiKey: string): AdaptadorLlm {
   const primario = resiliente(config.primary, apiKey, config, opciones);
-  return withFallback(primario, respaldoDe(config, opciones), sinAviso);
+  return withFallback(primario, respaldoDe(config, opciones), avisarCambio);
+}
+
+function secretosDe(config: AgentEnv, apiKey: string): readonly string[] {
+  const respaldo = config.fallback?.apiKey ?? null;
+  return respaldo === null ? [apiKey] : [apiKey, respaldo];
+}
+
+function bitacoraDe(opciones: OpcionesAgente, config: AgentEnv, secretos: readonly string[]) {
+  const destino = opciones.destinoLogs === undefined ? {} : { destination: opciones.destinoLogs };
+  return createLogger({ level: config.logLevel, secrets: secretos, ...destino });
 }
 
 function dependencias(opciones: OpcionesAgente, config: AgentEnv, apiKey: string): DependenciasTurno {
   const reloj = relojCompartidoConHerramientas();
+  const secretos = secretosDe(config, apiKey);
   return {
     llm: modeloDelAgente(opciones, config, apiKey),
     herramientas: crearRegistroHerramientas(proveedor),
@@ -104,6 +119,8 @@ function dependencias(opciones: OpcionesAgente, config: AgentEnv, apiKey: string
     maxIteraciones: config.maxIterations,
     presupuestoTokens: config.sessionTokenBudget,
     deadlineMs: config.turnDeadlineMs,
+    bitacora: bitacoraDe(opciones, config, secretos),
+    secretos,
     nuevoId,
   };
 }

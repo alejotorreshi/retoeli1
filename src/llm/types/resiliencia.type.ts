@@ -1,4 +1,4 @@
-import type { ErrorLlm } from "@/llm/types/llm.type.ts";
+import type { ErrorLlm, OpcionesEnvio } from "@/llm/types/llm.type.ts";
 
 export type OpcionesReintento = {
   readonly maxReintentos: number;
@@ -8,4 +8,4 @@ export type OpcionesReintento = {
   azar(): number;
 };
 
-export type AlCambiarProveedor = (error: ErrorLlm) => void;
+export type AlCambiarProveedor = (error: ErrorLlm, opciones: OpcionesEnvio) => void;

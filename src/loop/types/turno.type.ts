@@ -1,5 +1,9 @@
 import type { Registrar, Reloj } from "@/application/types/puertos.type.ts";
-import type { AlmacenSesiones, CargarInstrucciones } from "@/application/types/puertos-agente.type.ts";
+import type {
+  AlmacenSesiones,
+  BitacoraEstructurada,
+  CargarInstrucciones,
+} from "@/application/types/puertos-agente.type.ts";
 import type { LlamadaResumida } from "@/domain/types/cierre-turno.type.ts";
 import type {
   AutorizacionTurno,
@@ -12,6 +16,7 @@ import type {
   DefinicionHerramienta,
   LlamadaHerramienta,
   Mensaje,
+  ObservadorLlm,
   RespuestaLlm,
 } from "@/llm/types/llm.type.ts";
 import type { EventoConfirmacionRequerida } from "@/loop/types/evento.type.ts";
@@ -60,6 +65,8 @@ export type DependenciasTurno = {
   readonly maxIteraciones: number;
   readonly presupuestoTokens: number;
   readonly deadlineMs: number;
+  readonly bitacora: BitacoraEstructurada;
+  readonly secretos: readonly string[];
   nuevoId(): string;
 };
 
@@ -77,6 +84,7 @@ export type ResultadoDespacho = {
   readonly autorizacion: AutorizacionTurno;
   readonly evento: EventoCompuerta | null;
   readonly paquete: CasoPendiente | null;
+  readonly envioPermitido: boolean | null;
 };
 
 export type EntradaCierreTurno = {
@@ -114,6 +122,7 @@ export type ContextoTope = {
   readonly mensajes: readonly Mensaje[];
   readonly definiciones: readonly DefinicionHerramienta[];
   readonly signal: AbortSignal;
+  readonly observador: ObservadorLlm;
   readonly llamadas: readonly LlamadaResumida[];
   readonly cabePresupuesto: boolean;
 };

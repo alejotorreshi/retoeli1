@@ -66,6 +66,7 @@ async function bloquearEnvio(caso: string | null, contexto: ContextoDespacho): P
     autorizacion: contexto.autorizacion,
     evento: caso === null ? null : { tipo: EVENTO_COMPUERTA.BLOQUEADO, caso },
     paquete: null,
+    envioPermitido: false,
   };
 }
 
@@ -88,6 +89,7 @@ async function despacharEnvio(
     autorizacion: evaluacion.siguiente,
     evento: resultado.ok ? { tipo: EVENTO_COMPUERTA.ENVIADO, caso } : null,
     paquete: null,
+    envioPermitido: true,
   };
 }
 
@@ -107,19 +109,30 @@ function paqueteArmado(caso: string, resultado: ResultadoLlamada): CasoPendiente
   return { caso, bloqueos, motivos: checklist.soportes.flatMap(motivoDe) };
 }
 
+function sinCompuerta(resultado: ResultadoLlamada, contexto: ContextoDespacho): ResultadoDespacho {
+  return {
+    resultado,
+    autorizacion: contexto.autorizacion,
+    evento: null,
+    paquete: null,
+    envioPermitido: null,
+  };
+}
+
 async function despacharArmado(
   llamada: LlamadaHerramienta,
   contexto: ContextoDespacho,
 ): Promise<ResultadoDespacho> {
   const caso = casoDeLlamada(llamada);
   const resultado = await ejecutar(llamada, contexto);
-  if (caso === null) return { resultado, autorizacion: contexto.autorizacion, evento: null, paquete: null };
+  if (caso === null) return sinCompuerta(resultado, contexto);
   const paquete = paqueteArmado(caso, resultado);
   return {
     resultado,
     autorizacion: revocarAlArmar(contexto.autorizacion, caso),
     evento: paquete === null ? null : { tipo: EVENTO_COMPUERTA.ARMADO, pendiente: paquete },
     paquete,
+    envioPermitido: null,
   };
 }
 
@@ -129,6 +142,5 @@ export async function despacharLlamada(
 ): Promise<ResultadoDespacho> {
   if (llamada.nombre === SIMULAR_ENVIO) return despacharEnvio(llamada, contexto);
   if (llamada.nombre === ARMAR_PAQUETE) return despacharArmado(llamada, contexto);
-  const resultado = await ejecutar(llamada, contexto);
-  return { resultado, autorizacion: contexto.autorizacion, evento: null, paquete: null };
+  return sinCompuerta(await ejecutar(llamada, contexto), contexto);
 }

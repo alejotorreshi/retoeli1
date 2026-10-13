@@ -1,7 +1,8 @@
-import type { Instrucciones } from "@/application/types/puertos-agente.type.ts";
+import type { BitacoraEstructurada, Instrucciones } from "@/application/types/puertos-agente.type.ts";
 import {
   CODIGO_AGENTE,
   CODIGO_AGENTE_POR_ERROR_LLM,
+  EVENTO_BITACORA,
   MOTIVO_FIN,
   SEPARADOR_PARRAFOS,
   TIPO_EVENTO,
@@ -13,6 +14,7 @@ import { MENSAJE_AGENTE, TEXTO_CONTEXTO, TEXTO_SESION } from "@/config/strings.t
 import type { ValorDe } from "@/config/types/valor-de.type.ts";
 import { abrirTurno, casosPendientes, estadoLibre } from "@/domain/policies/compuerta.policy.ts";
 import { clasificarConfirmacion } from "@/domain/policies/confirmacion.policy.ts";
+import { redactar } from "@/domain/policies/redaccion.policy.ts";
 import type { LlamadaResumida } from "@/domain/types/cierre-turno.type.ts";
 import type {
   AperturaTurno,
@@ -27,8 +29,15 @@ import type {
   LlamadaHerramienta,
   Mensaje,
   MensajeAsistente,
+  ObservadorLlm,
   RespuestaLlm,
 } from "@/llm/types/llm.type.ts";
+import {
+  anotarHerramienta,
+  anotarLlamadaLlm,
+  bitacoraDelTurno,
+  observadorDelTurno,
+} from "@/loop/services/bitacora-turno.service.ts";
 import { cerrarTurnoConCompuerta } from "@/loop/services/cierre-turno.service.ts";
 import { casoDeLlamada, despacharLlamada } from "@/loop/services/despacho-llamada.service.ts";
 import {
@@ -53,6 +62,7 @@ type Cierre = {
   readonly texto: string;
   readonly razonamiento: string | null;
   readonly porError: boolean;
+  readonly codigo: CodigoAgente | null;
 };
 
 type Turno = {
@@ -63,6 +73,9 @@ type Turno = {
   readonly signal: AbortSignal;
   readonly llamante: AbortSignal | null;
   readonly deps: DependenciasTurno;
+  readonly bitacora: BitacoraEstructurada;
+  readonly observador: ObservadorLlm;
+  readonly inicioMs: number;
   readonly arrastrados: readonly CasoPendiente[];
   readonly eventosCompuerta: EventoCompuerta[];
   readonly llamadas: LlamadaResumida[];
@@ -114,11 +127,11 @@ function mensajeAsistente(cierre: Cierre): MensajeAsistente {
 async function* fallar(turno: Turno, codigo: CodigoAgente): Ejecucion<Cierre> {
   const mensaje = MENSAJE_AGENTE[codigo];
   yield { tipo: TIPO_EVENTO.ERROR, turnoId: turno.turnoId, codigo, mensaje };
-  return { motivo: MOTIVO_FIN.ERROR, texto: mensaje, razonamiento: null, porError: true };
+  return { motivo: MOTIVO_FIN.ERROR, texto: mensaje, razonamiento: null, porError: true, codigo };
 }
 
 function cerrarSinError(motivo: MotivoFin, texto: string, razonamiento: string | null = null): Cierre {
-  return { motivo, texto, razonamiento, porError: false };
+  return { motivo, texto, razonamiento, porError: false, codigo: null };
 }
 
 function interrumpido(): Cierre {
@@ -127,6 +140,7 @@ function interrumpido(): Cierre {
     texto: MENSAJE_AGENTE[CODIGO_AGENTE.TURNO_INTERRUMPIDO],
     razonamiento: null,
     porError: true,
+    codigo: CODIGO_AGENTE.TURNO_INTERRUMPIDO,
   };
 }
 
@@ -154,7 +168,8 @@ function resumida(llamada: LlamadaHerramienta, resultado: ResultadoLlamada): rea
   return [{ herramienta, caso: casoDeLlamada(llamada), ok: resultado.ok, resumen: resultado.resumen }];
 }
 
-async function* contarUso(turno: Turno, respuesta: RespuestaLlm): Ejecucion<void> {
+async function* contarUso(turno: Turno, respuesta: RespuestaLlm, duracionMs: number): Ejecucion<void> {
+  anotarLlamadaLlm(turno.bitacora, respuesta, duracionMs);
   turno.sesion = acumularUso(turno.sesion, respuesta.uso);
   yield {
     tipo: TIPO_EVENTO.USO,
@@ -193,9 +208,10 @@ async function* ejecutarPaso(turno: Turno, respuesta: RespuestaLlm): Ejecucion<r
     yield {
       tipo: TIPO_EVENTO.INICIO_HERRAMIENTA,
       ...base,
-      argumentos: argumentosDeLlamada(llamada.argumentos),
+      argumentos: redactar(argumentosDeLlamada(llamada.argumentos), turno.deps.secretos),
     };
     if (turno.signal.aborted) return null;
+    const desde = Date.now();
     const despacho = await despacharLlamada(llamada, {
       registro: turno.deps.herramientas,
       registrar: turno.deps.registrar,
@@ -209,6 +225,7 @@ async function* ejecutarPaso(turno: Turno, respuesta: RespuestaLlm): Ejecucion<r
     turno.llamadas.push(...resumida(llamada, resultado));
     if (evento !== null) turno.eventosCompuerta.push(evento);
     if (paquete !== null) turno.conocidos = { ...turno.conocidos, [paquete.caso]: paquete };
+    anotarHerramienta(turno.bitacora, llamada, despacho, turno.conocidos, Date.now() - desde);
     yield {
       tipo: TIPO_EVENTO.FIN_HERRAMIENTA,
       ...base,
@@ -237,14 +254,16 @@ function mensajesDelTurno(turno: Turno, sistema: readonly Mensaje[]): readonly M
 async function* cerrarAlTope(turno: Turno, sistema: readonly Mensaje[]): Ejecucion<Cierre> {
   const { deps } = turno;
   if (turno.signal.aborted) return yield* cortar(turno);
+  const desde = Date.now();
   const tope = await cerrarPorTope(deps.llm, {
     mensajes: mensajesDelTurno(turno, sistema),
     definiciones: deps.herramientas.definiciones,
     signal: turno.signal,
+    observador: turno.observador,
     llamadas: turno.llamadas,
     cabePresupuesto: !presupuestoAgotado(turno.sesion, deps.presupuestoTokens),
   });
-  if (tope.respuesta !== null) yield* contarUso(turno, tope.respuesta);
+  if (tope.respuesta !== null) yield* contarUso(turno, tope.respuesta, Date.now() - desde);
   if (abortadoPorLlamante(turno)) return interrumpido();
   return cerrarSinError(MOTIVO_FIN.TOPE_ITERACIONES, tope.texto);
 }
@@ -256,17 +275,19 @@ async function* conversar(turno: Turno, sistema: readonly Mensaje[]): Ejecucion<
     if (presupuestoAgotado(turno.sesion, deps.presupuestoTokens)) {
       return cerrarSinError(MOTIVO_FIN.TOPE_TOKENS, cierrePorPresupuesto(turno.llamadas));
     }
+    const desde = Date.now();
     const resultado = await deps.llm.enviar(
       mensajesDelTurno(turno, sistema),
       deps.herramientas.definiciones,
       {
         signal: turno.signal,
         herramientasDesactivadas: false,
+        observador: turno.observador,
       },
     );
     if (!resultado.ok) return yield* fallarEnvio(turno, resultado.error);
     const { respuesta } = resultado;
-    yield* contarUso(turno, respuesta);
+    yield* contarUso(turno, respuesta, Date.now() - desde);
     if (respuesta.llamadas.length === 0) {
       return cerrarSinError(MOTIVO_FIN.FINAL, respuesta.texto ?? "", respuesta.razonamiento);
     }
@@ -313,9 +334,23 @@ function guardarSesion(turno: Turno, cierre: Cierre, compuerta: CierreTurnoCompu
   });
 }
 
+function anotarFin(turno: Turno, cierre: Cierre, needsConfirmation: boolean, abandonado: boolean): void {
+  turno.bitacora.info(EVENTO_BITACORA.TURNO_FIN, {
+    motivo: cierre.motivo,
+    codigo: cierre.codigo,
+    needsConfirmation,
+    abandonado,
+    llamadas: turno.llamadas.length,
+    tokensSesion: turno.sesion.tokensUsados,
+    duracionMs: Date.now() - turno.inicioMs,
+  });
+}
+
 function guardarInterrumpido(turno: Turno): void {
   const cierre = interrumpido();
-  guardarSesion(turno, cierre, cerrarCompuerta(turno, cierre));
+  const compuerta = cerrarCompuerta(turno, cierre);
+  guardarSesion(turno, cierre, compuerta);
+  anotarFin(turno, cierre, compuerta.needsConfirmation, true);
 }
 
 async function* emitirCierre(turno: Turno, cierre: Cierre, compuerta: CierreTurnoCompuerta): Ejecucion<void> {
@@ -325,8 +360,13 @@ async function* emitirCierre(turno: Turno, cierre: Cierre, compuerta: CierreTurn
   yield* compuerta.eventosConfirmacion;
 }
 
-async function* rechazarOcupada(inicio: EventoInicioTurno): Ejecucion<void> {
+async function* rechazarOcupada(inicio: EventoInicioTurno, bitacora: BitacoraEstructurada): Ejecucion<void> {
   const codigo = CODIGO_AGENTE.SESION_OCUPADA;
+  bitacora.advertir(EVENTO_BITACORA.TURNO_FIN, {
+    motivo: MOTIVO_FIN.ERROR,
+    codigo,
+    needsConfirmation: false,
+  });
   yield inicio;
   yield { tipo: TIPO_EVENTO.ERROR, turnoId: inicio.turnoId, codigo, mensaje: MENSAJE_AGENTE[codigo] };
   yield {
@@ -347,6 +387,7 @@ async function* atender(turno: Turno, inicio: EventoInicioTurno): Ejecucion<Dese
   const cierre = yield* resolverTurno(turno);
   const compuerta = cerrarCompuerta(turno, cierre);
   guardarSesion(turno, cierre, compuerta);
+  anotarFin(turno, cierre, compuerta.needsConfirmation, false);
   yield* emitirCierre(turno, cierre, compuerta);
   return { motivo: cierre.motivo, needsConfirmation: compuerta.needsConfirmation };
 }
@@ -362,7 +403,13 @@ export async function* ejecutarTurno(entrada: EntradaTurno, deps: DependenciasTu
     sesionNueva: abierta.nueva,
     sesionExpirada: abierta.expirada,
   };
-  if (!deps.sesiones.ocupar(sesionId)) return yield* rechazarOcupada(inicio);
+  const bitacora = bitacoraDelTurno(deps.bitacora, sesionId, turnoId);
+  bitacora.info(EVENTO_BITACORA.TURNO_INICIO, {
+    mensajeLargo: entrada.mensaje.length,
+    sesionNueva: abierta.nueva,
+    sesionExpirada: abierta.expirada,
+  });
+  if (!deps.sesiones.ocupar(sesionId)) return yield* rechazarOcupada(inicio, bitacora);
   const { sesion } = abierta;
   const plazo = AbortSignal.timeout(deps.deadlineMs);
   const llamante = entrada.signal ?? null;
@@ -375,6 +422,9 @@ export async function* ejecutarTurno(entrada: EntradaTurno, deps: DependenciasTu
     signal: AbortSignal.any(llamante === null ? [plazo] : [llamante, plazo]),
     llamante,
     deps,
+    bitacora,
+    observador: observadorDelTurno(bitacora),
+    inicioMs: Date.now(),
     arrastrados: arrastradosDe(apertura),
     eventosCompuerta: [],
     llamadas: [],

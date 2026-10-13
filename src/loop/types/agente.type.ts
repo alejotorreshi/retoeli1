@@ -10,6 +10,7 @@ export type OpcionesAgente = {
   readonly directorioAgente?: string;
   readonly directorioConocimiento?: string;
   readonly esperar?: OpcionesReintento["esperar"];
+  readonly destinoLogs?: { write(linea: string): void };
 };
 
 export type Agente = {

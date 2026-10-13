@@ -13,7 +13,7 @@ export function withFallback(
       const resultado = await primario.enviar(mensajes, herramientas, opciones);
       if (resultado.ok || !resultado.error.reintentable) return resultado;
       if (respaldo === null || opciones.signal.aborted) return resultado;
-      alCambiar(resultado.error);
+      alCambiar(resultado.error, opciones);
       return respaldo.enviar(mensajes, herramientas, opciones);
     },
   };

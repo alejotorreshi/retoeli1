@@ -59,7 +59,23 @@ export type ResultadoEnvio =
   | { readonly ok: true; readonly respuesta: RespuestaLlm }
   | { readonly ok: false; readonly error: ErrorLlm };
 
-export type OpcionesEnvio = { readonly signal: AbortSignal; readonly herramientasDesactivadas: boolean };
+export type FalloLlm = {
+  readonly proveedor: string;
+  readonly modelo: string;
+  readonly duracionMs: number;
+  readonly error: ErrorLlm;
+};
+
+export type ObservadorLlm = {
+  fallo(fallo: FalloLlm): void;
+  cambio(error: ErrorLlm): void;
+};
+
+export type OpcionesEnvio = {
+  readonly signal: AbortSignal;
+  readonly herramientasDesactivadas: boolean;
+  readonly observador?: ObservadorLlm;
+};
 
 export type AdaptadorLlm = {
   readonly proveedor: string;

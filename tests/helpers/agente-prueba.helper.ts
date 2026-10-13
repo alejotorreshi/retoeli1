@@ -1,3 +1,4 @@
+import { bitacoraMuda } from "@tests/helpers/bitacora.helper.ts";
 import { crearLlmFalso } from "@tests/helpers/llm-falso.helper.ts";
 import type {
   AgentePrueba,
@@ -57,6 +58,8 @@ export function crearAgentePrueba(opciones: OpcionesAgentePrueba): AgentePrueba 
     maxIteraciones: MAX_ITERACIONES_POR_DEFECTO,
     presupuestoTokens: PRESUPUESTO_TOKENS_SESION_POR_DEFECTO,
     deadlineMs: DEADLINE_TURNO_MS_POR_DEFECTO,
+    bitacora: bitacoraMuda(),
+    secretos: [],
     nuevoId,
     registrar: createAuditLog(raiz, reloj),
     ...sobrescritas,

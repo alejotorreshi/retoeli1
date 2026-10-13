@@ -18,6 +18,7 @@ export async function cerrarPorTope(llm: AdaptadorLlm, contexto: ContextoTope): 
   const resultado = await llm.enviar([...contexto.mensajes, INSTRUCCION_TOPE], contexto.definiciones, {
     signal: contexto.signal,
     herramientasDesactivadas: true,
+    observador: contexto.observador,
   });
   if (!resultado.ok) return { texto: determinista, respuesta: null };
   const { respuesta } = resultado;

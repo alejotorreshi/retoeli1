@@ -20,7 +20,7 @@ import { crearAgente } from "@/loop/wiring/agente.wiring.ts";
 
 const CLAVE = "clave-de-prueba-Zq9X";
 const MARCA_CLAVE = "Zq9X";
-const FUENTE = { LLM_API_KEY: CLAVE };
+const FUENTE = { LLM_API_KEY: CLAVE, LOG_LEVEL: "silent" };
 const INSTANTE_BASE = new Date("2026-09-03T15:00:00.000Z");
 const DOS_MINUTOS_MS = 2 * 60_000;
 

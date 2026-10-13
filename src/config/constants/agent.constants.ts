@@ -12,6 +12,17 @@ export const TIPO_EVENTO = {
   FIN_TURNO: "turn_end",
 } as const;
 
+export const EVENTO_BITACORA = {
+  TURNO_INICIO: "turn_start",
+  LLAMADA_LLM: "llm_call",
+  ERROR_LLM: "llm_error",
+  CAMBIO_PROVEEDOR: "llm_fallback",
+  HERRAMIENTA: "tool_exec",
+  COMPUERTA_BLOQUEO: "gate_blocked",
+  COMPUERTA_PERMISO: "gate_granted",
+  TURNO_FIN: "turn_end",
+} as const;
+
 export const MOTIVO_FIN = {
   FINAL: "final",
   TOPE_ITERACIONES: "tope_iteraciones",

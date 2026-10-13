@@ -1,6 +1,7 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
+import { bitacoraMuda } from "@tests/helpers/bitacora.helper.ts";
 import { crearFetchFalso, cuerpoConHerramientas, cuerpoConTexto } from "@tests/helpers/fetch-falso.helper.ts";
 import { crearProyectoTemporal } from "@tests/helpers/proyecto-temporal.helper.ts";
 import type { MensajeWire, PedidoRegistrado, RespuestaGuion } from "@tests/helpers/types/fetch-falso.type.ts";
@@ -114,6 +115,8 @@ function crearDependencias(fetch: FetchLike): DependenciasTurno {
     maxIteraciones: MAX_ITERACIONES_POR_DEFECTO,
     presupuestoTokens: PRESUPUESTO_TOKENS_SESION_POR_DEFECTO,
     deadlineMs: DEADLINE_TURNO_MS_POR_DEFECTO,
+    bitacora: bitacoraMuda(),
+    secretos: [CLAVE],
     nuevoId,
   };
 }
@@ -129,7 +132,11 @@ function turnarConDependencias(deps: DependenciasTurno): Turnar {
 }
 
 function turnarConAgente(fetch: FetchLike): Turnar {
-  const creacion = crearAgente({ directorio: proyecto.raiz, fetch, fuenteEntorno: { LLM_API_KEY: CLAVE } });
+  const creacion = crearAgente({
+    directorio: proyecto.raiz,
+    fetch,
+    fuenteEntorno: { LLM_API_KEY: CLAVE, LOG_LEVEL: "silent" },
+  });
   if (!creacion.ok) throw new Error(creacion.mensaje);
   const { agente } = creacion;
   return (mensaje, sesionId) => recoger(agente.turno({ sesionId, mensaje }));
