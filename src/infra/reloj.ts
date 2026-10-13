@@ -2,7 +2,7 @@ import type { Reloj } from "@/application/puertos.ts";
 import { PATRON_FECHA } from "@/config/constants/patterns.constants.ts";
 import { LOCALE_INTL } from "@/config/constants/runtime.constants.ts";
 import { TEXTO_INFRA } from "@/config/strings.ts";
-import type { FechaISO } from "@/domain/tipos.ts";
+import type { FechaISO } from "@/domain/types/fecha.type.ts";
 
 function esFechaISO(texto: string): texto is FechaISO {
   return PATRON_FECHA.test(texto);

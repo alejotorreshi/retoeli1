@@ -1,28 +1,11 @@
 import { CODIGO_ERROR } from "@/config/constants/errors.constants.ts";
 import { TIPO_PLANTILLA } from "@/config/constants/forms.constants.ts";
 import { ESTADO_CAMPO } from "@/config/constants/mapping.constants.ts";
-import type { CampoMapeado } from "@/domain/mapeo.ts";
-import type { EstadoCampo } from "@/domain/reglas.ts";
-import { exito, fallo, type Resultado } from "@/domain/resultado.ts";
-import type { Plantilla } from "@/domain/tipos.ts";
-
-export type FilaFormulario = {
-  readonly etiqueta: string;
-  readonly obligatorio: boolean | null;
-  readonly estado: EstadoCampo;
-  readonly valor: string | null;
-  readonly nota: string | null;
-};
-
-export type FilaCelda = FilaFormulario & {
-  readonly hoja: string;
-  readonly celda_etiqueta: string;
-  readonly celda_valor: string;
-};
-
-export type Formulario =
-  | { readonly tipo: typeof TIPO_PLANTILLA.CELDAS; readonly filas: readonly FilaCelda[] }
-  | { readonly tipo: typeof TIPO_PLANTILLA.CAMPOS; readonly filas: readonly FilaFormulario[] };
+import { exito, fallo } from "@/domain/resultado.ts";
+import type { FilaFormulario, Formulario } from "@/domain/types/formulario.type.ts";
+import type { CampoMapeado } from "@/domain/types/mapeo.type.ts";
+import type { Plantilla } from "@/domain/types/plantilla-caso.type.ts";
+import type { Resultado } from "@/domain/types/resultado.type.ts";
 
 type Ubicable = { readonly etiqueta: string };
 

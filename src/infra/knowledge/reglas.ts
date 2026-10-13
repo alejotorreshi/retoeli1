@@ -14,8 +14,9 @@ import {
   PATRON_TEXTO_NO_VACIO,
 } from "@/config/constants/patterns.constants.ts";
 import { TEXTO_COMUN, TEXTO_CONOCIMIENTO } from "@/config/strings.ts";
-import type { ClavePlantilla, ReglaMapeo, Reglas } from "@/domain/reglas.ts";
-import { fallo, type Resultado } from "@/domain/resultado.ts";
+import { fallo } from "@/domain/resultado.ts";
+import type { ClavePlantilla, ReglaMapeo, Reglas } from "@/domain/types/reglas.type.ts";
+import type { Resultado } from "@/domain/types/resultado.type.ts";
 import { validarTextosDeReglas } from "@/domain/validar-reglas.ts";
 
 export const DIRECTORIO_CONOCIMIENTO_POR_DEFECTO = fileURLToPath(

@@ -4,7 +4,8 @@ import { CODIGO_ERROR } from "@/config/constants/errors.constants.ts";
 import { ESTADO_LECTURA } from "@/config/constants/io.constants.ts";
 import { PATRON_CASO, PATRON_SESION } from "@/config/constants/patterns.constants.ts";
 import { PREFIJO_HERRAMIENTA, SESION_POR_DEFECTO } from "@/config/constants/tools.constants.ts";
-import { exito, type Fallo, fallo, type Resultado } from "@/domain/resultado.ts";
+import { exito, fallo } from "@/domain/resultado.ts";
+import type { Fallo, Resultado } from "@/domain/types/resultado.type.ts";
 import { formatearIssues } from "@/tools/issues.ts";
 import { type ContextoNormalizado, crearEntorno, type OpcionesEntorno } from "@/tools/wiring.ts";
 

@@ -3,8 +3,8 @@ import { ESTADO_CAMPO } from "@/config/constants/mapping.constants.ts";
 import { AUTOR_DOCUMENTOS } from "@/config/constants/runtime.constants.ts";
 import { FORMATO_CELDA_TEXTO, RELLENO_XLSX } from "@/config/constants/xlsx.constants.ts";
 import { TEXTO_XLSX } from "@/config/strings.ts";
-import type { FilaCelda } from "@/domain/formulario.ts";
-import type { FechaISO } from "@/domain/tipos.ts";
+import type { FechaISO } from "@/domain/types/fecha.type.ts";
+import type { FilaCelda } from "@/domain/types/formulario.type.ts";
 
 function relleno(argb: string): Fill {
   return { type: "pattern", pattern: "solid", fgColor: { argb } };

@@ -12,8 +12,9 @@ import {
 import { ESTADO_LECTURA } from "@/config/constants/io.constants.ts";
 import { LIMITE_LECTURA_BYTES } from "@/config/constants/limits.constants.ts";
 import { PATRON_ARCHIVO_SOPORTE } from "@/config/constants/patterns.constants.ts";
-import type { SoporteIndice } from "@/domain/checklist.ts";
-import type { Glosario, Maestro } from "@/domain/mapeo.ts";
+import type { SoporteIndice } from "@/domain/types/checklist.type.ts";
+import type { Maestro } from "@/domain/types/maestro.type.ts";
+import type { Glosario } from "@/domain/types/mapeo.type.ts";
 import { esquemaGlosario, esquemaIndiceSoportes, esquemaMaestro } from "@/infra/fixtures/esquemas.ts";
 
 const NO_ENCONTRADO = { estado: ESTADO_LECTURA.NO_ENCONTRADO } as const;

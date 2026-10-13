@@ -2,8 +2,9 @@ import { join } from "node:path";
 import { CODIGO_ERROR } from "@/config/constants/errors.constants.ts";
 import { PATRON_PLANTILLA_CONOCIMIENTO } from "@/config/constants/patterns.constants.ts";
 import { TEXTO_CONOCIMIENTO, TEXTO_MOTOR_PLANTILLAS } from "@/config/strings.ts";
-import type { ClavePlantilla, Reglas } from "@/domain/reglas.ts";
-import { exito, fallo, type Resultado } from "@/domain/resultado.ts";
+import { exito, fallo } from "@/domain/resultado.ts";
+import type { ClavePlantilla, Reglas } from "@/domain/types/reglas.type.ts";
+import type { Resultado } from "@/domain/types/resultado.type.ts";
 import { leerTexto } from "@/infra/knowledge/reglas.ts";
 
 function plantillaInvalida(ruta: string, problema: string): Resultado<string> {

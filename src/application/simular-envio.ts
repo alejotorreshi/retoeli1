@@ -6,7 +6,8 @@ import { ARCHIVOS_PAQUETE, ARCHIVOS_SALIDA } from "@/config/constants/files.cons
 import { CLAVE_PLANTILLA } from "@/config/constants/knowledge.constants.ts";
 import { construirDatosEnvio } from "@/domain/borrador.ts";
 import { renderizarPlantilla } from "@/domain/plantillas.ts";
-import { exito, fallo, type Resultado } from "@/domain/resultado.ts";
+import { exito, fallo } from "@/domain/resultado.ts";
+import type { Resultado } from "@/domain/types/resultado.type.ts";
 
 export type ArgsSimularEnvio = { readonly caso: string; readonly confirmado: boolean };
 

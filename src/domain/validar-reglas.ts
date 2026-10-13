@@ -5,8 +5,9 @@ import {
   VARIABLES_NOTA_CAMPO,
 } from "@/config/constants/mapping.constants.ts";
 import { renderizarTextoPlano } from "@/domain/plantillas.ts";
-import type { Reglas } from "@/domain/reglas.ts";
-import { exito, type Resultado } from "@/domain/resultado.ts";
+import { exito } from "@/domain/resultado.ts";
+import type { Reglas } from "@/domain/types/reglas.type.ts";
+import type { Resultado } from "@/domain/types/resultado.type.ts";
 
 type TextoDeRegla = {
   readonly nombre: string;

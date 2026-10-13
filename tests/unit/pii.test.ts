@@ -1,14 +1,10 @@
 import { describe, expect, test } from "bun:test";
 import { VARIABLES_NOTA_PERMITIDAS } from "@/config/constants/mapping.constants.ts";
-import {
-  type CampoMapeado,
-  construirIndiceGlosario,
-  type Glosario,
-  type Maestro,
-  mapearCampos,
-} from "@/domain/mapeo.ts";
+import { construirIndiceGlosario, mapearCampos } from "@/domain/mapeo.ts";
 import { enmascarar, POLITICA_PII, presentarCampo } from "@/domain/pii.ts";
-import type { Reglas } from "@/domain/reglas.ts";
+import type { Maestro } from "@/domain/types/maestro.type.ts";
+import type { CampoMapeado, Glosario } from "@/domain/types/mapeo.type.ts";
+import type { Reglas } from "@/domain/types/reglas.type.ts";
 
 const FIXTURES = new URL("../../reto-01/fixtures/reto-01/", import.meta.url);
 

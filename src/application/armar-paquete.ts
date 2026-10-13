@@ -6,16 +6,11 @@ import { ARCHIVO_FORMULARIO, ARCHIVOS_PAQUETE } from "@/config/constants/files.c
 import { ESTADO_LECTURA, ORIGEN_COPIA } from "@/config/constants/io.constants.ts";
 import { CLAVE_PLANTILLA } from "@/config/constants/knowledge.constants.ts";
 import { construirDatosBorrador } from "@/domain/borrador.ts";
-import {
-  type CampoPorConfirmar,
-  type Checklist,
-  construirChecklist,
-  construirDatosChecklist,
-  evaluarSoportes,
-  type SoporteEvaluado,
-} from "@/domain/checklist.ts";
+import { construirChecklist, construirDatosChecklist, evaluarSoportes } from "@/domain/checklist.ts";
 import { renderizarPlantilla, renderizarTextoPlano } from "@/domain/plantillas.ts";
-import { exito, fallo, type Resultado } from "@/domain/resultado.ts";
+import { exito, fallo } from "@/domain/resultado.ts";
+import type { CampoPorConfirmar, Checklist, SoporteEvaluado } from "@/domain/types/checklist.type.ts";
+import type { Resultado } from "@/domain/types/resultado.type.ts";
 
 export type ArgsArmarPaquete = { readonly caso: string };
 

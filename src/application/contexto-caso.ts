@@ -3,11 +3,15 @@ import { CODIGO_ERROR } from "@/config/constants/errors.constants.ts";
 import { TIPO_PLANTILLA } from "@/config/constants/forms.constants.ts";
 import { ESTADO_LECTURA } from "@/config/constants/io.constants.ts";
 import { PATRON_CASO } from "@/config/constants/patterns.constants.ts";
-import { construirIndiceGlosario, type IndiceGlosario, type Maestro } from "@/domain/mapeo.ts";
-import type { Reglas } from "@/domain/reglas.ts";
-import { exito, type Fallo, fallo, type Resultado } from "@/domain/resultado.ts";
+import { construirIndiceGlosario } from "@/domain/mapeo.ts";
+import { exito, fallo } from "@/domain/resultado.ts";
 import { elegirPlantilla } from "@/domain/solicitud.ts";
-import type { Plantilla, Solicitud } from "@/domain/tipos.ts";
+import type { Maestro } from "@/domain/types/maestro.type.ts";
+import type { IndiceGlosario } from "@/domain/types/mapeo.type.ts";
+import type { Plantilla } from "@/domain/types/plantilla-caso.type.ts";
+import type { Reglas } from "@/domain/types/reglas.type.ts";
+import type { Fallo, Resultado } from "@/domain/types/resultado.type.ts";
+import type { Solicitud } from "@/domain/types/solicitud.type.ts";
 
 export type SolicitudCaso = {
   readonly caso: string;

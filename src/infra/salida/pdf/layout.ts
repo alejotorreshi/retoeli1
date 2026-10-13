@@ -4,8 +4,8 @@ import { PATRON_ESPACIOS } from "@/config/constants/patterns.constants.ts";
 import { COLOR_TRAZO, DISENO_PDF } from "@/config/constants/pdf.constants.ts";
 import { TEXTO_COMUN, TEXTO_PDF } from "@/config/strings.ts";
 import type { ValorDe } from "@/config/types/valor-de.type.ts";
-import type { FilaFormulario } from "@/domain/formulario.ts";
-import type { FechaISO } from "@/domain/tipos.ts";
+import type { FechaISO } from "@/domain/types/fecha.type.ts";
+import type { FilaFormulario } from "@/domain/types/formulario.type.ts";
 
 export type ColorTrazo = ValorDe<typeof COLOR_TRAZO>;
 

@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { PDFDocument, StandardFonts } from "pdf-lib";
-import type { FilaFormulario } from "@/domain/formulario.ts";
+import type { FilaFormulario } from "@/domain/types/formulario.type.ts";
 import { componerPdf, type EntradaLayoutPdf, type LineaPdf } from "@/infra/salida/pdf/layout.ts";
 import { marcarNoRepresentables, renderizarPdf, sanearWinAnsi } from "@/infra/salida/pdf/render.ts";
 

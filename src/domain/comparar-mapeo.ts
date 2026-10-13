@@ -1,16 +1,6 @@
 import { TEXTO_COMPARACION } from "@/config/strings.ts";
-import type { CampoMapeado } from "@/domain/mapeo.ts";
-import type { EstadoCampo } from "@/domain/reglas.ts";
-
-export type ItemMapeo = {
-  readonly etiqueta: string;
-  readonly estado: EstadoCampo;
-  readonly ruta: string | null;
-};
-
-export type ComparacionMapeo =
-  | { readonly iguales: true }
-  | { readonly iguales: false; readonly diferencias: readonly string[] };
+import type { ComparacionMapeo, ItemMapeo } from "@/domain/types/comparar-mapeo.type.ts";
+import type { CampoMapeado } from "@/domain/types/mapeo.type.ts";
 
 function agruparPorEtiqueta<T extends { readonly etiqueta: string }>(items: readonly T[]): Map<string, T[]> {
   const grupos = new Map<string, T[]>();

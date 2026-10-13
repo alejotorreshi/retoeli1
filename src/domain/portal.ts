@@ -1,26 +1,9 @@
 import { ESTADO_CAMPO } from "@/config/constants/mapping.constants.ts";
 import { TEXTO_PORTAL } from "@/config/strings.ts";
-import type { CampoMapeado } from "@/domain/mapeo.ts";
-import type { EstadoCampo } from "@/domain/reglas.ts";
-import type { FechaISO } from "@/domain/tipos.ts";
-
-export type CampoPortal = {
-  readonly etiqueta: string;
-  readonly valor: string;
-  readonly estado: string;
-  readonly nota: string;
-};
-
-export type DatosValoresPortal = {
-  readonly caso: string;
-  readonly cliente: string;
-  readonly fecha_ejecucion: string;
-  readonly aviso: string;
-  readonly campos: readonly CampoPortal[];
-  readonly pendientes: readonly CampoPortal[];
-};
-
-export type CasoPortal = { readonly caso: string; readonly cliente: string };
+import type { FechaISO } from "@/domain/types/fecha.type.ts";
+import type { CampoMapeado } from "@/domain/types/mapeo.type.ts";
+import type { CampoPortal, CasoPortal, DatosValoresPortal } from "@/domain/types/portal.type.ts";
+import type { EstadoCampo } from "@/domain/types/reglas.type.ts";
 
 const ESTADO_VISIBLE: Readonly<Record<EstadoCampo, string>> = TEXTO_PORTAL.estado;
 

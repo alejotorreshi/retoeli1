@@ -6,13 +6,16 @@ import { ARCHIVOS_SALIDA } from "@/config/constants/files.constants.ts";
 import { FORMATO, TIPO_PLANTILLA } from "@/config/constants/forms.constants.ts";
 import { CLAVE_PLANTILLA } from "@/config/constants/knowledge.constants.ts";
 import { TEXTO_PORTAL } from "@/config/strings.ts";
-import { compararMapeo, type ItemMapeo } from "@/domain/comparar-mapeo.ts";
+import { compararMapeo } from "@/domain/comparar-mapeo.ts";
 import { construirFilas } from "@/domain/formulario.ts";
-import { type CampoMapeado, type ConteoEstados, contarEstados } from "@/domain/mapeo.ts";
+import { contarEstados } from "@/domain/mapeo.ts";
 import { renderizarPlantilla } from "@/domain/plantillas.ts";
 import { construirDatosPortal } from "@/domain/portal.ts";
-import { exito, fallo, type Resultado } from "@/domain/resultado.ts";
-import type { Formato } from "@/domain/tipos.ts";
+import { exito, fallo } from "@/domain/resultado.ts";
+import type { ItemMapeo } from "@/domain/types/comparar-mapeo.type.ts";
+import type { CampoMapeado, ConteoEstados } from "@/domain/types/mapeo.type.ts";
+import type { Resultado } from "@/domain/types/resultado.type.ts";
+import type { Formato } from "@/domain/types/solicitud.type.ts";
 
 export type ArgsGenerarFormulario = {
   readonly caso: string;

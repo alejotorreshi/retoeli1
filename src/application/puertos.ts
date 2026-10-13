@@ -5,13 +5,16 @@ import type {
 } from "@/config/constants/files.constants.ts";
 import type { ESTADO_LECTURA, ORIGEN_COPIA } from "@/config/constants/io.constants.ts";
 import type { ValorDe } from "@/config/types/valor-de.type.ts";
-import type { SoporteIndice } from "@/domain/checklist.ts";
-import type { CodigoError } from "@/domain/errores.ts";
-import type { FilaCelda, FilaFormulario } from "@/domain/formulario.ts";
-import type { Glosario, Maestro } from "@/domain/mapeo.ts";
-import type { ClavePlantilla, Reglas } from "@/domain/reglas.ts";
-import type { Resultado } from "@/domain/resultado.ts";
-import type { FechaISO, Plantilla, Solicitud, TipoPlantilla } from "@/domain/tipos.ts";
+import type { SoporteIndice } from "@/domain/types/checklist.type.ts";
+import type { CodigoError } from "@/domain/types/errores.type.ts";
+import type { FechaISO } from "@/domain/types/fecha.type.ts";
+import type { FilaCelda, FilaFormulario } from "@/domain/types/formulario.type.ts";
+import type { Maestro } from "@/domain/types/maestro.type.ts";
+import type { Glosario } from "@/domain/types/mapeo.type.ts";
+import type { Plantilla, TipoPlantilla } from "@/domain/types/plantilla-caso.type.ts";
+import type { ClavePlantilla, Reglas } from "@/domain/types/reglas.type.ts";
+import type { Resultado } from "@/domain/types/resultado.type.ts";
+import type { Solicitud } from "@/domain/types/solicitud.type.ts";
 
 export type LecturaFallida =
   | { readonly estado: typeof ESTADO_LECTURA.NO_ENCONTRADO }

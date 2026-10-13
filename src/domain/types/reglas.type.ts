@@ -6,6 +6,7 @@ import type {
   VARIABLE_NOTA,
 } from "@/config/constants/mapping.constants.ts";
 import type { ValorDe } from "@/config/types/valor-de.type.ts";
+
 export type ReglaMapeo = ValorDe<typeof REGLA_MAPEO>;
 
 export type EstadoCampo = ValorDe<typeof ESTADO_CAMPO>;

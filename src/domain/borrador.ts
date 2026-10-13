@@ -1,26 +1,11 @@
-import { RUTA_MAESTRO, type RUTAS_BORRADOR } from "@/config/constants/maestro.constants.ts";
+import { RUTA_MAESTRO } from "@/config/constants/maestro.constants.ts";
 import { ESTADO_SOPORTE } from "@/config/constants/supports.constants.ts";
 import { TEXTO_BORRADOR, TEXTO_COMUN } from "@/config/strings.ts";
-import type { Checklist, SoporteEvaluado } from "@/domain/checklist.ts";
-import { leerRuta, type Maestro } from "@/domain/mapeo.ts";
-import type { Solicitud } from "@/domain/tipos.ts";
-
-export type RutaBorrador = (typeof RUTAS_BORRADOR)[number];
-
-type SinCampos = Readonly<Record<string, never>>;
-
-export type DatosBorradorCorreo = {
-  readonly para: string;
-  readonly asunto: string;
-  readonly cliente: string;
-  readonly razon_social: string;
-  readonly firmante_nombre: string;
-  readonly firmante_cargo: string;
-  readonly formulario: string;
-  readonly soportes_adjuntos: readonly { readonly tipo: string; readonly archivo: string }[];
-  readonly pendientes: readonly { readonly texto: string }[];
-  readonly hay_pendientes: readonly SinCampos[];
-};
+import { leerRuta } from "@/domain/mapeo.ts";
+import type { DatosBorradorCorreo, DatosEnvioSimulado, RutaBorrador } from "@/domain/types/borrador.type.ts";
+import type { Checklist, SoporteEvaluado } from "@/domain/types/checklist.type.ts";
+import type { Maestro } from "@/domain/types/maestro.type.ts";
+import type { Solicitud } from "@/domain/types/solicitud.type.ts";
 
 export function asuntoRespuesta(solicitud: Solicitud): string {
   return `${TEXTO_BORRADOR.prefijoRespuesta}${solicitud.asunto}`;
@@ -68,17 +53,6 @@ export function construirDatosBorrador(
     hay_pendientes: pendientes.length === 0 ? [] : [{}],
   };
 }
-
-export type DatosEnvioSimulado = {
-  readonly caso: string;
-  readonly cliente: string;
-  readonly destinatario: string;
-  readonly asunto: string;
-  readonly fecha_ejecucion: string;
-  readonly archivos: readonly { readonly archivo: string }[];
-  readonly retenidos: readonly { readonly archivo: string }[];
-  readonly bloqueos: readonly { readonly bloqueo: string }[];
-};
 
 function archivosVencidos(checklist: Checklist): ReadonlySet<string> {
   return new Set(

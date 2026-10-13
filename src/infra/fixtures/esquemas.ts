@@ -17,8 +17,11 @@ import {
   LETRAS_DEL_ALFABETO,
   LIMITES_XLSX,
 } from "@/config/constants/xlsx.constants.ts";
-import type { SoporteIndice } from "@/domain/checklist.ts";
 import { esFechaReal } from "@/domain/fecha.ts";
+import type { SoporteIndice } from "@/domain/types/checklist.type.ts";
+import type { Maestro, ValorMaestro } from "@/domain/types/maestro.type.ts";
+import type { Glosario } from "@/domain/types/mapeo.type.ts";
+import type { Solicitud } from "@/domain/types/solicitud.type.ts";
 
 const textoCorto = z.string().max(LIMITES_FIXTURES.textoCorto);
 const etiqueta = z.string().min(1).max(LIMITES_FIXTURES.etiqueta);
@@ -79,7 +82,7 @@ export const esquemaSolicitud = z
     cuerpo: z.string().max(LIMITES_FIXTURES.cuerpo),
     adjuntos: z.array(textoCorto).max(LIMITES_FIXTURES.adjuntos),
   })
-  .strict();
+  .strict() satisfies z.ZodType<Solicitud>;
 
 export const esquemaPlantillaCeldas = z
   .array(
@@ -126,14 +129,6 @@ export const esquemaIndiceSoportes = z
   )
   .max(LIMITES_FIXTURES.soportes) satisfies z.ZodType<readonly SoporteIndice[]>;
 
-export type ValorMaestro =
-  | string
-  | number
-  | boolean
-  | null
-  | readonly ValorMaestro[]
-  | { readonly [clave: string]: ValorMaestro };
-
 const esquemaValorMaestro: z.ZodType<ValorMaestro> = z.lazy(() =>
   z.union([
     z.string().max(LIMITES_FIXTURES.textoMaestro),
@@ -145,6 +140,9 @@ const esquemaValorMaestro: z.ZodType<ValorMaestro> = z.lazy(() =>
   ]),
 );
 
-export const esquemaMaestro = z.record(z.string(), esquemaValorMaestro);
+export const esquemaMaestro = z.record(z.string(), esquemaValorMaestro) satisfies z.ZodType<Maestro>;
 
-export const esquemaGlosario = z.record(etiqueta, z.string().regex(PATRON_RUTA_MAESTRO));
+export const esquemaGlosario = z.record(
+  etiqueta,
+  z.string().regex(PATRON_RUTA_MAESTRO),
+) satisfies z.ZodType<Glosario>;

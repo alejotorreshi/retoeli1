@@ -1,16 +1,14 @@
 import { FORMATO, PLANTILLA_DEL_FORMATO, TIPO_PLANTILLA } from "@/config/constants/forms.constants.ts";
 import { ESTADO_CAMPO } from "@/config/constants/mapping.constants.ts";
 import { normalizarEtiqueta } from "@/domain/normalizar.ts";
-import type { Reglas } from "@/domain/reglas.ts";
-import type { CampoSolicitado, Formato, Plantilla, TipoPlantilla } from "@/domain/tipos.ts";
-
-export type PlantillasPresentes = Readonly<Record<TipoPlantilla, boolean>>;
-
-export type CampoAmbiguo = {
-  readonly etiqueta: string;
-  readonly estado: typeof ESTADO_CAMPO.REQUIERE_CONFIRMACION;
-  readonly propuesta: string | null;
-};
+import type { Plantilla, TipoPlantilla } from "@/domain/types/plantilla-caso.type.ts";
+import type { Reglas } from "@/domain/types/reglas.type.ts";
+import type {
+  CampoAmbiguo,
+  CampoSolicitado,
+  Formato,
+  PlantillasPresentes,
+} from "@/domain/types/solicitud.type.ts";
 
 export function elegirPlantilla(formato: Formato, presentes: PlantillasPresentes): TipoPlantilla | null {
   const celdas = presentes[TIPO_PLANTILLA.CELDAS];

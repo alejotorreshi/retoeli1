@@ -1,14 +1,12 @@
 import { CODIGO_ERROR } from "@/config/constants/errors.constants.ts";
 import { TEXTO_MOTOR_PLANTILLAS } from "@/config/strings.ts";
-import { exito, type Fallo, fallo, type Resultado } from "@/domain/resultado.ts";
-
-export type ValorEscalar = string | number;
-
-export type FilaPlantilla = Readonly<Record<string, ValorEscalar>>;
-
-export type ValorPlantilla = ValorEscalar | readonly FilaPlantilla[];
-
-export type ContextoPlantilla = Readonly<Record<string, ValorPlantilla>>;
+import { exito, fallo } from "@/domain/resultado.ts";
+import type {
+  ContextoPlantilla,
+  ValorEscalar,
+  ValorPlantilla,
+} from "@/domain/types/motor-plantillas.type.ts";
+import type { Fallo, Resultado } from "@/domain/types/resultado.type.ts";
 
 type Ambito = Readonly<Record<string, ValorPlantilla>>;
 

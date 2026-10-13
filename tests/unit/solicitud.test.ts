@@ -1,7 +1,8 @@
 import { beforeAll, describe, expect, test } from "bun:test";
-import type { Reglas } from "@/domain/reglas.ts";
-import { detectarAmbiguos, elegirPlantilla, type PlantillasPresentes } from "@/domain/solicitud.ts";
-import type { CampoSolicitado, Formato, TipoPlantilla } from "@/domain/tipos.ts";
+import { detectarAmbiguos, elegirPlantilla } from "@/domain/solicitud.ts";
+import type { TipoPlantilla } from "@/domain/types/plantilla-caso.type.ts";
+import type { Reglas } from "@/domain/types/reglas.type.ts";
+import type { CampoSolicitado, Formato, PlantillasPresentes } from "@/domain/types/solicitud.type.ts";
 import { cargarReglas, DIRECTORIO_CONOCIMIENTO_POR_DEFECTO } from "@/infra/knowledge/reglas.ts";
 
 const SOLO_CELDAS: PlantillasPresentes = { celdas: true, campos: false };

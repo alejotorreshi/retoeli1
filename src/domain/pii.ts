@@ -2,22 +2,8 @@ import { ESTADO_CAMPO } from "@/config/constants/mapping.constants.ts";
 import { PATRON_ESPACIOS } from "@/config/constants/patterns.constants.ts";
 import { LARGO_VISIBLE, RUTAS_POR_MASCARA, TIPO_MASCARA } from "@/config/constants/pii.constants.ts";
 import { TEXTO_MASCARA } from "@/config/strings.ts";
-import type { ValorDe } from "@/config/types/valor-de.type.ts";
-import type { CampoMapeado } from "@/domain/mapeo.ts";
-import type { EstadoCampo, ReglaMapeo } from "@/domain/reglas.ts";
-
-export type TipoMascara = ValorDe<typeof TIPO_MASCARA>;
-
-export type CampoPresentado = {
-  readonly etiqueta: string;
-  readonly ruta: string | null;
-  readonly estado: EstadoCampo;
-  readonly regla: ReglaMapeo;
-  readonly confianza: number;
-  readonly valor_enmascarado: string | null;
-  readonly nota: string | null;
-  readonly propuesta: string | null;
-};
+import type { CampoMapeado } from "@/domain/types/mapeo.type.ts";
+import type { CampoPresentado, TipoMascara } from "@/domain/types/pii.type.ts";
 
 function politica(
   entradas: readonly (readonly [TipoMascara, readonly string[]])[],

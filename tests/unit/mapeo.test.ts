@@ -1,18 +1,9 @@
 import { describe, expect, test } from "bun:test";
 import { TEXTO_MAPEO } from "@/config/strings.ts";
-import {
-  type CampoMapeado,
-  construirIndiceGlosario,
-  contarEstados,
-  type EntradaMapeo,
-  type Glosario,
-  type IndiceGlosario,
-  leerHoja,
-  leerRuta,
-  type Maestro,
-  mapearCampos,
-} from "@/domain/mapeo.ts";
-import type { Reglas } from "@/domain/reglas.ts";
+import { construirIndiceGlosario, contarEstados, leerHoja, leerRuta, mapearCampos } from "@/domain/mapeo.ts";
+import type { Maestro } from "@/domain/types/maestro.type.ts";
+import type { CampoMapeado, EntradaMapeo, Glosario, IndiceGlosario } from "@/domain/types/mapeo.type.ts";
+import type { Reglas } from "@/domain/types/reglas.type.ts";
 
 const FIXTURES = new URL("../../reto-01/fixtures/reto-01/", import.meta.url);
 const RUTA_REGLAS = new URL("../../src/knowledge/reglas.json", import.meta.url);

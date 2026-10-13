@@ -5,8 +5,9 @@ import { TIPO_PLANTILLA } from "@/config/constants/forms.constants.ts";
 import { ESTADO_LECTURA, ORIGEN_COPIA } from "@/config/constants/io.constants.ts";
 import { ZONA_HORARIA_POR_DEFECTO } from "@/config/constants/runtime.constants.ts";
 import { readToolEnv, type ToolEnv } from "@/config/env.ts";
-import { exito, fallo, type Resultado } from "@/domain/resultado.ts";
-import type { Plantilla, TipoPlantilla } from "@/domain/tipos.ts";
+import { exito, fallo } from "@/domain/resultado.ts";
+import type { Plantilla, TipoPlantilla } from "@/domain/types/plantilla-caso.type.ts";
+import type { Resultado } from "@/domain/types/resultado.type.ts";
 import { crearBitacora } from "@/infra/bitacora.ts";
 import {
   esquemaPlantillaCampos,

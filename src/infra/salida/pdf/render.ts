@@ -5,8 +5,8 @@ import { PATRON_SEPARADORES_DE_LINEA } from "@/config/constants/patterns.constan
 import { DISENO_PDF } from "@/config/constants/pdf.constants.ts";
 import { AUTOR_DOCUMENTOS } from "@/config/constants/runtime.constants.ts";
 import { TEXTO_COMUN, TEXTO_PDF } from "@/config/strings.ts";
-import type { FilaFormulario } from "@/domain/formulario.ts";
-import type { FechaISO } from "@/domain/tipos.ts";
+import type { FechaISO } from "@/domain/types/fecha.type.ts";
+import type { FilaFormulario } from "@/domain/types/formulario.type.ts";
 import { componerPdf, type LineaPdf, type Medir } from "@/infra/salida/pdf/layout.ts";
 
 type FuenteSaneada = { readonly fuente: PDFFont; readonly caracteres: ReadonlySet<number> };
