@@ -3,16 +3,16 @@ gsd_state_version: "1.0"
 current_phase: 01
 current_phase_name: Núcleo determinista
 status: executing
-stopped_at: Completed 01-13-PLAN.md
-last_updated: "2026-10-13T04:07:23.502Z"
+stopped_at: Completed 01-14-PLAN.md
+last_updated: "2026-10-13T04:13:00.308Z"
 last_activity: 2026-10-12
 last_activity_desc: Phase 01 execution started
-state_head: 919d4ea02dbf9a62c883988ea94f6a2791c71a7e
+state_head: 1ae230824fc11e2985adc3cc0ffe89cca693dd19
 progress:
   total_phases: 4
   completed_phases: 0
   total_plans: 15
-  completed_plans: 13
+  completed_plans: 14
   percent: 0
 ---
 
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-10-12)
 ## Current Position
 
 Phase: 01 (Núcleo determinista) — EXECUTING
-Plan: 3 of 15
+Plan: 4 of 15
 Status: Ready to execute
 Last activity: 2026-10-12 — Phase 01 execution started
 
@@ -69,6 +69,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 01 P11 | 5min | 2 tasks | 7 files |
 | Phase 01 P12 | 4min | 2 tasks | 6 files |
 | Phase 01 P13 | 4min | 2 tasks | 8 files |
+| Phase 01 P14 | 3min | 2 tasks | 10 files |
 
 ## Accumulated Context
 
@@ -119,6 +120,8 @@ Recent decisions affecting current work:
 - [Phase 01]: 01-13: Portal: valores-portal.md is the analyst's guide, never attached in the borrador nor listed as sent in ENVIO-SIMULADO.md
 - [Phase 01]: 01-13: ENVIO-SIMULADO sent list = formulario xlsx/pdf + presente soportes intersected with the real paquete/ listing; checklist.md and borrador-correo.md never listed (GC-3, G-01-H4a)
 - [Phase 01]: 01-13: PAQ-04 wording 'lista el formulario firmado' superseded by GC-1; requirement text left for orchestrator to reconcile
+- [Phase 01]: 01-14 (GC-2): nombres de soportes en NOMBRE_SOPORTE de strings.ts; TEXTO_SOPORTE.nombre usa Object.hasOwn y devuelve el id crudo si no existe; solo las salidas para personas (borrador, checklist) usan el nombre, y bloqueos, resumen, logs y demo conservan el tipo crudo
+- [Phase 01]: 01-14: motivosDeBloqueo(soportes) exportado de checklist.builder.ts con los mismos bloqueos y orden que Checklist.bloqueos pero con nombres; lo reutiliza 01-15 para ENVIO-SIMULADO.md
 
 ### Pending Todos
 
@@ -141,6 +144,6 @@ Items acknowledged and deferred at milestone close, most recent first:
 
 ## Session Continuity
 
-Last session: 2026-10-13T04:07:23.475Z
-Stopped at: Completed 01-13-PLAN.md
+Last session: 2026-10-13T04:13:00.280Z
+Stopped at: Completed 01-14-PLAN.md
 Resume file: None
