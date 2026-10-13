@@ -3,6 +3,42 @@ phase: 02
 review: 02-REVIEW.md
 titles: json
 findings:
+  - id: WR-01
+    severity: warning
+    disposition: open
+    title: "Un acuse suelto (\"ok\", \"listo\", \"claro\", \"correcto\", \"vale\") sigue autorizando el envío"
+  - id: WR-02
+    severity: warning
+    disposition: open
+    title: "`sinPreguntaFinal` borra texto que no es pregunta, incluidas advertencias de campos `requiere_confirmacion`"
+  - id: WR-03
+    severity: warning
+    disposition: open
+    title: "Con el presupuesto agotado, la recuperación de WR-02 deja la sesión pidiendo para siempre una confirmación que nunca se cumplirá"
+  - id: WR-04
+    severity: warning
+    disposition: open
+    title: "Un cierre `FINAL` con la autorización sin usar descarta en silencio la confirmación de la analista"
+  - id: IN-01
+    severity: info
+    disposition: open
+    title: "Si el envío autorizado se ejecuta y falla, el caso desaparece de los pendientes"
+  - id: IN-02
+    severity: info
+    disposition: open
+    title: "Cuando `guardar` es rechazado, el turno igual anuncia texto y `confirmation_required` como si el estado se hubiera guardado"
+  - id: IN-03
+    severity: info
+    disposition: open
+    title: "El cercado depende de que el deadline (temporizador monotónico) venza antes que el lease (reloj de pared), y el cercado solo protege `guardar`"
+  - id: IN-04
+    severity: info
+    disposition: open
+    title: "\"si\" sin tilde se clasifica siempre como afirmación, aunque pueda ser el condicional \"si\""
+  - id: IN-05
+    severity: info
+    disposition: open
+    title: "La instrucción de siguiente paso dice \"envía\" o \"sí\" aunque haya varios casos pendientes"
   - id: CR-01
     severity: critical
     disposition: open
@@ -15,22 +51,6 @@ findings:
     severity: critical
     disposition: open
     title: "A truncated step (`finish_reason=length`) persists invalid-JSON tool arguments that are replayed in every later request of the session"
-  - id: WR-01
-    severity: warning
-    disposition: open
-    title: "An abort or deadline in the middle of a step drops the results of tools that already ran (including `simular_envio`) from history, while their gate events still apply"
-  - id: WR-02
-    severity: warning
-    disposition: open
-    title: "A confirmation turn that fails before sending (provider error, budget, missing instructions, deadline) silently drops the pending case"
-  - id: WR-03
-    severity: warning
-    disposition: open
-    title: "Session locks have no lease, so a consumer that stops iterating without `return()` locks the session forever"
-  - id: WR-04
-    severity: warning
-    disposition: open
-    title: "The cost cap can be bypassed: the token budget is per session, sessions are free to create, and invalid responses are retried without counting their tokens"
   - id: WR-05
     severity: warning
     disposition: open
@@ -39,26 +59,6 @@ findings:
     severity: warning
     disposition: open
     title: "An empty final answer from the model is emitted and stored as an empty reply"
-  - id: IN-01
-    severity: info
-    disposition: open
-    title: "`LONGITUD_MAXIMA_NOMBRE_HERRAMIENTA` is dead, and model-controlled tool names are unbounded"
-  - id: IN-02
-    severity: info
-    disposition: open
-    title: "The gate re-parses the `armar_paquete` output with a local schema and duplicates the checklist's blocking-reason logic"
-  - id: IN-03
-    severity: info
-    disposition: open
-    title: "Agent-creation errors say the session is still open when no session exists"
-  - id: IN-04
-    severity: info
-    disposition: open
-    title: "An unknown or malformed session id is reported as \"expired\""
-  - id: IN-05
-    severity: info
-    disposition: open
-    title: "The agent clock re-parses the environment on every call and silently diverges from the tools when `FECHA_EJECUCION` is invalid"
   - id: IN-06
     severity: info
     disposition: open
@@ -73,29 +73,31 @@ findings:
     title: "Two system messages are sent, which the generic adapter does not guarantee every provider accepts"
 open: 17
 total: 17
-recorded: 2026-10-13T20:42:49.591Z
+recorded: 2026-10-13T22:28:44.457Z
 ---
 
 # Phase 02: Code Review Disposition
 
 | Finding | Severity | Disposition | Source |
 |---------|----------|-------------|--------|
-| CR-01 | critical | open | - |
-| CR-02 | critical | open | - |
-| CR-03 | critical | open | - |
 | WR-01 | warning | open | - |
 | WR-02 | warning | open | - |
 | WR-03 | warning | open | - |
 | WR-04 | warning | open | - |
-| WR-05 | warning | open | - |
-| WR-06 | warning | open | - |
 | IN-01 | info | open | - |
 | IN-02 | info | open | - |
 | IN-03 | info | open | - |
 | IN-04 | info | open | - |
 | IN-05 | info | open | - |
-| IN-06 | info | open | - |
-| IN-07 | info | open | - |
-| IN-08 | info | open | - |
+| CR-01 | critical | open | - (not in the current review) |
+| CR-02 | critical | open | - (not in the current review) |
+| CR-03 | critical | open | - (not in the current review) |
+| WR-05 | warning | open | - (not in the current review) |
+| WR-06 | warning | open | - (not in the current review) |
+| IN-06 | info | open | - (not in the current review) |
+| IN-07 | info | open | - (not in the current review) |
+| IN-08 | info | open | - (not in the current review) |
 
 Dispositions: `open` (recorded, not yet triaged), `fixed`, `skipped`, `deferred`.
+Set `deferred` by hand and put the reason in the Source cell; both are preserved. A `|` in the reason is kept as prose and escaped on the next run.
+Re-running the gate keeps every row it can. A row the current review no longer reports is kept and its Source cell flagged, so a finding does not leave this record silently. ONE exception: when a finding id is REUSED by a different finding, the earlier decision cannot keep a row — the id is taken — and it is dropped. A RECORDED decision (anything but `open`) is named on the console when that happens; a row still at `open` is replaced silently, because `open` records no decision to lose.
