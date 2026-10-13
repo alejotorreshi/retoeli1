@@ -13,7 +13,12 @@ import { ARGUMENTOS_VACIOS, FIN_LLM, ROL_MENSAJE } from "@/config/constants/llm.
 import { HERRAMIENTA, PREFIJO_HERRAMIENTA } from "@/config/constants/tools.constants.ts";
 import { MENSAJE_AGENTE, TEXTO_CONTEXTO, TEXTO_SESION } from "@/config/strings.ts";
 import type { ValorDe } from "@/config/types/valor-de.type.ts";
-import { abrirTurno, casosPendientes, estadoLibre } from "@/domain/policies/compuerta.policy.ts";
+import {
+  abrirTurno,
+  casosPendientes,
+  estadoLibre,
+  recuperarAutorizado,
+} from "@/domain/policies/compuerta.policy.ts";
 import { clasificarConfirmacion } from "@/domain/policies/confirmacion.policy.ts";
 import { redactar } from "@/domain/policies/redaccion.policy.ts";
 import type { LlamadaResumida } from "@/domain/types/cierre-turno.type.ts";
@@ -314,7 +319,10 @@ function cerrarCompuerta(turno: Turno, cierre: Cierre): CierreTurnoCompuerta {
   return cerrarTurnoConCompuerta({
     turnoId: turno.turnoId,
     texto: cierre.porError ? "" : cierre.texto,
-    arrastrados: turno.arrastrados,
+    arrastrados: [
+      ...turno.arrastrados,
+      ...recuperarAutorizado(cierre.motivo, turno.autorizacion, turno.conocidos),
+    ],
     eventos: turno.eventosCompuerta,
     conocidos: turno.conocidos,
     abortado: cierre.motivo === MOTIVO_FIN.ABORTADO,

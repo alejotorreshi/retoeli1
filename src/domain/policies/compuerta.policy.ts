@@ -4,6 +4,7 @@ import {
   ESTADO_COMPUERTA,
   EVENTO_COMPUERTA,
 } from "@/config/constants/confirmacion.constants.ts";
+import type { ValorDe } from "@/config/types/valor-de.type.ts";
 import type {
   AperturaTurno,
   AutorizacionTurno,
@@ -13,7 +14,6 @@ import type {
   EvaluacionEnvio,
   EventoCompuerta,
 } from "@/domain/types/compuerta.type.ts";
-import type { ValorDe } from "@/config/types/valor-de.type.ts";
 import type { DecisionConfirmacion } from "@/domain/types/confirmacion.type.ts";
 
 export function estadoLibre(): EstadoCompuerta {
@@ -91,9 +91,13 @@ export function cerrarTurno(entrada: EntradaCierreCompuerta): EstadoCompuerta {
 }
 
 export function recuperarAutorizado(
-  _motivo: ValorDe<typeof MOTIVO_FIN>,
-  _autorizacion: AutorizacionTurno,
-  _conocidos: Readonly<Record<string, CasoPendiente>>,
+  motivo: ValorDe<typeof MOTIVO_FIN>,
+  autorizacion: AutorizacionTurno,
+  conocidos: Readonly<Record<string, CasoPendiente>>,
 ): readonly CasoPendiente[] {
-  return [];
+  const { caso, usada } = autorizacion;
+  if (motivo === MOTIVO_FIN.FINAL || motivo === MOTIVO_FIN.ABORTADO) return [];
+  if (caso === null || usada) return [];
+  const paquete = Object.hasOwn(conocidos, caso) ? conocidos[caso] : undefined;
+  return paquete === undefined ? [] : [paquete];
 }
