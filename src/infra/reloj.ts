@@ -15,14 +15,22 @@ function instanteReal(): string {
   return new Date().toISOString();
 }
 
+function parte(partes: readonly Intl.DateTimeFormatPart[], tipo: Intl.DateTimeFormatPartTypes): string {
+  return partes.find((candidata) => candidata.type === tipo)?.value ?? "";
+}
+
 export function relojSistema(zona: string): Reloj {
-  const formato = new Intl.DateTimeFormat("en-CA", {
+  const formato = new Intl.DateTimeFormat("en-US", {
     timeZone: zona,
     year: "numeric",
     month: "2-digit",
     day: "2-digit",
   });
-  return { hoy: () => comoFechaISO(formato.format(new Date())), instanteReal };
+  const hoy = (): FechaISO => {
+    const partes = formato.formatToParts(new Date());
+    return comoFechaISO(`${parte(partes, "year")}-${parte(partes, "month")}-${parte(partes, "day")}`);
+  };
+  return { hoy, instanteReal };
 }
 
 export function relojFijo(fecha: string): Reloj {
