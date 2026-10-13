@@ -1,8 +1,14 @@
 import { describe, expect, test } from "bun:test";
+import { SALTO_DE_LINEA, SEPARADOR_PARRAFOS } from "@/config/constants/agent.constants.ts";
+import { PATRON_PREGUNTA } from "@/config/constants/patterns.constants.ts";
 import { ESTADO_SOPORTE } from "@/config/constants/supports.constants.ts";
 import { HERRAMIENTA, PREFIJO_HERRAMIENTA } from "@/config/constants/tools.constants.ts";
 import { TEXTO_CHECKLIST, TEXTO_CIERRE } from "@/config/strings.ts";
-import { cierreDeterminista, preguntaConfirmacion } from "@/domain/builders/cierre-turno.builder.ts";
+import {
+  cierreConPregunta,
+  cierreDeterminista,
+  preguntaConfirmacion,
+} from "@/domain/builders/cierre-turno.builder.ts";
 import type { LlamadaResumida } from "@/domain/types/cierre-turno.type.ts";
 import type { CasoPendiente } from "@/domain/types/compuerta.type.ts";
 
@@ -98,4 +104,116 @@ describe("cierreDeterminista (D-53)", () => {
   test("sin llamadas devuelve el texto sin pasos", () => {
     expect(cierreDeterminista([])).toBe(TEXTO_CIERRE.sinPasos);
   });
+});
+
+const FILAS_CIERRE: readonly (readonly [string, string, string])[] = [
+  ["texto sin pregunta", "Armé el paquete.", "Armé el paquete."],
+  ["párrafo final de pregunta", `Armé el paquete.\n\n¿Confirmas el envío de ${EC}?`, "Armé el paquete."],
+  [
+    "línea final de pregunta dentro del párrafo",
+    "Armé el paquete.\nQueda BLOQUEADO.\n¿Lo envío?",
+    "Armé el paquete.\nQueda BLOQUEADO.",
+  ],
+  ["corte en fin de oración", "Estado: BLOQUEADO. ¿Confirmas el envío?", "Estado: BLOQUEADO."],
+  [
+    "corte con texto tras la pregunta",
+    "Estado: BLOQUEADO. ¿Confirmas el envío? Avísame.",
+    "Estado: BLOQUEADO.",
+  ],
+  ["pregunta sin signo de apertura", "Estado: BLOQUEADO. Confirmas el envío?", "Estado: BLOQUEADO."],
+  ["cláusula antes de la pregunta", "Listo. Si te parece, ¿lo envío?", "Listo."],
+  [
+    "pregunta entre paréntesis",
+    "Generé el formulario.\nRevisa el RUC (¿es el correcto?).",
+    "Generé el formulario.",
+  ],
+  [
+    "pregunta a mitad de oración",
+    "Generé el formulario.\nSi te parece bien, ¿lo envío?",
+    "Generé el formulario.",
+  ],
+  [
+    "número decimal no es fin de oración",
+    "Generé el formulario.\nRevisa la versión 2.1, ¿la envío?",
+    "Generé el formulario.",
+  ],
+  [
+    "punto pegado al signo no es fin de oración",
+    "Generé el formulario.\nEstado: BLOQUEADO.¿Lo envío?",
+    "Generé el formulario.",
+  ],
+  [
+    "dos líneas finales de pregunta",
+    "Generé el formulario.\n¿Lo reviso?\n¿Lo envío?",
+    "Generé el formulario.",
+  ],
+  [
+    "línea de pregunta sin signo de apertura",
+    "Generé el formulario.\nConfirmas el envío?",
+    "Generé el formulario.",
+  ],
+  ["corte en exclamación", "¡Listo! ¿Lo envío?", "¡Listo!"],
+  ["líneas en blanco al final", "Armé el paquete.\n\n¿Lo envío?\n\n", "Armé el paquete."],
+  ["solo una pregunta", "¿Confirmas el envío?", ""],
+  ["texto vacío", "", ""],
+  ["texto con solo espacios", "   \n  ", ""],
+  [
+    "pregunta en una línea anterior seguida de una afirmación",
+    "¿Revisaste el RUC?\nArmé el paquete.",
+    "¿Revisaste el RUC?\nArmé el paquete.",
+  ],
+];
+
+function cierreEsperado(previo: string, pregunta: string): string {
+  return previo === "" ? pregunta : `${previo}${SEPARADOR_PARRAFOS}${pregunta}`;
+}
+
+function textoPrevio(resultado: string, pregunta: string): string {
+  return resultado.slice(0, Math.max(0, resultado.length - pregunta.length)).trimEnd();
+}
+
+describe("cierreConPregunta (D-44, CR-02)", () => {
+  test.each(FILAS_CIERRE)("sin casos pendientes deja el texto intacto: %s", (_nombre, texto) => {
+    expect(cierreConPregunta(texto, [])).toBe(texto);
+  });
+
+  test.each(FILAS_CIERRE)(
+    "con un caso pendiente quita la pregunta final del modelo: %s",
+    (_nombre, texto, previo) => {
+      const pregunta = preguntaConfirmacion([PENDIENTE_EC]);
+      expect(cierreConPregunta(texto, [PENDIENTE_EC])).toBe(cierreEsperado(previo, pregunta));
+    },
+  );
+
+  test("la pregunta entre paréntesis y la de mitad de oración nunca dejan fragmentos", () => {
+    const parentesis = cierreConPregunta("Generé el formulario.\nRevisa el RUC (¿es el correcto?).", [
+      PENDIENTE_EC,
+    ]);
+    const mitad = cierreConPregunta("Generé el formulario.\nSi te parece bien, ¿lo envío?", [PENDIENTE_EC]);
+    expect(parentesis).not.toContain("Revisa el RUC (");
+    expect(mitad).not.toContain("Si te parece bien,");
+  });
+
+  test.each([
+    ["un caso", [PENDIENTE_EC]],
+    ["varios casos", [PENDIENTE_EC, PENDIENTE_CO]],
+  ] as const)("el último párrafo es exactamente la pregunta del servidor con %s", (_nombre, pendientes) => {
+    const pregunta = preguntaConfirmacion(pendientes);
+    for (const [, texto] of FILAS_CIERRE) {
+      expect(cierreConPregunta(texto, pendientes).split(SEPARADOR_PARRAFOS).at(-1)).toBe(pregunta);
+    }
+  });
+
+  test.each(FILAS_CIERRE)(
+    "el texto que queda antes de la pregunta no está mutilado: %s",
+    (_nombre, texto) => {
+      const pregunta = preguntaConfirmacion([PENDIENTE_EC]);
+      const previo = textoPrevio(cierreConPregunta(texto, [PENDIENTE_EC]), pregunta);
+      if (previo === "") return;
+      const ultima = previo.split(SALTO_DE_LINEA).at(-1) ?? "";
+      expect(ultima).not.toMatch(PATRON_PREGUNTA);
+      const intacta = texto.split(SALTO_DE_LINEA).includes(ultima);
+      expect(intacta || ultima.endsWith(".") || ultima.endsWith("!")).toBe(true);
+    },
+  );
 });
