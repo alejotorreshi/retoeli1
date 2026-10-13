@@ -89,7 +89,8 @@ async function tiposDeFixtures(): Promise<ReadonlySet<string>> {
     join(fixtures, SOPORTES_DIR, INDICE_SOPORTES),
   );
   const tipos = new Set(indice.map(({ tipo }) => tipo));
-  for (const caso of await readdir(join(fixtures, CASOS_DIR))) {
+  const entradas = await readdir(join(fixtures, CASOS_DIR), { withFileTypes: true });
+  for (const caso of entradas.filter((entrada) => entrada.isDirectory()).map((entrada) => entrada.name)) {
     const exigidos = await leerJson<readonly string[]>(
       join(fixtures, CASOS_DIR, caso, ARCHIVOS_CASO.soportesExigidos),
     );
