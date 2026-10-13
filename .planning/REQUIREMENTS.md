@@ -48,7 +48,7 @@ Fuente vinculante: `reto-01/PRD.md`, sin modificar. Fixtures: `reto-01/fixtures/
 
 ### Confirmación y envío simulado (CA3, RN4)
 
-- [ ] **ENV-01**: Si `simular_envio` se llama sin confirmación válida, devuelve `{ ok: false, error: "requiere confirmación explícita" }`. Con confirmación, escribe solo `out/<caso>/ENVIO-SIMULADO.md` y deja registrados los bloqueos vigentes. No exige `listo_para_firma`.
+- [x] **ENV-01**: Si `simular_envio` se llama sin confirmación válida, devuelve `{ ok: false, error: "requiere confirmación explícita" }`. Con confirmación, escribe solo `out/<caso>/ENVIO-SIMULADO.md` y deja registrados los bloqueos vigentes. No exige `listo_para_firma`.
 - [ ] **ENV-02**: El servidor hace cumplir la compuerta de confirmación. La sesión guarda la confirmación pendiente `{ caso, accion }`, y la autorización vale una sola vez, para ese caso y solo si llega en el mensaje inmediatamente siguiente del usuario. La decide un clasificador determinista que entiende negaciones ("No envíes nada todavía" no confirma) o el botón de la UI. El servidor nunca confía solo en `confirmado: true` del modelo.
 - [ ] **ENV-03**: Cuando una acción requiere confirmación, el turno termina con una pregunta explícita que lista los bloqueos. El servidor calcula `needsConfirmation`.
 
@@ -108,7 +108,7 @@ Fuente vinculante: `reto-01/PRD.md`, sin modificar. Fixtures: `reto-01/fixtures/
 
 - [ ] **CAL-01**: TypeScript estricto sin `any` (`strict` y `noUncheckedIndexedAccess`), verificado con `tsc --noEmit`. Biome se encarga de lint y formato, y `bun run check` los agrupa.
 - [ ] **CAL-02**: El código no lleva comentarios. Se entiende por sí solo gracias a nombres expresivos, tipos y funciones pequeñas de una responsabilidad. Las explicaciones viven en la documentación, no en el código.
-- [ ] **CAL-03**: Las constantes y la configuración están centralizadas, tipadas y validadas con zod desde env: rutas, topes, timeouts, umbral de confianza 0.8, tabla país → identificador y catálogo de errores. No hay números ni strings mágicos dispersos.
+- [x] **CAL-03**: Las constantes y la configuración están centralizadas, tipadas y validadas con zod desde env: rutas, topes, timeouts, umbral de confianza 0.8, tabla país → identificador y catálogo de errores. No hay números ni strings mágicos dispersos.
 - [ ] **CAL-04**: Las capas tienen dependencias hacia adentro (dominio puro → herramientas/casos de uso → infraestructura → HTTP), sin framework de DI. Solo hay puertos donde existe más de una implementación (LLM, reloj, store de sesión). Un test de arquitectura verifica la dirección de los imports.
 - [ ] **CAL-05**: Hay documentación de continuidad (`docs/arquitectura.md` y `docs/convenciones.md`) para que otro dev o una IA retome el proyecto. Los commits siguen Conventional Commits con la identidad `elianatorres5772`.
 
@@ -199,7 +199,7 @@ Cada requisito v1 está asignado a exactamente una fase del roadmap (`.planning/
 | PAQ-03 | Phase 1 | Gaps Found |
 | PAQ-04 | Phase 1 | Complete |
 | PAQ-05 | Phase 1 | Gaps Found |
-| ENV-01 | Phase 1 | Gaps Found |
+| ENV-01 | Phase 1 | Complete |
 | ENV-02 | Phase 2 | Pending |
 | ENV-03 | Phase 2 | Pending |
 | AGT-01 | Phase 2 | Pending |
@@ -238,7 +238,7 @@ Cada requisito v1 está asignado a exactamente una fase del roadmap (`.planning/
 | DEMO-05 | Phase 4 | Pending |
 | CAL-01 | Phase 1 | Gaps Found |
 | CAL-02 | Phase 1 | Gaps Found |
-| CAL-03 | Phase 1 | Gaps Found |
+| CAL-03 | Phase 1 | Complete |
 | CAL-04 | Phase 1 | Gaps Found |
 | CAL-05 | Phase 4 | Pending |
 | DEP-01 | Phase 3 | Pending |

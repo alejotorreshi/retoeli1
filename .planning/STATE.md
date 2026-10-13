@@ -3,16 +3,16 @@ gsd_state_version: "1.0"
 current_phase: 01
 current_phase_name: Núcleo determinista
 status: executing
-stopped_at: Completed 01-14-PLAN.md
-last_updated: "2026-10-13T04:13:00.308Z"
+stopped_at: Completed 01-15-PLAN.md
+last_updated: "2026-10-13T04:17:31.568Z"
 last_activity: 2026-10-12
 last_activity_desc: Phase 01 execution started
-state_head: 1ae230824fc11e2985adc3cc0ffe89cca693dd19
+state_head: 619cd7502d7f28517ca99f3bc953de0ce299f08c
 progress:
   total_phases: 4
   completed_phases: 0
   total_plans: 15
-  completed_plans: 14
+  completed_plans: 15
   percent: 0
 ---
 
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-10-12)
 ## Current Position
 
 Phase: 01 (Núcleo determinista) — EXECUTING
-Plan: 4 of 15
+Plan: 15 of 15
 Status: Ready to execute
 Last activity: 2026-10-12 — Phase 01 execution started
 
@@ -70,6 +70,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 01 P12 | 4min | 2 tasks | 6 files |
 | Phase 01 P13 | 4min | 2 tasks | 8 files |
 | Phase 01 P14 | 3min | 2 tasks | 10 files |
+| Phase 01 P15 | 3 min | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -122,6 +123,8 @@ Recent decisions affecting current work:
 - [Phase 01]: 01-13: PAQ-04 wording 'lista el formulario firmado' superseded by GC-1; requirement text left for orchestrator to reconcile
 - [Phase 01]: 01-14 (GC-2): nombres de soportes en NOMBRE_SOPORTE de strings.ts; TEXTO_SOPORTE.nombre usa Object.hasOwn y devuelve el id crudo si no existe; solo las salidas para personas (borrador, checklist) usan el nombre, y bloqueos, resumen, logs y demo conservan el tipo crudo
 - [Phase 01]: 01-14: motivosDeBloqueo(soportes) exportado de checklist.builder.ts con los mismos bloqueos y orden que Checklist.bloqueos pero con nombres; lo reutiliza 01-15 para ENVIO-SIMULADO.md
+- [Phase 01]: 01-15: los bloqueos de ENVIO-SIMULADO.md usan el nombre legible vía motivosDeBloqueo; data.bloqueos, resumen y log.jsonl de simular_envio conservan los ids crudos (contrato v1)
+- [Phase 01]: 01-15: la guarda transversal (tests/golden/nombres-soporte.test.ts) prohíbe las claves de NOMBRE_SOPORTE con guion bajo en borrador, checklist y ENVIO-SIMULADO; junto con 01-14 cierra G-01-H4c
 
 ### Pending Todos
 
@@ -144,6 +147,6 @@ Items acknowledged and deferred at milestone close, most recent first:
 
 ## Session Continuity
 
-Last session: 2026-10-13T04:13:00.280Z
-Stopped at: Completed 01-14-PLAN.md
+Last session: 2026-10-13T04:17:31.539Z
+Stopped at: Completed 01-15-PLAN.md
 Resume file: None
