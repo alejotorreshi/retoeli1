@@ -1,4 +1,4 @@
-import type { DECISION_CONFIRMACION } from "@/config/constants/confirmacion.constants.ts";
+import type { DECISION_CONFIRMACION } from "@/config/constants/confirmation.constants.ts";
 
 export type DecisionConfirmacion =
   | { readonly decision: typeof DECISION_CONFIRMACION.CONFIRMA; readonly caso: string }

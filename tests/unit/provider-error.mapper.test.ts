@@ -3,10 +3,10 @@ import { CODIGO_AGENTE, CODIGO_AGENTE_POR_ERROR_LLM } from "@/config/constants/a
 import {
   BACKOFF_TOPE_MS,
   FINISH_REASON,
-  MS_POR_SEGUNDO,
   TIPO_ERROR_LLM,
   TIPOS_ERROR_LLM_REINTENTABLES,
 } from "@/config/constants/llm.constants.ts";
+import { MS_POR_SEGUNDO } from "@/config/constants/runtime.constants.ts";
 import { MENSAJE_AGENTE } from "@/config/strings.ts";
 import {
   errorFromException,

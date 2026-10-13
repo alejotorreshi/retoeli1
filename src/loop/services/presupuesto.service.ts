@@ -1,4 +1,5 @@
-import { CODIGO_AGENTE, SEPARADOR_PARRAFOS } from "@/config/constants/agent.constants.ts";
+import { CODIGO_AGENTE } from "@/config/constants/agent.constants.ts";
+import { SEPARADOR_PARRAFOS } from "@/config/constants/text.constants.ts";
 import { MENSAJE_AGENTE } from "@/config/strings.ts";
 import { cierreDeterminista } from "@/domain/builders/cierre-turno.builder.ts";
 import type { LlamadaResumida } from "@/domain/types/cierre-turno.type.ts";

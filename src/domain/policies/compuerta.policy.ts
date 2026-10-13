@@ -3,7 +3,7 @@ import {
   DECISION_CONFIRMACION,
   ESTADO_COMPUERTA,
   EVENTO_COMPUERTA,
-} from "@/config/constants/confirmacion.constants.ts";
+} from "@/config/constants/confirmation.constants.ts";
 import type { ValorDe } from "@/config/types/valor-de.type.ts";
 import type {
   AperturaTurno,

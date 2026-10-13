@@ -12,9 +12,10 @@ import { crearProyectoTemporal } from "@tests/helpers/proyecto-temporal.helper.t
 import type { AgentePrueba } from "@tests/helpers/types/agente-prueba.type.ts";
 import type { PasoLlmFalso, PedidoLlmFalso } from "@tests/helpers/types/llm-falso.type.ts";
 import type { ProyectoTemporal } from "@tests/helpers/types/proyecto-temporal.type.ts";
-import { MOTIVO_FIN, SEPARADOR_PARRAFOS, TIPO_EVENTO } from "@/config/constants/agent.constants.ts";
+import { MOTIVO_FIN, TIPO_EVENTO } from "@/config/constants/agent.constants.ts";
 import { FECHA_DEMO } from "@/config/constants/demo.constants.ts";
 import { ROL_MENSAJE, TIPO_ERROR_LLM } from "@/config/constants/llm.constants.ts";
+import { SEPARADOR_PARRAFOS } from "@/config/constants/text.constants.ts";
 import { HERRAMIENTA, NOMBRE_VISIBLE } from "@/config/constants/tools.constants.ts";
 import { pinExecutionDate } from "@/config/env.ts";
 import { TEXTO_CIERRE } from "@/config/strings.ts";

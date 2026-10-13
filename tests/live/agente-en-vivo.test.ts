@@ -13,12 +13,13 @@ import {
 import { sensiblesDelProyecto } from "@tests/helpers/pii.helper.ts";
 import { crearProyectoTemporal } from "@tests/helpers/proyecto-temporal.helper.ts";
 import type { CuerpoPedido } from "@tests/helpers/types/fetch-falso.type.ts";
-import { SEPARADOR_PARRAFOS, TIPO_EVENTO } from "@/config/constants/agent.constants.ts";
+import { TIPO_EVENTO } from "@/config/constants/agent.constants.ts";
 import { FECHA_DEMO } from "@/config/constants/demo.constants.ts";
 import { ARCHIVOS_CASO, ARCHIVOS_SALIDA, OUT_DIR } from "@/config/constants/files.constants.ts";
 import { MODO_THINKING, PROVEEDOR_DEEPSEEK } from "@/config/constants/llm.constants.ts";
 import { NIVELES_LOG } from "@/config/constants/logging.constants.ts";
 import { ESTADO_SOPORTE } from "@/config/constants/supports.constants.ts";
+import { SEPARADOR_PARRAFOS } from "@/config/constants/text.constants.ts";
 import { HERRAMIENTA, NOMBRE_VISIBLE } from "@/config/constants/tools.constants.ts";
 import { type ProviderSettings, parseAgentEnv, pinExecutionDate } from "@/config/env.ts";
 import { TEXTO_SOPORTE } from "@/config/strings.ts";

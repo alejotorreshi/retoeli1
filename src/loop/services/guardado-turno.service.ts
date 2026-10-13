@@ -1,5 +1,6 @@
-import { EVENTO_BITACORA, MOTIVO_FIN, SEPARADOR_PARRAFOS } from "@/config/constants/agent.constants.ts";
+import { EVENTO_BITACORA, MOTIVO_FIN } from "@/config/constants/agent.constants.ts";
 import { ROL_MENSAJE } from "@/config/constants/llm.constants.ts";
+import { SEPARADOR_PARRAFOS } from "@/config/constants/text.constants.ts";
 import { recuperarAutorizado } from "@/domain/policies/compuerta.policy.ts";
 import type { MensajeAsistente } from "@/llm/types/llm.type.ts";
 import { interrumpido } from "@/loop/services/cierre-error.service.ts";

@@ -1,8 +1,8 @@
 import type { Reloj } from "@/application/types/puertos.type.ts";
-import { CODIGO_AGENTE, MS_POR_MINUTO } from "@/config/constants/agent.constants.ts";
+import { CODIGO_AGENTE } from "@/config/constants/agent.constants.ts";
 import { MAX_ISSUES_ARGS } from "@/config/constants/limits.constants.ts";
 import { BACKOFF_BASE_MS, BACKOFF_TOPE_MS } from "@/config/constants/llm.constants.ts";
-import { ZONA_HORARIA_POR_DEFECTO } from "@/config/constants/runtime.constants.ts";
+import { MS_POR_MINUTO, ZONA_HORARIA_POR_DEFECTO } from "@/config/constants/runtime.constants.ts";
 import {
   type AgentEnv,
   type ProviderSettings,

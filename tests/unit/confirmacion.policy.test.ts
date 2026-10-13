@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
-import { SEPARADOR_PARRAFOS } from "@/config/constants/agent.constants.ts";
-import { DECISION_CONFIRMACION } from "@/config/constants/confirmacion.constants.ts";
+import { DECISION_CONFIRMACION } from "@/config/constants/confirmation.constants.ts";
+import { SEPARADOR_PARRAFOS } from "@/config/constants/text.constants.ts";
 import { HERRAMIENTA } from "@/config/constants/tools.constants.ts";
 import { EJEMPLOS_CONFIRMACION, TEXTO_CIERRE, TEXTO_CONFIRMACION } from "@/config/strings.ts";
 import { clasificarConfirmacion } from "@/domain/policies/confirmacion.policy.ts";

@@ -1,4 +1,4 @@
-import { EVENTO_COMPUERTA } from "@/config/constants/confirmacion.constants.ts";
+import { EVENTO_COMPUERTA } from "@/config/constants/confirmation.constants.ts";
 import { CODIGO_ERROR } from "@/config/constants/errors.constants.ts";
 import { ESTADO_SOPORTE } from "@/config/constants/supports.constants.ts";
 import { HERRAMIENTA, NOMBRE_VISIBLE } from "@/config/constants/tools.constants.ts";

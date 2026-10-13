@@ -6,7 +6,7 @@ import {
   MOTIVO_FIN,
   TIPO_EVENTO,
 } from "@/config/constants/agent.constants.ts";
-import { DECISION_CONFIRMACION, ESTADO_COMPUERTA } from "@/config/constants/confirmacion.constants.ts";
+import { DECISION_CONFIRMACION, ESTADO_COMPUERTA } from "@/config/constants/confirmation.constants.ts";
 import { ROL_MENSAJE } from "@/config/constants/llm.constants.ts";
 import { MENSAJE_AGENTE, TEXTO_SESION } from "@/config/strings.ts";
 import { abrirTurno, casosPendientes, estadoLibre } from "@/domain/policies/compuerta.policy.ts";

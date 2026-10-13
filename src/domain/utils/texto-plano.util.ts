@@ -1,14 +1,14 @@
 import {
-  SALTO_DE_LINEA,
-  SEPARADOR_CELDA_MD,
-  SEPARADOR_CELDA_PLANO,
-} from "@/config/constants/agent.constants.ts";
-import {
   PATRON_BORDE_TABLA_MD,
   PATRON_ENCABEZADO_MD,
   PATRON_NEGRITA,
   PATRON_SEPARADOR_TABLA_MD,
 } from "@/config/constants/patterns.constants.ts";
+import {
+  SALTO_DE_LINEA,
+  SEPARADOR_CELDA_MD,
+  SEPARADOR_CELDA_PLANO,
+} from "@/config/constants/text.constants.ts";
 
 function filaPlana(linea: string): string {
   if (!linea.includes(SEPARADOR_CELDA_MD)) return linea;

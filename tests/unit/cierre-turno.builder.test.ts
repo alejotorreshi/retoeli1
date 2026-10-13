@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test";
-import { SALTO_DE_LINEA, SEPARADOR_PARRAFOS } from "@/config/constants/agent.constants.ts";
 import { PATRON_PREGUNTA } from "@/config/constants/patterns.constants.ts";
 import { ESTADO_SOPORTE } from "@/config/constants/supports.constants.ts";
+import { SALTO_DE_LINEA, SEPARADOR_PARRAFOS } from "@/config/constants/text.constants.ts";
 import { HERRAMIENTA, NOMBRE_VISIBLE } from "@/config/constants/tools.constants.ts";
 import { TEXTO_CHECKLIST, TEXTO_CIERRE } from "@/config/strings.ts";
 import { cierreConPregunta, cierreDeterminista } from "@/domain/builders/cierre-turno.builder.ts";

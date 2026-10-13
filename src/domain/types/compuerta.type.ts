@@ -1,5 +1,5 @@
 import type { ACCION } from "@/config/constants/agent.constants.ts";
-import type { ESTADO_COMPUERTA, EVENTO_COMPUERTA } from "@/config/constants/confirmacion.constants.ts";
+import type { ESTADO_COMPUERTA, EVENTO_COMPUERTA } from "@/config/constants/confirmation.constants.ts";
 import type { MotivoBloqueo } from "@/domain/types/checklist.type.ts";
 
 export type CasoPendiente = {

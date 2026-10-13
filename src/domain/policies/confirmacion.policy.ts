@@ -7,7 +7,7 @@ import {
   NEGACIONES,
   RELLENO,
   VERBOS_ENVIO,
-} from "@/config/constants/confirmacion.constants.ts";
+} from "@/config/constants/confirmation.constants.ts";
 import {
   PATRON_NO_PALABRA,
   PATRON_PREGUNTA,

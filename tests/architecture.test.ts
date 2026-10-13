@@ -6,7 +6,7 @@ import {
   DECISION_CONFIRMACION,
   ESTADO_COMPUERTA,
   EVENTO_COMPUERTA,
-} from "@/config/constants/confirmacion.constants.ts";
+} from "@/config/constants/confirmation.constants.ts";
 import { CODIGO_ERROR, CODIGO_FS } from "@/config/constants/errors.constants.ts";
 import { ARCHIVOS_PAQUETE, ARCHIVOS_SALIDA } from "@/config/constants/files.constants.ts";
 import { FORMATO, TIPO_PLANTILLA } from "@/config/constants/forms.constants.ts";

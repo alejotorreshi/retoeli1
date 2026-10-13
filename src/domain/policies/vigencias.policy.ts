@@ -1,4 +1,5 @@
-import { ESTADO_VIGENCIA, MILISEGUNDOS_POR_DIA } from "@/config/constants/supports.constants.ts";
+import { MS_POR_DIA } from "@/config/constants/runtime.constants.ts";
+import { ESTADO_VIGENCIA } from "@/config/constants/supports.constants.ts";
 import { TEXTO_VIGENCIA } from "@/config/strings.ts";
 import type { Vigencia } from "@/domain/types/vigencias.type.ts";
 
@@ -9,7 +10,7 @@ function textoVence(dias: number): string {
 }
 
 function diasEntre(desde: string, hasta: string): number {
-  return Math.round((Date.parse(hasta) - Date.parse(desde)) / MILISEGUNDOS_POR_DIA);
+  return Math.round((Date.parse(hasta) - Date.parse(desde)) / MS_POR_DIA);
 }
 
 export function evaluarVigencia(vigenciaHasta: string | null, hoy: string, diasAviso: number): Vigencia {

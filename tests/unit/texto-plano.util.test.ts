@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { SEPARADOR_CELDA_PLANO } from "@/config/constants/agent.constants.ts";
+import { SEPARADOR_CELDA_PLANO } from "@/config/constants/text.constants.ts";
 import { limpiarMarkdown } from "@/domain/utils/texto-plano.util.ts";
 
 describe("limpiarMarkdown deja el texto final en texto plano (D-60, D-46)", () => {

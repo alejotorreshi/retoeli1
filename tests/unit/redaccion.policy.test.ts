@@ -3,7 +3,7 @@ import {
   CLAVES_SENSIBLES,
   LARGO_MINIMO_SECRETO,
   PROFUNDIDAD_MAXIMA_REDACCION,
-} from "@/config/constants/redaccion.constants.ts";
+} from "@/config/constants/redaction.constants.ts";
 import { TEXTO_MASCARA } from "@/config/strings.ts";
 import { redactar } from "@/domain/policies/redaccion.policy.ts";
 

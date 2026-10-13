@@ -75,12 +75,7 @@ export const DEADLINE_TURNO_MS_POR_DEFECTO = 120_000;
 export const MARGEN_CANDADO_SESION_MS = 30_000;
 export const TTL_SESION_MINUTOS_POR_DEFECTO = 120;
 export const MAX_SESIONES_POR_DEFECTO = 100;
-export const SEPARADOR_PARRAFOS = "\n\n";
-export const SALTO_DE_LINEA = "\n";
-export const SEPARADOR_CELDA_MD = "|";
-export const SEPARADOR_CELDA_PLANO = " - ";
 export const LONGITUD_MAXIMA_NOMBRE_HERRAMIENTA = 64;
-export const MS_POR_MINUTO = 60_000;
 export const MAX_ITERACIONES_TOPE = 100;
 
 export const ESQUEMA_PARAMETROS = {

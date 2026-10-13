@@ -1,6 +1,6 @@
-import { SALTO_DE_LINEA, SEPARADOR_PARRAFOS } from "@/config/constants/agent.constants.ts";
-import { FINES_DE_ORACION } from "@/config/constants/confirmacion.constants.ts";
+import { FINES_DE_ORACION } from "@/config/constants/confirmation.constants.ts";
 import { PATRON_PREGUNTA } from "@/config/constants/patterns.constants.ts";
+import { SALTO_DE_LINEA, SEPARADOR_PARRAFOS } from "@/config/constants/text.constants.ts";
 import { ORDEN_FLUJO_HERRAMIENTAS } from "@/config/constants/tools.constants.ts";
 import { TEXTO_CIERRE, TEXTO_CONFIRMACION } from "@/config/strings.ts";
 import { motivosDeBloqueo } from "@/domain/builders/checklist.builder.ts";

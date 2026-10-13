@@ -6,12 +6,12 @@ import {
   FIN_LLM,
   FINISH_REASON,
   MODO_THINKING,
-  MS_POR_SEGUNDO,
   PARAMETRO_MAX_TOKENS,
   ROL_MENSAJE,
   TIPO_ERROR_LLM,
   TOOL_CHOICE,
 } from "@/config/constants/llm.constants.ts";
+import { MS_POR_SEGUNDO } from "@/config/constants/runtime.constants.ts";
 import type { ProviderCapabilities } from "@/config/types/provider-capabilities.type.ts";
 import { createOpenAICompatibleAdapter } from "@/llm/adapters/openai-compatible.adapter.ts";
 import type { DefinicionHerramienta, Mensaje, OpcionesEnvio, ResultadoEnvio } from "@/llm/types/llm.type.ts";

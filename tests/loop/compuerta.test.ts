@@ -19,11 +19,12 @@ import { crearProyectoTemporal } from "@tests/helpers/proyecto-temporal.helper.t
 import type { AgentePrueba } from "@tests/helpers/types/agente-prueba.type.ts";
 import type { PasoLlmFalso } from "@tests/helpers/types/llm-falso.type.ts";
 import type { ProyectoTemporal } from "@tests/helpers/types/proyecto-temporal.type.ts";
-import { ACCION, SEPARADOR_PARRAFOS } from "@/config/constants/agent.constants.ts";
+import { ACCION } from "@/config/constants/agent.constants.ts";
 import { FECHA_DEMO } from "@/config/constants/demo.constants.ts";
 import { CODIGO_ERROR } from "@/config/constants/errors.constants.ts";
 import { ROL_MENSAJE } from "@/config/constants/llm.constants.ts";
 import { ESTADO_SOPORTE } from "@/config/constants/supports.constants.ts";
+import { SEPARADOR_PARRAFOS } from "@/config/constants/text.constants.ts";
 import { HERRAMIENTA } from "@/config/constants/tools.constants.ts";
 import { pinExecutionDate } from "@/config/env.ts";
 import { cierreConPregunta } from "@/domain/builders/cierre-turno.builder.ts";

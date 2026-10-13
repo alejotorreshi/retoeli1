@@ -1,12 +1,12 @@
 import {
   BACKOFF_TOPE_MS,
   ESTADO_HTTP,
-  MS_POR_SEGUNDO,
   TIPO_ERROR_LLM,
   TIPO_ERROR_POR_FIN,
   TIPOS_ERROR_LLM_REINTENTABLES,
 } from "@/config/constants/llm.constants.ts";
 import { PATRON_ENTERO_NO_NEGATIVO } from "@/config/constants/patterns.constants.ts";
+import { MS_POR_SEGUNDO } from "@/config/constants/runtime.constants.ts";
 import type { ErrorLlm, TipoErrorLlm } from "@/llm/types/llm.type.ts";
 
 function errorOfType(

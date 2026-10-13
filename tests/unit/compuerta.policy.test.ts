@@ -4,7 +4,7 @@ import {
   DECISION_CONFIRMACION,
   ESTADO_COMPUERTA,
   EVENTO_COMPUERTA,
-} from "@/config/constants/confirmacion.constants.ts";
+} from "@/config/constants/confirmation.constants.ts";
 import { ESTADO_SOPORTE } from "@/config/constants/supports.constants.ts";
 import {
   abrirTurno,

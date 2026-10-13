@@ -49,7 +49,6 @@ export const TIPO_ERROR_POR_FIN: ReadonlyMap<string, ValorDe<typeof TIPO_ERROR_L
   [FINISH_REASON.ERROR, TIPO_ERROR_LLM.SERVIDOR],
 ]);
 
-export const MS_POR_SEGUNDO = 1000;
 export const CARACTERES_POR_TOKEN = 4;
 export const BACKOFF_BASE_MS = 500;
 export const BACKOFF_TOPE_MS = 8000;

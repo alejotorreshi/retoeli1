@@ -1,11 +1,7 @@
 import type { Instrucciones } from "@/application/types/puertos-agente.type.ts";
-import {
-  CODIGO_AGENTE,
-  MOTIVO_FIN,
-  SEPARADOR_PARRAFOS,
-  TIPO_EVENTO,
-} from "@/config/constants/agent.constants.ts";
+import { CODIGO_AGENTE, MOTIVO_FIN, TIPO_EVENTO } from "@/config/constants/agent.constants.ts";
 import { ROL_MENSAJE } from "@/config/constants/llm.constants.ts";
+import { SEPARADOR_PARRAFOS } from "@/config/constants/text.constants.ts";
 import { MENSAJE_AGENTE, TEXTO_CONTEXTO } from "@/config/strings.ts";
 import type { Mensaje, RespuestaLlm } from "@/llm/types/llm.type.ts";
 import { anotarLlamadaLlm } from "@/loop/services/bitacora-turno.service.ts";

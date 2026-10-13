@@ -23,18 +23,13 @@ import type { AgentePrueba } from "@tests/helpers/types/agente-prueba.type.ts";
 import type { PasoLlmFalso } from "@tests/helpers/types/llm-falso.type.ts";
 import type { ProyectoTemporal } from "@tests/helpers/types/proyecto-temporal.type.ts";
 import type { CargarInstrucciones } from "@/application/types/puertos-agente.type.ts";
-import {
-  ACCION,
-  CODIGO_AGENTE,
-  MOTIVO_FIN,
-  SEPARADOR_PARRAFOS,
-  TIPO_EVENTO,
-} from "@/config/constants/agent.constants.ts";
+import { ACCION, CODIGO_AGENTE, MOTIVO_FIN, TIPO_EVENTO } from "@/config/constants/agent.constants.ts";
 import { FECHA_DEMO } from "@/config/constants/demo.constants.ts";
 import { CODIGO_ERROR } from "@/config/constants/errors.constants.ts";
 import { ARCHIVO_PROMPT, ARCHIVOS_SALIDA, OUT_DIR } from "@/config/constants/files.constants.ts";
 import { TIPO_ERROR_LLM } from "@/config/constants/llm.constants.ts";
 import { ESTADO_SOPORTE } from "@/config/constants/supports.constants.ts";
+import { SEPARADOR_PARRAFOS } from "@/config/constants/text.constants.ts";
 import { HERRAMIENTA, NOMBRE_VISIBLE } from "@/config/constants/tools.constants.ts";
 import { pinExecutionDate } from "@/config/env.ts";
 import { MENSAJE_AGENTE } from "@/config/strings.ts";

@@ -1,9 +1,10 @@
-import { CODIGO_AGENTE, SALTO_DE_LINEA } from "@/config/constants/agent.constants.ts";
+import { CODIGO_AGENTE } from "@/config/constants/agent.constants.ts";
 import { CODIGO_ERROR } from "@/config/constants/errors.constants.ts";
 import { ARCHIVO_PROYECTO, ARCHIVOS_SALIDA, OUT_DIR } from "@/config/constants/files.constants.ts";
 import { LONGITUD_MAXIMA_CASO } from "@/config/constants/limits.constants.ts";
 import { ESQUEMA_LOOPBACK, ESQUEMA_SEGURO, HOSTS_LOOPBACK } from "@/config/constants/llm.constants.ts";
 import { ESTADO_CAMPO } from "@/config/constants/mapping.constants.ts";
+import { SALTO_DE_LINEA } from "@/config/constants/text.constants.ts";
 import { HERRAMIENTA, NOMBRE_VISIBLE } from "@/config/constants/tools.constants.ts";
 import type { ValorDe } from "@/config/types/valor-de.type.ts";
 

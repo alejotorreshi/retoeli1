@@ -27,7 +27,7 @@ import type { MensajeWire, PedidoRegistrado, RespuestaGuion } from "@tests/helpe
 import type { PasoLlmFalso } from "@tests/helpers/types/llm-falso.type.ts";
 import type { ProyectoTemporal } from "@tests/helpers/types/proyecto-temporal.type.ts";
 import { CODIGO_AGENTE, MOTIVO_FIN, TIPO_EVENTO } from "@/config/constants/agent.constants.ts";
-import { ESTADO_COMPUERTA } from "@/config/constants/confirmacion.constants.ts";
+import { ESTADO_COMPUERTA } from "@/config/constants/confirmation.constants.ts";
 import { FECHA_DEMO } from "@/config/constants/demo.constants.ts";
 import { CODIGO_ERROR } from "@/config/constants/errors.constants.ts";
 import {

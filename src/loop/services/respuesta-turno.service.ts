@@ -1,4 +1,5 @@
-import { SEPARADOR_PARRAFOS, TIPO_EVENTO } from "@/config/constants/agent.constants.ts";
+import { TIPO_EVENTO } from "@/config/constants/agent.constants.ts";
+import { SEPARADOR_PARRAFOS } from "@/config/constants/text.constants.ts";
 import type {
   EventoAgente,
   EventoFinHerramienta,
