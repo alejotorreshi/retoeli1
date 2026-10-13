@@ -9,3 +9,13 @@ export const NIVELES_LOG = {
 } as const;
 
 export const NIVEL_LOG_POR_DEFECTO = NIVELES_LOG.INFO;
+
+export const RUTAS_REDACCION_LOG = [
+  "apiKey",
+  "authorization",
+  "headers.authorization",
+  "*.apiKey",
+  "*.authorization",
+  "*.headers.authorization",
+  "*.api_key",
+] as const;
