@@ -262,8 +262,6 @@ export const MENSAJE_AGENTE = {
     "Esta sesión todavía está procesando el mensaje anterior. Espera la respuesta y vuelve a escribir.",
   [CODIGO_AGENTE.PRESUPUESTO_AGOTADO]:
     "Esta sesión agotó su presupuesto de tokens. Abre una sesión nueva para continuar.",
-  [CODIGO_AGENTE.TOPE_ITERACIONES]:
-    "Llegué al tope de pasos para este mensaje sin terminar. Escríbeme de nuevo para continuar desde aquí.",
   [CODIGO_AGENTE.TURNO_INTERRUMPIDO]: "El turno se interrumpió antes de terminar.",
   [CODIGO_AGENTE.TIEMPO_TURNO_AGOTADO]: conSesionAbierta("El turno tardó más de lo permitido y se detuvo."),
   [CODIGO_AGENTE.PROVEEDOR_SIN_CLAVE]: conSesionAbierta(
