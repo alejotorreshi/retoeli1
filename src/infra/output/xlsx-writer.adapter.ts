@@ -1,21 +1,41 @@
 import { type Cell, type Fill, Workbook, type Worksheet } from "exceljs";
 import { ESTADO_CAMPO } from "@/config/constants/mapping.constants.ts";
 import { AUTOR_DOCUMENTOS } from "@/config/constants/runtime.constants.ts";
-import { FORMATO_CELDA_TEXTO, RELLENO_XLSX } from "@/config/constants/xlsx.constants.ts";
+import { ANCHO_COLUMNA_XLSX, FORMATO_CELDA_TEXTO, RELLENO_XLSX } from "@/config/constants/xlsx.constants.ts";
 import { TEXTO_XLSX } from "@/config/strings.ts";
 import type { FechaISO } from "@/domain/types/fecha.type.ts";
 import type { FilaCelda } from "@/domain/types/formulario.type.ts";
+
+type HojaEscrita = { readonly hoja: Worksheet; readonly largos: Map<number, number> };
 
 function relleno(argb: string): Fill {
   return { type: "pattern", pattern: "solid", fgColor: { argb } };
 }
 
-function hojaPara(libro: Workbook, hojas: Map<string, Worksheet>, nombre: string): Worksheet {
+function largoDeTexto(texto: string | null): number {
+  return texto === null ? 0 : [...texto].length;
+}
+
+function anchoDeColumna(largo: number): number {
+  const { minimo, maximo, margen } = ANCHO_COLUMNA_XLSX;
+  return Math.min(maximo, Math.max(minimo, largo + margen));
+}
+
+function hojaPara(libro: Workbook, hojas: Map<string, HojaEscrita>, nombre: string): HojaEscrita {
   const existente = hojas.get(nombre);
   if (existente !== undefined) return existente;
-  const nueva = libro.addWorksheet(nombre);
+  const nueva = { hoja: libro.addWorksheet(nombre), largos: new Map<number, number>() };
   hojas.set(nombre, nueva);
   return nueva;
+}
+
+function registrarTexto(largos: Map<number, number>, celda: Cell, texto: string | null): void {
+  const columna = celda.fullAddress.col;
+  largos.set(columna, Math.max(largos.get(columna) ?? 0, largoDeTexto(texto)));
+}
+
+function textoDelValor(fila: FilaCelda): string | null {
+  return fila.estado === ESTADO_CAMPO.FALTANTE ? null : fila.valor;
 }
 
 function marcarValor(celda: Cell, fila: FilaCelda): void {
@@ -31,11 +51,19 @@ function marcarValor(celda: Cell, fila: FilaCelda): void {
   if (fila.nota !== null) celda.note = fila.nota;
 }
 
-function escribirFila(hoja: Worksheet, fila: FilaCelda): void {
+function escribirFila({ hoja, largos }: HojaEscrita, fila: FilaCelda): void {
   const etiqueta = hoja.getCell(fila.celda_etiqueta);
   etiqueta.value = fila.etiqueta;
   etiqueta.font = { bold: true };
-  marcarValor(hoja.getCell(fila.celda_valor), fila);
+  registrarTexto(largos, etiqueta, fila.etiqueta);
+  const valor = hoja.getCell(fila.celda_valor);
+  marcarValor(valor, fila);
+  registrarTexto(largos, valor, textoDelValor(fila));
+}
+
+function aplicarAnchos({ hoja, largos }: HojaEscrita): void {
+  const columnas = [...largos].sort(([a], [b]) => a - b);
+  for (const [numero, largo] of columnas) hoja.getColumn(numero).width = anchoDeColumna(largo);
 }
 
 export async function writeXlsx(filas: readonly FilaCelda[], fecha: FechaISO): Promise<Uint8Array> {
@@ -45,7 +73,8 @@ export async function writeXlsx(filas: readonly FilaCelda[], fecha: FechaISO): P
   libro.lastModifiedBy = AUTOR_DOCUMENTOS;
   libro.created = instante;
   libro.modified = instante;
-  const hojas = new Map<string, Worksheet>();
+  const hojas = new Map<string, HojaEscrita>();
   for (const fila of filas) escribirFila(hojaPara(libro, hojas, fila.hoja), fila);
+  for (const escrita of hojas.values()) aplicarAnchos(escrita);
   return new Uint8Array(await libro.xlsx.writeBuffer());
 }

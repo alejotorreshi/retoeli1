@@ -16,3 +16,9 @@ export const FORMATO_CELDA_TEXTO = "@";
 export const LETRAS_DEL_ALFABETO = 26;
 
 export const CODIGO_ANTES_DE_A = 64;
+
+export const ANCHO_COLUMNA_XLSX = {
+  minimo: 10,
+  maximo: 60,
+  margen: 2,
+} as const;

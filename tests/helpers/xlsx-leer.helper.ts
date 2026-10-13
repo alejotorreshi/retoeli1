@@ -1,5 +1,10 @@
 import { readFile } from "node:fs/promises";
-import type { CeldaLeida, MetadatosXlsx, TipoCelda } from "@tests/helpers/types/xlsx-leer.type.ts";
+import type {
+  AnchoLeido,
+  CeldaLeida,
+  MetadatosXlsx,
+  TipoCelda,
+} from "@tests/helpers/types/xlsx-leer.type.ts";
 import { type Cell, ValueType, Workbook } from "exceljs";
 
 const TIPOS: ReadonlyMap<ValueType, TipoCelda> = new Map([
@@ -38,6 +43,7 @@ function leerCelda(hoja: string, celda: Cell): CeldaLeida {
     relleno: rellenoDe(celda),
     nota: notaDe(celda),
     negrita: celda.font?.bold === true,
+    ajustada: celda.alignment?.wrapText === true,
   };
 }
 
@@ -68,6 +74,16 @@ export async function leerMetadatosXlsx(ruta: string): Promise<MetadatosXlsx> {
     creado: libro.created.toISOString(),
     modificado: libro.modified.toISOString(),
   };
+}
+
+export async function leerAnchosXlsx(ruta: string): Promise<AnchoLeido[]> {
+  const libro = await cargar(ruta);
+  return libro.worksheets.flatMap((hoja) =>
+    Array.from({ length: hoja.columnCount }, (_, indice) => {
+      const columna = hoja.getColumn(indice + 1);
+      return { hoja: hoja.name, columna: columna.letter, ancho: columna.width ?? null };
+    }),
+  );
 }
 
 export function celdaEn(celdas: readonly CeldaLeida[], hoja: string, direccion: string): CeldaLeida {

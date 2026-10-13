@@ -5,8 +5,15 @@ import { generarCaso } from "@tests/helpers/flujo.helper.ts";
 import { crearProyectoTemporal } from "@tests/helpers/proyecto-temporal.helper.ts";
 import type { ItemProyectado } from "@tests/helpers/types/flujo.type.ts";
 import type { ProyectoTemporal } from "@tests/helpers/types/proyecto-temporal.type.ts";
-import { celdaEn, leerCeldasXlsx, leerMetadatosXlsx } from "@tests/helpers/xlsx-leer.helper.ts";
+import type { AnchoLeido, CeldaLeida } from "@tests/helpers/types/xlsx-leer.type.ts";
+import {
+  celdaEn,
+  leerAnchosXlsx,
+  leerCeldasXlsx,
+  leerMetadatosXlsx,
+} from "@tests/helpers/xlsx-leer.helper.ts";
 import { FIXTURES_DIR } from "@/config/constants/files.constants.ts";
+import { ANCHO_COLUMNA_XLSX } from "@/config/constants/xlsx.constants.ts";
 import { leerRuta } from "@/domain/selectors/maestro.selector.ts";
 import type { FilaCelda } from "@/domain/types/formulario.type.ts";
 import type { Maestro } from "@/domain/types/maestro.type.ts";
@@ -164,6 +171,84 @@ describe("golden: proveedor_generar_formulario xlsx (FORM-01, D-01, D-02, D-04)"
     expect(mapeoSegundo).toBe(mapeoPrimero);
     expect(mapeoSegundo).not.toContain("03100012345");
     expect(mapeoSegundo).not.toContain('"valor"');
+  });
+});
+
+function columnaDe(direccion: string): string {
+  return direccion.replace(/\d+$/, "");
+}
+
+function largoDe(valor: unknown): number {
+  return typeof valor === "string" ? [...valor].length : 0;
+}
+
+function anchoEsperado(largo: number): number {
+  const { minimo, maximo, margen } = ANCHO_COLUMNA_XLSX;
+  return Math.min(maximo, Math.max(minimo, largo + margen));
+}
+
+function largosPorColumna(celdas: readonly CeldaLeida[], filtro: (celda: CeldaLeida) => boolean) {
+  const largos = new Map<string, number>();
+  for (const celda of celdas.filter(filtro)) {
+    const clave = `${celda.hoja}!${columnaDe(celda.celda)}`;
+    largos.set(clave, Math.max(largos.get(clave) ?? 0, largoDe(celda.valor)));
+  }
+  return largos;
+}
+
+function anchoDe(anchos: readonly AnchoLeido[], hoja: string, columna: string): number | null {
+  const encontrado = anchos.find((ancho) => ancho.hoja === hoja && ancho.columna === columna);
+  if (encontrado === undefined) throw new Error(`sin columna ${hoja}!${columna}`);
+  return encontrado.ancho;
+}
+
+async function anchosDelCaso(caso: string) {
+  await generarOk(caso);
+  const archivo = join(compartido.raiz, "out", caso, "formulario.xlsx");
+  return { anchos: await leerAnchosXlsx(archivo), celdas: await leerCeldasXlsx(archivo) };
+}
+
+describe("golden: anchos de columna del xlsx según el texto escrito (H1, GC-4)", () => {
+  for (const caso of ["co-industrias-delta", "hn-agroexport-sula"]) {
+    test(`${caso} da a cada columna usada el ancho acotado de su texto más largo y ninguno a las demás`, async () => {
+      const { anchos, celdas } = await anchosDelCaso(caso);
+      const largos = largosPorColumna(celdas, () => true);
+      expect(largos.size).toBeGreaterThan(0);
+      for (const ancho of anchos) {
+        const largo = largos.get(`${ancho.hoja}!${ancho.columna}`);
+        expect(ancho.ancho).toBe(largo === undefined ? null : anchoEsperado(largo));
+      }
+      for (const clave of largos.keys()) {
+        const [hoja = "", columna = ""] = clave.split("!");
+        expect(anchoDe(anchos, hoja, columna)).not.toBeNull();
+      }
+    });
+  }
+
+  test("co-industrias-delta deja sin ancho la columna A de ambas hojas", async () => {
+    const { anchos } = await anchosDelCaso("co-industrias-delta");
+    expect(anchoDe(anchos, "Datos Proveedor", "A")).toBeNull();
+    expect(anchoDe(anchos, "Datos Bancarios", "A")).toBeNull();
+  });
+
+  test("las columnas de etiquetas caben la etiqueta más larga más el margen", async () => {
+    const columnasDeEtiqueta = [
+      { caso: "co-industrias-delta", hoja: "Datos Proveedor", columna: "B" },
+      { caso: "co-industrias-delta", hoja: "Datos Bancarios", columna: "B" },
+      { caso: "hn-agroexport-sula", hoja: "Registro", columna: "A" },
+    ];
+    for (const { caso, hoja, columna } of columnasDeEtiqueta) {
+      const { anchos, celdas } = await anchosDelCaso(caso);
+      const etiquetas = largosPorColumna(celdas, (celda) => celda.negrita && celda.hoja === hoja);
+      const largo = etiquetas.get(`${hoja}!${columna}`);
+      if (largo === undefined) throw new Error(`sin etiquetas en ${hoja}!${columna}`);
+      expect(anchoDe(anchos, hoja, columna)).toBeGreaterThanOrEqual(largo + ANCHO_COLUMNA_XLSX.margen);
+    }
+  });
+
+  test("co-industrias-delta acota al máximo la columna C de Datos Proveedor", async () => {
+    const { anchos } = await anchosDelCaso("co-industrias-delta");
+    expect(anchoDe(anchos, "Datos Proveedor", "C")).toBe(ANCHO_COLUMNA_XLSX.maximo);
   });
 });
 

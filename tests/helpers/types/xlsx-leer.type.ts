@@ -9,6 +9,13 @@ export type CeldaLeida = {
   readonly relleno: string | null;
   readonly nota: string | null;
   readonly negrita: boolean;
+  readonly ajustada: boolean;
+};
+
+export type AnchoLeido = {
+  readonly hoja: string;
+  readonly columna: string;
+  readonly ancho: number | null;
 };
 
 export type MetadatosXlsx = {
