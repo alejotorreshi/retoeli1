@@ -1,10 +1,11 @@
 import type { EntradaFormularioPdf } from "@/application/puertos.ts";
 import { ESTADO_CAMPO } from "@/config/constants/mapping.constants.ts";
-import { DISENO_PDF, TEXTOS_PDF } from "@/config/constants/pdf.constants.ts";
+import { COLOR_TRAZO, DISENO_PDF, TEXTOS_PDF } from "@/config/constants/pdf.constants.ts";
+import type { ValorDe } from "@/config/types/valor-de.type.ts";
 import type { FilaFormulario } from "@/domain/formulario.ts";
 import type { FechaISO } from "@/domain/tipos.ts";
 
-export type ColorTrazo = "texto" | "faltante" | "por_confirmar";
+export type ColorTrazo = ValorDe<typeof COLOR_TRAZO>;
 
 export type LineaPdf = {
   readonly x: number;
@@ -35,11 +36,11 @@ const ANCHO_COMPLETO = DISENO_PDF.ancho - 2 * DISENO_PDF.margen;
 const Y_INICIAL = DISENO_PDF.alto - DISENO_PDF.margen - DISENO_PDF.tamanoTitulo;
 const FILAS_POR_PAGINA = Math.floor((Y_INICIAL - DISENO_PDF.margen) / DISENO_PDF.interlineado) + 1;
 
-const TITULO: Estilo = { tamano: DISENO_PDF.tamanoTitulo, negrita: true, color: "texto" };
-const ETIQUETA: Estilo = { tamano: DISENO_PDF.tamanoTexto, negrita: true, color: "texto" };
-const TEXTO: Estilo = { tamano: DISENO_PDF.tamanoTexto, negrita: false, color: "texto" };
-const FALTANTE: Estilo = { ...TEXTO, color: "faltante" };
-const POR_CONFIRMAR: Estilo = { ...TEXTO, color: "por_confirmar" };
+const TITULO: Estilo = { tamano: DISENO_PDF.tamanoTitulo, negrita: true, color: COLOR_TRAZO.TEXTO };
+const ETIQUETA: Estilo = { tamano: DISENO_PDF.tamanoTexto, negrita: true, color: COLOR_TRAZO.TEXTO };
+const TEXTO: Estilo = { tamano: DISENO_PDF.tamanoTexto, negrita: false, color: COLOR_TRAZO.TEXTO };
+const FALTANTE: Estilo = { ...TEXTO, color: COLOR_TRAZO.FALTANTE };
+const POR_CONFIRMAR: Estilo = { ...TEXTO, color: COLOR_TRAZO.POR_CONFIRMAR };
 
 function partirPalabra(palabra: string, ancho: number, estilo: Estilo, medir: Medir): string[] {
   const trozos: string[] = [];

@@ -1,17 +1,17 @@
 import { readdir, realpath, stat } from "node:fs/promises";
 import { join, relative, resolve, sep } from "node:path";
 import type { ResolucionCaso } from "@/application/puertos.ts";
+import { CODIGOS_FS_NO_ENCONTRADO } from "@/config/constants/errors.constants.ts";
 import { CASOS_DIR, FIXTURES_DIR, OUT_DIR } from "@/config/constants/files.constants.ts";
 import { ESTADO_LECTURA } from "@/config/constants/io.constants.ts";
 import { PATRON_CASO } from "@/config/constants/patterns.constants.ts";
 
 const NO_ENCONTRADO = { estado: ESTADO_LECTURA.NO_ENCONTRADO } as const;
 const INVALIDO = { estado: ESTADO_LECTURA.INVALIDO } as const;
-const CODIGOS_NO_ENCONTRADO: ReadonlySet<string> = new Set(["ENOENT", "ENOTDIR"]);
 
 function esNoEncontrado(error: unknown): boolean {
   if (typeof error !== "object" || error === null || !("code" in error)) return false;
-  return typeof error.code === "string" && CODIGOS_NO_ENCONTRADO.has(error.code);
+  return typeof error.code === "string" && CODIGOS_FS_NO_ENCONTRADO.has(error.code);
 }
 
 function directorioCasos(raiz: string): string {

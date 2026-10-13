@@ -1,5 +1,6 @@
 import { mkdir, readdir, realpath, rm, writeFile } from "node:fs/promises";
 import { dirname, join, sep } from "node:path";
+import { CODIGO_FS } from "@/config/constants/errors.constants.ts";
 import {
   ARCHIVOS_PAQUETE,
   ARCHIVOS_REGENERABLES,
@@ -69,7 +70,7 @@ export function escribirBinarioSalida(
 }
 
 function noExiste(error: unknown): boolean {
-  return typeof error === "object" && error !== null && "code" in error && error.code === "ENOENT";
+  return typeof error === "object" && error !== null && "code" in error && error.code === CODIGO_FS.ENOENT;
 }
 
 async function realOAusente(ruta: string): Promise<string | null> {

@@ -1,8 +1,10 @@
 import { ESTADO_CAMPO } from "@/config/constants/mapping.constants.ts";
+import { LARGO_VISIBLE, RUTAS_POR_MASCARA, TIPO_MASCARA } from "@/config/constants/pii.constants.ts";
+import type { ValorDe } from "@/config/types/valor-de.type.ts";
 import type { CampoMapeado } from "@/domain/mapeo.ts";
 import type { EstadoCampo, ReglaMapeo } from "@/domain/reglas.ts";
 
-export type TipoMascara = "publico" | "ultimos4" | "iniciales" | "correo" | "telefono" | "monto" | "oculto";
+export type TipoMascara = ValorDe<typeof TIPO_MASCARA>;
 
 export type CampoPresentado = {
   readonly etiqueta: string;
@@ -16,7 +18,6 @@ export type CampoPresentado = {
 };
 
 const PUNTO = "•";
-const LARGO_VISIBLE = 4;
 const MASCARA_MONTO = "[monto oculto]";
 const MASCARA_OCULTO = "[dato oculto]";
 const ESPACIOS = /\s+/;
@@ -27,40 +28,7 @@ function politica(
   return new Map(entradas.flatMap(([tipo, rutas]) => rutas.map((ruta) => [ruta, tipo] as const)));
 }
 
-export const POLITICA_PII: ReadonlyMap<string, TipoMascara> = politica([
-  [
-    "publico",
-    [
-      "razon_social",
-      "tipo_sociedad",
-      "ciudad",
-      "departamento",
-      "pais",
-      "sitio_web",
-      "actividad_economica",
-      "ciiu_principal",
-      "ciiu_secundario",
-      "regimen_tributario",
-      "numero_empleados",
-    ],
-  ],
-  [
-    "ultimos4",
-    [
-      "nit",
-      "digito_verificacion",
-      "codigo_postal",
-      "matricula_mercantil",
-      "representante_legal.identificacion",
-      "banco.numero_cuenta",
-      "banco.swift",
-    ],
-  ],
-  ["iniciales", ["representante_legal.nombre", "contacto_comercial.nombre", "contacto_financiero.nombre"]],
-  ["correo", ["representante_legal.email", "contacto_comercial.email", "contacto_financiero.email"]],
-  ["telefono", ["telefono", "contacto_comercial.telefono", "contacto_financiero.telefono"]],
-  ["monto", ["ingresos_ultimo_ano.valor"]],
-]);
+export const POLITICA_PII: ReadonlyMap<string, TipoMascara> = politica(RUTAS_POR_MASCARA);
 
 function ultimos4(valor: string): string {
   if (valor.length <= LARGO_VISIBLE) return PUNTO.repeat(LARGO_VISIBLE);
@@ -95,17 +63,17 @@ function telefono(valor: string): string {
 }
 
 const MASCARAS: Readonly<Record<TipoMascara, (valor: string) => string>> = {
-  publico: (valor) => valor,
-  ultimos4,
-  iniciales,
-  correo,
-  telefono,
-  monto: () => MASCARA_MONTO,
-  oculto: () => MASCARA_OCULTO,
+  [TIPO_MASCARA.PUBLICO]: (valor) => valor,
+  [TIPO_MASCARA.ULTIMOS4]: ultimos4,
+  [TIPO_MASCARA.INICIALES]: iniciales,
+  [TIPO_MASCARA.CORREO]: correo,
+  [TIPO_MASCARA.TELEFONO]: telefono,
+  [TIPO_MASCARA.MONTO]: () => MASCARA_MONTO,
+  [TIPO_MASCARA.OCULTO]: () => MASCARA_OCULTO,
 };
 
 export function enmascarar(ruta: string, valor: string): string {
-  return MASCARAS[POLITICA_PII.get(ruta) ?? "oculto"](valor);
+  return MASCARAS[POLITICA_PII.get(ruta) ?? TIPO_MASCARA.OCULTO](valor);
 }
 
 function valorEnmascarado(campo: CampoMapeado): string | null {

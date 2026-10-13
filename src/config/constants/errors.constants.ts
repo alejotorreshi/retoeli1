@@ -19,3 +19,10 @@ export const CODIGOS_CON_DETALLE: ReadonlySet<string> = new Set([
   CODIGO_ERROR.CONFIGURACION_INVALIDA,
   CODIGO_ERROR.REGLAS_INVALIDAS,
 ]);
+
+export const CODIGO_FS = {
+  ENOENT: "ENOENT",
+  ENOTDIR: "ENOTDIR",
+} as const;
+
+export const CODIGOS_FS_NO_ENCONTRADO: ReadonlySet<string> = new Set([CODIGO_FS.ENOENT, CODIGO_FS.ENOTDIR]);
