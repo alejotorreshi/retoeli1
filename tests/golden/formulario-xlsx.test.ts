@@ -182,10 +182,20 @@ function largoDe(valor: unknown): number {
   return typeof valor === "string" ? [...valor].length : 0;
 }
 
-function anchoEsperado(largo: number): number {
-  const { minimo, maximo, margen } = ANCHO_COLUMNA_XLSX;
-  return Math.min(maximo, Math.max(minimo, largo + margen));
-}
+const ANCHOS_ESPERADOS: Readonly<Record<string, readonly AnchoLeido[]>> = {
+  "co-industrias-delta": [
+    { hoja: "Datos Proveedor", columna: "A", ancho: null },
+    { hoja: "Datos Proveedor", columna: "B", ancho: 32 },
+    { hoja: "Datos Proveedor", columna: "C", ancho: 60 },
+    { hoja: "Datos Bancarios", columna: "A", ancho: null },
+    { hoja: "Datos Bancarios", columna: "B", ancho: 22 },
+    { hoja: "Datos Bancarios", columna: "C", ancho: 27 },
+  ],
+  "hn-agroexport-sula": [
+    { hoja: "Registro", columna: "A", ancho: 25 },
+    { hoja: "Registro", columna: "B", ancho: 32 },
+  ],
+};
 
 function largosPorColumna(celdas: readonly CeldaLeida[], filtro: (celda: CeldaLeida) => boolean) {
   const largos = new Map<string, number>();
@@ -210,14 +220,11 @@ async function anchosDelCaso(caso: string) {
 
 describe("golden: anchos de columna del xlsx según el texto escrito (H1, GC-4)", () => {
   for (const caso of ["co-industrias-delta", "hn-agroexport-sula"]) {
-    test(`${caso} da a cada columna usada el ancho acotado de su texto más largo y ninguno a las demás`, async () => {
+    test(`${caso} fija el ancho literal de cada columna y ninguno a las columnas sin texto (IN-06)`, async () => {
       const { anchos, celdas } = await anchosDelCaso(caso);
+      expect(anchos).toEqual([...(ANCHOS_ESPERADOS[caso] ?? [])]);
       const largos = largosPorColumna(celdas, () => true);
       expect(largos.size).toBeGreaterThan(0);
-      for (const ancho of anchos) {
-        const largo = largos.get(`${ancho.hoja}!${ancho.columna}`);
-        expect(ancho.ancho).toBe(largo === undefined ? null : anchoEsperado(largo));
-      }
       for (const clave of largos.keys()) {
         const [hoja = "", columna = ""] = clave.split("!");
         expect(anchoDe(anchos, hoja, columna)).not.toBeNull();

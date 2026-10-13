@@ -1,4 +1,5 @@
 import { readFile } from "node:fs/promises";
+import { TIPO_CELDA } from "@tests/helpers/tipo-celda.helper.ts";
 import type {
   AnchoLeido,
   CeldaLeida,
@@ -8,11 +9,11 @@ import type {
 import { type Cell, ValueType, Workbook } from "exceljs";
 
 const TIPOS: ReadonlyMap<ValueType, TipoCelda> = new Map([
-  [ValueType.Null, "vacia"],
-  [ValueType.String, "texto"],
-  [ValueType.SharedString, "texto"],
-  [ValueType.Number, "numero"],
-  [ValueType.Formula, "formula"],
+  [ValueType.Null, TIPO_CELDA.VACIA],
+  [ValueType.String, TIPO_CELDA.TEXTO],
+  [ValueType.SharedString, TIPO_CELDA.TEXTO],
+  [ValueType.Number, TIPO_CELDA.NUMERO],
+  [ValueType.Formula, TIPO_CELDA.FORMULA],
 ]);
 
 async function cargar(ruta: string): Promise<Workbook> {
@@ -38,7 +39,7 @@ function leerCelda(hoja: string, celda: Cell): CeldaLeida {
     hoja,
     celda: celda.address,
     valor: celda.value,
-    tipo: TIPOS.get(celda.type) ?? "otro",
+    tipo: TIPOS.get(celda.type) ?? TIPO_CELDA.OTRO,
     formato: celda.numFmt ?? null,
     relleno: rellenoDe(celda),
     nota: notaDe(celda),

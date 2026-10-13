@@ -1,4 +1,7 @@
-export type TipoCelda = "vacia" | "texto" | "numero" | "formula" | "otro";
+import type { TIPO_CELDA } from "@tests/helpers/tipo-celda.helper.ts";
+import type { ValorDe } from "@/config/types/valor-de.type.ts";
+
+export type TipoCelda = ValorDe<typeof TIPO_CELDA>;
 
 export type CeldaLeida = {
   readonly hoja: string;
