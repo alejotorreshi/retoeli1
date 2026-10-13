@@ -1,6 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import { FORMATO } from "@/config/constants/forms.constants.ts";
 import { ESTADO_SOPORTE } from "@/config/constants/supports.constants.ts";
+import { TEXTO_BORRADOR } from "@/config/strings.ts";
 import { construirDatosBorrador, construirDatosEnvio } from "@/domain/builders/borrador.builder.ts";
 import type { CampoPorConfirmar, Checklist } from "@/domain/types/checklist.type.ts";
 import type { Maestro } from "@/domain/types/maestro.type.ts";
@@ -231,5 +232,94 @@ describe("construirDatosEnvio: archivos que van al cliente (GC-3, G-01-H4a)", ()
       FORMULARIO_XLSX,
     ]);
     expect(datos.archivos).toEqual([{ archivo: FORMULARIO_XLSX }]);
+  });
+});
+
+describe("nombres de soporte con tipos desconocidos (GC-2, G-01-H4c)", () => {
+  const DESCONOCIDOS = ["zz_desconocido", "constructor", "__proto__"];
+
+  function checklistCon(soportes: readonly SoporteEvaluado[]): Checklist {
+    return {
+      fecha_ejecucion: "2026-09-03",
+      listo_para_firma: false,
+      bloqueos: [],
+      soportes,
+      faltantes: [],
+      requiere_confirmacion: [],
+    };
+  }
+
+  function vencido(tipo: string): SoporteEvaluado {
+    return { ...soporte(tipo, ESTADO_SOPORTE.VENCIDO, `${tipo}-ficticio.txt`), vigencia_hasta: "2026-08-31" };
+  }
+
+  test("construirDatosEnvio deja el id crudo en el bloqueo de un tipo desconocido", () => {
+    for (const tipo of DESCONOCIDOS) {
+      const datos = construirDatosEnvio(
+        CASO,
+        solicitud(FORMATO.XLSX),
+        checklistCon([soporte(tipo, ESTADO_SOPORTE.AUSENTE, null), vencido(tipo)]),
+        FORMULARIO_XLSX,
+        [],
+      );
+      expect(datos.bloqueos).toEqual([
+        { bloqueo: `ausente: ${tipo}` },
+        { bloqueo: `vencido: ${tipo} (2026-08-31)` },
+      ]);
+    }
+  });
+
+  test("construirDatosEnvio nombra en español los bloqueos de tipos conocidos", () => {
+    const datos = construirDatosEnvio(
+      CASO,
+      solicitud(FORMATO.XLSX),
+      checklistCon([
+        soporte("certificado_cumplimiento_tributario", ESTADO_SOPORTE.AUSENTE, null),
+        vencido("parafiscales"),
+      ]),
+      FORMULARIO_XLSX,
+      [],
+    );
+    expect(datos.bloqueos).toEqual([
+      { bloqueo: "ausente: Certificado de cumplimiento tributario" },
+      { bloqueo: "vencido: Certificación de aportes parafiscales (2026-08-31)" },
+    ]);
+  });
+
+  test("construirDatosBorrador deja el id crudo en adjuntos y pendientes de un tipo desconocido", () => {
+    for (const tipo of DESCONOCIDOS) {
+      const datos = construirDatosBorrador(
+        solicitud(FORMATO.XLSX),
+        MAESTRO,
+        checklistCon([
+          soporte(tipo, ESTADO_SOPORTE.PRESENTE, "adjunto-ficticio.txt"),
+          soporte(tipo, ESTADO_SOPORTE.AUSENTE, null),
+          vencido(tipo),
+        ]),
+        FORMULARIO_XLSX,
+      );
+      expect(datos.soportes_adjuntos).toEqual([{ nombre: tipo, archivo: "adjunto-ficticio.txt" }]);
+      expect(datos.pendientes).toEqual([{ texto: tipo }, { texto: TEXTO_BORRADOR.pendienteVencido(tipo) }]);
+    }
+  });
+
+  test("construirDatosBorrador nombra en español adjuntos y pendientes de tipos conocidos", () => {
+    const datos = construirDatosBorrador(
+      solicitud(FORMATO.XLSX),
+      MAESTRO,
+      checklistCon([
+        soporte("rut", ESTADO_SOPORTE.PRESENTE, "rut-ficticio.txt"),
+        soporte("certificado_cumplimiento_tributario", ESTADO_SOPORTE.AUSENTE, null),
+        vencido("parafiscales"),
+      ]),
+      FORMULARIO_XLSX,
+    );
+    expect(datos.soportes_adjuntos).toEqual([
+      { nombre: "Registro Único Tributario", archivo: "rut-ficticio.txt" },
+    ]);
+    expect(datos.pendientes).toEqual([
+      { texto: "Certificado de cumplimiento tributario" },
+      { texto: TEXTO_BORRADOR.pendienteVencido("Certificación de aportes parafiscales") },
+    ]);
   });
 });
