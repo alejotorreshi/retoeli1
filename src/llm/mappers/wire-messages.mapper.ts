@@ -1,10 +1,11 @@
 import {
+  CARACTERES_POR_TOKEN,
   FIN_LLM,
   FINISH_REASON,
   ROL_MENSAJE,
   TIPO_HERRAMIENTA_WIRE,
 } from "@/config/constants/llm.constants.ts";
-import { invalidResponseError } from "@/llm/mappers/provider-error.mapper.ts";
+import { errorFromFinishReason, invalidResponseError } from "@/llm/mappers/provider-error.mapper.ts";
 import type {
   DefinicionHerramienta,
   FinLlm,
@@ -69,8 +70,29 @@ function fromToolCall(llamada: ChatCompletionToolCall): LlamadaHerramienta {
   return { id: llamada.id, nombre: llamada.function.name, argumentos: llamada.function.arguments };
 }
 
-function usoDe(usage: ChatCompletionUsage | null | undefined): Uso {
-  if (usage === null || usage === undefined) return { entrada: 0, salida: 0, cacheHit: 0 };
+function tokensEstimados(caracteres: number): number {
+  return Math.ceil(caracteres / CARACTERES_POR_TOKEN);
+}
+
+function caracteresDeSalida(
+  contenido: string | null | undefined,
+  llamadas: readonly LlamadaHerramienta[],
+): number {
+  return (contenido ?? "").length + llamadas.reduce((total, llamada) => total + llamada.argumentos.length, 0);
+}
+
+function usoDe(
+  usage: ChatCompletionUsage | null | undefined,
+  caracteresPeticion: number,
+  caracteresRespuesta: number,
+): Uso {
+  if (usage === null || usage === undefined) {
+    return {
+      entrada: tokensEstimados(caracteresPeticion),
+      salida: tokensEstimados(caracteresRespuesta),
+      cacheHit: 0,
+    };
+  }
   return {
     entrada: usage.prompt_tokens,
     salida: usage.completion_tokens,
@@ -88,16 +110,26 @@ function textoDe(contenido: string | null | undefined): string | null {
   return contenido === null || contenido === undefined || contenido === "" ? null : contenido;
 }
 
-export function fromChatCompletion(completion: ChatCompletion, proveedor: string): ResultadoEnvio {
+export function fromChatCompletion(
+  completion: ChatCompletion,
+  proveedor: string,
+  caracteresPeticion: number,
+): ResultadoEnvio {
   const eleccion = completion.choices[0];
   if (eleccion === undefined) return { ok: false, error: invalidResponseError() };
+  const errorDeFin = errorFromFinishReason(eleccion.finish_reason);
+  if (errorDeFin !== null) return { ok: false, error: errorDeFin };
   const llamadas = (eleccion.message.tool_calls ?? []).map(fromToolCall);
   return {
     ok: true,
     respuesta: {
       texto: textoDe(eleccion.message.content),
       llamadas,
-      uso: usoDe(completion.usage),
+      uso: usoDe(
+        completion.usage,
+        caracteresPeticion,
+        caracteresDeSalida(eleccion.message.content, llamadas),
+      ),
       razonamiento: eleccion.message.reasoning_content ?? null,
       fin: finDe(eleccion.finish_reason, llamadas.length > 0),
       proveedor,

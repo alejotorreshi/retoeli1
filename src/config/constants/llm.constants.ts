@@ -1,3 +1,5 @@
+import type { ValorDe } from "@/config/types/valor-de.type.ts";
+
 export const ROL_MENSAJE = {
   SISTEMA: "system",
   USUARIO: "user",
@@ -40,6 +42,17 @@ export const TIPOS_ERROR_LLM_REINTENTABLES: ReadonlySet<string> = new Set([
   TIPO_ERROR_LLM.TIMEOUT,
   TIPO_ERROR_LLM.RESPUESTA_INVALIDA,
 ]);
+
+export const TIPO_ERROR_POR_FIN: ReadonlyMap<string, ValorDe<typeof TIPO_ERROR_LLM>> = new Map([
+  [FINISH_REASON.CONTENT_FILTER, TIPO_ERROR_LLM.FILTRO_CONTENIDO],
+  [FINISH_REASON.INSUFFICIENT_SYSTEM_RESOURCE, TIPO_ERROR_LLM.SERVIDOR],
+  [FINISH_REASON.ERROR, TIPO_ERROR_LLM.SERVIDOR],
+]);
+
+export const MS_POR_SEGUNDO = 1000;
+export const CARACTERES_POR_TOKEN = 4;
+export const BACKOFF_BASE_MS = 500;
+export const BACKOFF_TOPE_MS = 8000;
 
 export const MODO_THINKING = {
   HABILITADO: "enabled",
