@@ -3,6 +3,50 @@ phase: 01
 review: 01-REVIEW.md
 titles: json
 findings:
+  - id: CR-01
+    severity: critical
+    disposition: open
+    title: "El registro de envío omite en silencio los archivos que faltan en `paquete/` y declara \"Sin bloqueos\""
+  - id: WR-01
+    severity: warning
+    disposition: open
+    title: "El borrador mezcla datos faltantes del maestro con soportes pendientes, promete enviarlos y puede declararse \"listo para la firma\" a la vez"
+  - id: WR-02
+    severity: warning
+    disposition: open
+    title: "El correo al cliente copia literalmente las notas internas que son para la analista"
+  - id: WR-03
+    severity: warning
+    disposition: open
+    title: "G-01-H4c no queda cerrado: la salida de `demo.ts` sigue mostrando ids crudos"
+  - id: WR-04
+    severity: warning
+    disposition: open
+    title: "El guardián de nombres no vigila `rut` ni `parafiscales`"
+  - id: IN-01
+    severity: info
+    disposition: open
+    title: "`NOMBRE_SOPORTE` duplica y contradice la `descripcion` del índice de soportes"
+  - id: IN-02
+    severity: info
+    disposition: open
+    title: "Respaldo mágico `?? \"\"` en el bloqueo por vencimiento"
+  - id: IN-03
+    severity: info
+    disposition: open
+    title: "El registro de envío deriva los bloqueos por un camino paralelo al del checklist"
+  - id: IN-04
+    severity: info
+    disposition: open
+    title: "El aviso de emisor distinto no genera ninguna acción ni ninguna pregunta al cliente"
+  - id: IN-05
+    severity: info
+    disposition: open
+    title: "El ancho del xlsx cuenta puntos de código y no tiene en cuenta saltos de línea ni glifos anchos"
+  - id: IN-06
+    severity: info
+    disposition: open
+    title: "Los goldens de anchos reimplementan la fórmula de producción y el tipo de prueba no se deriva de una constante"
   - id: WR-21
     severity: warning
     disposition: fixed
@@ -103,26 +147,6 @@ findings:
     severity: info
     disposition: fixed
     title: "`ARCHIVOS_SALIDA` mixes names and `paquete/` paths, and the write whitelist is wider than its callers"
-  - id: CR-01
-    severity: critical
-    disposition: fixed
-    title: "Empty or whitespace-only master values are mapped as `lleno`"
-  - id: WR-01
-    severity: warning
-    disposition: fixed
-    title: "PDF silently replaces characters outside WinAnsi with `?` in filled values"
-  - id: WR-02
-    severity: warning
-    disposition: fixed
-    title: "Boolean and array master values are reported as \"no existe en el maestro\""
-  - id: WR-03
-    severity: warning
-    disposition: fixed
-    title: "RN1 holds only while `reglas.json` keeps `regla_pais`/`etiqueta_generica` below the threshold"
-  - id: WR-04
-    severity: warning
-    disposition: fixed
-    title: "A generic label with no glossary entry is `requiere_confirmacion` in `leer_solicitud` but `faltante` in `mapear_campos`"
   - id: WR-05
     severity: warning
     disposition: fixed
@@ -143,30 +167,6 @@ findings:
     severity: warning
     disposition: fixed
     title: "The PII-absence e2e proof only checks four identifiers"
-  - id: IN-01
-    severity: info
-    disposition: fixed
-    title: "Spanish plural bug in the expiry notice"
-  - id: IN-02
-    severity: info
-    disposition: fixed
-    title: "Markdown-table escaping is applied to the plain-text email"
-  - id: IN-03
-    severity: info
-    disposition: fixed
-    title: "`relojFijo.ahora()` uses real wall-clock time"
-  - id: IN-04
-    severity: info
-    disposition: fixed
-    title: "Demo has a dead safety check, mutates `process.env` globally and wipes all audit logs"
-  - id: IN-05
-    severity: info
-    disposition: fixed
-    title: "The per-case log is skipped when args fail validation"
-  - id: IN-06
-    severity: info
-    disposition: fixed
-    title: "The system clock relies on the `en-CA` locale's date format"
   - id: IN-07
     severity: info
     disposition: fixed
@@ -191,22 +191,33 @@ findings:
     severity: info
     disposition: fixed
     title: "`sessionId` has no length bound before it is written to every log line"
-open: 0
+open: 11
 total: 47
-recorded: 2026-10-13T01:53:23.379Z
+recorded: 2026-10-13T04:24:18.793Z
 ---
 
 # Phase 01: Code Review Disposition
 
 | Finding | Severity | Disposition | Source |
 |---------|----------|-------------|--------|
-| WR-21 | warning | fixed | 01-REVIEW-FIX.md |
-| WR-22 | warning | fixed | 01-REVIEW-FIX.md |
-| WR-23 | warning | fixed | 01-REVIEW-FIX.md |
-| WR-24 | warning | fixed | 01-REVIEW-FIX.md |
-| IN-20 | info | fixed | 01-REVIEW-FIX.md |
-| IN-21 | info | fixed | 01-REVIEW-FIX.md |
-| IN-22 | info | fixed | 01-REVIEW-FIX.md |
+| CR-01 | critical | open | - |
+| WR-01 | warning | open | - |
+| WR-02 | warning | open | - |
+| WR-03 | warning | open | - |
+| WR-04 | warning | open | - |
+| IN-01 | info | open | - |
+| IN-02 | info | open | - |
+| IN-03 | info | open | - |
+| IN-04 | info | open | - |
+| IN-05 | info | open | - |
+| IN-06 | info | open | - |
+| WR-21 | warning | fixed | 01-REVIEW-FIX.md (not in the current review) |
+| WR-22 | warning | fixed | 01-REVIEW-FIX.md (not in the current review) |
+| WR-23 | warning | fixed | 01-REVIEW-FIX.md (not in the current review) |
+| WR-24 | warning | fixed | 01-REVIEW-FIX.md (not in the current review) |
+| IN-20 | info | fixed | 01-REVIEW-FIX.md (not in the current review) |
+| IN-21 | info | fixed | 01-REVIEW-FIX.md (not in the current review) |
+| IN-22 | info | fixed | 01-REVIEW-FIX.md (not in the current review) |
 | WR-10 | warning | fixed | 01-REVIEW-FIX.md (not in the current review) |
 | WR-11 | warning | fixed | 01-REVIEW-FIX.md (not in the current review) |
 | WR-12 | warning | fixed | 01-REVIEW-FIX.md (not in the current review) |
@@ -225,22 +236,11 @@ recorded: 2026-10-13T01:53:23.379Z
 | IN-17 | info | fixed | 01-REVIEW-FIX.md (not in the current review) |
 | IN-18 | info | fixed | 01-REVIEW-FIX.md (not in the current review) |
 | IN-19 | info | fixed | 01-REVIEW-FIX.md (not in the current review) |
-| CR-01 | critical | fixed | 01-REVIEW-FIX.md (not in the current review) |
-| WR-01 | warning | fixed | 01-REVIEW-FIX.md (not in the current review) |
-| WR-02 | warning | fixed | 01-REVIEW-FIX.md (not in the current review) |
-| WR-03 | warning | fixed | 01-REVIEW-FIX.md (not in the current review) |
-| WR-04 | warning | fixed | 01-REVIEW-FIX.md (not in the current review) |
 | WR-05 | warning | fixed | 01-REVIEW-FIX.md (not in the current review) |
 | WR-06 | warning | fixed | 01-REVIEW-FIX.md (not in the current review) |
 | WR-07 | warning | fixed | 01-REVIEW-FIX.md (not in the current review) |
 | WR-08 | warning | fixed | 01-REVIEW-FIX.md (not in the current review) |
 | WR-09 | warning | fixed | 01-REVIEW-FIX.md (not in the current review) |
-| IN-01 | info | fixed | 01-REVIEW-FIX.md (not in the current review) |
-| IN-02 | info | fixed | 01-REVIEW-FIX.md (not in the current review) |
-| IN-03 | info | fixed | 01-REVIEW-FIX.md (not in the current review) |
-| IN-04 | info | fixed | 01-REVIEW-FIX.md (not in the current review) |
-| IN-05 | info | fixed | 01-REVIEW-FIX.md (not in the current review) |
-| IN-06 | info | fixed | 01-REVIEW-FIX.md (not in the current review) |
 | IN-07 | info | fixed | 01-REVIEW-FIX.md (not in the current review) |
 | IN-08 | info | fixed | 01-REVIEW-FIX.md (not in the current review) |
 | IN-09 | info | fixed | 01-REVIEW-FIX.md (not in the current review) |
