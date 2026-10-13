@@ -44,7 +44,7 @@ The gates ran in the isolated worktree `.claude/worktrees/rf-01-*` on the temp b
 - A unit test showing that `""`, `"   "` and `"\t\n"` give `null` and `faltante`.
 - A contract test in a temp project (`ciudad: "   "`, `ciiu_principal: ""`, case co). It checks four things: `mapear_campos` gives 15/2/0; the xlsx cells C7 and C14 are empty and carry the red fill and the "Faltante" note; `checklist.md` lists both fields under "Campos faltantes" while the case stays LISTO (RN3); and the borrador lists both as pending.
 
-### WR-01: PDF silently replaces characters outside WinAnsi with `?`
+### WR-01: PDF silently replaces characters outside WinAnsi with `?` in filled values
 
 **Files modified:** `src/infra/salida/pdf/render.ts`, `src/infra/salida/pdf/layout.ts`, `src/config/constantes.ts`, `tests/unit/pdf-layout.test.ts`, `tests/golden/formulario-pdf.test.ts`
 **Commit:** 6085217
@@ -59,7 +59,7 @@ The gates ran in the isolated worktree `.claude/worktrees/rf-01-*` on the temp b
 - **Decision:** I followed the reviewer's option and did not format booleans as "Sí/No" or join lists. Writing text the master doesn't hold would edge toward inventing a datum. Asking for confirmation matches the Core Value ("lo dudoso como `requiere_confirmacion`").
 - **Tests:** the synthetic `zz-generica-co` "Gran contribuyente" changed from faltante to por confirmar (counts 3/1/2). A contract test generates its PDF and checks the row shows only `[POR CONFIRMAR]`.
 
-### WR-03: RN1 holds only while `reglas.json` keeps confidences below the threshold
+### WR-03: RN1 holds only while `reglas.json` keeps `regla_pais`/`etiqueta_generica` below the threshold
 
 **Files modified:** `src/domain/reglas.ts`, `src/domain/mapeo.ts`, `tests/unit/mapeo.test.ts`, `tests/contract/reglas.test.ts`, `tests/golden/mapear-campos.test.ts`
 **Commit:** 4bb8fd6
@@ -68,21 +68,21 @@ The gates ran in the isolated worktree `.claude/worktrees/rf-01-*` on the temp b
 - **Decision:** I enforced the rule in code instead of adding a schema `superRefine`. That way a knowledge-file edit can never disable RN1, and `confianza` still reports whatever the file says.
 - **Test changes:** the golden "hot reload" test used `regla_pais = 0.9 → lleno` as its probe. It now edits `glosario_exacto = 0.7`, which gives 0/1/14. A new contract test sets both rules to 0.95 and checks that the ec RUC and the generic label stay por confirmar.
 
-### WR-04: Generic label without glossary entry contradicts `leer_solicitud`
+### WR-04: A generic label with no glossary entry is `requiere_confirmacion` in `leer_solicitud` but `faltante` in `mapear_campos`
 
 **Files modified:** `src/domain/mapeo.ts`, `tests/unit/mapeo.test.ts`
 **Commit:** 5dc7ebb
 **Status:** fixed (logic change, needs human verification)
 **Applied fix:** The new `fuenteDe` checks `etiquetas_genericas` before the glossary and sends generic labels to `identificador_tributario.ruta` with regla `etiqueta_generica`. A unit test with an empty glossary gives `requiere_confirmacion`, `nit`, 0.5 and `propuesta: "RUC"`, which matches `detectarAmbiguos`.
 
-### WR-05: Support evaluation uses the first index entry per `tipo`
+### WR-05: Support evaluation uses the first index entry per `tipo` and ignores newer duplicates
 
 **Files modified:** `src/domain/checklist.ts`, `tests/unit/vigencias.test.ts`
 **Commit:** 3642d1b
 **Status:** fixed (logic change, needs human verification)
 **Applied fix:** `entradaMasVigente` looks only at entries of that `tipo` whose file is present. It picks the latest `vigencia_hasta`, treats `null` as non-expiring, and breaks ties by file name so the result is deterministic. Two tests cover this: the result does not depend on index order, and a first entry with a missing file falls through to the next one that is present.
 
-### WR-06: Expired supports copied into the package and listed as sent
+### WR-06: Expired supports are copied into the package and listed as sent, while the email says they will follow
 
 **Files modified:** `src/domain/borrador.ts`, `src/knowledge/plantillas/envio-simulado.md`, `tests/golden/borrador-envio.test.ts`
 **Commit:** fa85303
@@ -104,7 +104,7 @@ The gates ran in the isolated worktree `.claude/worktrees/rf-01-*` on the temp b
 **Commit:** c781260
 **Applied fix:** `hoja` is now 1–31 chars and matches `PATRON_NOMBRE_HOJA`: no `* ? : \ / [ ]` and no leading or trailing `'`. It also cannot be `history` in any casing. A cell must fall within `XFD1048576` (`LIMITES_XLSX`). Two refinements apply to the array: one sheet must keep the same casing everywhere, and no two label/value cells can share a (sheet, cell) pair. All of these become PLANTILLA_INVALIDA at template load, before anything is deleted. A contract test checks that a `History` sheet returns PLANTILLA_INVALIDA and keeps the previous form.
 
-### WR-09: PII-absence e2e proof checks only four identifiers
+### WR-09: The PII-absence e2e proof only checks four identifiers
 
 **Files modified:** `tests/e2e/pii.test.ts`
 **Commit:** 1b42ca7
@@ -121,7 +121,7 @@ The borrador is the only place allowed to carry its allowlisted `RUTAS_BORRADOR`
 **Commit:** f59f208
 **Applied fix:** The notice is "vence hoy" at 0 days, "vence en 1 día" at 1 day and "vence en N días" otherwise. The truth-table text "vence en 27 días" is unchanged.
 
-### IN-02: Markdown-table escaping applied to the plain-text email
+### IN-02: Markdown-table escaping is applied to the plain-text email
 
 **Files modified:** `src/domain/plantillas.ts`, `src/application/armar-paquete.ts`, `src/domain/mapeo.ts`, `src/domain/checklist.ts`, `tests/unit/plantillas.test.ts`, `tests/golden/borrador-envio.test.ts`
 **Commit:** 69ddf2b
@@ -133,7 +133,7 @@ The borrador is the only place allowed to carry its allowlisted `RUTAS_BORRADOR`
 **Commit:** 7696a6f
 **Decision:** I kept the behavior on purpose. `FECHA_EJECUCION` pins only the business date. The audit `ts` must stay the real instant (RN5). To make that visible in the code without a comment, I renamed the port method `Reloj.ahora` to `Reloj.instanteReal`. A unit test with `setSystemTime` pins both clocks.
 
-### IN-04: Demo dead check, global env mutation, audit log wipe
+### IN-04: Demo has a dead safety check, mutates `process.env` globally and wipes all audit logs
 
 **Files modified:** `src/demo/ejecutar-demo.ts`, `tests/e2e/demo.test.ts`, `tests/e2e/pii.test.ts`
 **Commit:** 6c1d751
@@ -144,19 +144,19 @@ The borrador is the only place allowed to carry its allowlisted `RUTAS_BORRADOR`
 
 **Decision:** the demo still wipes all of `out/`, including the `log.jsonl` files. SC1 / DEMO-01 require the demo to start from a clean `out/`, and the verifier checks this with a planted marker.
 
-### IN-05: Per-case log skipped when args fail validation
+### IN-05: The per-case log is skipped when args fail validation
 
 **Files modified:** `src/tools/define-tool.ts`, `tests/e2e/trazador.test.ts`
 **Commit:** b5ac4b1
 **Applied fix:** The case for logging now comes from the raw args when it is a string matching `PATRON_CASO`, so an ARGS_INVALIDOS call on an existing case is also appended to `out/<caso>/log.jsonl` (RN5). The old trazador test locked in the opposite behavior and was rewritten. A second test checks that an invalid or non-string `caso` still logs only globally, without `caso`.
 
-### IN-06: System clock relies on the `en-CA` date format
+### IN-06: The system clock relies on the `en-CA` locale's date format
 
 **Files modified:** `src/infra/reloj.ts`, `tests/unit/reloj.test.ts`
 **Commit:** a056f1c
 **Applied fix:** `relojSistema` builds `YYYY-MM-DD` from `formatToParts` (year, month, day). Tests use `setSystemTime` to check the zone-correct date in Bogotá and Tokyo, and that leading zeros are kept.
 
-### IN-07: Case with both templates rejected instead of choosing by format
+### IN-07: A case with both templates is rejected instead of choosing by format
 
 **Files modified:** `src/domain/solicitud.ts`, `tests/unit/solicitud.test.ts`, `tests/contract/sinteticos.test.ts`
 **Commit:** 77e850d
@@ -169,7 +169,7 @@ The borrador is the only place allowed to carry its allowlisted `RUTAS_BORRADOR`
 **Commit:** 8eee1ae
 **Applied fix:** `soportesPresentes` returns `Lectura<ReadonlySet<string>>`. `evaluarEstadoPaquete`, which `armar_paquete` and `simular_envio` share, returns DATOS_INVALIDOS when the directory is missing or unreadable. Tests use a directory that can be traversed but not listed (`chmod 0o300`).
 
-### IN-09: Note variables mostly dead; rule templates not validated at load
+### IN-09: Note variables are a mostly dead path, and the rules' templates are not validated at load
 
 **Files modified:** `src/domain/validar-reglas.ts` (new), `src/infra/knowledge/reglas.ts`, `src/domain/mapeo.ts`, `src/domain/pii.ts`, `src/application/mapear-campos.ts`, `tests/unit/validar-reglas.test.ts` (new), `tests/unit/mapeo.test.ts`, `tests/unit/pii.test.ts`, `tests/contract/reglas.test.ts`
 **Commit:** 6af3453
@@ -180,7 +180,7 @@ The borrador is the only place allowed to carry its allowlisted `RUTAS_BORRADOR`
 - Typos, misplaced variables and unclosed tags are now REGLAS_INVALIDAS at load.
 - The always-empty `variablesNota` input was removed from `EntradaMapeo`, along with its two unit tests.
 
-### IN-10: Type-only import cycle; config enums duplicated from domain types
+### IN-10: Type-only import cycle, and config enums duplicated from domain types
 
 **Files modified:** `src/tools/wiring.ts`, `src/tools/define-tool.ts`, `src/domain/tipos.ts`, `src/domain/reglas.ts`, `src/domain/pii.ts`, `src/domain/mapeo.ts`, `src/domain/validar-reglas.ts`, `src/config/constantes.ts`, `src/infra/fixtures/esquemas.ts`, `src/tools/argumentos.ts`, `tests/architecture.test.ts`, `tests/unit/pii.test.ts`, `tests/e2e/pii.test.ts`
 **Commit:** 752b314
@@ -190,7 +190,7 @@ The borrador is the only place allowed to carry its allowlisted `RUTAS_BORRADOR`
 - `FORMATOS` and `ESTADOS_CAMPO` are now defined once in the domain. `Formato` and `EstadoCampo` derive from them, and the duplicates were removed from config.
 - `tests/architecture.test.ts` now fails on any import cycle in `src/` and `demo.ts`, and includes a sample-graph test showing the detector catches a cycle.
 
-### IN-12: `sessionId` has no length bound
+### IN-12: `sessionId` has no length bound before it is written to every log line
 
 **Files modified:** `src/config/constantes.ts`, `src/tools/define-tool.ts`, `tests/e2e/trazador.test.ts`
 **Commit:** 0878a96
