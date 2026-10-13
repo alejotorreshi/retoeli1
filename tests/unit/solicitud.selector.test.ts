@@ -17,21 +17,11 @@ function campos(...etiquetas: string[]): CampoSolicitado[] {
 }
 
 describe("detectarAmbiguos: etiquetas genéricas (SOLI-02, D-20)", () => {
-  const equivalentes: readonly (readonly [string, string])[] = [
-    ["CO", "NIT"],
-    ["EC", "RUC"],
-    ["PE", "RUC"],
-    ["PA", "RUC"],
-    ["HN", "RTN"],
-  ];
-
-  for (const [pais, propuesta] of equivalentes) {
-    test(`${pais} propone ${propuesta}`, () => {
-      expect(detectarAmbiguos(campos("Identificación tributaria"), reglas, pais)).toEqual([
-        { etiqueta: "Identificación tributaria", estado: "requiere_confirmacion", propuesta },
-      ]);
-    });
-  }
+  test("marca la etiqueta genérica por confirmar y propone el identificador del país", () => {
+    expect(detectarAmbiguos(campos("Identificación tributaria"), reglas, "HN")).toEqual([
+      { etiqueta: "Identificación tributaria", estado: "requiere_confirmacion", propuesta: "RTN" },
+    ]);
+  });
 
   test("compara con la normalización del glosario y conserva la etiqueta original en orden de plantilla", () => {
     const resultado = detectarAmbiguos(

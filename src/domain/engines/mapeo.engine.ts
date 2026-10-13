@@ -11,6 +11,10 @@ import {
 import { PATRON_ESPACIO } from "@/config/constants/patterns.constants.ts";
 import { TEXTO_COMUN, TEXTO_MAPEO } from "@/config/strings.ts";
 import { renderizarTextoPlano } from "@/domain/engines/motor-plantillas.engine.ts";
+import {
+  etiquetasGenericas,
+  identificadorDelPais,
+} from "@/domain/policies/identificador-tributario.policy.ts";
 import { leerHoja, leerRuta, segmentoValido } from "@/domain/selectors/maestro.selector.ts";
 import type { CampoMapeado, ConteoEstados, EntradaMapeo, IndiceGlosario } from "@/domain/types/mapeo.type.ts";
 import type {
@@ -49,10 +53,6 @@ function rutaCandidata(etiqueta: string, indice: IndiceGlosario): Fuente | null 
     return { ruta: porNormalizacion, regla: REGLA_MAPEO.GLOSARIO_NORMALIZADO };
   const claveDirecta = normalizada.replace(PATRON_ESPACIO, "_");
   return segmentoValido(claveDirecta) ? { ruta: claveDirecta, regla: REGLA_MAPEO.CLAVE_DIRECTA } : null;
-}
-
-function propia(registro: Readonly<Record<string, string>>, clave: string): string | null {
-  return Object.hasOwn(registro, clave) ? (registro[clave] ?? null) : null;
 }
 
 function variablesDeNota(
@@ -200,11 +200,11 @@ function mapearEtiqueta(etiqueta: string, contexto: ContextoMapeo): Resultado<Ca
 
 function contextoDeMapeo(entrada: EntradaMapeo): ContextoMapeo {
   const tributario = entrada.reglas.identificador_tributario;
-  const identificador = propia(tributario.por_pais, entrada.pais);
+  const identificador = identificadorDelPais(entrada.reglas, entrada.pais);
   return {
     entrada,
     variables: variablesDeNota(entrada, identificador),
-    genericas: new Set(entrada.reglas.etiquetas_genericas.map(normalizarEtiqueta)),
+    genericas: etiquetasGenericas(entrada.reglas),
     extranjero: entrada.pais !== tributario.pais_origen,
     identificador,
   };
