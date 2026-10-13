@@ -1,4 +1,5 @@
 import type { RUTAS_BORRADOR } from "@/config/constants/maestro.constants.ts";
+import type { CampoPorConfirmar } from "@/domain/types/checklist.type.ts";
 import type { SeccionCondicional } from "@/domain/types/motor-plantillas.type.ts";
 
 export type RutaBorrador = (typeof RUTAS_BORRADOR)[number];
@@ -11,9 +12,15 @@ export type DatosBorradorCorreo = {
   readonly firmante_nombre: string;
   readonly firmante_cargo: string;
   readonly formulario: string;
+  readonly adjunta_formulario: SeccionCondicional;
   readonly soportes_adjuntos: readonly { readonly tipo: string; readonly archivo: string }[];
+  readonly por_confirmar: readonly CampoPorConfirmar[];
+  readonly hay_por_confirmar: SeccionCondicional;
   readonly pendientes: readonly { readonly texto: string }[];
   readonly hay_pendientes: SeccionCondicional;
+  readonly firma_lista: SeccionCondicional;
+  readonly firma_tras_confirmar: SeccionCondicional;
+  readonly firma_bloqueada: SeccionCondicional;
 };
 
 export type DatosEnvioSimulado = {

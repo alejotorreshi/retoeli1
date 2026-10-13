@@ -56,6 +56,7 @@ export function construirDatosBorrador(
   nombreFormulario: string,
 ): DatosBorradorCorreo {
   const pendientes = pendientesDe(checklist);
+  const hayPorConfirmar = checklist.requiere_confirmacion.length > 0;
   return {
     para: solicitud.de,
     asunto: asuntoRespuesta(solicitud),
@@ -64,9 +65,15 @@ export function construirDatosBorrador(
     firmante_nombre: leerDelMaestro(maestro, RUTA_MAESTRO.CONTACTO_FINANCIERO_NOMBRE),
     firmante_cargo: leerDelMaestro(maestro, RUTA_MAESTRO.CONTACTO_FINANCIERO_CARGO),
     formulario: nombreFormulario,
+    adjunta_formulario: seccionSi(adjuntaFormulario(solicitud.formato)),
     soportes_adjuntos: adjuntos(checklist.soportes),
+    por_confirmar: checklist.requiere_confirmacion.map(({ etiqueta, nota }) => ({ etiqueta, nota })),
+    hay_por_confirmar: seccionSi(hayPorConfirmar),
     pendientes: pendientes.map((texto) => ({ texto })),
     hay_pendientes: seccionSi(pendientes.length > 0),
+    firma_lista: seccionSi(checklist.listo_para_firma && !hayPorConfirmar),
+    firma_tras_confirmar: seccionSi(checklist.listo_para_firma && hayPorConfirmar),
+    firma_bloqueada: seccionSi(!checklist.listo_para_firma),
   };
 }
 
