@@ -1,5 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { ESTADO_SOPORTE } from "@/config/constants/supports.constants.ts";
+import { construirChecklist } from "@/domain/builders/checklist.builder.ts";
 import {
   archivosDelPaquete,
   diferenciasDelPaquete,
@@ -9,6 +10,7 @@ import {
 import type { Checklist } from "@/domain/types/checklist.type.ts";
 import type { SoporteEvaluado } from "@/domain/types/soportes.type.ts";
 
+const HOY = "2026-09-03";
 const FORMULARIO = "formulario.xlsx";
 const BORRADOR = "Adjuntamos el formulario.\n";
 
@@ -19,22 +21,17 @@ function soporte(tipo: string, estado: SoporteEvaluado["estado"], archivo: strin
     : { ...datos, estado, vigencia_hasta: null };
 }
 
-const CHECKLIST: Checklist = {
-  fecha_ejecucion: "2026-09-03",
-  listo_para_firma: false,
-  bloqueos: [],
-  motivos_bloqueo: [],
-  soportes: [
-    soporte("rut", ESTADO_SOPORTE.PRESENTE, "rut-ficticio.txt"),
-    soporte("parafiscales", ESTADO_SOPORTE.VENCIDO, "parafiscales-ficticio.txt"),
-    soporte("certificado_tributario", ESTADO_SOPORTE.AUSENTE, null),
-  ],
-  faltantes: [],
-  requiere_confirmacion: [],
-  confirmaciones_al_cliente: [],
-  confirmaciones_internas: [],
-  avisos_emisor_al_cliente: [],
-};
+const SOPORTES: readonly SoporteEvaluado[] = [
+  soporte("rut", ESTADO_SOPORTE.PRESENTE, "rut-ficticio.txt"),
+  soporte("parafiscales", ESTADO_SOPORTE.VENCIDO, "parafiscales-ficticio.txt"),
+  soporte("certificado_tributario", ESTADO_SOPORTE.AUSENTE, null),
+];
+
+function checklistDe(soportes: readonly SoporteEvaluado[]): Checklist {
+  return construirChecklist(soportes, [], HOY);
+}
+
+const CHECKLIST = checklistDe(SOPORTES);
 
 const COMPLETO = [
   "borrador-correo.md",
@@ -49,8 +46,16 @@ function esperadoDe(checklist: Checklist) {
 }
 
 describe("soportesDelPaquete y archivosDelPaquete (IN-01)", () => {
+  test("el fixture sale de construirChecklist y es coherente con sus bloqueos (IN-04)", () => {
+    expect(CHECKLIST.listo_para_firma).toBe(false);
+    expect(CHECKLIST.bloqueos).toEqual([
+      "vencido: parafiscales (2026-08-31)",
+      "ausente: certificado_tributario",
+    ]);
+  });
+
   test("los soportes del paquete son los archivos no nulos, sin repetir", () => {
-    const repetido = [...CHECKLIST.soportes, soporte("rut", ESTADO_SOPORTE.PRESENTE, "rut-ficticio.txt")];
+    const repetido = [...SOPORTES, soporte("rut", ESTADO_SOPORTE.PRESENTE, "rut-ficticio.txt")];
     expect(soportesDelPaquete(repetido)).toEqual(["rut-ficticio.txt", "parafiscales-ficticio.txt"]);
   });
 
@@ -81,10 +86,7 @@ describe("diferenciasDelPaquete (CR-01)", () => {
   });
 
   test("un soporte renovado sale como faltante y la copia anterior como sobrante", () => {
-    const renovado: Checklist = {
-      ...CHECKLIST,
-      soportes: [soporte("rut", ESTADO_SOPORTE.PRESENTE, "rut-renovado.txt")],
-    };
+    const renovado = checklistDe([soporte("rut", ESTADO_SOPORTE.PRESENTE, "rut-renovado.txt")]);
     const listado = ["borrador-correo.md", "checklist.md", FORMULARIO, "rut-ficticio.txt"];
     expect(diferenciasDelPaquete(esperadoDe(renovado), { listado, borrador: BORRADOR })).toEqual({
       archivos_faltantes: ["rut-renovado.txt"],
@@ -94,10 +96,7 @@ describe("diferenciasDelPaquete (CR-01)", () => {
   });
 
   test("un soporte que sale del repositorio deja su archivo como sobrante", () => {
-    const sinRut: Checklist = {
-      ...CHECKLIST,
-      soportes: [soporte("rut", ESTADO_SOPORTE.AUSENTE, null), ...CHECKLIST.soportes.slice(1)],
-    };
+    const sinRut = checklistDe([soporte("rut", ESTADO_SOPORTE.AUSENTE, null), ...SOPORTES.slice(1)]);
     const diferencias = diferenciasDelPaquete(esperadoDe(sinRut), { listado: COMPLETO, borrador: BORRADOR });
     expect(diferencias.archivos_sobrantes).toEqual(["rut-ficticio.txt"]);
     expect(paqueteAlDia(diferencias)).toBe(false);
