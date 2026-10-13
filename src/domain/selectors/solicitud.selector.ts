@@ -1,23 +1,9 @@
-import { FORMATO, PLANTILLA_DEL_FORMATO, TIPO_PLANTILLA } from "@/config/constants/forms.constants.ts";
+import { TIPO_PLANTILLA } from "@/config/constants/forms.constants.ts";
 import { ESTADO_CAMPO } from "@/config/constants/mapping.constants.ts";
-import type { PlantillaCaso, TipoPlantilla } from "@/domain/types/plantilla-caso.type.ts";
+import type { PlantillaCaso } from "@/domain/types/plantilla-caso.type.ts";
 import type { Reglas } from "@/domain/types/reglas.type.ts";
-import type {
-  CampoAmbiguo,
-  CampoSolicitado,
-  Formato,
-  PlantillasPresentes,
-} from "@/domain/types/solicitud.type.ts";
+import type { CampoAmbiguo, CampoSolicitado } from "@/domain/types/solicitud.type.ts";
 import { normalizarEtiqueta } from "@/domain/utils/normalizar.util.ts";
-
-export function elegirPlantilla(formato: Formato, presentes: PlantillasPresentes): TipoPlantilla | null {
-  const celdas = presentes[TIPO_PLANTILLA.CELDAS];
-  const campos = presentes[TIPO_PLANTILLA.CAMPOS];
-  if (celdas && campos) return PLANTILLA_DEL_FORMATO[formato];
-  if (celdas) return TIPO_PLANTILLA.CELDAS;
-  if (campos && formato !== FORMATO.XLSX) return TIPO_PLANTILLA.CAMPOS;
-  return null;
-}
 
 export function camposSolicitados(plantilla: PlantillaCaso): CampoSolicitado[] {
   if (plantilla.tipo === TIPO_PLANTILLA.CELDAS) {

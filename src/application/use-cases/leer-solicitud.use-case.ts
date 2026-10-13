@@ -1,7 +1,7 @@
 import { cargarSolicitudCaso } from "@/application/services/contexto-caso.service.ts";
 import type { ArgsLeerSolicitud, DatosSolicitud } from "@/application/types/leer-solicitud.type.ts";
 import type { Entorno } from "@/application/types/puertos.type.ts";
-import { camposSolicitados, detectarAmbiguos } from "@/domain/solicitud.ts";
+import { camposSolicitados, detectarAmbiguos } from "@/domain/selectors/solicitud.selector.ts";
 import type { Resultado } from "@/domain/types/resultado.type.ts";
 import { exito } from "@/domain/utils/resultado.util.ts";
 

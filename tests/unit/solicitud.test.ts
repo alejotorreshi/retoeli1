@@ -1,5 +1,6 @@
 import { beforeAll, describe, expect, test } from "bun:test";
-import { detectarAmbiguos, elegirPlantilla } from "@/domain/solicitud.ts";
+import { elegirPlantilla } from "@/domain/policies/plantilla-caso.policy.ts";
+import { detectarAmbiguos } from "@/domain/selectors/solicitud.selector.ts";
 import type { TipoPlantilla } from "@/domain/types/plantilla-caso.type.ts";
 import type { Reglas } from "@/domain/types/reglas.type.ts";
 import type { CampoSolicitado, Formato, PlantillasPresentes } from "@/domain/types/solicitud.type.ts";
