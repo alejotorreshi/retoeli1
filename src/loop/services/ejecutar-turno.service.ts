@@ -3,6 +3,7 @@ import {
   CODIGO_AGENTE,
   CODIGO_AGENTE_POR_ERROR_LLM,
   EVENTO_BITACORA,
+  MARGEN_CANDADO_SESION_MS,
   MOTIVO_FIN,
   SEPARADOR_PARRAFOS,
   TIPO_EVENTO,
@@ -67,6 +68,7 @@ type Cierre = {
 
 type Turno = {
   readonly turnoId: string;
+  readonly candado: string;
   sesion: Sesion;
   readonly usuario: Mensaje;
   readonly pasos: Mensaje[];
@@ -324,23 +326,31 @@ function textoGuardado(cierre: Cierre, compuerta: CierreTurnoCompuerta): string 
   return compuerta.texto === "" ? cierre.texto : `${cierre.texto}${SEPARADOR_PARRAFOS}${compuerta.texto}`;
 }
 
-function guardarSesion(turno: Turno, cierre: Cierre, compuerta: CierreTurnoCompuerta): void {
+function guardarSesion(turno: Turno, cierre: Cierre, compuerta: CierreTurnoCompuerta): boolean {
   turno.guardado = true;
   const asistente = mensajeAsistente({ ...cierre, texto: textoGuardado(cierre, compuerta) });
-  turno.deps.sesiones.guardar({
-    ...turno.sesion,
-    historial: [...turno.sesion.historial, turno.usuario, ...turno.pasos, asistente],
-    compuerta: compuerta.estado,
-    paquetesConocidos: turno.conocidos,
-  });
+  return turno.deps.sesiones.guardar(
+    {
+      ...turno.sesion,
+      historial: [...turno.sesion.historial, turno.usuario, ...turno.pasos, asistente],
+      compuerta: compuerta.estado,
+      paquetesConocidos: turno.conocidos,
+    },
+    turno.candado,
+  );
 }
 
-function anotarFin(turno: Turno, cierre: Cierre, needsConfirmation: boolean, abandonado: boolean): void {
+type FinAnotado = {
+  readonly needsConfirmation: boolean;
+  readonly abandonado: boolean;
+  readonly sesionGuardada: boolean;
+};
+
+function anotarFin(turno: Turno, cierre: Cierre, fin: FinAnotado): void {
   turno.bitacora.info(EVENTO_BITACORA.TURNO_FIN, {
     motivo: cierre.motivo,
     codigo: cierre.codigo,
-    needsConfirmation,
-    abandonado,
+    ...fin,
     llamadas: turno.llamadas.length,
     tokensSesion: turno.sesion.tokensUsados,
     duracionMs: Date.now() - turno.inicioMs,
@@ -350,8 +360,12 @@ function anotarFin(turno: Turno, cierre: Cierre, needsConfirmation: boolean, aba
 function guardarInterrumpido(turno: Turno): void {
   const cierre = interrumpido();
   const compuerta = cerrarCompuerta(turno, cierre);
-  guardarSesion(turno, cierre, compuerta);
-  anotarFin(turno, cierre, compuerta.needsConfirmation, true);
+  const sesionGuardada = guardarSesion(turno, cierre, compuerta);
+  anotarFin(turno, cierre, {
+    needsConfirmation: compuerta.needsConfirmation,
+    abandonado: true,
+    sesionGuardada,
+  });
 }
 
 async function* emitirCierre(turno: Turno, cierre: Cierre, compuerta: CierreTurnoCompuerta): Ejecucion<void> {
@@ -387,8 +401,12 @@ async function* atender(turno: Turno, inicio: EventoInicioTurno): Ejecucion<Dese
   }
   const cierre = yield* resolverTurno(turno);
   const compuerta = cerrarCompuerta(turno, cierre);
-  guardarSesion(turno, cierre, compuerta);
-  anotarFin(turno, cierre, compuerta.needsConfirmation, false);
+  const sesionGuardada = guardarSesion(turno, cierre, compuerta);
+  anotarFin(turno, cierre, {
+    needsConfirmation: compuerta.needsConfirmation,
+    abandonado: false,
+    sesionGuardada,
+  });
   yield* emitirCierre(turno, cierre, compuerta);
   return { motivo: cierre.motivo, needsConfirmation: compuerta.needsConfirmation };
 }
@@ -410,13 +428,15 @@ export async function* ejecutarTurno(entrada: EntradaTurno, deps: DependenciasTu
     sesionNueva: abierta.nueva,
     sesionExpirada: abierta.expirada,
   });
-  if (!deps.sesiones.ocupar(sesionId)) return yield* rechazarOcupada(inicio, bitacora);
+  const candado = deps.sesiones.ocupar(sesionId, deps.deadlineMs + MARGEN_CANDADO_SESION_MS);
+  if (candado === null) return yield* rechazarOcupada(inicio, bitacora);
   const { sesion } = abierta;
   const plazo = AbortSignal.timeout(deps.deadlineMs);
   const llamante = entrada.signal ?? null;
   const apertura = abrirTurno(sesion.compuerta, decisionDe(entrada, sesion.compuerta));
   const turno: Turno = {
     turnoId,
+    candado,
     sesion,
     usuario: { rol: ROL_MENSAJE.USUARIO, contenido: entrada.mensaje },
     pasos: [],
@@ -438,7 +458,7 @@ export async function* ejecutarTurno(entrada: EntradaTurno, deps: DependenciasTu
     desenlace = yield* atender(turno, inicio);
   } finally {
     if (!turno.guardado) guardarInterrumpido(turno);
-    deps.sesiones.liberar(sesionId);
+    deps.sesiones.liberar(sesionId, candado);
   }
   yield { tipo: TIPO_EVENTO.FIN_TURNO, turnoId, ...desenlace };
 }

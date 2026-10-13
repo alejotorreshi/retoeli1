@@ -10,9 +10,9 @@ export type SesionAbierta<S> = { readonly sesion: S; readonly nueva: boolean; re
 
 export type AlmacenSesiones<S extends { readonly id: string }> = {
   abrir(id: string | null): SesionAbierta<S>;
-  guardar(sesion: S): void;
-  ocupar(id: string): boolean;
-  liberar(id: string): void;
+  ocupar(id: string, plazoMs: number): string | null;
+  liberar(id: string, candado: string): void;
+  guardar(sesion: S, candado: string): boolean;
 };
 
 export type CamposBitacora = Readonly<Record<string, unknown>>;
