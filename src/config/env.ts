@@ -30,6 +30,12 @@ import { NIVEL_LOG_POR_DEFECTO, NIVELES_LOG } from "@/config/constants/logging.c
 import { PATRON_BARRA_FINAL, PATRON_FECHA } from "@/config/constants/patterns.constants.ts";
 import { LOCALE_INTL, ZONA_HORARIA_POR_DEFECTO } from "@/config/constants/runtime.constants.ts";
 import { TEXTO_ENV } from "@/config/strings.ts";
+import type {
+  MaxTokensParam,
+  ProviderCapabilities,
+  ProviderEndpoint,
+  ThinkingMode,
+} from "@/config/types/provider-capabilities.type.ts";
 import type { ValorDe } from "@/config/types/valor-de.type.ts";
 import { esFechaReal } from "@/domain/utils/fecha.util.ts";
 
@@ -81,26 +87,7 @@ export function pinExecutionDate(fecha: string): () => void {
   };
 }
 
-type MaxTokensParam = ValorDe<typeof PARAMETRO_MAX_TOKENS>;
-
-type ThinkingMode = ValorDe<typeof MODO_THINKING>;
-
-type CapabilitySettings = {
-  readonly maxTokensParam: MaxTokensParam;
-  readonly temperature: number | null;
-  readonly thinking: ThinkingMode | null;
-  readonly reasoningPassback: boolean;
-  readonly toolChoiceNone: boolean;
-};
-
-export type ProviderSettings = {
-  readonly provider: string;
-  readonly baseUrl: string;
-  readonly model: string;
-  readonly apiKey: string | null;
-  readonly maxOutputTokens: number;
-  readonly capabilities: CapabilitySettings;
-};
+export type ProviderSettings = ProviderEndpoint & { readonly apiKey: string | null };
 
 export type AgentEnv = {
   readonly primary: ProviderSettings;
@@ -229,7 +216,7 @@ function omittable<T>(valor: T | typeof VALOR_OMITIR | undefined, porDefecto: T 
   return valor === VALOR_OMITIR ? null : valor;
 }
 
-function resolveCapabilities(defaults: CapabilitySettings, input: CapabilityInput): CapabilitySettings {
+function resolveCapabilities(defaults: ProviderCapabilities, input: CapabilityInput): ProviderCapabilities {
   return {
     maxTokensParam: input.maxTokensParam ?? defaults.maxTokensParam,
     temperature: omittable(input.temperature, defaults.temperature),

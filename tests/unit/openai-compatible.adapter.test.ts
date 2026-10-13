@@ -12,9 +12,10 @@ import {
   TIPO_ERROR_LLM,
   TOOL_CHOICE,
 } from "@/config/constants/llm.constants.ts";
+import type { ProviderCapabilities } from "@/config/types/provider-capabilities.type.ts";
 import { createOpenAICompatibleAdapter } from "@/llm/adapters/openai-compatible.adapter.ts";
 import type { DefinicionHerramienta, Mensaje, OpcionesEnvio, ResultadoEnvio } from "@/llm/types/llm.type.ts";
-import type { FetchLike, ProviderCapabilities, ProviderSlot } from "@/llm/types/provider.type.ts";
+import type { FetchLike, ProviderSlot } from "@/llm/types/provider.type.ts";
 
 const FIXTURE_HERRAMIENTAS = new URL("../fixtures/llm/completion-tool-calls.json", import.meta.url);
 const FIXTURE_TEXTO = new URL("../fixtures/llm/completion-texto.json", import.meta.url);

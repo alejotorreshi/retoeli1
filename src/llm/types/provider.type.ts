@@ -1,34 +1,14 @@
+import type { ROL_MENSAJE, TIPO_HERRAMIENTA_WIRE, TOOL_CHOICE } from "@/config/constants/llm.constants.ts";
 import type {
-  MODO_THINKING,
-  PARAMETRO_MAX_TOKENS,
-  ROL_MENSAJE,
-  TIPO_HERRAMIENTA_WIRE,
-  TOOL_CHOICE,
-} from "@/config/constants/llm.constants.ts";
+  MaxTokensParam,
+  ProviderEndpoint,
+  ThinkingMode,
+} from "@/config/types/provider-capabilities.type.ts";
 import type { ValorDe } from "@/config/types/valor-de.type.ts";
-
-export type ThinkingMode = ValorDe<typeof MODO_THINKING>;
-
-export type MaxTokensParam = ValorDe<typeof PARAMETRO_MAX_TOKENS>;
 
 export type ToolChoice = ValorDe<typeof TOOL_CHOICE>;
 
-export type ProviderCapabilities = {
-  readonly maxTokensParam: MaxTokensParam;
-  readonly temperature: number | null;
-  readonly thinking: ThinkingMode | null;
-  readonly reasoningPassback: boolean;
-  readonly toolChoiceNone: boolean;
-};
-
-export type ProviderSlot = {
-  readonly provider: string;
-  readonly baseUrl: string;
-  readonly model: string;
-  readonly apiKey: string;
-  readonly maxOutputTokens: number;
-  readonly capabilities: ProviderCapabilities;
-};
+export type ProviderSlot = ProviderEndpoint & { readonly apiKey: string };
 
 export type FetchLike = (url: string, init: RequestInit) => Promise<Response>;
 
