@@ -1,4 +1,5 @@
 import type { Entorno, Lectura, OrigenCopia, Registrar, Reloj } from "@/application/puertos.ts";
+import { CODIGO_ERROR } from "@/config/constants/errors.constants.ts";
 import { ARCHIVOS_CASO, ARCHIVOS_SALIDA } from "@/config/constants/files.constants.ts";
 import { ZONA_HORARIA_POR_DEFECTO } from "@/config/constants/runtime.constants.ts";
 import { readToolEnv, type ToolEnv } from "@/config/env.ts";
@@ -134,7 +135,7 @@ export function crearEntorno(
   if (!config.success) {
     return {
       registrar: crearBitacora(raiz, relojSistema(ZONA_HORARIA_POR_DEFECTO)),
-      entorno: fallo("CONFIGURACION_INVALIDA", { detalle: formatearIssues(config.error.issues) }),
+      entorno: fallo(CODIGO_ERROR.CONFIGURACION_INVALIDA, { detalle: formatearIssues(config.error.issues) }),
     };
   }
   const reloj = relojDe(config.data);

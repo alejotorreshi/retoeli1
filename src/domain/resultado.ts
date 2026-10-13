@@ -1,3 +1,4 @@
+import { CODIGOS_CON_DETALLE } from "@/config/constants/errors.constants.ts";
 import { type CodigoError, MENSAJES_ERROR } from "@/domain/errores.ts";
 
 export type Parcial = Readonly<Record<string, unknown>>;
@@ -14,12 +15,6 @@ export type Fallo = {
 export type Resultado<D> = Exito<D> | Fallo;
 
 export type OpcionesFallo = { readonly detalle?: string; readonly parcial?: Parcial };
-
-const CODIGOS_CON_DETALLE: ReadonlySet<CodigoError> = new Set<CodigoError>([
-  "ARGS_INVALIDOS",
-  "CONFIGURACION_INVALIDA",
-  "REGLAS_INVALIDAS",
-]);
 
 export function exito<D>(data: D): Exito<D> {
   return { ok: true, data };

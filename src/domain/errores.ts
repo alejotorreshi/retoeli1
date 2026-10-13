@@ -1,20 +1,6 @@
-export const CODIGOS_ERROR = [
-  "CASO_NO_ENCONTRADO",
-  "CASO_INVALIDO",
-  "PLANTILLA_INVALIDA",
-  "REGLAS_INVALIDAS",
-  "ARGS_INVALIDOS",
-  "MAPEO_INCONSISTENTE",
-  "CAMPOS_FUERA_DE_PLANTILLA",
-  "FORMULARIO_NO_GENERADO",
-  "PAQUETE_NO_ARMADO",
-  "CONFIRMACION_REQUERIDA",
-  "ERROR_INTERNO",
-  "CONFIGURACION_INVALIDA",
-  "DATOS_INVALIDOS",
-] as const;
-
-export type CodigoError = (typeof CODIGOS_ERROR)[number];
+import type { CODIGO_ERROR } from "@/config/constants/errors.constants.ts";
+import type { ValorDe } from "@/config/types/valor-de.type.ts";
+export type CodigoError = ValorDe<typeof CODIGO_ERROR>;
 
 export const MENSAJES_ERROR: Readonly<Record<CodigoError, string>> = {
   CASO_NO_ENCONTRADO: "No existe un caso con ese identificador.",

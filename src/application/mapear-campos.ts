@@ -1,5 +1,6 @@
 import { type ContextoCaso, cargarContextoCaso } from "@/application/contexto-caso.ts";
 import type { Entorno } from "@/application/puertos.ts";
+import { CODIGO_ERROR } from "@/config/constants/errors.constants.ts";
 import { type CampoMapeado, type ConteoEstados, contarEstados, mapearCampos } from "@/domain/mapeo.ts";
 import { normalizarEtiqueta } from "@/domain/normalizar.ts";
 import { type CampoPresentado, presentarCampo } from "@/domain/pii.ts";
@@ -40,7 +41,7 @@ function seleccionar(
   const normalizadas = pedidas.map(normalizarEtiqueta);
   const fuera = normalizadas.flatMap((etiqueta, indice) => (disponibles.has(etiqueta) ? [] : [indice]));
   if (fuera.length > 0) {
-    return fallo("CAMPOS_FUERA_DE_PLANTILLA", {
+    return fallo(CODIGO_ERROR.CAMPOS_FUERA_DE_PLANTILLA, {
       parcial: {
         etiquetas_esperadas: canonicos.map((campo) => campo.etiqueta),
         indices_fuera_de_plantilla: fuera,

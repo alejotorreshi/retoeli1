@@ -1,3 +1,4 @@
+import { CODIGO_ERROR } from "@/config/constants/errors.constants.ts";
 import { exito, type Fallo, fallo, type Resultado } from "@/domain/resultado.ts";
 
 export type ValorEscalar = string | number;
@@ -81,7 +82,7 @@ function renderizarSeccion(
 }
 
 function plantillaInvalida(nombrePlantilla: string, problema: string): Fallo {
-  return fallo("REGLAS_INVALIDAS", { detalle: `la plantilla ${nombrePlantilla} ${problema}.` });
+  return fallo(CODIGO_ERROR.REGLAS_INVALIDAS, { detalle: `la plantilla ${nombrePlantilla} ${problema}.` });
 }
 
 function renderizar(

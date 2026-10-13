@@ -1,6 +1,7 @@
 import { type ContextoCaso, cargarContextoCaso } from "@/application/contexto-caso.ts";
 import { mapeoCanonico } from "@/application/mapear-campos.ts";
 import type { ArchivoFormulario, Entorno } from "@/application/puertos.ts";
+import { CODIGO_ERROR } from "@/config/constants/errors.constants.ts";
 import { construirDatosBorrador } from "@/domain/borrador.ts";
 import {
   type CampoPorConfirmar,
@@ -45,9 +46,9 @@ export async function evaluarEstadoPaquete(
   const canonico = mapeoCanonico(contexto);
   if (!canonico.ok) return canonico;
   const indice = await entorno.soportes.indice();
-  if (indice.estado !== "ok") return fallo("DATOS_INVALIDOS");
+  if (indice.estado !== "ok") return fallo(CODIGO_ERROR.DATOS_INVALIDOS);
   const presentes = await entorno.soportes.presentes();
-  if (presentes.estado !== "ok") return fallo("DATOS_INVALIDOS");
+  if (presentes.estado !== "ok") return fallo(CODIGO_ERROR.DATOS_INVALIDOS);
   const hoy = entorno.reloj.hoy();
   const soportes = evaluarSoportes(
     contexto.soportesExigidos,
@@ -112,7 +113,7 @@ async function armarBajoCandado(args: ArgsArmarPaquete, entorno: Entorno): Promi
   const { caso, solicitud } = contexto.data;
 
   const formulario = ARCHIVO_FORMULARIO[solicitud.formato];
-  if (!(await entorno.salida.existe(caso, formulario))) return fallo("FORMULARIO_NO_GENERADO");
+  if (!(await entorno.salida.existe(caso, formulario))) return fallo(CODIGO_ERROR.FORMULARIO_NO_GENERADO);
 
   const checklist = await evaluarEstadoPaquete(contexto.data, entorno);
   if (!checklist.ok) return checklist;

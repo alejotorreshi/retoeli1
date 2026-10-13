@@ -37,7 +37,7 @@ const PERMITIDOS: Readonly<Record<string, readonly string[]>> = {
   "raiz-demo": DESTINOS_DE_DEMO,
 };
 
-const CONFIG_PURA = /^src\/config\/(?:constants\/.+|strings)$/;
+const CONFIG_PURA = /^src\/config\/(?:constants\/.+|types\/.+|strings)$/;
 
 const LECTURA_DE_ENTORNO = /\b(?:process|Bun)\s*\.\s*env\b/;
 

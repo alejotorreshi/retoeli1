@@ -2,6 +2,7 @@ import { readFile, stat } from "node:fs/promises";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { z } from "zod";
+import { CODIGO_ERROR } from "@/config/constants/errors.constants.ts";
 import { ARCHIVO_REGLAS } from "@/config/constants/files.constants.ts";
 import { VERSION_REGLAS } from "@/config/constants/knowledge.constants.ts";
 import { LIMITE_LECTURA_BYTES, LIMITES_REGLAS } from "@/config/constants/limits.constants.ts";
@@ -72,7 +73,7 @@ export const esquemaReglas = z
   .strict() satisfies z.ZodType<Reglas>;
 
 function reglasInvalidas(detalle: string): Resultado<Reglas> {
-  return fallo("REGLAS_INVALIDAS", { detalle: `${ARCHIVO_REGLAS}: ${detalle}` });
+  return fallo(CODIGO_ERROR.REGLAS_INVALIDAS, { detalle: `${ARCHIVO_REGLAS}: ${detalle}` });
 }
 
 function detalleDe(issues: readonly z.core.$ZodIssue[]): string {

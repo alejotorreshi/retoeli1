@@ -1,6 +1,7 @@
 import { evaluarEstadoPaquete } from "@/application/armar-paquete.ts";
 import { cargarSolicitudCaso, completarContextoCaso } from "@/application/contexto-caso.ts";
 import type { Entorno } from "@/application/puertos.ts";
+import { CODIGO_ERROR } from "@/config/constants/errors.constants.ts";
 import { construirDatosEnvio } from "@/domain/borrador.ts";
 import { renderizarPlantilla } from "@/domain/plantillas.ts";
 import { exito, fallo, type Resultado } from "@/domain/resultado.ts";
@@ -16,10 +17,10 @@ export type DatosEnvio = {
 async function simularBajoCandado(args: ArgsSimularEnvio, entorno: Entorno): Promise<Resultado<DatosEnvio>> {
   const cargada = await cargarSolicitudCaso(args.caso, entorno);
   if (!cargada.ok) return cargada;
-  if (args.confirmado !== true) return fallo("CONFIRMACION_REQUERIDA");
+  if (args.confirmado !== true) return fallo(CODIGO_ERROR.CONFIRMACION_REQUERIDA);
 
   const { caso } = cargada.data;
-  if (!(await entorno.salida.existe(caso, "checklist"))) return fallo("PAQUETE_NO_ARMADO");
+  if (!(await entorno.salida.existe(caso, "checklist"))) return fallo(CODIGO_ERROR.PAQUETE_NO_ARMADO);
 
   const contexto = await completarContextoCaso(cargada.data, entorno);
   if (!contexto.ok) return contexto;

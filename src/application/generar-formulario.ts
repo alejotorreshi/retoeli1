@@ -1,6 +1,7 @@
 import { type ContextoCaso, cargarContextoCaso } from "@/application/contexto-caso.ts";
 import { escribirMapeo, mapeoCanonico } from "@/application/mapear-campos.ts";
 import type { Entorno } from "@/application/puertos.ts";
+import { CODIGO_ERROR } from "@/config/constants/errors.constants.ts";
 import { compararMapeo, type ItemMapeo } from "@/domain/comparar-mapeo.ts";
 import { construirFilas } from "@/domain/formulario.ts";
 import { type CampoMapeado, type ConteoEstados, contarEstados } from "@/domain/mapeo.ts";
@@ -41,7 +42,7 @@ async function generarXlsx(
 ): Promise<Resultado<DatosFormulario>> {
   const formulario = construirFilas(contexto.plantilla, canonico);
   if (!formulario.ok) return formulario;
-  if (formulario.data.tipo !== "celdas") return fallo("PLANTILLA_INVALIDA");
+  if (formulario.data.tipo !== "celdas") return fallo(CODIGO_ERROR.PLANTILLA_INVALIDA);
   const bytes = await entorno.formularios.xlsx(formulario.data.filas, entorno.reloj.hoy());
   const ruta = await entorno.salida.binario(contexto.caso, "formularioXlsx", bytes);
   return cerrar(contexto, canonico, entorno, ruta, "xlsx");
@@ -100,7 +101,7 @@ async function generarBajoCandado(
   if (!canonico.ok) return canonico;
   const comparacion = compararMapeo(canonico.data, args.mapeo);
   if (!comparacion.iguales) {
-    return fallo("MAPEO_INCONSISTENTE", { parcial: { diferencias: comparacion.diferencias } });
+    return fallo(CODIGO_ERROR.MAPEO_INCONSISTENTE, { parcial: { diferencias: comparacion.diferencias } });
   }
   await entorno.salida.limpiarPrevios(contexto.data.caso);
   return despachar(contexto.data, canonico.data, entorno);

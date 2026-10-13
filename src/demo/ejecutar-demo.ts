@@ -1,6 +1,7 @@
 import { rm, stat } from "node:fs/promises";
 import { join, resolve } from "node:path";
 import { FECHA_DEMO, SESION_DEMO } from "@/config/constants/demo.constants.ts";
+import { CODIGO_ERROR } from "@/config/constants/errors.constants.ts";
 import { OUT_DIR } from "@/config/constants/files.constants.ts";
 import { pinExecutionDate } from "@/config/env.ts";
 import {
@@ -41,7 +42,6 @@ type Sesion = {
   readonly escribir: (linea: string) => void;
 };
 
-const CODIGO_ENVIO_RECHAZADO = "CONFIRMACION_REQUERIDA";
 const SIN_DATO = "—";
 const NINGUNO = "ninguno";
 const GRUPOS_MAPEO = ["llenos", "faltantes", "requiere_confirmacion"] as const;
@@ -92,7 +92,7 @@ async function raizDelProyecto(directorio: string): Promise<string | null> {
 }
 
 function casosDisponibles(listado: Registro): readonly string[] {
-  if (listado.codigo !== "CASO_NO_ENCONTRADO") return [];
+  if (listado.codigo !== CODIGO_ERROR.CASO_NO_ENCONTRADO) return [];
   return textosDe(registroDe(listado, "parcial"), "casos_disponibles").sort();
 }
 
@@ -168,7 +168,7 @@ async function procesarCaso(sesion: Sesion, caso: string): Promise<FilaResumen> 
   if (!exitosa(armado)) return fallar(sesion, caso, armado);
   const estado = escribirPaquete(sesion, armado.data);
   const envio = await invocar("simular_envio", simular_envio.execute({ caso, confirmado: false }, ctx));
-  if (envio.codigo !== CODIGO_ENVIO_RECHAZADO) return fallar(sesion, caso, envio);
+  if (envio.codigo !== CODIGO_ERROR.CONFIRMACION_REQUERIDA) return fallar(sesion, caso, envio);
   sesion.escribir(`Envío: ${textoDe(envio, "error")} (no se envía nada)`);
   return {
     caso,

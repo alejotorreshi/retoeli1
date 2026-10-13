@@ -1,3 +1,4 @@
+import { CODIGO_ERROR } from "@/config/constants/errors.constants.ts";
 import type { CampoMapeado } from "@/domain/mapeo.ts";
 import type { EstadoCampo } from "@/domain/reglas.ts";
 import { exito, fallo, type Resultado } from "@/domain/resultado.ts";
@@ -38,11 +39,12 @@ function emparejar<T extends Ubicable, F>(
   canonico: readonly CampoMapeado[],
   construir: (campo: T, mapeado: CampoMapeado) => F,
 ): Resultado<readonly F[]> {
-  if (campos.length !== canonico.length) return fallo("ERROR_INTERNO");
+  if (campos.length !== canonico.length) return fallo(CODIGO_ERROR.ERROR_INTERNO);
   const filas: F[] = [];
   for (const [indice, campo] of campos.entries()) {
     const mapeado = canonico[indice];
-    if (mapeado === undefined || mapeado.etiqueta !== campo.etiqueta) return fallo("ERROR_INTERNO");
+    if (mapeado === undefined || mapeado.etiqueta !== campo.etiqueta)
+      return fallo(CODIGO_ERROR.ERROR_INTERNO);
     filas.push(construir(campo, mapeado));
   }
   return exito(filas);

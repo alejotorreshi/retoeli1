@@ -1,3 +1,4 @@
+import { CODIGO_ERROR } from "@/config/constants/errors.constants.ts";
 import { aTexto, normalizarEtiqueta } from "@/domain/normalizar.ts";
 import { renderizarTextoPlano } from "@/domain/plantillas.ts";
 import {
@@ -87,7 +88,7 @@ export function construirIndiceGlosario(glosario: Glosario): Resultado<IndiceGlo
     const sinColision =
       agregarSinColision(exacto, etiqueta.normalize("NFC"), ruta) &&
       agregarSinColision(normalizado, normalizarEtiqueta(etiqueta), ruta);
-    if (!sinColision) return fallo("DATOS_INVALIDOS");
+    if (!sinColision) return fallo(CODIGO_ERROR.DATOS_INVALIDOS);
   }
   return exito({ exacto, normalizado });
 }
