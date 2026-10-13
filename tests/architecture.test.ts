@@ -1,6 +1,22 @@
 import { describe, expect, test } from "bun:test";
 import { existsSync, readFileSync } from "node:fs";
 import { join, posix } from "node:path";
+import { CODIGO_ERROR, CODIGO_FS } from "@/config/constants/errors.constants.ts";
+import { ARCHIVOS_PAQUETE, ARCHIVOS_SALIDA } from "@/config/constants/files.constants.ts";
+import { FORMATO, TIPO_PLANTILLA } from "@/config/constants/forms.constants.ts";
+import { ESTADO_LECTURA, ORIGEN_COPIA } from "@/config/constants/io.constants.ts";
+import { CLAVE_PLANTILLA } from "@/config/constants/knowledge.constants.ts";
+import {
+  APLICA_NOTA,
+  ESTADO_CAMPO,
+  REGLA_MAPEO,
+  TIPO_HOJA_MAESTRO,
+  VARIABLE_NOTA,
+} from "@/config/constants/mapping.constants.ts";
+import { COLOR_TRAZO } from "@/config/constants/pdf.constants.ts";
+import { TIPO_MASCARA } from "@/config/constants/pii.constants.ts";
+import { ESTADO_SOPORTE, ESTADO_VIGENCIA } from "@/config/constants/supports.constants.ts";
+import { HERRAMIENTA } from "@/config/constants/tools.constants.ts";
 
 const RAIZ = join(import.meta.dir, "..");
 
@@ -52,6 +68,56 @@ const HERRAMIENTAS_PRD: readonly string[] = [
   "armar_paquete",
   "simular_envio",
 ];
+
+const FAMILIAS_DE_CODIGOS: readonly Readonly<Record<string, string>>[] = [
+  CODIGO_ERROR,
+  CODIGO_FS,
+  ESTADO_CAMPO,
+  FORMATO,
+  TIPO_PLANTILLA,
+  ESTADO_SOPORTE,
+  ESTADO_VIGENCIA,
+  ESTADO_LECTURA,
+  ORIGEN_COPIA,
+  REGLA_MAPEO,
+  TIPO_HOJA_MAESTRO,
+  APLICA_NOTA,
+  VARIABLE_NOTA,
+  CLAVE_PLANTILLA,
+  ARCHIVOS_SALIDA,
+  ARCHIVOS_PAQUETE,
+  TIPO_MASCARA,
+  COLOR_TRAZO,
+  HERRAMIENTA,
+];
+
+function escaparRegex(texto: string): string {
+  return texto.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+const VALORES_DE_FAMILIA = [...new Set(FAMILIAS_DE_CODIGOS.flatMap((familia) => Object.values(familia)))]
+  .map(escaparRegex)
+  .join("|");
+
+const LITERAL_DE_FAMILIA = new RegExp(
+  [
+    `(?:===|!==)\\s*["'](?:${VALORES_DE_FAMILIA})["']`,
+    `["'](?:${VALORES_DE_FAMILIA})["']\\s*(?:===|!==)`,
+    `\\bcase\\s+["'](?:${VALORES_DE_FAMILIA})["']`,
+    `\\b(?:estado|tipo|regla|codigo|formato|aplica|color)\\s*:\\s*["'](?:${VALORES_DE_FAMILIA})["']`,
+    "\\bfallo\\(\\s*[\"'`]",
+  ].join("|"),
+);
+
+const ENUM_DE_TS = /\benum\s+[A-Z]/;
+
+const LITERAL_DE_REGEX =
+  /(?:^|[=(,:[!&|?{;]|\breturn|\btypeof)\s*\/(?![/*])(?:\\.|\[(?:\\.|[^\]\\\n])*\]|[^/\\\n[])+\/[dgimsuyv]*|\bnew\s+RegExp\s*\(/;
+
+const DUENOS_DE_REGEX: ReadonlySet<string> = new Set([
+  "src/config/constants/patterns.constants.ts",
+  "src/domain/plantillas.ts",
+]);
 
 const CAPAS_FUTURAS = /^src\/(?:server[^/]*|http|loop|llm)(?:\/|$)/;
 
@@ -132,6 +198,20 @@ function violacionesDePureza(ruta: string, codigo: string): string[] {
 function violacionesDeLecturaDeEntorno(ruta: string, codigo: string): string[] {
   if (LECTORES_DE_ENTORNO.has(ruta)) return [];
   return lineasQueCumplen(ruta, codigo, LECTURA_DE_ENTORNO, "lee el entorno fuera de src/config/env.ts");
+}
+
+function violacionesDeLiteralesDeFamilia(ruta: string, codigo: string): string[] {
+  if (ruta.startsWith("src/config/")) return [];
+  return lineasQueCumplen(ruta, codigo, LITERAL_DE_FAMILIA, "compara o asigna un código con un literal");
+}
+
+function violacionesDeEnum(ruta: string, codigo: string): string[] {
+  return lineasQueCumplen(ruta, codigo, ENUM_DE_TS, "declara un enum de TypeScript");
+}
+
+function violacionesDeRegex(ruta: string, codigo: string): string[] {
+  if (DUENOS_DE_REGEX.has(ruta)) return [];
+  return lineasQueCumplen(ruta, codigo, LITERAL_DE_REGEX, "declara una expresión regular fuera de patterns");
 }
 
 function violacionesDeShell(ruta: string, codigo: string): string[] {
@@ -287,6 +367,19 @@ describe("reglas de capas sobre el código real", () => {
 
   test("G10: solo src/config/env.ts lee el entorno", () => {
     expect(listarFuentes().flatMap((ruta) => violacionesDeLecturaDeEntorno(ruta, leer(ruta)))).toEqual([]);
+  });
+
+  test("G6: src/ no compara ni asigna códigos de familia con literales", () => {
+    expect(VALORES_DE_FAMILIA.length).toBeGreaterThan(0);
+    expect(listarFuentes().flatMap((ruta) => violacionesDeLiteralesDeFamilia(ruta, leer(ruta)))).toEqual([]);
+  });
+
+  test("G7: src/ y demo.ts no declaran enums de TypeScript", () => {
+    expect(listarFuentes().flatMap((ruta) => violacionesDeEnum(ruta, leer(ruta)))).toEqual([]);
+  });
+
+  test("G11: las expresiones regulares viven en patterns.constants.ts", () => {
+    expect(listarFuentes().flatMap((ruta) => violacionesDeRegex(ruta, leer(ruta)))).toEqual([]);
   });
 
   test("src/ y demo.ts no usan APIs de shell", () => {
@@ -463,6 +556,47 @@ describe("el escáner muerde sobre fuentes de muestra", () => {
     expect(violacionesDeCapas("src/domain/a.ts", entorno)).toEqual([
       "src/domain/a.ts: la capa domain no puede importar @/config/env.ts",
     ]);
+  });
+
+  test("G6: reporta comparaciones, case, propiedades y fallo con literales de código", () => {
+    const codigo = [
+      'if (campo.estado === "faltante") return;',
+      'switch (formato) { case "xlsx": break; }',
+      'const hoja = { tipo: "ausente" };',
+      'return fallo("ERROR_INTERNO");',
+      'if (texto === "otra cosa") return;',
+      "if (campo.estado === ESTADO_CAMPO.FALTANTE) return;",
+    ].join("\n");
+    expect(violacionesDeLiteralesDeFamilia("src/domain/x.ts", codigo)).toEqual([
+      "src/domain/x.ts:1: compara o asigna un código con un literal",
+      "src/domain/x.ts:2: compara o asigna un código con un literal",
+      "src/domain/x.ts:3: compara o asigna un código con un literal",
+      "src/domain/x.ts:4: compara o asigna un código con un literal",
+    ]);
+    expect(violacionesDeLiteralesDeFamilia("src/config/constants/x.constants.ts", codigo)).toEqual([]);
+  });
+
+  test("G7: reporta un enum de TypeScript", () => {
+    const codigo = ["export ", "enum Color { Rojo }\n"].join("");
+    expect(violacionesDeEnum("src/domain/x.ts", codigo)).toEqual([
+      "src/domain/x.ts:1: declara un enum de TypeScript",
+    ]);
+  });
+
+  test("G11: reporta literales de regex y new RegExp fuera de patterns", () => {
+    const barra = "/";
+    const dolar = "$";
+    const codigo = [
+      `const a = ${barra}\\s+${barra}g;`,
+      'const b = new RegExp("x");',
+      "const c = total / 2 / 3;",
+      `const d = \`${dolar}{base}/${dolar}{nombre}\`;`,
+    ].join("\n");
+    expect(violacionesDeRegex("src/infra/x.ts", codigo)).toEqual([
+      "src/infra/x.ts:1: declara una expresión regular fuera de patterns",
+      "src/infra/x.ts:2: declara una expresión regular fuera de patterns",
+    ]);
+    expect(violacionesDeRegex("src/config/constants/patterns.constants.ts", codigo)).toEqual([]);
   });
 
   test("reporta un archivo en una capa no declarada", () => {
