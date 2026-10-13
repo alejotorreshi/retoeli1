@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { LIMITES_ARGS, LONGITUD_MAXIMA_CASO } from "@/config/constants/limits.constants.ts";
+import { ESTADO_CAMPO } from "@/config/constants/mapping.constants.ts";
 import { PATRON_RUTA_MAESTRO } from "@/config/constants/patterns.constants.ts";
-import { ESTADOS_CAMPO } from "@/domain/reglas.ts";
 
 const caso = z
   .string()
@@ -15,7 +15,7 @@ const etiqueta = z.string().min(1).max(LIMITES_ARGS.etiqueta);
 const itemMapeo = z
   .object({
     etiqueta: etiqueta.describe("Etiqueta exacta de la plantilla, tal como la devolvió mapear_campos."),
-    estado: z.enum(ESTADOS_CAMPO).describe("Estado del campo tal como lo devolvió mapear_campos."),
+    estado: z.enum(ESTADO_CAMPO).describe("Estado del campo tal como lo devolvió mapear_campos."),
     ruta: z
       .string()
       .regex(PATRON_RUTA_MAESTRO)

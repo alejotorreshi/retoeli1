@@ -1,3 +1,4 @@
+import { ESTADO_CAMPO } from "@/config/constants/mapping.constants.ts";
 import { normalizarEtiqueta } from "@/domain/normalizar.ts";
 import type { Reglas } from "@/domain/reglas.ts";
 import type { CampoSolicitado, Formato, Plantilla, TipoPlantilla } from "@/domain/tipos.ts";
@@ -6,7 +7,7 @@ export type PlantillasPresentes = { readonly celdas: boolean; readonly campos: b
 
 export type CampoAmbiguo = {
   readonly etiqueta: string;
-  readonly estado: "requiere_confirmacion";
+  readonly estado: typeof ESTADO_CAMPO.REQUIERE_CONFIRMACION;
   readonly propuesta: string | null;
 };
 
@@ -40,5 +41,5 @@ export function detectarAmbiguos(
   const propuesta = Object.hasOwn(porPais, pais) ? (porPais[pais] ?? null) : null;
   return campos
     .filter((campo) => genericas.has(normalizarEtiqueta(campo.etiqueta)))
-    .map((campo) => ({ etiqueta: campo.etiqueta, estado: "requiere_confirmacion", propuesta }));
+    .map((campo) => ({ etiqueta: campo.etiqueta, estado: ESTADO_CAMPO.REQUIERE_CONFIRMACION, propuesta }));
 }

@@ -1,3 +1,4 @@
+import { ESTADO_CAMPO } from "@/config/constants/mapping.constants.ts";
 import type { CampoMapeado } from "@/domain/mapeo.ts";
 import type { EstadoCampo } from "@/domain/reglas.ts";
 import type { FechaISO } from "@/domain/tipos.ts";
@@ -23,15 +24,15 @@ export type DatosValoresPortal = {
 export type CasoPortal = { readonly caso: string; readonly cliente: string };
 
 const ESTADO_VISIBLE: Readonly<Record<EstadoCampo, string>> = {
-  lleno: "lleno",
-  faltante: "faltante",
-  requiere_confirmacion: "por confirmar",
+  [ESTADO_CAMPO.LLENO]: "lleno",
+  [ESTADO_CAMPO.FALTANTE]: "faltante",
+  [ESTADO_CAMPO.REQUIERE_CONFIRMACION]: "por confirmar",
 };
 
 function campoPortal(campo: CampoMapeado): CampoPortal {
   return {
     etiqueta: campo.etiqueta,
-    valor: campo.estado === "faltante" ? "" : (campo.valor ?? ""),
+    valor: campo.estado === ESTADO_CAMPO.FALTANTE ? "" : (campo.valor ?? ""),
     estado: ESTADO_VISIBLE[campo.estado],
     nota: campo.nota ?? "",
   };
@@ -48,6 +49,6 @@ export function construirDatosPortal(
     fecha_ejecucion: fecha,
     aviso: AVISO_FORMATO_NO_SOPORTADO,
     campos: canonico.map(campoPortal),
-    pendientes: canonico.filter((campo) => campo.estado !== "lleno").map(campoPortal),
+    pendientes: canonico.filter((campo) => campo.estado !== ESTADO_CAMPO.LLENO).map(campoPortal),
   };
 }

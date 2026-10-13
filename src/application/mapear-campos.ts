@@ -1,6 +1,7 @@
 import { type ContextoCaso, cargarContextoCaso } from "@/application/contexto-caso.ts";
 import type { Entorno } from "@/application/puertos.ts";
 import { CODIGO_ERROR } from "@/config/constants/errors.constants.ts";
+import { ESTADO_CAMPO } from "@/config/constants/mapping.constants.ts";
 import { type CampoMapeado, type ConteoEstados, contarEstados, mapearCampos } from "@/domain/mapeo.ts";
 import { normalizarEtiqueta } from "@/domain/normalizar.ts";
 import { type CampoPresentado, presentarCampo } from "@/domain/pii.ts";
@@ -102,9 +103,9 @@ async function mapearBajoCandado(args: ArgsMapearCampos, entorno: Entorno): Prom
     caso,
     pais: solicitud.pais,
     conteo: contarEstados(seleccion.data),
-    llenos: conEstado(presentados, "lleno"),
-    faltantes: conEstado(presentados, "faltante"),
-    requiere_confirmacion: conEstado(presentados, "requiere_confirmacion"),
+    llenos: conEstado(presentados, ESTADO_CAMPO.LLENO),
+    faltantes: conEstado(presentados, ESTADO_CAMPO.FALTANTE),
+    requiere_confirmacion: conEstado(presentados, ESTADO_CAMPO.REQUIERE_CONFIRMACION),
     mapeo,
   });
 }

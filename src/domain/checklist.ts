@@ -1,3 +1,4 @@
+import { ESTADO_CAMPO } from "@/config/constants/mapping.constants.ts";
 import type { CampoMapeado } from "@/domain/mapeo.ts";
 import { renderizarTextoPlano } from "@/domain/plantillas.ts";
 import type { ReglasSoportes } from "@/domain/reglas.ts";
@@ -159,9 +160,11 @@ export function construirChecklist(
     listo_para_firma: bloqueos.length === 0,
     bloqueos,
     soportes,
-    faltantes: campos.filter((campo) => campo.estado === "faltante").map((campo) => campo.etiqueta),
+    faltantes: campos
+      .filter((campo) => campo.estado === ESTADO_CAMPO.FALTANTE)
+      .map((campo) => campo.etiqueta),
     requiere_confirmacion: campos
-      .filter((campo) => campo.estado === "requiere_confirmacion")
+      .filter((campo) => campo.estado === ESTADO_CAMPO.REQUIERE_CONFIRMACION)
       .map((campo) => ({ etiqueta: campo.etiqueta, nota: campo.nota ?? NOTA_POR_CONFIRMAR })),
   };
 }

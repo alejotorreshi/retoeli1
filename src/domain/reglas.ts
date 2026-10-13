@@ -1,3 +1,5 @@
+import type { ESTADO_CAMPO } from "@/config/constants/mapping.constants.ts";
+import type { ValorDe } from "@/config/types/valor-de.type.ts";
 export const REGLAS_MAPEO = [
   "glosario_exacto",
   "glosario_normalizado",
@@ -9,9 +11,7 @@ export const REGLAS_MAPEO = [
 
 export type ReglaMapeo = (typeof REGLAS_MAPEO)[number];
 
-export const ESTADOS_CAMPO = ["lleno", "faltante", "requiere_confirmacion"] as const;
-
-export type EstadoCampo = (typeof ESTADOS_CAMPO)[number];
+export type EstadoCampo = ValorDe<typeof ESTADO_CAMPO>;
 
 export const REGLAS_SIEMPRE_POR_CONFIRMAR: ReadonlySet<ReglaMapeo> = new Set([
   "regla_pais",

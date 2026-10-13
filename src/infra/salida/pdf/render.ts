@@ -1,5 +1,6 @@
 import { PDFDocument, type PDFFont, type PDFPage, rgb, StandardFonts } from "pdf-lib";
 import type { EntradaFormularioPdf } from "@/application/puertos.ts";
+import { ESTADO_CAMPO } from "@/config/constants/mapping.constants.ts";
 import { DISENO_PDF, TEXTOS_PDF } from "@/config/constants/pdf.constants.ts";
 import { AUTOR_DOCUMENTOS } from "@/config/constants/runtime.constants.ts";
 import type { FilaFormulario } from "@/domain/formulario.ts";
@@ -27,7 +28,7 @@ export function sanearWinAnsi(texto: string, caracteres: ReadonlySet<number>): s
 }
 
 function valorRepresentable(fila: FilaFormulario, caracteres: ReadonlySet<number>): boolean {
-  if (fila.estado === "faltante" || fila.valor === null) return true;
+  if (fila.estado === ESTADO_CAMPO.FALTANTE || fila.valor === null) return true;
   return caracteresVisibles(fila.valor).every((caracter) => esRepresentable(caracter, caracteres));
 }
 
@@ -35,7 +36,7 @@ function conMotivoNoRepresentable(fila: FilaFormulario): FilaFormulario {
   const motivo = TEXTOS_PDF.motivoNoRepresentable;
   return {
     ...fila,
-    estado: "requiere_confirmacion",
+    estado: ESTADO_CAMPO.REQUIERE_CONFIRMACION,
     nota: fila.nota === null ? motivo : `${fila.nota}${TEXTOS_PDF.separadorNotas}${motivo}`,
   };
 }

@@ -1,8 +1,9 @@
 import { rm, stat } from "node:fs/promises";
 import { join, resolve } from "node:path";
-import { FECHA_DEMO, SESION_DEMO } from "@/config/constants/demo.constants.ts";
+import { FECHA_DEMO, GRUPOS_MAPEO, SESION_DEMO } from "@/config/constants/demo.constants.ts";
 import { CODIGO_ERROR } from "@/config/constants/errors.constants.ts";
 import { OUT_DIR } from "@/config/constants/files.constants.ts";
+import { ESTADO_CAMPO } from "@/config/constants/mapping.constants.ts";
 import { pinExecutionDate } from "@/config/env.ts";
 import {
   armar_paquete,
@@ -44,7 +45,6 @@ type Sesion = {
 
 const SIN_DATO = "—";
 const NINGUNO = "ninguno";
-const GRUPOS_MAPEO = ["llenos", "faltantes", "requiere_confirmacion"] as const;
 const COLUMNAS_RESUMEN = ["Caso", "Formato", "Llenos", "Faltantes", "Por confirmar", "Estado"] as const;
 
 function esRegistro(valor: unknown): valor is Registro {
@@ -138,7 +138,7 @@ function escribirFormulario(sesion: Sesion, formulario: Registro, conteo: Regist
   sesion.escribir(`Formato: ${textoDe(formulario, "formato")}${aviso}`);
   sesion.escribir(`Salida: ${textoDe(formulario, "ruta")}`);
   sesion.escribir(
-    `Campos: ${numeroDe(conteo, "lleno")} llenos · ${numeroDe(conteo, "faltante")} faltantes · ${numeroDe(conteo, "requiere_confirmacion")} por confirmar`,
+    `Campos: ${numeroDe(conteo, ESTADO_CAMPO.LLENO)} llenos · ${numeroDe(conteo, ESTADO_CAMPO.FALTANTE)} faltantes · ${numeroDe(conteo, ESTADO_CAMPO.REQUIERE_CONFIRMACION)} por confirmar`,
   );
 }
 
@@ -173,9 +173,9 @@ async function procesarCaso(sesion: Sesion, caso: string): Promise<FilaResumen> 
   return {
     caso,
     formato: textoDe(generada.data, "formato"),
-    llenos: numeroDe(conteo, "lleno"),
-    faltantes: numeroDe(conteo, "faltante"),
-    porConfirmar: numeroDe(conteo, "requiere_confirmacion"),
+    llenos: numeroDe(conteo, ESTADO_CAMPO.LLENO),
+    faltantes: numeroDe(conteo, ESTADO_CAMPO.FALTANTE),
+    porConfirmar: numeroDe(conteo, ESTADO_CAMPO.REQUIERE_CONFIRMACION),
     estado,
     fallida: false,
   };

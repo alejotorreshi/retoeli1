@@ -1,4 +1,5 @@
 import { CODIGO_ERROR } from "@/config/constants/errors.constants.ts";
+import { ESTADO_CAMPO } from "@/config/constants/mapping.constants.ts";
 import type { CampoMapeado } from "@/domain/mapeo.ts";
 import type { EstadoCampo } from "@/domain/reglas.ts";
 import { exito, fallo, type Resultado } from "@/domain/resultado.ts";
@@ -29,7 +30,7 @@ function filaDe(campo: CampoMapeado, obligatorio: boolean | null): FilaFormulari
     etiqueta: campo.etiqueta,
     obligatorio,
     estado: campo.estado,
-    valor: campo.estado === "faltante" ? null : campo.valor,
+    valor: campo.estado === ESTADO_CAMPO.FALTANTE ? null : campo.valor,
     nota: campo.nota,
   };
 }

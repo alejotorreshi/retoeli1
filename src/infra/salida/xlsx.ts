@@ -1,4 +1,5 @@
 import { type Cell, type Fill, Workbook, type Worksheet } from "exceljs";
+import { ESTADO_CAMPO } from "@/config/constants/mapping.constants.ts";
 import { AUTOR_DOCUMENTOS } from "@/config/constants/runtime.constants.ts";
 import { MARCAS_XLSX } from "@/config/constants/xlsx.constants.ts";
 import type { FilaCelda } from "@/domain/formulario.ts";
@@ -20,14 +21,15 @@ function hojaPara(libro: Workbook, hojas: Map<string, Worksheet>, nombre: string
 
 function marcarValor(celda: Cell, fila: FilaCelda): void {
   celda.numFmt = FORMATO_TEXTO;
-  if (fila.estado === "faltante") {
+  if (fila.estado === ESTADO_CAMPO.FALTANTE) {
     celda.value = null;
     celda.fill = relleno(MARCAS_XLSX.rellenoFaltante);
     celda.note = MARCAS_XLSX.notaFaltante;
     return;
   }
   celda.value = fila.valor;
-  if (fila.estado === "requiere_confirmacion") celda.fill = relleno(MARCAS_XLSX.rellenoPorConfirmar);
+  if (fila.estado === ESTADO_CAMPO.REQUIERE_CONFIRMACION)
+    celda.fill = relleno(MARCAS_XLSX.rellenoPorConfirmar);
   if (fila.nota !== null) celda.note = fila.nota;
 }
 

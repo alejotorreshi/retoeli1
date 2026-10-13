@@ -1,4 +1,5 @@
 import type { EntradaFormularioPdf } from "@/application/puertos.ts";
+import { ESTADO_CAMPO } from "@/config/constants/mapping.constants.ts";
 import { DISENO_PDF, TEXTOS_PDF } from "@/config/constants/pdf.constants.ts";
 import type { FilaFormulario } from "@/domain/formulario.ts";
 import type { FechaISO } from "@/domain/tipos.ts";
@@ -89,9 +90,9 @@ function conMarca(valor: string, marca: string, medir: Medir): string[] {
 }
 
 function trozosDeValor(fila: FilaFormulario, medir: Medir): Trozo[] {
-  if (fila.estado === "faltante") return trozos([TEXTOS_PDF.faltante], FALTANTE);
+  if (fila.estado === ESTADO_CAMPO.FALTANTE) return trozos([TEXTOS_PDF.faltante], FALTANTE);
   const valor = fila.valor ?? "";
-  if (fila.estado === "requiere_confirmacion") {
+  if (fila.estado === ESTADO_CAMPO.REQUIERE_CONFIRMACION) {
     return trozos(conMarca(valor, TEXTOS_PDF.porConfirmar, medir), POR_CONFIRMAR);
   }
   return trozos(envolver(valor, ANCHO_VALOR, TEXTO, medir), TEXTO);
@@ -102,12 +103,12 @@ function etiquetaDe(fila: FilaFormulario): string {
 }
 
 function motivoDe(fila: FilaFormulario): string | null {
-  if (fila.estado === "faltante") {
+  if (fila.estado === ESTADO_CAMPO.FALTANTE) {
     return fila.nota === null
       ? TEXTOS_PDF.motivoFaltante
       : `${TEXTOS_PDF.motivoFaltante}${TEXTOS_PDF.separadorNotas}${fila.nota}`;
   }
-  if (fila.estado === "requiere_confirmacion") return fila.nota ?? TEXTOS_PDF.motivoPorConfirmar;
+  if (fila.estado === ESTADO_CAMPO.REQUIERE_CONFIRMACION) return fila.nota ?? TEXTOS_PDF.motivoPorConfirmar;
   return fila.nota;
 }
 

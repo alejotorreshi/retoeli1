@@ -1,3 +1,4 @@
+import { ESTADO_CAMPO } from "@/config/constants/mapping.constants.ts";
 import type { CampoMapeado } from "@/domain/mapeo.ts";
 import type { EstadoCampo, ReglaMapeo } from "@/domain/reglas.ts";
 
@@ -108,7 +109,7 @@ export function enmascarar(ruta: string, valor: string): string {
 }
 
 function valorEnmascarado(campo: CampoMapeado): string | null {
-  if (campo.estado === "faltante" || campo.ruta === null || campo.valor === null) return null;
+  if (campo.estado === ESTADO_CAMPO.FALTANTE || campo.ruta === null || campo.valor === null) return null;
   return enmascarar(campo.ruta, campo.valor);
 }
 

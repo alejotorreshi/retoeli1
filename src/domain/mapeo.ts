@@ -1,4 +1,5 @@
 import { CODIGO_ERROR } from "@/config/constants/errors.constants.ts";
+import { ESTADO_CAMPO } from "@/config/constants/mapping.constants.ts";
 import { aTexto, normalizarEtiqueta } from "@/domain/normalizar.ts";
 import { renderizarTextoPlano } from "@/domain/plantillas.ts";
 import {
@@ -204,7 +205,7 @@ function campoFaltante(etiqueta: string, reglas: Reglas): CampoMapeado {
   return {
     etiqueta,
     ruta: null,
-    estado: "faltante",
+    estado: ESTADO_CAMPO.FALTANTE,
     regla: "sin_fuente",
     confianza: reglas.confianza.sin_fuente,
     valor: null,
@@ -217,7 +218,7 @@ function campoNoTextual(etiqueta: string, fuente: Fuente, reglas: Reglas): Campo
   return {
     etiqueta,
     ruta: fuente.ruta,
-    estado: "requiere_confirmacion",
+    estado: ESTADO_CAMPO.REQUIERE_CONFIRMACION,
     regla: fuente.regla,
     confianza: reglas.confianza[fuente.regla],
     valor: null,
@@ -228,7 +229,7 @@ function campoNoTextual(etiqueta: string, fuente: Fuente, reglas: Reglas): Campo
 
 function estadoDeValor(regla: ReglaMapeo, escala: EscalaConfianza): EstadoCampo {
   const porConfirmar = REGLAS_SIEMPRE_POR_CONFIRMAR.has(regla) || escala[regla] < escala.umbral;
-  return porConfirmar ? "requiere_confirmacion" : "lleno";
+  return porConfirmar ? ESTADO_CAMPO.REQUIERE_CONFIRMACION : ESTADO_CAMPO.LLENO;
 }
 
 function mapearValor(
@@ -297,7 +298,11 @@ export function mapearCampos(entrada: EntradaMapeo): Resultado<readonly CampoMap
 }
 
 export function contarEstados(campos: readonly CampoMapeado[]): ConteoEstados {
-  const conteo = { lleno: 0, faltante: 0, requiere_confirmacion: 0 };
+  const conteo: Record<EstadoCampo, number> = {
+    [ESTADO_CAMPO.LLENO]: 0,
+    [ESTADO_CAMPO.FALTANTE]: 0,
+    [ESTADO_CAMPO.REQUIERE_CONFIRMACION]: 0,
+  };
   for (const campo of campos) conteo[campo.estado] += 1;
   return conteo;
 }
