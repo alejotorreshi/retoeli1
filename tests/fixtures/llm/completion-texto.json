@@ -1,0 +1,25 @@
+{
+  "id": "redactado",
+  "object": "chat.completion",
+  "created": 0,
+  "model": "deepseek-flash",
+  "choices": [
+    {
+      "index": 0,
+      "finish_reason": "stop",
+      "message": {
+        "role": "assistant",
+        "content": "Leí la solicitud del caso ec-corp-andina: el cliente pide el formulario en xlsx."
+      }
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 512,
+    "completion_tokens": 30,
+    "total_tokens": 542,
+    "prompt_tokens_details": { "cached_tokens": 256 },
+    "prompt_cache_hit_tokens": 256,
+    "prompt_cache_miss_tokens": 256
+  },
+  "system_fingerprint": "redactado"
+}
