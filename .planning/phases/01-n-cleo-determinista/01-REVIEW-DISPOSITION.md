@@ -3,6 +3,34 @@ phase: 01
 review: 01-REVIEW.md
 titles: json
 findings:
+  - id: WR-21
+    severity: warning
+    disposition: open
+    title: "Domain, tools and demo logic sit loose at their layer root with no role folder (complete rename and split table)"
+  - id: WR-22
+    severity: warning
+    disposition: open
+    title: "The G5 suffix table, three exact-path guard keys and the CLAUDE.md rule encode \"el dominio va sin sufijo\""
+  - id: WR-23
+    severity: warning
+    disposition: open
+    title: "Unit test names do not mirror the modules they test, and G5 forbids the mirrored names"
+  - id: WR-24
+    severity: warning
+    disposition: open
+    title: "The tax-identifier rule is computed twice, in `solicitud.ts` and in `mapeo.ts`"
+  - id: IN-20
+    severity: info
+    disposition: open
+    title: "Three groups of domain types no longer sit next to their module's name"
+  - id: IN-21
+    severity: info
+    disposition: open
+    title: "Exported names that no longer match their role"
+  - id: IN-22
+    severity: info
+    disposition: open
+    title: "Test-only exports and a dead branch"
   - id: WR-10
     severity: warning
     disposition: fixed
@@ -163,33 +191,40 @@ findings:
     severity: info
     disposition: fixed
     title: "`sessionId` has no length bound before it is written to every log line"
-open: 0
-total: 40
-recorded: 2026-10-13T01:16:19.756Z
+open: 7
+total: 47
+recorded: 2026-10-13T01:39:29.314Z
 ---
 
 # Phase 01: Code Review Disposition
 
 | Finding | Severity | Disposition | Source |
 |---------|----------|-------------|--------|
-| WR-10 | warning | fixed | 01-REVIEW-FIX.md |
-| WR-11 | warning | fixed | 01-REVIEW-FIX.md |
-| WR-12 | warning | fixed | 01-REVIEW-FIX.md |
-| WR-13 | warning | fixed | 01-REVIEW-FIX.md |
-| WR-14 | warning | fixed | 01-REVIEW-FIX.md |
-| WR-15 | warning | fixed | 01-REVIEW-FIX.md |
-| WR-16 | warning | fixed | 01-REVIEW-FIX.md |
-| WR-17 | warning | fixed | 01-REVIEW-FIX.md |
-| WR-18 | warning | fixed | 01-REVIEW-FIX.md |
-| WR-19 | warning | fixed | 01-REVIEW-FIX.md |
-| WR-20 | warning | fixed | 01-REVIEW-FIX.md |
-| IN-13 | info | fixed | 01-REVIEW-FIX.md |
-| IN-14 | info | fixed | 01-REVIEW-FIX.md |
-| IN-15 | info | fixed | 01-REVIEW-FIX.md |
-| IN-16 | info | fixed | 01-REVIEW-FIX.md |
-| IN-17 | info | fixed | 01-REVIEW-FIX.md |
-| IN-18 | info | fixed | 01-REVIEW-FIX.md |
-| IN-19 | info | fixed | 01-REVIEW-FIX.md |
+| WR-21 | warning | open | - |
+| WR-22 | warning | open | - |
+| WR-23 | warning | open | - |
+| WR-24 | warning | open | - |
+| IN-20 | info | open | - |
+| IN-21 | info | open | - |
+| IN-22 | info | open | - |
+| WR-10 | warning | fixed | 01-REVIEW-FIX.md (not in the current review) |
+| WR-11 | warning | fixed | 01-REVIEW-FIX.md (not in the current review) |
+| WR-12 | warning | fixed | 01-REVIEW-FIX.md (not in the current review) |
+| WR-13 | warning | fixed | 01-REVIEW-FIX.md (not in the current review) |
+| WR-14 | warning | fixed | 01-REVIEW-FIX.md (not in the current review) |
+| WR-15 | warning | fixed | 01-REVIEW-FIX.md (not in the current review) |
+| WR-16 | warning | fixed | 01-REVIEW-FIX.md (not in the current review) |
+| WR-17 | warning | fixed | 01-REVIEW-FIX.md (not in the current review) |
+| WR-18 | warning | fixed | 01-REVIEW-FIX.md (not in the current review) |
+| WR-19 | warning | fixed | 01-REVIEW-FIX.md (not in the current review) |
+| WR-20 | warning | fixed | 01-REVIEW-FIX.md (not in the current review) |
+| IN-13 | info | fixed | 01-REVIEW-FIX.md (not in the current review) |
+| IN-14 | info | fixed | 01-REVIEW-FIX.md (not in the current review) |
+| IN-15 | info | fixed | 01-REVIEW-FIX.md (not in the current review) |
+| IN-16 | info | fixed | 01-REVIEW-FIX.md (not in the current review) |
+| IN-17 | info | fixed | 01-REVIEW-FIX.md (not in the current review) |
+| IN-18 | info | fixed | 01-REVIEW-FIX.md (not in the current review) |
+| IN-19 | info | fixed | 01-REVIEW-FIX.md (not in the current review) |
 | CR-01 | critical | fixed | 01-REVIEW-FIX.md (not in the current review) |
 | WR-01 | warning | fixed | 01-REVIEW-FIX.md (not in the current review) |
 | WR-02 | warning | fixed | 01-REVIEW-FIX.md (not in the current review) |
