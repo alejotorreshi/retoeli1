@@ -173,4 +173,4 @@ export type FinAnotado = {
   readonly sesionGuardada: boolean;
 };
 
-export type Desenlace = { readonly motivo: MotivoFin; readonly needsConfirmation: boolean };
+export type FinDeTurno = { readonly motivo: MotivoFin; readonly needsConfirmation: boolean };

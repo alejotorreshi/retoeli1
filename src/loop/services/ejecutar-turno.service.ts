@@ -26,9 +26,9 @@ import type {
   Cierre,
   CierreTurnoCompuerta,
   DependenciasTurno,
-  Desenlace,
   Ejecucion,
   EntradaTurno,
+  FinDeTurno,
   Sesion,
   Turno,
 } from "@/loop/types/turno.type.ts";
@@ -103,7 +103,7 @@ async function* rechazarOcupada(inicio: EventoInicioTurno, bitacora: BitacoraEst
   };
 }
 
-async function* atender(turno: Turno, inicio: EventoInicioTurno): Ejecucion<Desenlace> {
+async function* atender(turno: Turno, inicio: EventoInicioTurno): Ejecucion<FinDeTurno> {
   yield inicio;
   if (inicio.sesionExpirada) {
     yield { tipo: TIPO_EVENTO.TEXTO, turnoId: turno.turnoId, texto: TEXTO_SESION.expirada };
@@ -140,12 +140,12 @@ export async function* ejecutarTurno(entrada: EntradaTurno, deps: DependenciasTu
   const candado = deps.sesiones.ocupar(sesionId, deps.deadlineMs + MARGEN_CANDADO_SESION_MS);
   if (candado === null) return yield* rechazarOcupada(inicio, bitacora);
   const turno = crearTurno(entrada, deps, { turnoId, candado, sesion: abierta.sesion, bitacora });
-  let desenlace: Desenlace;
+  let fin: FinDeTurno;
   try {
-    desenlace = yield* atender(turno, inicio);
+    fin = yield* atender(turno, inicio);
   } finally {
     if (!turno.guardado) guardarInterrumpido(turno);
     deps.sesiones.liberar(sesionId, candado);
   }
-  yield { tipo: TIPO_EVENTO.FIN_TURNO, turnoId, ...desenlace };
+  yield { tipo: TIPO_EVENTO.FIN_TURNO, turnoId, ...fin };
 }
