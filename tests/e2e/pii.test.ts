@@ -3,20 +3,19 @@ import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { correrDemo } from "@tests/helpers/correr-demo.helper.ts";
 import { listarSalida } from "@tests/helpers/instantanea.helper.ts";
+import { sensiblesDelProyecto } from "@tests/helpers/pii.helper.ts";
 import { crearProyectoTemporal } from "@tests/helpers/proyecto-temporal.helper.ts";
 import type { Corrida } from "@tests/helpers/types/correr-demo.type.ts";
+import type { HojaMaestro } from "@tests/helpers/types/pii.type.ts";
 import type { ProyectoTemporal } from "@tests/helpers/types/proyecto-temporal.type.ts";
 import { celdaEn, leerCeldasXlsx } from "@tests/helpers/xlsx-leer.helper.ts";
 import { FECHA_DEMO, SESION_DEMO } from "@/config/constants/demo.constants.ts";
-import { FIXTURES_DIR, OUT_DIR } from "@/config/constants/files.constants.ts";
-import { RUTAS_BORRADOR, VARIABLES_NOTA_DEL_MAESTRO } from "@/config/constants/maestro.constants.ts";
-import { POLITICA_PII } from "@/domain/policies/pii.policy.ts";
+import { OUT_DIR } from "@/config/constants/files.constants.ts";
+import { RUTAS_BORRADOR } from "@/config/constants/maestro.constants.ts";
 import { simular_envio } from "@/tools/proveedor.ts";
 
 const CASO_CONFIRMADO = "ec-corp-andina";
-const LARGO_MINIMO_SENSIBLE = 5;
 const BORRADOR = /borrador-correo\.md$/;
-const RUTAS_EN_NOTAS: ReadonlySet<string> = new Set(VARIABLES_NOTA_DEL_MAESTRO.map(([, ruta]) => ruta));
 const RUTAS_EN_BORRADOR: ReadonlySet<string> = new Set(RUTAS_BORRADOR);
 
 const ARCHIVOS_ESCANEADOS = [
@@ -30,35 +29,7 @@ const ARCHIVOS_ESCANEADOS = [
 
 type Elemento = { readonly origen: string; readonly texto: string };
 
-type Hoja = { readonly ruta: string; readonly valor: string };
-
-function hojasDe(valor: unknown, ruta: string): Hoja[] {
-  if (typeof valor === "string") return [{ ruta, valor }];
-  if (typeof valor === "number") return [{ ruta, valor: String(valor) }];
-  if (Array.isArray(valor)) return valor.flatMap((elemento) => hojasDe(elemento, ruta));
-  if (typeof valor !== "object" || valor === null) return [];
-  return Object.entries(valor).flatMap(([clave, hijo]) =>
-    hojasDe(hijo, ruta === "" ? clave : `${ruta}.${clave}`),
-  );
-}
-
-function esPublica(hoja: Hoja): boolean {
-  return POLITICA_PII.get(hoja.ruta) === "publico";
-}
-
-function sensiblesDelMaestro(maestro: unknown): Hoja[] {
-  const hojas = hojasDe(maestro, "");
-  const publicos = new Set(hojas.filter(esPublica).map((hoja) => hoja.valor));
-  return hojas.filter(
-    (hoja) =>
-      !esPublica(hoja) &&
-      !RUTAS_EN_NOTAS.has(hoja.ruta) &&
-      !publicos.has(hoja.valor) &&
-      hoja.valor.length >= LARGO_MINIMO_SENSIBLE,
-  );
-}
-
-function permitidaEn(origen: string, hoja: Hoja): boolean {
+function permitidaEn(origen: string, hoja: HojaMaestro): boolean {
   return BORRADOR.test(origen) && RUTAS_EN_BORRADOR.has(hoja.ruta);
 }
 
@@ -66,12 +37,11 @@ let proyecto: ProyectoTemporal;
 let corrida: Corrida;
 let corpus: Elemento[];
 let archivos: string[];
-let sensibles: Hoja[];
+let sensibles: HojaMaestro[];
 
 beforeAll(async () => {
   proyecto = await crearProyectoTemporal();
-  const rutaMaestro = join(proyecto.raiz, FIXTURES_DIR, "repositorio", "maestro.json");
-  sensibles = sensiblesDelMaestro(JSON.parse(await readFile(rutaMaestro, "utf8")));
+  sensibles = await sensiblesDelProyecto(proyecto.raiz);
   const ctx = { directory: proyecto.raiz, sessionId: SESION_DEMO };
   let confirmada = "";
   corrida = await correrDemo(proyecto.raiz, {
