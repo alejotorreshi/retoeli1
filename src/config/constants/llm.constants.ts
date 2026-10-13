@@ -93,3 +93,30 @@ export const CABECERA_HTTP = {
 export const PREFIJO_BEARER = "Bearer ";
 export const TIPO_CONTENIDO_JSON = "application/json";
 export const METODO_POST = "POST";
+
+export const VALOR_OMITIR = "omit";
+export const HOSTS_LOOPBACK: ReadonlySet<string> = new Set(["localhost", "127.0.0.1", "[::1]"]);
+export const PROTOCOLO_SEGURO = "https:";
+export const PROTOCOLO_LOOPBACK = "http:";
+export const MAX_TOKENS_SALIDA_TOPE = 65_536;
+export const TEMPERATURA_MAXIMA = 2;
+export const TIMEOUT_LLM_MS_POR_DEFECTO = 45_000;
+export const REINTENTOS_LLM_POR_DEFECTO = 2;
+export const REINTENTOS_LLM_TOPE = 5;
+
+export const BOOLEANO_ENV = {
+  VERDADERO: "true",
+  FALSO: "false",
+} as const;
+
+export const PRESETS_PROVEEDOR = {
+  [PROVEEDOR_DEEPSEEK]: PRESET_DEEPSEEK,
+} as const;
+
+export const CAPACIDADES_GENERICAS = {
+  maxTokensParam: PARAMETRO_MAX_TOKENS.MAX_TOKENS,
+  temperature: 0,
+  thinking: null,
+  reasoningPassback: false,
+  toolChoiceNone: true,
+} as const;

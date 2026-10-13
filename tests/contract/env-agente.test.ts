@@ -20,7 +20,7 @@ const CAPACIDADES_DEEPSEEK = {
   thinking: "disabled",
   reasoningPassback: true,
   toolChoiceNone: true,
-};
+} as const;
 
 describe("entorno del agente: ranura principal (D-59)", () => {
   test("sin variables usa el preset de DeepSeek, sin clave", () => {
@@ -62,9 +62,9 @@ describe("entorno del agente: ranura principal (D-59)", () => {
       model: "gpt-x",
       apiKey: null,
     });
-    expect(valido({ LLM_BASE_URL: "https://otro.example.com/v1", DEEPSEEK_API_KEY: "a1" }).primary.apiKey).toBe(
-      null,
-    );
+    expect(
+      valido({ LLM_BASE_URL: "https://otro.example.com/v1", DEEPSEEK_API_KEY: "a1" }).primary.apiKey,
+    ).toBe(null);
   });
 
   test("la etiqueta del proveedor se normaliza a minúsculas", () => {
@@ -87,7 +87,10 @@ describe("entorno del agente: ranura principal (D-59)", () => {
   });
 
   test("un proveedor sin preset exige LLM_BASE_URL y LLM_MODEL con mensajes en español", () => {
-    expect(mensajesDe({ LLM_PROVIDER: "openai" })).toEqual([TEXTO_ENV.urlRequerida, TEXTO_ENV.modeloRequerido]);
+    expect(mensajesDe({ LLM_PROVIDER: "openai" })).toEqual([
+      TEXTO_ENV.urlRequerida,
+      TEXTO_ENV.modeloRequerido,
+    ]);
     expect(mensajesDe({ LLM_PROVIDER: "openai", LLM_BASE_URL: "https://api.openai.com/v1" })).toEqual([
       TEXTO_ENV.modeloRequerido,
     ]);
@@ -170,7 +173,9 @@ describe("entorno del agente: ranura de respaldo (D-52, Pitfall 7)", () => {
   });
 
   test("la URL base de respaldo también exige https", () => {
-    expect(mensajesDe({ LLM_FALLBACK_BASE_URL: "http://openrouter.ai/api/v1" })).toContain(TEXTO_ENV.urlNoSegura);
+    expect(mensajesDe({ LLM_FALLBACK_BASE_URL: "http://openrouter.ai/api/v1" })).toContain(
+      TEXTO_ENV.urlNoSegura,
+    );
   });
 
   test("LLM_FALLBACK_ENABLED false desactiva el respaldo", () => {

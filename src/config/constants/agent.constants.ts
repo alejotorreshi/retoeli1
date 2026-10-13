@@ -67,6 +67,7 @@ export const MAX_SESIONES_POR_DEFECTO = 100;
 export const SEPARADOR_PARRAFOS = "\n\n";
 export const LONGITUD_MAXIMA_NOMBRE_HERRAMIENTA = 64;
 export const MS_POR_MINUTO = 60_000;
+export const MAX_ITERACIONES_TOPE = 100;
 
 export const ESQUEMA_PARAMETROS = {
   target: "draft-07",

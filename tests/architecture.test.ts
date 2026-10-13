@@ -8,6 +8,7 @@ import { FORMATO, TIPO_PLANTILLA } from "@/config/constants/forms.constants.ts";
 import { ESTADO_LECTURA, ORIGEN_COPIA } from "@/config/constants/io.constants.ts";
 import { CLAVE_PLANTILLA } from "@/config/constants/knowledge.constants.ts";
 import {
+  BOOLEANO_ENV,
   FIN_LLM,
   FINISH_REASON,
   MODO_THINKING,
@@ -16,6 +17,7 @@ import {
   TIPO_ERROR_LLM,
   TOOL_CHOICE,
 } from "@/config/constants/llm.constants.ts";
+import { NIVELES_LOG } from "@/config/constants/logging.constants.ts";
 import {
   APLICA_NOTA,
   ESTADO_CAMPO,
@@ -127,6 +129,8 @@ const FAMILIAS_DE_CODIGOS: readonly Readonly<Record<string, string>>[] = [
   MOTIVO_FIN,
   CODIGO_AGENTE,
   ACCION,
+  NIVELES_LOG,
+  BOOLEANO_ENV,
 ];
 
 function escaparRegex(texto: string): string {

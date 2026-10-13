@@ -18,3 +18,4 @@ export const PATRON_DIACRITICOS: RegExp = /[\u0300-\u036f]/g;
 export const PATRON_MARCAS_FINALES: RegExp = /[\s:*]+$/u;
 export const PATRON_SEPARADORES_DE_LINEA: RegExp = /[\t\r\n]+/g;
 export const PATRON_SALTO_DE_LINEA: RegExp = /\r\n|\r|\n/;
+export const PATRON_BARRA_FINAL: RegExp = /\/+$/;

@@ -251,6 +251,19 @@ export const TEXTO_ENV = {
   formatoFecha: "Debe tener el formato YYYY-MM-DD.",
   fechaInexistente: "La fecha no existe en el calendario.",
   zonaHorariaInvalida: "La zona horaria no es válida.",
+  urlInvalida: "La URL del proveedor no es válida.",
+  urlNoSegura: "La URL del proveedor debe usar https, salvo en localhost.",
+  urlRequerida:
+    "Falta la URL del proveedor: es obligatoria cuando el proveedor no tiene valores por defecto.",
+  modeloRequerido: "Falta el modelo: es obligatorio cuando el proveedor no tiene valores por defecto.",
+} as const;
+
+export const TEXTO_CONTEXTO = {
+  fecha: (fecha: string): string => `Contexto de la sesión: la fecha de ejecución efectiva es ${fecha}.`,
+} as const;
+
+export const TEXTO_SESION = {
+  expirada: "La sesión anterior expiró; empezamos de cero.",
 } as const;
 
 export const TEXTO_CONOCIMIENTO = {
