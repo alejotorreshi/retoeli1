@@ -1,5 +1,5 @@
 import { CODIGO_ERROR } from "@/config/constants/errors.constants.ts";
-import { ARCHIVOS_SALIDA, OUT_DIR } from "@/config/constants/files.constants.ts";
+import { ARCHIVO_PROYECTO, ARCHIVOS_SALIDA, OUT_DIR } from "@/config/constants/files.constants.ts";
 import { LONGITUD_MAXIMA_CASO } from "@/config/constants/limits.constants.ts";
 import { ESTADO_CAMPO } from "@/config/constants/mapping.constants.ts";
 import { HERRAMIENTA } from "@/config/constants/tools.constants.ts";
@@ -58,9 +58,17 @@ export const TEXTO_XLSX = {
   notaFaltante: `Faltante: ${MOTIVO_FALTANTE}`,
 } as const;
 
+function listaDeBloqueos(bloqueos: readonly string[]): string {
+  return bloqueos.join("; ");
+}
+
+const ESTADO_PAQUETE = { listo: "LISTO", bloqueado: "BLOQUEADO" } as const;
+
 export const TEXTO_CHECKLIST = {
   sinVigencia: "no aplica",
-  estado: { listo: "LISTO", bloqueado: "BLOQUEADO" },
+  estado: ESTADO_PAQUETE,
+  bloqueadoPor: (bloqueos: readonly string[]): string =>
+    `${ESTADO_PAQUETE.bloqueado} (${listaDeBloqueos(bloqueos)})`,
   bloqueoAusente: (tipo: string): string => `ausente: ${tipo}`,
   bloqueoVencido: (tipo: string, vigencia: string): string => `vencido: ${tipo} (${vigencia})`,
 } as const;
@@ -143,10 +151,6 @@ function conteo(cuenta: ConteoPorEstado): string {
   return `${cuenta[ESTADO_CAMPO.LLENO]} llenos, ${cuenta[ESTADO_CAMPO.FALTANTE]} faltantes, ${cuenta[ESTADO_CAMPO.REQUIERE_CONFIRMACION]} por confirmar`;
 }
 
-function listaDeBloqueos(bloqueos: readonly string[]): string {
-  return bloqueos.join("; ");
-}
-
 export const RESUMEN_HERRAMIENTA = {
   conteo,
   solicitud: (caso: string, formato: string, pais: string, campos: number, soportes: number): string =>
@@ -158,11 +162,10 @@ export const RESUMEN_HERRAMIENTA = {
     `${caso}: valores para ${formato} generados, ${aviso} (${conteo(cuenta)})`,
   paqueteListo: (caso: string): string => `${caso}: ${TEXTO_CHECKLIST.estado.listo}`,
   paqueteBloqueado: (caso: string, bloqueos: readonly string[]): string =>
-    `${caso}: ${TEXTO_CHECKLIST.estado.bloqueado} (${listaDeBloqueos(bloqueos)})`,
+    `${caso}: ${TEXTO_CHECKLIST.bloqueadoPor(bloqueos)}`,
   envioSinBloqueos: (caso: string): string => `${caso}: envío simulado registrado sin bloqueos`,
   envioConBloqueos: (caso: string, bloqueos: readonly string[]): string =>
     `${caso}: envío simulado registrado con bloqueos (${listaDeBloqueos(bloqueos)})`,
-  listaDeBloqueos,
 } as const;
 
 export const TEXTO_ENV = {
@@ -191,4 +194,27 @@ export const TEXTO_INFRA = {
   destinoNoPermitido: "El archivo de destino no está permitido en el paquete.",
   origenNoPermitido: "El origen de la copia no está en los soportes ni en la salida del caso.",
   errorDeBitacora: (nombre: string): string => `bitacora: ${nombre}`,
+} as const;
+
+export const TEXTO_DEMO = {
+  fechaEfectiva: (fecha: string): string => `Fecha de ejecución efectiva: ${fecha}`,
+  encabezadoCaso: (caso: string): string => `== ${caso} ==`,
+  error: (caso: string, codigo: string, mensaje: string): string =>
+    `Error en ${caso} (${codigo}): ${mensaje}`,
+  estadoError: (codigo: string): string => `ERROR (${codigo})`,
+  formato: (formato: string, aviso: string | null): string =>
+    aviso === null ? `Formato: ${formato}` : `Formato: ${formato} (${aviso})`,
+  salida: (ruta: string): string => `Salida: ${ruta}`,
+  campos: (llenos: string, faltantes: string, porConfirmar: string): string =>
+    `Campos: ${llenos} llenos · ${faltantes} faltantes · ${porConfirmar} por confirmar`,
+  soportes: (ausentes: string, vencidos: string): string =>
+    `Soportes ausentes: ${ausentes} · Vencidos: ${vencidos}`,
+  estado: (estado: string): string => `Estado: ${estado}`,
+  envio: (mensaje: string): string => `Envío: ${mensaje} (no se envía nada)`,
+  sinCasos: (mensaje: string): string => `No se pudieron listar los casos: ${mensaje}`,
+  fueraDeLaRaiz: `La demo debe correr en la raíz del proyecto, donde está ${ARCHIVO_PROYECTO}; no se borra nada.`,
+  resumen: "Resumen",
+  columnasResumen: ["Caso", "Formato", "Llenos", "Faltantes", "Por confirmar", "Estado"],
+  ninguno: "ninguno",
+  separadorTipos: ", ",
 } as const;

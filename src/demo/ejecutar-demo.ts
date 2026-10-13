@@ -7,6 +7,7 @@ import { ESTADO_CAMPO } from "@/config/constants/mapping.constants.ts";
 import { ESTADO_SOPORTE } from "@/config/constants/supports.constants.ts";
 import { HERRAMIENTA } from "@/config/constants/tools.constants.ts";
 import { pinExecutionDate } from "@/config/env.ts";
+import { TEXTO_CHECKLIST, TEXTO_COMUN, TEXTO_DEMO } from "@/config/strings.ts";
 import {
   armar_paquete,
   generar_formulario,
@@ -44,10 +45,6 @@ type Sesion = {
   readonly invocar: (herramienta: string, ejecucion: Promise<string>) => Promise<Registro>;
   readonly escribir: (linea: string) => void;
 };
-
-const SIN_DATO = "—";
-const NINGUNO = "ninguno";
-const COLUMNAS_RESUMEN = ["Caso", "Formato", "Llenos", "Faltantes", "Por confirmar", "Estado"] as const;
 
 function esRegistro(valor: unknown): valor is Registro {
   return typeof valor === "object" && valor !== null && !Array.isArray(valor);
@@ -110,53 +107,60 @@ function tiposConEstado(checklist: Registro, estado: string): string {
   const tipos = registrosDe(checklist, "soportes")
     .filter((soporte) => soporte.estado === estado)
     .map((soporte) => textoDe(soporte, "tipo"));
-  return tipos.length > 0 ? tipos.join(", ") : NINGUNO;
+  return tipos.length > 0 ? tipos.join(TEXTO_DEMO.separadorTipos) : TEXTO_DEMO.ninguno;
 }
 
 function estadoPaquete(paquete: Registro): string {
-  if (paquete.listo_para_firma === true) return "LISTO";
-  return `BLOQUEADO (${textosDe(paquete, "bloqueos").join("; ")})`;
+  if (paquete.listo_para_firma === true) return TEXTO_CHECKLIST.estado.listo;
+  return TEXTO_CHECKLIST.bloqueadoPor(textosDe(paquete, "bloqueos"));
 }
 
 function filaFallida(caso: string, respuesta: Registro): FilaResumen {
   return {
     caso,
-    formato: SIN_DATO,
-    llenos: SIN_DATO,
-    faltantes: SIN_DATO,
-    porConfirmar: SIN_DATO,
-    estado: `ERROR (${textoDe(respuesta, "codigo")})`,
+    formato: TEXTO_COMUN.celdaVacia,
+    llenos: TEXTO_COMUN.celdaVacia,
+    faltantes: TEXTO_COMUN.celdaVacia,
+    porConfirmar: TEXTO_COMUN.celdaVacia,
+    estado: TEXTO_DEMO.estadoError(textoDe(respuesta, "codigo")),
     fallida: true,
   };
 }
 
 function fallar(sesion: Sesion, caso: string, respuesta: Registro): FilaResumen {
-  sesion.escribir(`Error en ${caso} (${textoDe(respuesta, "codigo")}): ${textoDe(respuesta, "error")}`);
+  sesion.escribir(TEXTO_DEMO.error(caso, textoDe(respuesta, "codigo"), textoDe(respuesta, "error")));
   return filaFallida(caso, respuesta);
 }
 
 function escribirFormulario(sesion: Sesion, formulario: Registro, conteo: Registro): void {
-  const aviso = typeof formulario.aviso === "string" ? ` (${formulario.aviso})` : "";
-  sesion.escribir(`Formato: ${textoDe(formulario, "formato")}${aviso}`);
-  sesion.escribir(`Salida: ${textoDe(formulario, "ruta")}`);
+  const aviso = typeof formulario.aviso === "string" ? formulario.aviso : null;
+  sesion.escribir(TEXTO_DEMO.formato(textoDe(formulario, "formato"), aviso));
+  sesion.escribir(TEXTO_DEMO.salida(textoDe(formulario, "ruta")));
   sesion.escribir(
-    `Campos: ${numeroDe(conteo, ESTADO_CAMPO.LLENO)} llenos · ${numeroDe(conteo, ESTADO_CAMPO.FALTANTE)} faltantes · ${numeroDe(conteo, ESTADO_CAMPO.REQUIERE_CONFIRMACION)} por confirmar`,
+    TEXTO_DEMO.campos(
+      numeroDe(conteo, ESTADO_CAMPO.LLENO),
+      numeroDe(conteo, ESTADO_CAMPO.FALTANTE),
+      numeroDe(conteo, ESTADO_CAMPO.REQUIERE_CONFIRMACION),
+    ),
   );
 }
 
 function escribirPaquete(sesion: Sesion, paquete: Registro): string {
   const checklist = registroDe(paquete, "checklist");
   sesion.escribir(
-    `Soportes ausentes: ${tiposConEstado(checklist, ESTADO_SOPORTE.AUSENTE)} · Vencidos: ${tiposConEstado(checklist, ESTADO_SOPORTE.VENCIDO)}`,
+    TEXTO_DEMO.soportes(
+      tiposConEstado(checklist, ESTADO_SOPORTE.AUSENTE),
+      tiposConEstado(checklist, ESTADO_SOPORTE.VENCIDO),
+    ),
   );
-  sesion.escribir(`Estado: ${estadoPaquete(paquete)}`);
-  return paquete.listo_para_firma === true ? "LISTO" : "BLOQUEADO";
+  sesion.escribir(TEXTO_DEMO.estado(estadoPaquete(paquete)));
+  return paquete.listo_para_firma === true ? TEXTO_CHECKLIST.estado.listo : TEXTO_CHECKLIST.estado.bloqueado;
 }
 
 async function procesarCaso(sesion: Sesion, caso: string): Promise<FilaResumen> {
   const { ctx, invocar } = sesion;
   sesion.escribir("");
-  sesion.escribir(`== ${caso} ==`);
+  sesion.escribir(TEXTO_DEMO.encabezadoCaso(caso));
   const leida = await invocar(HERRAMIENTA.LEER_SOLICITUD, leer_solicitud.execute({ caso }, ctx));
   if (!exitosa(leida)) return fallar(sesion, caso, leida);
   const mapeada = await invocar(HERRAMIENTA.MAPEAR_CAMPOS, mapear_campos.execute({ caso, campos: [] }, ctx));
@@ -177,7 +181,7 @@ async function procesarCaso(sesion: Sesion, caso: string): Promise<FilaResumen> 
     simular_envio.execute({ caso, confirmado: false }, ctx),
   );
   if (envio.codigo !== CODIGO_ERROR.CONFIRMACION_REQUERIDA) return fallar(sesion, caso, envio);
-  sesion.escribir(`Envío: ${textoDe(envio, "error")} (no se envía nada)`);
+  sesion.escribir(TEXTO_DEMO.envio(textoDe(envio, "error")));
   return {
     caso,
     formato: textoDe(generada.data, "formato"),
@@ -195,9 +199,9 @@ function filaMarkdown(celdas: readonly string[]): string {
 
 function escribirResumen(escribir: (linea: string) => void, filas: readonly FilaResumen[]): void {
   escribir("");
-  escribir("Resumen");
-  escribir(filaMarkdown(COLUMNAS_RESUMEN));
-  escribir(filaMarkdown(COLUMNAS_RESUMEN.map(() => "---")));
+  escribir(TEXTO_DEMO.resumen);
+  escribir(filaMarkdown(TEXTO_DEMO.columnasResumen));
+  escribir(filaMarkdown(TEXTO_DEMO.columnasResumen.map(() => "---")));
   for (const fila of filas) {
     escribir(
       filaMarkdown([fila.caso, fila.formato, fila.llenos, fila.faltantes, fila.porConfirmar, fila.estado]),
@@ -218,7 +222,7 @@ function crearSesion(opciones: OpcionesDemo, ctx: Contexto): Sesion {
 }
 
 async function correrCasos(opciones: OpcionesDemo, raiz: string): Promise<ResultadoDemo> {
-  opciones.escribir(`Fecha de ejecución efectiva: ${FECHA_DEMO}`);
+  opciones.escribir(TEXTO_DEMO.fechaEfectiva(FECHA_DEMO));
   const sesion = crearSesion(opciones, { directory: raiz, sessionId: SESION_DEMO });
   const listado = await sesion.invocar(
     HERRAMIENTA.LEER_SOLICITUD,
@@ -226,7 +230,7 @@ async function correrCasos(opciones: OpcionesDemo, raiz: string): Promise<Result
   );
   const casos = casosDisponibles(listado);
   if (casos.length === 0) {
-    opciones.escribir(`No se pudieron listar los casos: ${textoDe(listado, "error")}`);
+    opciones.escribir(TEXTO_DEMO.sinCasos(textoDe(listado, "error")));
     return { fallido: true };
   }
 
@@ -239,9 +243,7 @@ async function correrCasos(opciones: OpcionesDemo, raiz: string): Promise<Result
 export async function ejecutarDemo(opciones: OpcionesDemo): Promise<ResultadoDemo> {
   const raiz = await raizDelProyecto(opciones.directorio);
   if (raiz === null) {
-    opciones.escribir(
-      "La demo debe correr en la raíz del proyecto, donde está package.json; no se borra nada.",
-    );
+    opciones.escribir(TEXTO_DEMO.fueraDeLaRaiz);
     return { fallido: true };
   }
   await rm(join(raiz, OUT_DIR), { recursive: true, force: true });
