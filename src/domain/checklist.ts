@@ -65,6 +65,7 @@ export const ESTADO_LISTO = "LISTO";
 export const ESTADO_BLOQUEADO = "BLOQUEADO";
 export const NOTA_POR_CONFIRMAR = "confirmar con el cliente";
 const NOMBRE_AVISO_EMISOR = "soportes.aviso_emisor_distinto";
+const VIGENCIA_SIN_VENCIMIENTO = "9999-12-31";
 
 function avisoEmisor(
   entrada: SoporteIndice,
@@ -83,6 +84,24 @@ function soporteAusente(tipo: string): SoporteEvaluado {
   return { tipo, estado: "ausente", vigencia_hasta: null, archivo: null, aviso: null, aviso_emisor: null };
 }
 
+function vigenciaComparable(entrada: SoporteIndice): string {
+  return entrada.vigencia_hasta ?? VIGENCIA_SIN_VENCIMIENTO;
+}
+
+function masVigentePrimero(a: SoporteIndice, b: SoporteIndice): number {
+  return vigenciaComparable(b).localeCompare(vigenciaComparable(a)) || a.archivo.localeCompare(b.archivo);
+}
+
+function entradaMasVigente(
+  tipo: string,
+  indice: readonly SoporteIndice[],
+  presentes: ReadonlySet<string>,
+): SoporteIndice | undefined {
+  return indice
+    .filter((candidata) => candidata.tipo === tipo && presentes.has(candidata.archivo))
+    .sort(masVigentePrimero)[0];
+}
+
 function evaluarSoporte(
   tipo: string,
   indice: readonly SoporteIndice[],
@@ -91,8 +110,8 @@ function evaluarSoporte(
   paisCliente: string,
   reglas: ReglasSoportes,
 ): Resultado<SoporteEvaluado> {
-  const entrada = indice.find((candidata) => candidata.tipo === tipo);
-  if (entrada === undefined || !presentes.has(entrada.archivo)) return exito(soporteAusente(tipo));
+  const entrada = entradaMasVigente(tipo, indice, presentes);
+  if (entrada === undefined) return exito(soporteAusente(tipo));
   const vigencia = evaluarVigencia(entrada.vigencia_hasta, hoy, reglas.dias_aviso_vencimiento);
   const emisor = avisoEmisor(entrada, paisCliente, reglas);
   if (!emisor.ok) return emisor;

@@ -162,6 +162,52 @@ describe("evaluarSoportes (PAQ-03, D-22)", () => {
     expect(soportes[0]?.archivo).toBeNull();
   });
 
+  test("con dos entradas del mismo tipo gana la presente de vigencia más lejana, sin importar el orden", () => {
+    const vencida: SoporteIndice = {
+      tipo: "camara_comercio",
+      archivo: "camara-comercio-2026-07.txt",
+      vigencia_hasta: "2026-08-01",
+      pais_emisor: "CO",
+      descripcion: "Cámara vieja",
+    };
+    const vigente: SoporteIndice = {
+      ...vencida,
+      archivo: "camara-comercio-2026-08.txt",
+      vigencia_hasta: "2026-09-30",
+    };
+    const ambos = new Set([vencida.archivo, vigente.archivo]);
+    for (const orden of [
+      [vencida, vigente],
+      [vigente, vencida],
+    ]) {
+      const [soporte] = soportesDe(
+        evaluarSoportes(["camara_comercio"], orden, ambos, HOY, "CO", reglasSoportes),
+      );
+      expect(soporte).toMatchObject({
+        estado: "presente",
+        archivo: vigente.archivo,
+        vigencia_hasta: "2026-09-30",
+      });
+    }
+  });
+
+  test("si la primera entrada del tipo no tiene archivo se usa la siguiente presente, y sin vencimiento gana", () => {
+    const perdida: SoporteIndice = {
+      tipo: "rut",
+      archivo: "rut-perdido.txt",
+      vigencia_hasta: "2027-01-01",
+      pais_emisor: "CO",
+      descripcion: "RUT sin archivo",
+    };
+    const conFecha: SoporteIndice = { ...perdida, archivo: "rut-2025.txt", vigencia_hasta: "2026-12-31" };
+    const sinFecha: SoporteIndice = { ...perdida, archivo: "rut-2026.txt", vigencia_hasta: null };
+    const presentesRut = new Set([conFecha.archivo, sinFecha.archivo]);
+    const [soporte] = soportesDe(
+      evaluarSoportes(["rut"], [perdida, conFecha, sinFecha], presentesRut, HOY, "CO", reglasSoportes),
+    );
+    expect(soporte).toMatchObject({ estado: "presente", archivo: "rut-2026.txt", vigencia_hasta: null });
+  });
+
   test("un aviso de emisor con una variable desconocida es REGLAS_INVALIDAS", () => {
     const reglas = { ...reglasSoportes, aviso_emisor_distinto: "Emitido en {{banco.numero_cuenta}}" };
     const resultado = evaluarSoportes(SOPORTES_HN, indice, presentes, HOY, "HN", reglas);
