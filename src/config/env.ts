@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { PATRON_FECHA } from "@/config/constants/patterns.constants.ts";
 import { LOCALE_INTL, ZONA_HORARIA_POR_DEFECTO } from "@/config/constants/runtime.constants.ts";
+import { TEXTO_ENV } from "@/config/strings.ts";
 import { esFechaReal } from "@/domain/fecha.ts";
 
 function vacioComoAusente(valor: unknown): unknown {
@@ -20,13 +21,13 @@ export const toolEnvSchema = z.object({
     vacioComoAusente,
     z
       .string()
-      .regex(PATRON_FECHA, "Debe tener el formato YYYY-MM-DD.")
-      .refine(esFechaReal, "La fecha no existe en el calendario.")
+      .regex(PATRON_FECHA, TEXTO_ENV.formatoFecha)
+      .refine(esFechaReal, TEXTO_ENV.fechaInexistente)
       .optional(),
   ),
   TZ_NEGOCIO: z.preprocess(
     vacioComoAusente,
-    z.string().refine(esZonaHoraria, "La zona horaria no es válida.").default(ZONA_HORARIA_POR_DEFECTO),
+    z.string().refine(esZonaHoraria, TEXTO_ENV.zonaHorariaInvalida).default(ZONA_HORARIA_POR_DEFECTO),
   ),
 });
 

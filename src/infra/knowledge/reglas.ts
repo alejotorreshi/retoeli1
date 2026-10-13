@@ -13,6 +13,7 @@ import {
   PATRON_RUTA_MAESTRO,
   PATRON_TEXTO_NO_VACIO,
 } from "@/config/constants/patterns.constants.ts";
+import { TEXTO_COMUN, TEXTO_CONOCIMIENTO } from "@/config/strings.ts";
 import type { ClavePlantilla, ReglaMapeo, Reglas } from "@/domain/reglas.ts";
 import { fallo, type Resultado } from "@/domain/resultado.ts";
 import { validarTextosDeReglas } from "@/domain/validar-reglas.ts";
@@ -78,8 +79,8 @@ function reglasInvalidas(detalle: string): Resultado<Reglas> {
 
 function detalleDe(issues: readonly z.core.$ZodIssue[]): string {
   const primero = issues[0];
-  if (primero === undefined) return "no cumple el esquema";
-  const ruta = primero.path.length === 0 ? "(raíz)" : primero.path.map(String).join(".");
+  if (primero === undefined) return TEXTO_CONOCIMIENTO.esquemaNoCumplido;
+  const ruta = primero.path.length === 0 ? TEXTO_COMUN.raiz : primero.path.map(String).join(".");
   return `${ruta}: ${primero.message}`;
 }
 
@@ -105,9 +106,9 @@ function parsearJson(
 
 export async function cargarReglas(directorio: string): Promise<Resultado<Reglas>> {
   const contenido = await leerTexto(join(directorio, ARCHIVO_REGLAS));
-  if (contenido === null) return reglasInvalidas("no existe, no es un archivo o supera el tamaño permitido");
+  if (contenido === null) return reglasInvalidas(TEXTO_CONOCIMIENTO.archivoNoLegible);
   const json = parsearJson(contenido);
-  if (!json.ok) return reglasInvalidas("no es JSON válido");
+  if (!json.ok) return reglasInvalidas(TEXTO_CONOCIMIENTO.jsonInvalido);
   const validado = esquemaReglas.safeParse(json.valor, { error: z.locales.es().localeError });
   if (!validado.success) return reglasInvalidas(detalleDe(validado.error.issues));
   return validarTextosDeReglas(validado.data);

@@ -7,6 +7,7 @@ import {
   OUT_DIR,
 } from "@/config/constants/files.constants.ts";
 import { PATRON_ARCHIVO_SOPORTE, PATRON_CASO } from "@/config/constants/patterns.constants.ts";
+import { TEXTO_INFRA } from "@/config/strings.ts";
 import { directorioSoportes } from "@/infra/fixtures/lector.ts";
 import { directorioSalidaCaso, rutaRelativa } from "@/infra/salida/rutas-seguras.ts";
 
@@ -32,9 +33,9 @@ async function directoriosReales(
 ): Promise<{ readonly caso: string; readonly paquete: string; readonly soportes: string }> {
   const salidaReal = await realpath(join(raiz, OUT_DIR));
   const casoReal = await realpath(directorioSalidaCaso(raiz, caso));
-  if (!dentroDe(salidaReal, casoReal)) throw new RangeError("La carpeta de salida del caso sale de out/.");
+  if (!dentroDe(salidaReal, casoReal)) throw new RangeError(TEXTO_INFRA.salidaFueraDeOut);
   const paqueteReal = await realpath(join(casoReal, DIRECTORIO_PAQUETE));
-  if (!dentroDe(casoReal, paqueteReal)) throw new RangeError("La carpeta del paquete sale del caso.");
+  if (!dentroDe(casoReal, paqueteReal)) throw new RangeError(TEXTO_INFRA.paqueteFueraDelCaso);
   return { caso: casoReal, paquete: paqueteReal, soportes: await realpath(directorioSoportes(raiz)) };
 }
 
@@ -52,14 +53,14 @@ export async function copiarAlPaquete(
   origenAbs: string,
   nombreDestino: string,
 ): Promise<string> {
-  if (!PATRON_CASO.test(caso)) throw new RangeError("El caso no es válido para copiar al paquete.");
+  if (!PATRON_CASO.test(caso)) throw new RangeError(TEXTO_INFRA.casoInvalidoParaCopiar);
   if (!esCopiaDeFormulario(nombreDestino) && !esCopiaDeSoporte(nombreDestino)) {
-    throw new RangeError("El archivo de destino no está permitido en el paquete.");
+    throw new RangeError(TEXTO_INFRA.destinoNoPermitido);
   }
   const directorios = await directoriosReales(raiz, caso);
   const origenReal = await realpath(origenAbs);
   if (!origenPermitido(origenReal, directorios)) {
-    throw new RangeError("El origen de la copia no está en los soportes ni en la salida del caso.");
+    throw new RangeError(TEXTO_INFRA.origenNoPermitido);
   }
   await Bun.write(join(directorios.paquete, nombreDestino), Bun.file(origenReal));
   return rutaRelativa(raiz, join(directorioSalidaCaso(raiz, caso), DIRECTORIO_PAQUETE, nombreDestino));

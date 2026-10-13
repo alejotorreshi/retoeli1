@@ -1,6 +1,7 @@
 import type { Reloj } from "@/application/puertos.ts";
 import { PATRON_FECHA } from "@/config/constants/patterns.constants.ts";
 import { LOCALE_INTL } from "@/config/constants/runtime.constants.ts";
+import { TEXTO_INFRA } from "@/config/strings.ts";
 import type { FechaISO } from "@/domain/tipos.ts";
 
 function esFechaISO(texto: string): texto is FechaISO {
@@ -9,7 +10,7 @@ function esFechaISO(texto: string): texto is FechaISO {
 
 function comoFechaISO(texto: string): FechaISO {
   if (esFechaISO(texto)) return texto;
-  throw new RangeError("La fecha no tiene el formato YYYY-MM-DD.");
+  throw new RangeError(TEXTO_INFRA.fechaSinFormato);
 }
 
 function instanteReal(): string {

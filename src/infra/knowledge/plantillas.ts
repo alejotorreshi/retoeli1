@@ -1,7 +1,7 @@
 import { join } from "node:path";
 import { CODIGO_ERROR } from "@/config/constants/errors.constants.ts";
 import { PATRON_PLANTILLA_CONOCIMIENTO } from "@/config/constants/patterns.constants.ts";
-import { TEXTO_MOTOR_PLANTILLAS } from "@/config/strings.ts";
+import { TEXTO_CONOCIMIENTO, TEXTO_MOTOR_PLANTILLAS } from "@/config/strings.ts";
 import type { ClavePlantilla, Reglas } from "@/domain/reglas.ts";
 import { exito, fallo, type Resultado } from "@/domain/resultado.ts";
 import { leerTexto } from "@/infra/knowledge/reglas.ts";
@@ -19,10 +19,10 @@ export async function cargarPlantillaTexto(
 ): Promise<Resultado<string>> {
   const ruta = reglas.plantillas[clave];
   if (!PATRON_PLANTILLA_CONOCIMIENTO.test(ruta))
-    return plantillaInvalida(ruta, "no tiene una ruta permitida");
+    return plantillaInvalida(ruta, TEXTO_CONOCIMIENTO.rutaNoPermitida);
   const texto = await leerTexto(join(directorioConocimiento, ruta));
   if (texto === null) {
-    return plantillaInvalida(ruta, "no existe, no es un archivo o supera el tamaño permitido");
+    return plantillaInvalida(ruta, TEXTO_CONOCIMIENTO.archivoNoLegible);
   }
   return exito(texto);
 }

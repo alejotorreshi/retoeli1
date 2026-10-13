@@ -9,6 +9,7 @@ import {
   OUT_DIR,
 } from "@/config/constants/files.constants.ts";
 import { PATRON_CASO } from "@/config/constants/patterns.constants.ts";
+import { TEXTO_INFRA } from "@/config/strings.ts";
 import { directorioSalidaCaso, rutaRelativa } from "@/infra/salida/rutas-seguras.ts";
 
 export function rutaEnPaquete(nombre: string): string {
@@ -30,7 +31,7 @@ async function casoRealDentroDeSalida(raiz: string, caso: string): Promise<strin
   const salidaReal = await realpath(join(raiz, OUT_DIR));
   const casoReal = await realpath(directorioCaso);
   if (!dentroDe(salidaReal, casoReal)) {
-    throw new RangeError("La carpeta de salida del caso sale de out/.");
+    throw new RangeError(TEXTO_INFRA.salidaFueraDeOut);
   }
   return casoReal;
 }
@@ -41,9 +42,8 @@ async function escribirContenido(
   nombre: string,
   contenido: string | Uint8Array,
 ): Promise<string> {
-  if (!PATRON_CASO.test(caso)) throw new RangeError("El caso no es válido para escribir una salida.");
-  if (!NOMBRES_PERMITIDOS.has(nombre))
-    throw new RangeError("El archivo de salida no está en la lista blanca.");
+  if (!PATRON_CASO.test(caso)) throw new RangeError(TEXTO_INFRA.casoInvalidoParaEscribir);
+  if (!NOMBRES_PERMITIDOS.has(nombre)) throw new RangeError(TEXTO_INFRA.archivoFueraDeListaBlanca);
   const destino = join(directorioSalidaCaso(raiz, caso), nombre);
   await casoRealDentroDeSalida(raiz, caso);
   await mkdir(dirname(destino), { recursive: true });
@@ -83,7 +83,7 @@ async function realOAusente(ruta: string): Promise<string | null> {
 }
 
 export async function reiniciarPaquete(raiz: string, caso: string): Promise<string> {
-  if (!PATRON_CASO.test(caso)) throw new RangeError("El caso no es válido para armar un paquete.");
+  if (!PATRON_CASO.test(caso)) throw new RangeError(TEXTO_INFRA.casoInvalidoParaArmar);
   const casoReal = await casoRealDentroDeSalida(raiz, caso);
   const paquete = join(casoReal, DIRECTORIO_PAQUETE);
   await rm(paquete, { recursive: true, force: true });
@@ -92,7 +92,7 @@ export async function reiniciarPaquete(raiz: string, caso: string): Promise<stri
 }
 
 export async function listarPaquete(raiz: string, caso: string): Promise<readonly string[]> {
-  if (!PATRON_CASO.test(caso)) throw new RangeError("El caso no es válido para listar un paquete.");
+  if (!PATRON_CASO.test(caso)) throw new RangeError(TEXTO_INFRA.casoInvalidoParaListar);
   const casoReal = await casoRealDentroDeSalida(raiz, caso);
   const entradas = await readdir(join(casoReal, DIRECTORIO_PAQUETE), { withFileTypes: true });
   return entradas
@@ -102,12 +102,12 @@ export async function listarPaquete(raiz: string, caso: string): Promise<readonl
 }
 
 export async function limpiarArtefactosPrevios(raiz: string, caso: string): Promise<void> {
-  if (!PATRON_CASO.test(caso)) throw new RangeError("El caso no es válido para limpiar salidas.");
+  if (!PATRON_CASO.test(caso)) throw new RangeError(TEXTO_INFRA.casoInvalidoParaLimpiar);
   const casoReal = await realOAusente(directorioSalidaCaso(raiz, caso));
   if (casoReal === null) return;
   const salidaReal = await realpath(join(raiz, OUT_DIR));
   if (!dentroDe(salidaReal, casoReal)) {
-    throw new RangeError("La carpeta de salida del caso sale de out/.");
+    throw new RangeError(TEXTO_INFRA.salidaFueraDeOut);
   }
   await rm(join(casoReal, DIRECTORIO_PAQUETE), { recursive: true, force: true });
   for (const nombre of ARCHIVOS_REGENERABLES) await rm(join(casoReal, nombre), { force: true });

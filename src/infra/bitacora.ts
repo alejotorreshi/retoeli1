@@ -3,6 +3,7 @@ import { join } from "node:path";
 import type { EntradaBitacora, Registrar, Reloj } from "@/application/puertos.ts";
 import { ARCHIVO_BITACORA, OUT_DIR } from "@/config/constants/files.constants.ts";
 import { PATRON_CASO } from "@/config/constants/patterns.constants.ts";
+import { TEXTO_INFRA } from "@/config/strings.ts";
 import { directorioSalidaCaso } from "@/infra/salida/rutas-seguras.ts";
 
 async function anexar(directorio: string, linea: Readonly<Record<string, unknown>>): Promise<void> {
@@ -36,7 +37,7 @@ export function crearBitacora(raiz: string, reloj: Reloj): Registrar {
         await anexar(directorioSalidaCaso(raiz, casoResuelto), { ...comun, ...codigo });
       }
     } catch (error) {
-      console.error(`bitacora: ${nombreDeError(error)}`);
+      console.error(TEXTO_INFRA.errorDeBitacora(nombreDeError(error)));
     }
   };
 }

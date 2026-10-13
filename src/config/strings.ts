@@ -1,5 +1,5 @@
 import { CODIGO_ERROR } from "@/config/constants/errors.constants.ts";
-import { ARCHIVOS_SALIDA } from "@/config/constants/files.constants.ts";
+import { ARCHIVOS_SALIDA, OUT_DIR } from "@/config/constants/files.constants.ts";
 import { LONGITUD_MAXIMA_CASO } from "@/config/constants/limits.constants.ts";
 import { ESTADO_CAMPO } from "@/config/constants/mapping.constants.ts";
 import { HERRAMIENTA } from "@/config/constants/tools.constants.ts";
@@ -163,4 +163,32 @@ export const RESUMEN_HERRAMIENTA = {
   envioConBloqueos: (caso: string, bloqueos: readonly string[]): string =>
     `${caso}: envío simulado registrado con bloqueos (${listaDeBloqueos(bloqueos)})`,
   listaDeBloqueos,
+} as const;
+
+export const TEXTO_ENV = {
+  formatoFecha: "Debe tener el formato YYYY-MM-DD.",
+  fechaInexistente: "La fecha no existe en el calendario.",
+  zonaHorariaInvalida: "La zona horaria no es válida.",
+} as const;
+
+export const TEXTO_CONOCIMIENTO = {
+  rutaNoPermitida: "no tiene una ruta permitida",
+  archivoNoLegible: "no existe, no es un archivo o supera el tamaño permitido",
+  jsonInvalido: "no es JSON válido",
+  esquemaNoCumplido: "no cumple el esquema",
+} as const;
+
+export const TEXTO_INFRA = {
+  fechaSinFormato: "La fecha no tiene el formato YYYY-MM-DD.",
+  salidaFueraDeOut: `La carpeta de salida del caso sale de ${OUT_DIR}/.`,
+  paqueteFueraDelCaso: "La carpeta del paquete sale del caso.",
+  casoInvalidoParaEscribir: "El caso no es válido para escribir una salida.",
+  casoInvalidoParaArmar: "El caso no es válido para armar un paquete.",
+  casoInvalidoParaListar: "El caso no es válido para listar un paquete.",
+  casoInvalidoParaLimpiar: "El caso no es válido para limpiar salidas.",
+  casoInvalidoParaCopiar: "El caso no es válido para copiar al paquete.",
+  archivoFueraDeListaBlanca: "El archivo de salida no está en la lista blanca.",
+  destinoNoPermitido: "El archivo de destino no está permitido en el paquete.",
+  origenNoPermitido: "El origen de la copia no está en los soportes ni en la salida del caso.",
+  errorDeBitacora: (nombre: string): string => `bitacora: ${nombre}`,
 } as const;
