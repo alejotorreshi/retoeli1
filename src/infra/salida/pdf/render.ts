@@ -7,7 +7,8 @@ import { AUTOR_DOCUMENTOS } from "@/config/constants/runtime.constants.ts";
 import { TEXTO_COMUN, TEXTO_PDF } from "@/config/strings.ts";
 import type { FechaISO } from "@/domain/types/fecha.type.ts";
 import type { FilaFormulario } from "@/domain/types/formulario.type.ts";
-import { componerPdf, type LineaPdf, type Medir } from "@/infra/salida/pdf/layout.ts";
+import { componerPdf } from "@/infra/salida/pdf/layout.ts";
+import type { LineaPdf, Medir } from "@/infra/types/pdf-layout.type.ts";
 
 type FuenteSaneada = { readonly fuente: PDFFont; readonly caracteres: ReadonlySet<number> };
 

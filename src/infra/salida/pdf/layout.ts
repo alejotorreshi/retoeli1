@@ -1,28 +1,9 @@
-import type { EntradaFormularioPdf } from "@/application/types/puertos.type.ts";
 import { ESTADO_CAMPO } from "@/config/constants/mapping.constants.ts";
 import { PATRON_ESPACIOS } from "@/config/constants/patterns.constants.ts";
 import { COLOR_TRAZO, DISENO_PDF } from "@/config/constants/pdf.constants.ts";
 import { TEXTO_COMUN, TEXTO_PDF } from "@/config/strings.ts";
-import type { ValorDe } from "@/config/types/valor-de.type.ts";
-import type { FechaISO } from "@/domain/types/fecha.type.ts";
 import type { FilaFormulario } from "@/domain/types/formulario.type.ts";
-
-export type ColorTrazo = ValorDe<typeof COLOR_TRAZO>;
-
-export type LineaPdf = {
-  readonly x: number;
-  readonly y: number;
-  readonly texto: string;
-  readonly tamano: number;
-  readonly negrita: boolean;
-  readonly color: ColorTrazo;
-};
-
-export type Pagina = { readonly lineas: readonly LineaPdf[] };
-
-export type Medir = (texto: string, tamano: number, negrita: boolean) => number;
-
-export type EntradaLayoutPdf = EntradaFormularioPdf & { readonly fecha: FechaISO };
+import type { ColorTrazo, EntradaLayoutPdf, LineaPdf, Medir, Pagina } from "@/infra/types/pdf-layout.type.ts";
 
 type Estilo = { readonly tamano: number; readonly negrita: boolean; readonly color: ColorTrazo };
 

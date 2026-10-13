@@ -1,8 +1,9 @@
 import { describe, expect, test } from "bun:test";
 import { PDFDocument, StandardFonts } from "pdf-lib";
 import type { FilaFormulario } from "@/domain/types/formulario.type.ts";
-import { componerPdf, type EntradaLayoutPdf, type LineaPdf } from "@/infra/salida/pdf/layout.ts";
+import { componerPdf } from "@/infra/salida/pdf/layout.ts";
 import { marcarNoRepresentables, renderizarPdf, sanearWinAnsi } from "@/infra/salida/pdf/render.ts";
+import type { EntradaLayoutPdf, LineaPdf } from "@/infra/types/pdf-layout.type.ts";
 
 const ACTIVIDAD = "Desarrollo de sistemas informáticos y consultoría en tecnologías de la información";
 const NOTA_EXTRANJERO = "Identificador extranjero: confirmar si el cliente acepta el NIT colombiano";
