@@ -5,6 +5,13 @@ import { directorioSalidaCaso, rutaRelativa } from "./rutas-seguras.ts";
 
 const NOMBRES_PERMITIDOS: ReadonlySet<string> = new Set(Object.values(ARCHIVOS_SALIDA));
 
+const ARCHIVOS_REGENERABLES = [
+  ARCHIVOS_SALIDA.formularioXlsx,
+  ARCHIVOS_SALIDA.formularioPdf,
+  ARCHIVOS_SALIDA.valoresPortal,
+  ARCHIVOS_SALIDA.envioSimulado,
+] as const;
+
 function dentroDe(base: string, destino: string): boolean {
   return destino.startsWith(base + sep);
 }
@@ -95,5 +102,5 @@ export async function limpiarArtefactosPrevios(raiz: string, caso: string): Prom
     throw new RangeError("La carpeta de salida del caso sale de out/.");
   }
   await rm(join(casoReal, ARCHIVOS_SALIDA.paquete), { recursive: true, force: true });
-  await rm(join(casoReal, ARCHIVOS_SALIDA.envioSimulado), { force: true });
+  for (const nombre of ARCHIVOS_REGENERABLES) await rm(join(casoReal, nombre), { force: true });
 }

@@ -70,25 +70,18 @@ describe("limpiarArtefactosPrevios (D-12)", () => {
     expect(existsSync(join(raiz, "out"))).toBe(false);
   });
 
-  test("borra paquete/ y ENVIO-SIMULADO.md y deja log.jsonl, mapeo.json y el formulario", async () => {
+  test("borra paquete/, ENVIO-SIMULADO.md y los formularios previos y deja log.jsonl y mapeo.json (WR-07)", async () => {
     const raiz = await raizTemporal();
     const caso = join(raiz, "out", "co-industrias-delta");
+    const borrados = ["ENVIO-SIMULADO.md", "formulario.xlsx", "formulario.pdf", "valores-portal.md"];
     await mkdir(join(caso, "paquete"), { recursive: true });
-    for (const nombre of [
-      "paquete/x.txt",
-      "ENVIO-SIMULADO.md",
-      "log.jsonl",
-      "mapeo.json",
-      "formulario.xlsx",
-    ]) {
+    for (const nombre of ["paquete/x.txt", "log.jsonl", "mapeo.json", ...borrados]) {
       await writeFile(join(caso, nombre), "x");
     }
     await limpiarArtefactosPrevios(raiz, "co-industrias-delta");
     expect(existsSync(join(caso, "paquete"))).toBe(false);
-    expect(existsSync(join(caso, "ENVIO-SIMULADO.md"))).toBe(false);
-    for (const nombre of ["log.jsonl", "mapeo.json", "formulario.xlsx"]) {
-      expect(existsSync(join(caso, nombre))).toBe(true);
-    }
+    for (const nombre of borrados) expect(existsSync(join(caso, nombre))).toBe(false);
+    for (const nombre of ["log.jsonl", "mapeo.json"]) expect(existsSync(join(caso, nombre))).toBe(true);
   });
 
   test("rechaza out/<caso> cuando es un symlink que sale de out/ sin borrar afuera", async () => {
