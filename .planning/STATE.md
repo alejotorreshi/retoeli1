@@ -3,16 +3,16 @@ gsd_state_version: "1.0"
 current_phase: 02
 current_phase_name: Agente y compuerta de confirmación
 status: executing
-stopped_at: Completed 02-12-PLAN.md
-last_updated: "2026-10-13T22:09:24.923Z"
+stopped_at: Completed 02-14-PLAN.md
+last_updated: "2026-10-13T22:14:47.607Z"
 last_activity: 2026-10-13
 last_activity_desc: Phase 02 execution started
-state_head: 748021602644e133bedbb230d310a330f4bca6aa
+state_head: 9ae6763a52db2b8422a340848bd7ba1cf18b179c
 progress:
   total_phases: 4
   completed_phases: 1
   total_plans: 29
-  completed_plans: 27
+  completed_plans: 28
   percent: 25
 ---
 
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-10-13)
 ## Current Position
 
 Phase: 02 (Agente y compuerta de confirmación) — EXECUTING
-Plan: 4 of 14
+Plan: 5 of 14
 Status: Ready to execute
 Last activity: 2026-10-13 — Phase 02 execution started
 
@@ -83,6 +83,7 @@ Progress: [███░░░░░░░] 25%
 | Phase 02 P10 | 4 min | 2 tasks | 8 files |
 | Phase 02 P11 | 4 min | 2 tasks | 7 files |
 | Phase 02 P12 | 5 min | 2 tasks | 6 files |
+| Phase 02 P14 | 3 min | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -177,6 +178,9 @@ Recent decisions affecting current work:
 - [Phase 02]: 02-11: ARGUMENTOS_VACIOS ('{}') lives in llm.constants.ts; pasoTruncado stores cut calls with it and keeps id and nombre so ARGUMENTOS_TRUNCADOS results still pair (CR-03 closed)
 - [Phase 02]: 02-11: toWireToolCall forwards arguments byte for byte only when they parse to a plain JSON object, otherwise ARGUMENTOS_VACIOS; the neutral history of an executed step keeps the raw malformed string, only the wire normalizes it
 - [Phase 02]: Session locks are a fenced lease of AGENT_TURN_DEADLINE_MS + MARGEN_CANDADO_SESION_MS (30 s): an abandoned consumer frees the session after the lease, and a stale holder can neither release nor overwrite it (WR-03)
+- [Phase 02]: 02-14: weak acknowledgements (ok, okay, vale, listo, claro, correcto) confirm only on their own; with any filler the decision is otro (D-39)
+- [Phase 02]: 02-14: VERBOS_ENVIO keeps only imperatives; the noun envío, envié and enviar never confirm
+- [Phase 02]: 02-14: the server question quotes EJEMPLOS_CONFIRMACION (envía, sí) and promises only that a reply that is not an explicit confirmation sends nothing
 
 ### Pending Todos
 
@@ -202,6 +206,6 @@ Items acknowledged and deferred at milestone close, most recent first:
 
 ## Session Continuity
 
-Last session: 2026-10-13T22:09:24.869Z
-Stopped at: Completed 02-12-PLAN.md
+Last session: 2026-10-13T22:14:47.550Z
+Stopped at: Completed 02-14-PLAN.md
 Resume file: None
