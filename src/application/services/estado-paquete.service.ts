@@ -19,14 +19,14 @@ export async function evaluarEstadoPaquete(
   const presentes = await entorno.soportes.presentes();
   if (presentes.estado !== ESTADO_LECTURA.OK) return fallo(CODIGO_ERROR.DATOS_INVALIDOS);
   const hoy = entorno.reloj.hoy();
-  const soportes = evaluarSoportes(
-    contexto.soportesExigidos,
-    indice.valor,
-    presentes.valor,
+  const soportes = evaluarSoportes({
+    exigidos: contexto.soportesExigidos,
+    indice: indice.valor,
+    presentes: presentes.valor,
     hoy,
-    contexto.solicitud.pais,
-    contexto.reglas.soportes,
-  );
+    paisCliente: contexto.solicitud.pais,
+    reglas: contexto.reglas.soportes,
+  });
   if (!soportes.ok) return soportes;
   return exito(construirChecklist(soportes.data, canonico.data, hoy));
 }

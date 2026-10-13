@@ -1,6 +1,7 @@
 import type { ESTADO_SOPORTE } from "@/config/constants/supports.constants.ts";
 import type { ValorDe } from "@/config/types/valor-de.type.ts";
 import type { FechaISO } from "@/domain/types/fecha.type.ts";
+import type { ReglasSoportes } from "@/domain/types/reglas.type.ts";
 
 export type SoporteIndice = {
   readonly tipo: string;
@@ -55,3 +56,12 @@ export type DatosChecklist = {
 };
 
 export type CasoChecklist = { readonly caso: string; readonly cliente: string };
+
+export type EntradaEvaluacionSoportes = {
+  readonly exigidos: readonly string[];
+  readonly indice: readonly SoporteIndice[];
+  readonly presentes: ReadonlySet<string>;
+  readonly hoy: FechaISO;
+  readonly paisCliente: string;
+  readonly reglas: ReglasSoportes;
+};

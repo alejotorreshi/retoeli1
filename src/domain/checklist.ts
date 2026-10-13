@@ -11,6 +11,7 @@ import type {
   CasoChecklist,
   Checklist,
   DatosChecklist,
+  EntradaEvaluacionSoportes,
   FilaSoporteChecklist,
   SoporteEvaluado,
   SoporteIndice,
@@ -63,14 +64,8 @@ function entradaMasVigente(
     .sort(masVigentePrimero)[0];
 }
 
-function evaluarSoporte(
-  tipo: string,
-  indice: readonly SoporteIndice[],
-  presentes: ReadonlySet<string>,
-  hoy: FechaISO,
-  paisCliente: string,
-  reglas: ReglasSoportes,
-): Resultado<SoporteEvaluado> {
+function evaluarSoporte(tipo: string, evaluacion: EntradaEvaluacionSoportes): Resultado<SoporteEvaluado> {
+  const { indice, presentes, hoy, paisCliente, reglas } = evaluacion;
   const entrada = entradaMasVigente(tipo, indice, presentes);
   if (entrada === undefined) return exito(soporteAusente(tipo));
   const vigencia = evaluarVigencia(entrada.vigencia_hasta, hoy, reglas.dias_aviso_vencimiento);
@@ -87,16 +82,11 @@ function evaluarSoporte(
 }
 
 export function evaluarSoportes(
-  exigidos: readonly string[],
-  indice: readonly SoporteIndice[],
-  presentes: ReadonlySet<string>,
-  hoy: FechaISO,
-  paisCliente: string,
-  reglas: ReglasSoportes,
+  evaluacion: EntradaEvaluacionSoportes,
 ): Resultado<readonly SoporteEvaluado[]> {
   const evaluados: SoporteEvaluado[] = [];
-  for (const tipo of exigidos) {
-    const soporte = evaluarSoporte(tipo, indice, presentes, hoy, paisCliente, reglas);
+  for (const tipo of evaluacion.exigidos) {
+    const soporte = evaluarSoporte(tipo, evaluacion);
     if (!soporte.ok) return soporte;
     evaluados.push(soporte.data);
   }

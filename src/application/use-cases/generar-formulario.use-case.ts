@@ -1,7 +1,11 @@
 import { cargarContextoCaso } from "@/application/services/contexto-caso.service.ts";
 import { escribirMapeo, mapeoCanonico } from "@/application/services/mapeo-canonico.service.ts";
 import type { ContextoCaso } from "@/application/types/contexto-caso.type.ts";
-import type { ArgsGenerarFormulario, DatosFormulario } from "@/application/types/generar-formulario.type.ts";
+import type {
+  ArgsGenerarFormulario,
+  CierreFormulario,
+  DatosFormulario,
+} from "@/application/types/generar-formulario.type.ts";
 import type { Entorno } from "@/application/types/puertos.type.ts";
 import { CODIGO_ERROR } from "@/config/constants/errors.constants.ts";
 import { ARCHIVOS_SALIDA } from "@/config/constants/files.constants.ts";
@@ -16,16 +20,9 @@ import { construirDatosPortal } from "@/domain/portal.ts";
 import { exito, fallo } from "@/domain/resultado.ts";
 import type { CampoMapeado } from "@/domain/types/mapeo.type.ts";
 import type { Resultado } from "@/domain/types/resultado.type.ts";
-import type { Formato } from "@/domain/types/solicitud.type.ts";
 
-async function cerrar(
-  contexto: ContextoCaso,
-  canonico: readonly CampoMapeado[],
-  entorno: Entorno,
-  ruta: string,
-  formato: Formato,
-  aviso: string | null = null,
-): Promise<Resultado<DatosFormulario>> {
+async function cerrar(cierre: CierreFormulario, entorno: Entorno): Promise<Resultado<DatosFormulario>> {
+  const { contexto, canonico, ruta, formato, aviso } = cierre;
   await escribirMapeo(contexto, canonico, entorno);
   return exito({ caso: contexto.caso, ruta, formato, conteo: contarEstados(canonico), aviso });
 }
@@ -40,7 +37,7 @@ async function generarXlsx(
   if (formulario.data.tipo !== TIPO_PLANTILLA.CELDAS) return fallo(CODIGO_ERROR.PLANTILLA_INVALIDA);
   const bytes = await entorno.formularios.xlsx(formulario.data.filas, entorno.reloj.hoy());
   const ruta = await entorno.salida.binario(contexto.caso, ARCHIVOS_SALIDA.FORMULARIO_XLSX, bytes);
-  return cerrar(contexto, canonico, entorno, ruta, FORMATO.XLSX);
+  return cerrar({ contexto, canonico, ruta, formato: FORMATO.XLSX, aviso: null }, entorno);
 }
 
 async function generarPdf(
@@ -53,7 +50,7 @@ async function generarPdf(
   const entrada = { caso: contexto.caso, cliente: contexto.solicitud.cliente, filas: formulario.data.filas };
   const bytes = await entorno.formularios.pdf(entrada, entorno.reloj.hoy());
   const ruta = await entorno.salida.binario(contexto.caso, ARCHIVOS_SALIDA.FORMULARIO_PDF, bytes);
-  return cerrar(contexto, canonico, entorno, ruta, FORMATO.PDF);
+  return cerrar({ contexto, canonico, ruta, formato: FORMATO.PDF, aviso: null }, entorno);
 }
 
 async function generarPortal(
@@ -72,7 +69,10 @@ async function generarPortal(
   );
   if (!texto.ok) return texto;
   const ruta = await entorno.salida.escribir(contexto.caso, ARCHIVOS_SALIDA.VALORES_PORTAL, texto.data);
-  return cerrar(contexto, canonico, entorno, ruta, FORMATO.PORTAL, TEXTO_PORTAL.avisoFormatoNoSoportado);
+  return cerrar(
+    { contexto, canonico, ruta, formato: FORMATO.PORTAL, aviso: TEXTO_PORTAL.avisoFormatoNoSoportado },
+    entorno,
+  );
 }
 
 async function despachar(

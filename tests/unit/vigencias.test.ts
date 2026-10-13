@@ -110,7 +110,16 @@ describe("evaluarVigencia (PAQ-05, D-23)", () => {
 
 describe("evaluarSoportes (PAQ-03, D-22)", () => {
   test("hn: parafiscales vencido, cámara presente con aviso de 27 días y rut presente, todos con aviso de emisor", () => {
-    const soportes = soportesDe(evaluarSoportes(SOPORTES_HN, indice, presentes, HOY, "HN", reglasSoportes));
+    const soportes = soportesDe(
+      evaluarSoportes({
+        exigidos: SOPORTES_HN,
+        indice,
+        presentes,
+        hoy: HOY,
+        paisCliente: "HN",
+        reglas: reglasSoportes,
+      }),
+    );
     expect(soportes.map((soporte) => soporte.tipo)).toEqual(SOPORTES_HN);
     expect(porTipo(soportes, "parafiscales")).toEqual({
       tipo: "parafiscales",
@@ -139,13 +148,31 @@ describe("evaluarSoportes (PAQ-03, D-22)", () => {
   });
 
   test("co: el emisor coincide con el cliente y no hay aviso de emisor", () => {
-    const soportes = soportesDe(evaluarSoportes(SOPORTES_CO, indice, presentes, HOY, "CO", reglasSoportes));
+    const soportes = soportesDe(
+      evaluarSoportes({
+        exigidos: SOPORTES_CO,
+        indice,
+        presentes,
+        hoy: HOY,
+        paisCliente: "CO",
+        reglas: reglasSoportes,
+      }),
+    );
     expect(soportes.every((soporte) => soporte.estado === "presente")).toBe(true);
     expect(soportes.every((soporte) => soporte.aviso_emisor === null)).toBe(true);
   });
 
   test("ec: un tipo sin entrada en el índice queda ausente sin archivo", () => {
-    const soportes = soportesDe(evaluarSoportes(SOPORTES_EC, indice, presentes, HOY, "EC", reglasSoportes));
+    const soportes = soportesDe(
+      evaluarSoportes({
+        exigidos: SOPORTES_EC,
+        indice,
+        presentes,
+        hoy: HOY,
+        paisCliente: "EC",
+        reglas: reglasSoportes,
+      }),
+    );
     expect(porTipo(soportes, "certificado_cumplimiento_tributario")).toEqual({
       tipo: "certificado_cumplimiento_tributario",
       estado: "ausente",
@@ -158,7 +185,16 @@ describe("evaluarSoportes (PAQ-03, D-22)", () => {
 
   test("una entrada del índice cuyo archivo no existe cuenta como ausente", () => {
     const sinRut = new Set([...presentes].filter((archivo) => archivo !== "rut-2026.txt"));
-    const soportes = soportesDe(evaluarSoportes(["rut"], indice, sinRut, HOY, "CO", reglasSoportes));
+    const soportes = soportesDe(
+      evaluarSoportes({
+        exigidos: ["rut"],
+        indice: indice,
+        presentes: sinRut,
+        hoy: HOY,
+        paisCliente: "CO",
+        reglas: reglasSoportes,
+      }),
+    );
     expect(soportes[0]?.estado).toBe("ausente");
     expect(soportes[0]?.archivo).toBeNull();
   });
@@ -182,7 +218,14 @@ describe("evaluarSoportes (PAQ-03, D-22)", () => {
       [vigente, vencida],
     ]) {
       const [soporte] = soportesDe(
-        evaluarSoportes(["camara_comercio"], orden, ambos, HOY, "CO", reglasSoportes),
+        evaluarSoportes({
+          exigidos: ["camara_comercio"],
+          indice: orden,
+          presentes: ambos,
+          hoy: HOY,
+          paisCliente: "CO",
+          reglas: reglasSoportes,
+        }),
       );
       expect(soporte).toMatchObject({
         estado: "presente",
@@ -204,14 +247,28 @@ describe("evaluarSoportes (PAQ-03, D-22)", () => {
     const sinFecha: SoporteIndice = { ...perdida, archivo: "rut-2026.txt", vigencia_hasta: null };
     const presentesRut = new Set([conFecha.archivo, sinFecha.archivo]);
     const [soporte] = soportesDe(
-      evaluarSoportes(["rut"], [perdida, conFecha, sinFecha], presentesRut, HOY, "CO", reglasSoportes),
+      evaluarSoportes({
+        exigidos: ["rut"],
+        indice: [perdida, conFecha, sinFecha],
+        presentes: presentesRut,
+        hoy: HOY,
+        paisCliente: "CO",
+        reglas: reglasSoportes,
+      }),
     );
     expect(soporte).toMatchObject({ estado: "presente", archivo: "rut-2026.txt", vigencia_hasta: null });
   });
 
   test("un aviso de emisor con una variable desconocida es REGLAS_INVALIDAS", () => {
     const reglas = { ...reglasSoportes, aviso_emisor_distinto: "Emitido en {{banco.numero_cuenta}}" };
-    const resultado = evaluarSoportes(SOPORTES_HN, indice, presentes, HOY, "HN", reglas);
+    const resultado = evaluarSoportes({
+      exigidos: SOPORTES_HN,
+      indice: indice,
+      presentes: presentes,
+      hoy: HOY,
+      paisCliente: "HN",
+      reglas: reglas,
+    });
     expect(resultado.ok).toBe(false);
     if (resultado.ok) return;
     expect(resultado.codigo).toBe("REGLAS_INVALIDAS");
@@ -220,7 +277,16 @@ describe("evaluarSoportes (PAQ-03, D-22)", () => {
 
 describe("construirChecklist (RN3, PAQ-03)", () => {
   test("ec queda bloqueado por el soporte ausente y lista faltantes y por confirmar", () => {
-    const soportes = soportesDe(evaluarSoportes(SOPORTES_EC, indice, presentes, HOY, "EC", reglasSoportes));
+    const soportes = soportesDe(
+      evaluarSoportes({
+        exigidos: SOPORTES_EC,
+        indice,
+        presentes,
+        hoy: HOY,
+        paisCliente: "EC",
+        reglas: reglasSoportes,
+      }),
+    );
     const nota = "Identificador extranjero: confirmar si el cliente acepta el NIT colombiano";
     const campos = [
       campo("Nombre de la empresa", "lleno"),
@@ -237,14 +303,32 @@ describe("construirChecklist (RN3, PAQ-03)", () => {
   });
 
   test("hn queda bloqueado por parafiscales vencido con su fecha", () => {
-    const soportes = soportesDe(evaluarSoportes(SOPORTES_HN, indice, presentes, HOY, "HN", reglasSoportes));
+    const soportes = soportesDe(
+      evaluarSoportes({
+        exigidos: SOPORTES_HN,
+        indice,
+        presentes,
+        hoy: HOY,
+        paisCliente: "HN",
+        reglas: reglasSoportes,
+      }),
+    );
     const checklist = construirChecklist(soportes, [], HOY);
     expect(checklist.listo_para_firma).toBe(false);
     expect(checklist.bloqueos).toEqual(["vencido: parafiscales (2026-08-31)"]);
   });
 
   test("un campo faltante solo nunca bloquea la firma", () => {
-    const soportes = soportesDe(evaluarSoportes(SOPORTES_CO, indice, presentes, HOY, "CO", reglasSoportes));
+    const soportes = soportesDe(
+      evaluarSoportes({
+        exigidos: SOPORTES_CO,
+        indice,
+        presentes,
+        hoy: HOY,
+        paisCliente: "CO",
+        reglas: reglasSoportes,
+      }),
+    );
     const checklist = construirChecklist(soportes, [campo("Referencias comerciales", "faltante")], HOY);
     expect(checklist.listo_para_firma).toBe(true);
     expect(checklist.bloqueos).toEqual([]);
@@ -253,7 +337,16 @@ describe("construirChecklist (RN3, PAQ-03)", () => {
 
   test("los bloqueos siguen el orden de los soportes exigidos", () => {
     const exigidos = ["parafiscales", "certificado_cumplimiento_tributario", "rut"];
-    const soportes = soportesDe(evaluarSoportes(exigidos, indice, presentes, HOY, "HN", reglasSoportes));
+    const soportes = soportesDe(
+      evaluarSoportes({
+        exigidos: exigidos,
+        indice,
+        presentes,
+        hoy: HOY,
+        paisCliente: "HN",
+        reglas: reglasSoportes,
+      }),
+    );
     expect(construirChecklist(soportes, [], HOY).bloqueos).toEqual([
       "vencido: parafiscales (2026-08-31)",
       "ausente: certificado_cumplimiento_tributario",
