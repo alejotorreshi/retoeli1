@@ -79,6 +79,7 @@ export type SalidaCaso = {
   existeEnPaquete(caso: string, archivo: ArchivoPaquete): Promise<boolean>;
   reiniciarPaquete(caso: string): Promise<string>;
   listarPaquete(caso: string): Promise<readonly string[]>;
+  leerDePaquete(caso: string, archivo: ArchivoPaquete): Promise<string | null>;
   copiar(caso: string, origen: OrigenCopia): Promise<string>;
 };
 

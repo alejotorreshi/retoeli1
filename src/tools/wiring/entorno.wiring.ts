@@ -38,6 +38,7 @@ import {
   clearPreviousArtifacts,
   listPackage,
   packagePath,
+  readPackageFile,
   resetPackage,
   writeOutputBinary,
   writeOutputFile,
@@ -106,6 +107,7 @@ function entornoDeFixtures(raiz: string, reloj: Reloj, directorioConocimiento: s
         fileExists(pathInCase(caseOutputDirectory(raiz, caso), packagePath(archivo))),
       reiniciarPaquete: (caso) => resetPackage(raiz, caso),
       listarPaquete: (caso) => listPackage(raiz, caso),
+      leerDePaquete: (caso, archivo) => readPackageFile(raiz, caso, archivo),
       copiar: (caso, origen) => copiar(raiz, caso, origen),
     },
     soportes: {

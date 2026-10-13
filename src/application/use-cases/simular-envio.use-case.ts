@@ -1,3 +1,4 @@
+import { paqueteEsperado } from "@/application/services/contenido-paquete.service.ts";
 import { cargarSolicitudCaso, completarContextoCaso } from "@/application/services/contexto-caso.service.ts";
 import { evaluarEstadoPaquete } from "@/application/services/estado-paquete.service.ts";
 import type { Entorno } from "@/application/types/puertos.type.ts";
@@ -7,7 +8,7 @@ import { ARCHIVO_FORMULARIO, ARCHIVOS_PAQUETE, ARCHIVOS_SALIDA } from "@/config/
 import { CLAVE_PLANTILLA } from "@/config/constants/knowledge.constants.ts";
 import { construirDatosEnvio } from "@/domain/builders/borrador.builder.ts";
 import { renderizarPlantilla } from "@/domain/engines/motor-plantillas.engine.ts";
-import { archivosFaltantesEnPaquete } from "@/domain/policies/paquete-vigente.policy.ts";
+import { diferenciasDelPaquete, paqueteAlDia } from "@/domain/policies/paquete-vigente.policy.ts";
 import type { Resultado } from "@/domain/types/resultado.type.ts";
 import { exito, fallo } from "@/domain/utils/resultado.util.ts";
 
@@ -26,11 +27,13 @@ async function simularBajoCandado(args: ArgsSimularEnvio, entorno: Entorno): Pro
   if (!checklist.ok) return checklist;
 
   const { solicitud } = contexto.data;
-  const listado = await entorno.salida.listarPaquete(caso);
   const formulario = ARCHIVO_FORMULARIO[solicitud.formato];
-  const faltantes = archivosFaltantesEnPaquete(checklist.data, formulario, listado);
-  if (faltantes.length > 0)
-    return fallo(CODIGO_ERROR.PAQUETE_DESACTUALIZADO, { parcial: { archivos_faltantes: faltantes } });
+  const esperado = await paqueteEsperado(contexto.data, checklist.data, formulario, entorno);
+  if (!esperado.ok) return esperado;
+  const listado = await entorno.salida.listarPaquete(caso);
+  const borrador = await entorno.salida.leerDePaquete(caso, ARCHIVOS_PAQUETE.BORRADOR_CORREO);
+  const diferencias = diferenciasDelPaquete(esperado.data, { listado, borrador });
+  if (!paqueteAlDia(diferencias)) return fallo(CODIGO_ERROR.PAQUETE_DESACTUALIZADO, { parcial: diferencias });
 
   const plantilla = await entorno.conocimiento.cargar(contexto.data.reglas, CLAVE_PLANTILLA.ENVIO_SIMULADO);
   if (!plantilla.ok) return plantilla;

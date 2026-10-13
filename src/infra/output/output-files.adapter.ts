@@ -8,10 +8,13 @@ import {
 } from "@/config/constants/files.constants.ts";
 import { PATRON_CASO } from "@/config/constants/patterns.constants.ts";
 import { TEXTO_INFRA } from "@/config/strings.ts";
+import { readText } from "@/infra/fs/fs.util.ts";
 import {
   caseOutputDirectory,
   ensureRealCaseDirectory,
   existingRealCaseDirectory,
+  realCaseDirectory,
+  realPackageDirectory,
   relativePath,
 } from "@/infra/fs/safe-paths.util.ts";
 
@@ -74,6 +77,14 @@ export async function listPackage(raiz: string, caso: string): Promise<readonly 
     .filter((entrada) => entrada.isFile())
     .map((entrada) => entrada.name)
     .sort();
+}
+
+export async function readPackageFile(raiz: string, caso: string, nombre: string): Promise<string | null> {
+  if (!PATRON_CASO.test(caso)) throw new RangeError(TEXTO_INFRA.casoInvalidoParaLeer);
+  if (!NOMBRES_PERMITIDOS.has(packagePath(nombre)))
+    throw new RangeError(TEXTO_INFRA.archivoFueraDeListaBlanca);
+  const paquete = await realPackageDirectory(await realCaseDirectory(raiz, caso));
+  return readText(join(paquete, nombre));
 }
 
 export async function clearPreviousArtifacts(raiz: string, caso: string): Promise<void> {

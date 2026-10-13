@@ -82,6 +82,36 @@ async function armado(caso: string): Promise<ProyectoTemporal> {
   return proyecto;
 }
 
+function diferencias(parcial: {
+  readonly archivos_faltantes?: readonly string[];
+  readonly archivos_sobrantes?: readonly string[];
+  readonly archivos_desactualizados?: readonly string[];
+}) {
+  return { archivos_faltantes: [], archivos_sobrantes: [], archivos_desactualizados: [], ...parcial };
+}
+
+async function rechazado(proyecto: ProyectoTemporal, caso: string): Promise<RespuestaEnvio> {
+  const respuesta = await simular(proyecto.raiz, { caso, confirmado: true });
+  expect(respuesta.ok).toBe(false);
+  expect(respuesta.codigo).toBe("PAQUETE_DESACTUALIZADO");
+  expect(respuesta.error).toContain("proveedor_armar_paquete");
+  expect(existsSync(envioSimulado(proyecto.raiz, caso))).toBe(false);
+  return respuesta;
+}
+
+async function rearmar(proyecto: ProyectoTemporal, caso: string): Promise<void> {
+  const respuesta = JSON.parse(await herramientas.armar_paquete.execute({ caso }, ctx(proyecto.raiz)));
+  expect(respuesta.ok).toBe(true);
+}
+
+async function editarIndice(
+  proyecto: ProyectoTemporal,
+  editar: (indice: readonly { readonly tipo: string }[]) => readonly unknown[],
+): Promise<void> {
+  const ruta = join(proyecto.raiz, FIXTURES_DIR, SOPORTES_DIR, INDICE_SOPORTES);
+  await writeFile(ruta, JSON.stringify(editar(JSON.parse(await readFile(ruta, "utf8")))));
+}
+
 function envioSimulado(raiz: string, caso: string): string {
   return join(raiz, "out", caso, "ENVIO-SIMULADO.md");
 }
@@ -231,7 +261,7 @@ describe("contrato: proveedor_simular_envio (ENV-01, D-13, RN4)", () => {
     expect(respuesta.ok).toBe(false);
     expect(respuesta.codigo).toBe("PAQUETE_DESACTUALIZADO");
     expect(respuesta.error).toContain("proveedor_armar_paquete");
-    expect(respuesta.parcial).toEqual({ archivos_faltantes: ["rut-2026.txt"] });
+    expect(respuesta.parcial).toEqual(diferencias({ archivos_faltantes: ["rut-2026.txt"] }));
     expect(respuesta.resumen).toBe("simular_envio: PAQUETE_DESACTUALIZADO");
     expect(existsSync(envioSimulado(proyecto.raiz, CO))).toBe(false);
   });
@@ -241,7 +271,7 @@ describe("contrato: proveedor_simular_envio (ENV-01, D-13, RN4)", () => {
     await rm(join(proyecto.raiz, "out", PA, "paquete", "valores-portal.md"));
     const respuesta = await simular(proyecto.raiz, { caso: PA, confirmado: true });
     expect(respuesta.codigo).toBe("PAQUETE_DESACTUALIZADO");
-    expect(respuesta.parcial).toEqual({ archivos_faltantes: ["valores-portal.md"] });
+    expect(respuesta.parcial).toEqual(diferencias({ archivos_faltantes: ["valores-portal.md"] }));
     expect(existsSync(envioSimulado(proyecto.raiz, PA))).toBe(false);
   });
 
@@ -254,13 +284,70 @@ describe("contrato: proveedor_simular_envio (ENV-01, D-13, RN4)", () => {
     await writeFile(join(soportes, RENOVADO_HN.archivo), "soporte ficticio renovado\n");
     const respuesta = await simular(proyecto.raiz, { caso: HN, confirmado: true });
     expect(respuesta.codigo).toBe("PAQUETE_DESACTUALIZADO");
-    expect(respuesta.parcial).toEqual({ archivos_faltantes: [RENOVADO_HN.archivo] });
+    expect(respuesta.parcial).toEqual(
+      diferencias({
+        archivos_faltantes: [RENOVADO_HN.archivo],
+        archivos_sobrantes: ["parafiscales-2026-07.txt"],
+        archivos_desactualizados: ["borrador-correo.md"],
+      }),
+    );
     expect(existsSync(envioSimulado(proyecto.raiz, HN))).toBe(false);
     const rearmado = JSON.parse(await herramientas.armar_paquete.execute({ caso: HN }, ctx(proyecto.raiz)));
     expect(rearmado.ok).toBe(true);
     const registro = await confirmarYLeer(proyecto, HN);
     expect(enviadosDe(registro)).toContain(RENOVADO_HN.archivo);
     expect(registro).not.toContain("parafiscales-2026-07.txt");
+  });
+
+  test("un soporte que vence entre armar_paquete y simular_envio rechaza el envío por el borrador viejo (CR-01)", async () => {
+    const proyecto = await armado(CO);
+    const borrador = join(proyecto.raiz, "out", CO, "paquete", "borrador-correo.md");
+    expect(await readFile(borrador, "utf8")).toContain("queda listo para la firma");
+    process.env.FECHA_EJECUCION = "2026-10-05";
+    try {
+      const respuesta = await rechazado(proyecto, CO);
+      expect(respuesta.parcial).toEqual(diferencias({ archivos_desactualizados: ["borrador-correo.md"] }));
+      await rearmar(proyecto, CO);
+      expect(await readFile(borrador, "utf8")).not.toContain("queda listo para la firma");
+      const registro = await confirmarYLeer(proyecto, CO);
+      expect(registro.split(FIN_ENVIADOS)[1]).toContain("- paquete/camara-comercio-2026-08.txt");
+    } finally {
+      process.env.FECHA_EJECUCION = "2026-09-03";
+    }
+  });
+
+  test("un soporte que sale del índice después de armar deja su archivo como sobrante y rechaza el envío (CR-01)", async () => {
+    const proyecto = await armado(CO);
+    await editarIndice(proyecto, (indice) => indice.filter((entrada) => entrada.tipo !== "rut"));
+    const respuesta = await rechazado(proyecto, CO);
+    expect(respuesta.parcial).toEqual(
+      diferencias({ archivos_sobrantes: ["rut-2026.txt"], archivos_desactualizados: ["borrador-correo.md"] }),
+    );
+    await rearmar(proyecto, CO);
+    const respuestaRearmada = await simular(proyecto.raiz, { caso: CO, confirmado: true });
+    expect(respuestaRearmada.ok).toBe(true);
+    expect(respuestaRearmada.data?.bloqueos).toEqual(["ausente: rut"]);
+    expect(existsSync(join(proyecto.raiz, "out", CO, "paquete", "rut-2026.txt"))).toBe(false);
+  });
+
+  test("un archivo ajeno dejado en paquete/ rechaza el envío como sobrante (CR-01)", async () => {
+    const proyecto = await armado(CO);
+    await writeFile(join(proyecto.raiz, "out", CO, "paquete", "notas.txt"), "nota suelta\n");
+    const respuesta = await rechazado(proyecto, CO);
+    expect(respuesta.parcial).toEqual(diferencias({ archivos_sobrantes: ["notas.txt"] }));
+  });
+
+  test("borrador-correo.md borrado de paquete/ rechaza el envío como faltante (CR-01)", async () => {
+    const proyecto = await armado(EC);
+    await rm(join(proyecto.raiz, "out", EC, "paquete", "borrador-correo.md"));
+    const respuesta = await rechazado(proyecto, EC);
+    expect(respuesta.parcial).toEqual(diferencias({ archivos_faltantes: ["borrador-correo.md"] }));
+  });
+
+  test("un paquete recién armado y sin cambios se envía aunque se confirme dos veces (CR-01)", async () => {
+    const proyecto = await armado(HN);
+    expect((await simular(proyecto.raiz, { caso: HN, confirmado: true })).ok).toBe(true);
+    expect((await simular(proyecto.raiz, { caso: HN, confirmado: true })).ok).toBe(true);
   });
 
   test("hn deja el soporte vencido en su sección y en paquete/ (WR-06)", async () => {
