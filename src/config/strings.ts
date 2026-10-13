@@ -2,8 +2,14 @@ import { CODIGO_ERROR } from "@/config/constants/errors.constants.ts";
 import { ARCHIVO_PROYECTO, ARCHIVOS_SALIDA, OUT_DIR } from "@/config/constants/files.constants.ts";
 import { LONGITUD_MAXIMA_CASO } from "@/config/constants/limits.constants.ts";
 import { ESTADO_CAMPO } from "@/config/constants/mapping.constants.ts";
-import { HERRAMIENTA } from "@/config/constants/tools.constants.ts";
+import { HERRAMIENTA, PREFIJO_HERRAMIENTA } from "@/config/constants/tools.constants.ts";
 import type { ValorDe } from "@/config/types/valor-de.type.ts";
+
+function nombreVisible(herramienta: ValorDe<typeof HERRAMIENTA>): string {
+  return `${PREFIJO_HERRAMIENTA}${herramienta}`;
+}
+
+const PROVEEDOR_MAPEAR_CAMPOS = nombreVisible(HERRAMIENTA.MAPEAR_CAMPOS);
 
 export const MENSAJE_ERROR = {
   [CODIGO_ERROR.CASO_NO_ENCONTRADO]: "No existe un caso con ese identificador.",
@@ -12,12 +18,11 @@ export const MENSAJE_ERROR = {
     "La plantilla del caso no es válida o no corresponde al formato solicitado.",
   [CODIGO_ERROR.REGLAS_INVALIDAS]: "Las reglas de conocimiento no son válidas.",
   [CODIGO_ERROR.ARGS_INVALIDOS]: "Los argumentos de la herramienta no son válidos.",
-  [CODIGO_ERROR.MAPEO_INCONSISTENTE]:
-    "El mapeo recibido no coincide con el mapeo canónico del caso; pasa el resultado completo de mapear_campos.",
+  [CODIGO_ERROR.MAPEO_INCONSISTENTE]: `El mapeo recibido no coincide con el mapeo canónico del caso; pasa el resultado completo de ${PROVEEDOR_MAPEAR_CAMPOS}.`,
   [CODIGO_ERROR.CAMPOS_FUERA_DE_PLANTILLA]:
     "Algunas etiquetas pedidas no pertenecen a la plantilla del caso.",
-  [CODIGO_ERROR.FORMULARIO_NO_GENERADO]: "Primero genera el formulario del caso con generar_formulario.",
-  [CODIGO_ERROR.PAQUETE_NO_ARMADO]: "Primero arma el paquete del caso con armar_paquete.",
+  [CODIGO_ERROR.FORMULARIO_NO_GENERADO]: `Primero genera el formulario del caso con ${nombreVisible(HERRAMIENTA.GENERAR_FORMULARIO)}.`,
+  [CODIGO_ERROR.PAQUETE_NO_ARMADO]: `Primero arma el paquete del caso con ${nombreVisible(HERRAMIENTA.ARMAR_PAQUETE)}.`,
   [CODIGO_ERROR.CONFIRMACION_REQUERIDA]: "requiere confirmación explícita",
   [CODIGO_ERROR.ERROR_INTERNO]: "Ocurrió un error interno al ejecutar la herramienta; inténtalo de nuevo.",
   [CODIGO_ERROR.CONFIGURACION_INVALIDA]: "La configuración de la ejecución no es válida.",
@@ -125,8 +130,7 @@ export const DESCRIPCION_HERRAMIENTA = {
     "Lee la solicitud de un caso y devuelve país, cliente, formato pedido, plantilla, campos en el orden de la plantilla y soportes exigidos.",
   [HERRAMIENTA.MAPEAR_CAMPOS]:
     "Mapea las etiquetas de la plantilla de un caso contra el maestro y devuelve cada campo con su estado, ruta, regla, confianza y valor enmascarado.",
-  [HERRAMIENTA.GENERAR_FORMULARIO]:
-    "Genera el formulario del caso en el formato pedido releyendo cada valor del maestro, y su mapeo lleva solo las etiquetas, estados y rutas que devolvió proveedor_mapear_campos.",
+  [HERRAMIENTA.GENERAR_FORMULARIO]: `Genera el formulario del caso en el formato pedido releyendo cada valor del maestro, y su mapeo lleva solo las etiquetas, estados y rutas que devolvió ${PROVEEDOR_MAPEAR_CAMPOS}.`,
   [HERRAMIENTA.ARMAR_PAQUETE]:
     "Arma el paquete para firma de un caso ya generado con el formulario, las copias de los soportes exigidos y el checklist, e indica si queda listo para firma y por qué.",
   [HERRAMIENTA.SIMULAR_ENVIO]: `Registra un envío simulado del paquete armado de un caso escribiendo solo ${ARCHIVOS_SALIDA.ENVIO_SIMULADO} con los bloqueos vigentes, sin enviar ningún correo real, y exige la confirmación explícita de la analista.`,
@@ -134,14 +138,12 @@ export const DESCRIPCION_HERRAMIENTA = {
 
 export const DESCRIPCION_ARG = {
   caso: "Identificador del caso en minúsculas, dígitos y guiones, por ejemplo co-industrias-delta. Si no existe, la respuesta trae los casos disponibles.",
-  etiquetaMapeo: "Etiqueta exacta de la plantilla, tal como la devolvió mapear_campos.",
-  estadoMapeo: "Estado del campo tal como lo devolvió mapear_campos.",
-  rutaMapeo:
-    "Ruta del dato en el maestro tal como la devolvió mapear_campos, o null si el campo es faltante.",
+  etiquetaMapeo: `Etiqueta exacta de la plantilla, tal como la devolvió ${PROVEEDOR_MAPEAR_CAMPOS}.`,
+  estadoMapeo: `Estado del campo tal como lo devolvió ${PROVEEDOR_MAPEAR_CAMPOS}.`,
+  rutaMapeo: `Ruta del dato en el maestro tal como la devolvió ${PROVEEDOR_MAPEAR_CAMPOS}, o null si el campo es faltante.`,
   etiquetaCampo: "Etiqueta de la plantilla del caso.",
   campos: "Etiquetas de la plantilla que se quieren mapear; una lista vacía mapea todas las etiquetas.",
-  mapeo:
-    "Mapeo completo devuelto por mapear_campos, solo con etiqueta, estado y ruta; nunca incluye valores.",
+  mapeo: `Mapeo completo devuelto por ${PROVEEDOR_MAPEAR_CAMPOS}, solo con etiqueta, estado y ruta; nunca incluye valores.`,
   confirmado: "true solo si la analista confirmó de forma explícita el envío en esta conversación.",
 } as const;
 

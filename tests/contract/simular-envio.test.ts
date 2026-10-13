@@ -121,7 +121,7 @@ describe("contrato: proveedor_simular_envio (ENV-01, D-13, RN4)", () => {
     const respuesta = await simular(proyecto.raiz, { caso: CO, confirmado: true });
     expect(respuesta.ok).toBe(false);
     expect(respuesta.codigo).toBe("PAQUETE_NO_ARMADO");
-    expect(respuesta.error?.startsWith("Primero arma el paquete")).toBe(true);
+    expect(respuesta.error).toBe("Primero arma el paquete del caso con proveedor_armar_paquete.");
     expect(existsSync(envioSimulado(proyecto.raiz, CO))).toBe(false);
   });
 

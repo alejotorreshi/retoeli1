@@ -227,7 +227,7 @@ describe("golden: proveedor_armar_paquete (PAQ-01, PAQ-02, PAQ-03, D-21)", () =>
     const respuesta = await armar(proyecto.raiz, CO);
     expect(respuesta.ok).toBe(false);
     expect(respuesta.codigo).toBe("FORMULARIO_NO_GENERADO");
-    expect(respuesta.error?.startsWith("Primero genera el formulario")).toBe(true);
+    expect(respuesta.error).toBe("Primero genera el formulario del caso con proveedor_generar_formulario.");
     expect(existsSync(carpetaPaquete(proyecto.raiz, CO))).toBe(false);
   });
 

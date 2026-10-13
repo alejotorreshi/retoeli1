@@ -134,6 +134,9 @@ describe("contrato: generar_formulario rechaza mapeos adulterados (D-11, FORM-04
       expect(respuesta.codigo).toBe("MAPEO_INCONSISTENTE");
       expect(respuesta.parcial?.diferencias).toEqual([...diferencias]);
       expect(respuesta.resumen).toBe("generar_formulario: MAPEO_INCONSISTENTE");
+      expect(respuesta.error).toBe(
+        "El mapeo recibido no coincide con el mapeo canónico del caso; pasa el resultado completo de proveedor_mapear_campos.",
+      );
       expect(crudo).not.toContain("03100012345");
       expect(crudo).not.toContain("900123456");
 
