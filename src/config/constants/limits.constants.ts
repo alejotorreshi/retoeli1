@@ -25,3 +25,5 @@ export const LIMITES_FIXTURES = {
   adjuntos: 50,
   soportes: 50,
 } as const;
+
+export const SANGRIA_JSON = 2;

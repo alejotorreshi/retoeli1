@@ -1,11 +1,9 @@
 import { type Cell, type Fill, Workbook, type Worksheet } from "exceljs";
 import { ESTADO_CAMPO } from "@/config/constants/mapping.constants.ts";
 import { AUTOR_DOCUMENTOS } from "@/config/constants/runtime.constants.ts";
-import { MARCAS_XLSX } from "@/config/constants/xlsx.constants.ts";
+import { FORMATO_CELDA_TEXTO, MARCAS_XLSX, RELLENO_XLSX } from "@/config/constants/xlsx.constants.ts";
 import type { FilaCelda } from "@/domain/formulario.ts";
 import type { FechaISO } from "@/domain/tipos.ts";
-
-const FORMATO_TEXTO = "@";
 
 function relleno(argb: string): Fill {
   return { type: "pattern", pattern: "solid", fgColor: { argb } };
@@ -20,16 +18,15 @@ function hojaPara(libro: Workbook, hojas: Map<string, Worksheet>, nombre: string
 }
 
 function marcarValor(celda: Cell, fila: FilaCelda): void {
-  celda.numFmt = FORMATO_TEXTO;
+  celda.numFmt = FORMATO_CELDA_TEXTO;
   if (fila.estado === ESTADO_CAMPO.FALTANTE) {
     celda.value = null;
-    celda.fill = relleno(MARCAS_XLSX.rellenoFaltante);
+    celda.fill = relleno(RELLENO_XLSX.FALTANTE);
     celda.note = MARCAS_XLSX.notaFaltante;
     return;
   }
   celda.value = fila.valor;
-  if (fila.estado === ESTADO_CAMPO.REQUIERE_CONFIRMACION)
-    celda.fill = relleno(MARCAS_XLSX.rellenoPorConfirmar);
+  if (fila.estado === ESTADO_CAMPO.REQUIERE_CONFIRMACION) celda.fill = relleno(RELLENO_XLSX.POR_CONFIRMAR);
   if (fila.nota !== null) celda.note = fila.nota;
 }
 

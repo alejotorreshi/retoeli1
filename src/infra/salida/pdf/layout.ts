@@ -1,5 +1,6 @@
 import type { EntradaFormularioPdf } from "@/application/puertos.ts";
 import { ESTADO_CAMPO } from "@/config/constants/mapping.constants.ts";
+import { PATRON_ESPACIOS } from "@/config/constants/patterns.constants.ts";
 import { COLOR_TRAZO, DISENO_PDF, TEXTOS_PDF } from "@/config/constants/pdf.constants.ts";
 import type { ValorDe } from "@/config/types/valor-de.type.ts";
 import type { FilaFormulario } from "@/domain/formulario.ts";
@@ -28,7 +29,6 @@ type Trozo = { readonly texto: string; readonly estilo: Estilo };
 
 type Lienzo = { readonly paginas: LineaPdf[][]; y: number };
 
-const ESPACIOS = /\s+/;
 const X_ETIQUETA = DISENO_PDF.margen;
 const X_VALOR = DISENO_PDF.margen + DISENO_PDF.anchoEtiqueta + DISENO_PDF.separacionColumnas;
 const ANCHO_VALOR = DISENO_PDF.ancho - DISENO_PDF.margen - X_VALOR;
@@ -61,7 +61,7 @@ function partirPalabra(palabra: string, ancho: number, estilo: Estilo, medir: Me
 function envolver(texto: string, ancho: number, estilo: Estilo, medir: Medir): string[] {
   const lineas: string[] = [];
   let actual = "";
-  for (const palabra of texto.normalize("NFC").split(ESPACIOS)) {
+  for (const palabra of texto.normalize("NFC").split(PATRON_ESPACIOS)) {
     if (palabra === "") continue;
     const candidata = actual === "" ? palabra : `${actual} ${palabra}`;
     if (medir(candidata, estilo.tamano, estilo.negrita) <= ancho) {

@@ -1,4 +1,5 @@
 import { ESTADO_CAMPO } from "@/config/constants/mapping.constants.ts";
+import { PATRON_ESPACIOS } from "@/config/constants/patterns.constants.ts";
 import { LARGO_VISIBLE, RUTAS_POR_MASCARA, TIPO_MASCARA } from "@/config/constants/pii.constants.ts";
 import type { ValorDe } from "@/config/types/valor-de.type.ts";
 import type { CampoMapeado } from "@/domain/mapeo.ts";
@@ -20,7 +21,6 @@ export type CampoPresentado = {
 const PUNTO = "•";
 const MASCARA_MONTO = "[monto oculto]";
 const MASCARA_OCULTO = "[dato oculto]";
-const ESPACIOS = /\s+/;
 
 function politica(
   entradas: readonly (readonly [TipoMascara, readonly string[]])[],
@@ -37,7 +37,7 @@ function ultimos4(valor: string): string {
 
 function iniciales(valor: string): string {
   return valor
-    .split(ESPACIOS)
+    .split(PATRON_ESPACIOS)
     .filter((palabra) => palabra !== "")
     .map((palabra) => `${palabra.charAt(0)}.`)
     .join(" ");
@@ -50,7 +50,7 @@ function correo(valor: string): string {
 }
 
 function telefono(valor: string): string {
-  const grupos = valor.trim().split(ESPACIOS);
+  const grupos = valor.trim().split(PATRON_ESPACIOS);
   if (grupos.length < 2) return ultimos4(valor.trim());
   const ultimo = grupos.length - 1;
   return grupos

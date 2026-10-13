@@ -2,6 +2,7 @@ import { type ContextoCaso, cargarContextoCaso } from "@/application/contexto-ca
 import type { Entorno } from "@/application/puertos.ts";
 import { CODIGO_ERROR } from "@/config/constants/errors.constants.ts";
 import { ARCHIVOS_SALIDA } from "@/config/constants/files.constants.ts";
+import { SANGRIA_JSON } from "@/config/constants/limits.constants.ts";
 import { ESTADO_CAMPO } from "@/config/constants/mapping.constants.ts";
 import { type CampoMapeado, type ConteoEstados, contarEstados, mapearCampos } from "@/domain/mapeo.ts";
 import { normalizarEtiqueta } from "@/domain/normalizar.ts";
@@ -27,8 +28,6 @@ export type DocumentoMapeo = {
   readonly fecha_ejecucion: string;
   readonly campos: readonly CampoPresentado[];
 };
-
-const SANGRIA_JSON = 2;
 
 function conEstado(campos: readonly CampoPresentado[], estado: EstadoCampo): readonly CampoPresentado[] {
   return campos.filter((campo) => campo.estado === estado);

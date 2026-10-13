@@ -1,5 +1,6 @@
 import type { Reloj } from "@/application/puertos.ts";
 import { PATRON_FECHA } from "@/config/constants/patterns.constants.ts";
+import { LOCALE_INTL } from "@/config/constants/runtime.constants.ts";
 import type { FechaISO } from "@/domain/tipos.ts";
 
 function esFechaISO(texto: string): texto is FechaISO {
@@ -20,7 +21,7 @@ function parte(partes: readonly Intl.DateTimeFormatPart[], tipo: Intl.DateTimeFo
 }
 
 export function relojSistema(zona: string): Reloj {
-  const formato = new Intl.DateTimeFormat("en-US", {
+  const formato = new Intl.DateTimeFormat(LOCALE_INTL, {
     timeZone: zona,
     year: "numeric",
     month: "2-digit",

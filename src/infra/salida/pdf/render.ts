@@ -1,6 +1,7 @@
 import { PDFDocument, type PDFFont, type PDFPage, rgb, StandardFonts } from "pdf-lib";
 import type { EntradaFormularioPdf } from "@/application/puertos.ts";
 import { ESTADO_CAMPO } from "@/config/constants/mapping.constants.ts";
+import { PATRON_SEPARADORES_DE_LINEA } from "@/config/constants/patterns.constants.ts";
 import { DISENO_PDF, TEXTOS_PDF } from "@/config/constants/pdf.constants.ts";
 import { AUTOR_DOCUMENTOS } from "@/config/constants/runtime.constants.ts";
 import type { FilaFormulario } from "@/domain/formulario.ts";
@@ -11,10 +12,8 @@ type FuenteSaneada = { readonly fuente: PDFFont; readonly caracteres: ReadonlySe
 
 type Fuentes = { readonly normal: FuenteSaneada; readonly negrita: FuenteSaneada };
 
-const SEPARADORES_DE_LINEA = /[\t\r\n]+/g;
-
 function caracteresVisibles(texto: string): string[] {
-  return Array.from(texto.normalize("NFC").replace(SEPARADORES_DE_LINEA, " "));
+  return Array.from(texto.normalize("NFC").replace(PATRON_SEPARADORES_DE_LINEA, " "));
 }
 
 function esRepresentable(caracter: string, caracteres: ReadonlySet<number>): boolean {

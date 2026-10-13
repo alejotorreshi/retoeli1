@@ -6,8 +6,17 @@ export const LIMITES_XLSX = {
 
 export const HOJA_RESERVADA_XLSX = "history";
 
+export const RELLENO_XLSX = {
+  FALTANTE: "FFFFC7CE",
+  POR_CONFIRMAR: "FFFFEB9C",
+} as const;
+
 export const MARCAS_XLSX = {
-  rellenoFaltante: "FFFFC7CE",
-  rellenoPorConfirmar: "FFFFEB9C",
   notaFaltante: "Faltante: no existe en el maestro",
 } as const;
+
+export const FORMATO_CELDA_TEXTO = "@";
+
+export const LETRAS_DEL_ALFABETO = 26;
+
+export const CODIGO_ANTES_DE_A = 64;

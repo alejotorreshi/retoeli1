@@ -1,15 +1,16 @@
-const MARCAS_DIACRITICAS = /[̀-ͯ]/g;
-const ESPACIOS = /\s+/g;
-const MARCAS_FINALES = /[\s:*]+$/u;
-
+import {
+  PATRON_DIACRITICOS,
+  PATRON_ESPACIOS,
+  PATRON_MARCAS_FINALES,
+} from "@/config/constants/patterns.constants.ts";
 export function normalizarEtiqueta(etiqueta: string): string {
   return etiqueta
     .normalize("NFD")
-    .replace(MARCAS_DIACRITICAS, "")
+    .replace(PATRON_DIACRITICOS, "")
     .toLowerCase()
-    .replace(ESPACIOS, " ")
+    .replace(PATRON_ESPACIOS, " ")
     .trim()
-    .replace(MARCAS_FINALES, "")
+    .replace(PATRON_MARCAS_FINALES, "")
     .trim();
 }
 

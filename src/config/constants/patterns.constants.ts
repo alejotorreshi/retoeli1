@@ -13,3 +13,7 @@ export const PATRON_NOMBRE_HOJA: RegExp = /^[^*?:\\/[\]']([^*?:\\/[\]]*[^*?:\\/[
 export const PATRON_TIPO_SOPORTE: RegExp = /^[a-z0-9_]{1,64}$/;
 export const PATRON_SEGMENTO_RUTA: RegExp = /^[a-z_]+$/;
 export const PATRON_ESPACIO: RegExp = / /g;
+export const PATRON_ESPACIOS: RegExp = /\s+/g;
+export const PATRON_DIACRITICOS: RegExp = /[\u0300-\u036f]/g;
+export const PATRON_MARCAS_FINALES: RegExp = /[\s:*]+$/u;
+export const PATRON_SEPARADORES_DE_LINEA: RegExp = /[\t\r\n]+/g;

@@ -11,14 +11,17 @@ import {
   PATRON_RUTA_MAESTRO,
   PATRON_TIPO_SOPORTE,
 } from "@/config/constants/patterns.constants.ts";
-import { HOJA_RESERVADA_XLSX, LIMITES_XLSX } from "@/config/constants/xlsx.constants.ts";
+import {
+  CODIGO_ANTES_DE_A,
+  HOJA_RESERVADA_XLSX,
+  LETRAS_DEL_ALFABETO,
+  LIMITES_XLSX,
+} from "@/config/constants/xlsx.constants.ts";
 import type { SoporteIndice } from "@/domain/checklist.ts";
 import { esFechaReal } from "@/domain/fecha.ts";
 
 const textoCorto = z.string().max(LIMITES_FIXTURES.textoCorto);
 const etiqueta = z.string().min(1).max(LIMITES_FIXTURES.etiqueta);
-const LETRAS_DEL_ALFABETO = 26;
-const CODIGO_ANTES_DE_A = 64;
 
 function numeroDeColumna(letras: string): number {
   return Array.from(letras).reduce(

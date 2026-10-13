@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { PATRON_FECHA } from "@/config/constants/patterns.constants.ts";
-import { ZONA_HORARIA_POR_DEFECTO } from "@/config/constants/runtime.constants.ts";
+import { LOCALE_INTL, ZONA_HORARIA_POR_DEFECTO } from "@/config/constants/runtime.constants.ts";
 import { esFechaReal } from "@/domain/fecha.ts";
 
 function vacioComoAusente(valor: unknown): unknown {
@@ -9,7 +9,7 @@ function vacioComoAusente(valor: unknown): unknown {
 
 function esZonaHoraria(zona: string): boolean {
   try {
-    return new Intl.DateTimeFormat("en-CA", { timeZone: zona }).resolvedOptions().timeZone !== "";
+    return new Intl.DateTimeFormat(LOCALE_INTL, { timeZone: zona }).resolvedOptions().timeZone !== "";
   } catch {
     return false;
   }
