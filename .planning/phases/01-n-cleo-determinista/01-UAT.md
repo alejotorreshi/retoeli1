@@ -113,3 +113,10 @@ blocked: 0
 
 - SOLUCION.md: explicar que la consola de `demo.ts` y el `resumen` de las herramientas usan los ids canónicos de soporte (contrato v1), y que checklist/borrador/ENVIO usan nombres en español (WR-03, IN-01).
 - Fase 2: el prompt del agente responde a `PAQUETE_DESACTUALIZADO` re-ejecutando `proveedor_armar_paquete`, mostrando el nuevo estado y pidiendo confirmación de nuevo (CR-01).
+
+## Decisiones posteriores a la corrida (2026-10-13)
+
+Tomadas por la persona tras la re-revisión del fix (ciclo 2), verificadas por el verificador sin nuevas pruebas humanas:
+- Frase del correo cuando solo quedan datos bancarios por validar internamente: "Validaremos internamente algunos datos del formulario antes de pasarlo a la firma de nuestro representante legal." (WR-01, aprobada).
+- Archivos basura del sistema operativo (`.DS_Store`, `Thumbs.db`, `desktop.ini`) no cuentan como sobrantes en `paquete/`; cualquier otro archivo extra sigue rechazando el envío con `PAQUETE_DESACTUALIZADO` (commit bdc4ba4).
+- Al enviar se compara el borrador pero no `checklist.md` (lleva fecha); un borrador editado a mano exige volver a correr `proveedor_armar_paquete` (CR-01, aprobado).
