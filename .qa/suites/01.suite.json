@@ -1,7 +1,7 @@
 {
   "phase": "01",
   "group": "01-n-cleo-determinista",
-  "generated_at": "2026-10-13T02:20:00Z",
+  "generated_at": "2026-10-13T14:40:57Z",
   "sources": [
     "01-01..01-11-SUMMARY.md coverage (71 auto-passed, 13 present)",
     "01-VERIFICATION.md human verification (3)",
@@ -10,19 +10,97 @@
   "regression_scope": "No prior phase exists; codegraph affected over 5beb4d9..HEAD only touches phase 01 code.",
   "tests": [
     {
-      "id": "T01",
+      "id": "G1",
       "uat_ref": 1,
+      "name": "xlsx column widths and wrap (re-test of UAT 17, G-01-H1)",
+      "kind": "human",
+      "surface": "demo-cli",
+      "recipe": "after T02: read column widths and wrapText of out/co-industrias-delta/formulario.xlsx (Datos Proveedor, Datos Bancarios) and out/hn-agroexport-sula/formulario.xlsx with exceljs; render QuickLook thumbnails (qlmanage -t) into screenshots/",
+      "asserts": [
+        "co Datos Proveedor B=32, C=60, C13 wrapText true; Datos Bancarios B=22, C=27; hn Registro A=25, B=32",
+        "only cells whose text exceeds 60 chars (or contains a line break) wrap",
+        "bold labels, fills and faltante/por-confirmar notes preserved"
+      ],
+      "human_checks": [
+        "Open both xlsx in Excel or LibreOffice: no clipped label or value; the long 'Actividad económica' row reads in several lines"
+      ],
+      "isolation": "repo",
+      "replay": ".qa/evidence/01-n-cleo-determinista/seeds/01-g1-xlsx-widths.ts"
+    },
+    {
+      "id": "G2",
+      "uat_ref": 2,
+      "name": "Tone of borrador-correo, checklist and ENVIO-SIMULADO (re-test of UAT 20; WR-01, WR-02, IN-04 fixes)",
+      "kind": "human",
+      "surface": "tools",
+      "recipe": "after T02: excerpt out/<caso>/paquete/borrador-correo.md for co, ec, hn, pa and checklist.md for a case with a foreign-issuer warning; confirmed simular_envio on ec and hn in a scratch copy and excerpt ENVIO-SIMULADO.md",
+      "asserts": [
+        "no borrador contains 'firmado'",
+        "closing line is state-aware: co listo, pa con su confirmación, ec/hn todavía no está listo",
+        "missing master fields are asked to the client, not promised 'por separado'; only pending soportes are promised separately",
+        "no analyst-internal note text (reglas.json notas) is copied into a borrador",
+        "no bank field appears in any borrador",
+        "soportes appear by Spanish display name, never snake_case id; the foreign-issuer warning yields a client question and a checklist action"
+      ],
+      "human_checks": [
+        "Read the four drafts and the ENVIO record: professional tone toward the client, nothing promised that the master cannot supply",
+        "Confirm the new foreign-issuer question wording (IN-04)"
+      ],
+      "isolation": "scratch-copy",
+      "replay": ".qa/evidence/01-n-cleo-determinista/seeds/01-g2-tone-asserts.ts"
+    },
+    {
+      "id": "G3",
+      "uat_ref": 3,
+      "name": "CR-01 resolution: stale or incomplete paquete/ rejects the simulated send",
+      "kind": "tool",
+      "surface": "tools",
+      "recipe": "scratch copy: (A) co full flow, delete paquete/rut-2026.txt, simular_envio confirmado true; (B) hn full flow, renew parafiscales in the soportes index (seed 01-soportes-index-renovado.json) between armar_paquete and simular_envio; (C) delete the formulario from paquete/; then re-run armar_paquete and confirm the send succeeds",
+      "asserts": [
+        "A, B and C give ok:false, codigo PAQUETE_DESACTUALIZADO, the missing file names, and a message pointing to proveedor_armar_paquete",
+        "no ENVIO-SIMULADO.md written in A, B, C",
+        "after re-running armar_paquete the confirmed send succeeds and lists the renewed soporte",
+        "log.jsonl records the failed calls with codigo and no raw args"
+      ],
+      "human_checks": [
+        "Approve rejecting the send (PAQUETE_DESACTUALIZADO) over recording a bloqueo; note for phase 2: the agent prompt must answer this code by re-running armar_paquete"
+      ],
+      "isolation": "scratch-copy",
+      "replay": ".qa/evidence/01-n-cleo-determinista/seeds/01-g3-paquete-desactualizado.ts"
+    },
+    {
+      "id": "G4",
+      "uat_ref": 4,
+      "name": "WR-03 decision: demo stdout keeps raw soporte ids",
+      "kind": "human",
+      "surface": "demo-cli",
+      "recipe": "after T02: grep demo stdout for raw soporte ids (certificado_cumplimiento_tributario, parafiscales, rut) and show the lines",
+      "asserts": [
+        "the only raw ids are in the Resumen/estado lines that mirror the tool resumen (contract v1)"
+      ],
+      "human_checks": [
+        "Decide: keep raw ids in demo stdout (document in SOLUCION.md) or request a plan to show display names"
+      ],
+      "isolation": "repo"
+    },
+    {
+      "id": "T01",
+      "uat_ref": 5,
       "name": "Cold start: quality gates green from scratch",
       "kind": "cli",
       "surface": "gate-check, gate-test",
       "recipe": "rm -rf out && bun run check && bun test",
-      "asserts": ["check exits 0 (tsc strict, Biome, bun audit clean)", "bun test exits 0 with 0 fail", "no skipped or todo tests"],
+      "asserts": [
+        "check exits 0 (tsc strict, Biome, bun audit clean)",
+        "bun test exits 0 with 0 fail",
+        "no skipped or todo tests"
+      ],
       "human_checks": [],
       "isolation": "repo"
     },
     {
       "id": "T02",
-      "uat_ref": 2,
+      "uat_ref": 6,
       "name": "Demo without LLM key: four cases end to end",
       "kind": "cli",
       "surface": "demo-cli",
@@ -38,18 +116,22 @@
     },
     {
       "id": "T03",
-      "uat_ref": 3,
+      "uat_ref": 7,
       "name": "Determinism across runs and roots",
       "kind": "determinism",
       "surface": "demo-cli",
       "recipe": "run the demo twice in the repo and once in a scratch copy; diff stdout, file lists and contents (xlsx by cell, jsonl without ts)",
-      "asserts": ["identical stdout across the three runs", "identical file list and content modulo documented volatile fields", "no absolute path of either root in any output"],
+      "asserts": [
+        "identical stdout across the three runs",
+        "identical file list and content modulo documented volatile fields",
+        "no absolute path of either root in any output"
+      ],
       "human_checks": [],
       "isolation": "scratch-copy"
     },
     {
       "id": "T04",
-      "uat_ref": 4,
+      "uat_ref": 8,
       "name": "simular_envio confirmation gate (ENV-01)",
       "kind": "tool",
       "surface": "tools",
@@ -58,219 +140,268 @@
         "false and missing give ok:false, codigo CONFIRMACION_REQUERIDA, error exactly 'requiere confirmación explícita', no file written",
         "string \"true\" gives ARGS_INVALIDOS",
         "true without paquete gives PAQUETE_NO_ARMADO",
-        "true with paquete writes only ENVIO-SIMULADO.md with the current bloqueos, without requiring listo_para_firma"
+        "true with paquete writes only ENVIO-SIMULADO.md listing only client files present in paquete/ (never checklist.md or borrador-correo.md) and the current bloqueos by display name, without requiring listo_para_firma",
+        "true with paquete/ missing a client file (deleted soporte, deleted formulario, or soporte renewed between armar_paquete and simular_envio) gives ok:false, codigo PAQUETE_DESACTUALIZADO, lists the missing files, asks to re-run proveedor_armar_paquete, and writes no ENVIO-SIMULADO.md (CR-01 fix)"
       ],
       "human_checks": [],
       "isolation": "scratch-copy"
     },
     {
       "id": "T05",
-      "uat_ref": 5,
+      "uat_ref": 9,
       "name": "Reprocessing after a send cleans stale outputs (D-12)",
       "kind": "tool",
       "surface": "tools",
       "recipe": "scratch copy; full flow on ec through confirmed simular_envio, then generar_formulario again",
-      "asserts": ["paquete/ and ENVIO-SIMULADO.md no longer exist", "a fresh formulario exists"],
+      "asserts": [
+        "paquete/ and ENVIO-SIMULADO.md no longer exist",
+        "a fresh formulario exists"
+      ],
       "human_checks": [],
       "isolation": "scratch-copy"
     },
     {
       "id": "T06",
-      "uat_ref": 6,
+      "uat_ref": 10,
       "name": "Audit logs on every call (SEG-04, RN5)",
       "kind": "log",
       "surface": "tools",
       "recipe": "scratch copy; call each tool once incl. invalid args with a marker value; jq over out/log.jsonl and out/<caso>/log.jsonl",
-      "asserts": ["one line per call in out/log.jsonl", "one line per call with a resolved caso in out/<caso>/log.jsonl", "fields only ts, herramienta, ok, resumen (+ sesion, caso, codigo)", "the marker value never appears"],
+      "asserts": [
+        "one line per call in out/log.jsonl",
+        "one line per call with a resolved caso in out/<caso>/log.jsonl",
+        "fields only ts, herramienta, ok, resumen (+ sesion, caso, codigo)",
+        "the marker value never appears"
+      ],
       "human_checks": [],
       "isolation": "scratch-copy"
     },
     {
       "id": "T07",
-      "uat_ref": 7,
+      "uat_ref": 11,
       "name": "Blank maestro value becomes faltante (CR-01 regression)",
       "kind": "tool",
       "surface": "tools",
       "recipe": "scratch copy; set maestro ciudad to \"   \" and ciiu_principal to \"\"; run co through armar_paquete",
-      "asserts": ["mapear_campos counts both as faltante", "xlsx cells carry the faltante mark", "checklist lists both under Campos faltantes", "borrador mentions them as pending"],
+      "asserts": [
+        "mapear_campos counts both as faltante",
+        "xlsx cells carry the faltante mark",
+        "checklist lists both under Campos faltantes",
+        "borrador mentions them as pending"
+      ],
       "human_checks": [],
       "isolation": "scratch-copy"
     },
     {
       "id": "T08",
-      "uat_ref": 8,
+      "uat_ref": 12,
       "name": "Non-text maestro values need confirmation (WR-02)",
       "kind": "tool",
       "surface": "tools",
       "recipe": "scratch copy; zz-generica-co (Gran contribuyente is a boolean) through mapear_campos and generar_formulario",
-      "asserts": ["the boolean field is requiere_confirmacion with a note and no value", "no 'Sí/No' or joined text is written to the form"],
+      "asserts": [
+        "the boolean field is requiere_confirmacion with a note and no value",
+        "no 'Sí/No' or joined text is written to the form"
+      ],
       "human_checks": [],
       "isolation": "scratch-copy"
     },
     {
       "id": "T09",
-      "uat_ref": 9,
+      "uat_ref": 13,
       "name": "RN1 enforced in code, not by data (WR-03)",
       "kind": "tool",
       "surface": "tools",
       "recipe": "scratch copy; raise regla_pais and etiqueta_generica confidence above the threshold in reglas.json; map ec and zz-generica-co",
-      "asserts": ["ec RUC stays requiere_confirmacion", "the generic tax-id label stays requiere_confirmacion"],
+      "asserts": [
+        "ec RUC stays requiere_confirmacion",
+        "the generic tax-id label stays requiere_confirmacion"
+      ],
       "human_checks": [],
       "isolation": "scratch-copy"
     },
     {
       "id": "T10",
-      "uat_ref": 10,
+      "uat_ref": 14,
       "name": "Generic label consistency between tools (WR-04)",
       "kind": "tool",
       "surface": "tools",
       "recipe": "scratch copy; synthetic case with a generic tax-id label absent from the glossary; call leer_solicitud and mapear_campos",
-      "asserts": ["leer_solicitud lists it in ambiguos with the country proposal", "mapear_campos marks it requiere_confirmacion with the same proposal, not faltante"],
+      "asserts": [
+        "leer_solicitud lists it in ambiguos with the country proposal",
+        "mapear_campos marks it requiere_confirmacion with the same proposal, not faltante"
+      ],
       "human_checks": [],
       "isolation": "scratch-copy"
     },
     {
       "id": "T11",
-      "uat_ref": 11,
+      "uat_ref": 15,
       "name": "Newest support entry wins (WR-05)",
       "kind": "tool",
       "surface": "tools",
       "recipe": "scratch copy; soportes index.json with an older expired entry listed before a renewed one of the same tipo; armar_paquete on that case",
-      "asserts": ["the renewed entry is evaluated (presente)", "the package is not blocked by the old copy"],
+      "asserts": [
+        "the renewed entry is evaluated (presente)",
+        "the package is not blocked by the old copy"
+      ],
       "human_checks": [],
       "isolation": "scratch-copy"
     },
     {
       "id": "T12",
-      "uat_ref": 12,
+      "uat_ref": 16,
       "name": "Expired support is consistent across package, send and email (WR-06)",
       "kind": "artifact",
       "surface": "tools",
       "recipe": "after T02 (or scratch): read hn paquete/ listing, checklist.md, borrador-correo.md; confirmed simular_envio in a scratch copy and read ENVIO-SIMULADO.md",
-      "asserts": ["parafiscales is in paquete/ and marked vencido in the checklist", "ENVIO-SIMULADO lists it under 'Soportes vencidos que no se envían'", "the borrador says it will be sent later, never as attached"],
-      "human_checks": ["Confirm the product decision: expired supports stay in paquete/ but are excluded from the send"],
+      "asserts": [
+        "parafiscales is in paquete/ and marked vencido in the checklist",
+        "ENVIO-SIMULADO lists it under 'Soportes vencidos que no se envían'",
+        "the borrador names it 'Certificación de aportes parafiscales' as a pending soporte to be sent separately, never as attached, and never says 'firmado'"
+      ],
+      "human_checks": [
+        "Confirm the product decision: expired supports stay in paquete/ but are excluded from the send"
+      ],
       "isolation": "scratch-copy"
     },
     {
       "id": "T13",
-      "uat_ref": 13,
+      "uat_ref": 17,
       "name": "Both templates present: the format decides (IN-07)",
       "kind": "tool",
       "surface": "tools",
       "recipe": "scratch copy; a case with both plantilla-celdas.json and plantilla-campos.json for formato xlsx, pdf and portal",
-      "asserts": ["xlsx uses plantilla-celdas.json", "pdf and portal use plantilla-campos.json", "no PLANTILLA_INVALIDA"],
+      "asserts": [
+        "xlsx uses plantilla-celdas.json",
+        "pdf and portal use plantilla-campos.json",
+        "no PLANTILLA_INVALIDA"
+      ],
       "human_checks": [],
       "isolation": "scratch-copy"
     },
     {
       "id": "T14",
-      "uat_ref": 14,
+      "uat_ref": 18,
       "name": "Checklist shows the issuing country (WR-17)",
       "kind": "artifact",
       "surface": "demo-cli",
       "recipe": "after T02: read the soportes table of out/*/paquete/checklist.md and the armar_paquete response",
-      "asserts": ["'País emisor' column holds a country code for every support", "warnings live in the 'Aviso de emisor' column", "armar_paquete returns pais_emisor per support"],
-      "human_checks": ["Readability of the new column layout (see H3)"],
+      "asserts": [
+        "'País emisor' column holds a country code for every support",
+        "warnings live in the 'Aviso de emisor' column",
+        "armar_paquete returns pais_emisor per support"
+      ],
+      "human_checks": [
+        "Readability of the new column layout (see H3)"
+      ],
       "isolation": "repo"
     },
     {
       "id": "T15",
-      "uat_ref": 15,
+      "uat_ref": 19,
       "name": "No PII outside the forms (broad scan)",
       "kind": "pii",
       "surface": "demo-cli, tools",
       "recipe": "collect every tool response, demo stdout, logs, mapeo.json, checklists, borradores and ENVIO-SIMULADO; grep for sensitive maestro values (NIT/RUC/RTN, account, SWIFT, cédula, names, emails, phones, address, revenue)",
-      "asserts": ["zero hits outside formulario and valores-portal.md", "positive control: values found in formulario.xlsx and valores-portal.md"],
+      "asserts": [
+        "zero hits outside formulario and valores-portal.md",
+        "positive control: values found in formulario.xlsx and valores-portal.md"
+      ],
       "human_checks": [],
       "isolation": "repo"
     },
     {
       "id": "T16",
-      "uat_ref": 16,
+      "uat_ref": 20,
       "name": "Model-facing tool contract (CA2, WR-18)",
       "kind": "contract",
       "surface": "tools",
       "recipe": "bun -e: list proveedor exports, descriptions and z.toJSONSchema of each args shape",
-      "asserts": ["exactly the five PRD exports", "one-sentence descriptions", "every tool reference in model-facing text uses the proveedor_ prefix", "schemas have additionalProperties false and the locked field names"],
+      "asserts": [
+        "exactly the five PRD exports",
+        "one-sentence descriptions",
+        "every tool reference in model-facing text uses the proveedor_ prefix",
+        "schemas have additionalProperties false and the locked field names"
+      ],
       "human_checks": [],
-      "isolation": "repo"
-    },
-    {
-      "id": "H1",
-      "uat_ref": 17,
-      "name": "xlsx look in Excel/LibreOffice (co, hn)",
-      "kind": "human",
-      "surface": "demo-cli",
-      "recipe": "render QuickLook thumbnails of out/co-industrias-delta/formulario.xlsx and out/hn-agroexport-sula/formulario.xlsx into screenshots/",
-      "asserts": [],
-      "human_checks": ["Bold labels, fill colors for faltante / por confirmar, notes readable"],
-      "isolation": "repo"
+      "isolation": "repo",
+      "replay": ".qa/evidence/01-n-cleo-determinista/seeds/01-recipe-t16.ts"
     },
     {
       "id": "H2",
-      "uat_ref": 18,
+      "uat_ref": null,
       "name": "PDF layout quality (ec)",
       "kind": "human",
       "surface": "demo-cli",
       "recipe": "render a QuickLook thumbnail of out/ec-corp-andina/formulario.pdf into screenshots/",
       "asserts": [],
-      "human_checks": ["Two columns, marks [FALTANTE] in red and [POR CONFIRMAR] in amber, Notas section, wrapping"],
-      "isolation": "repo"
+      "human_checks": [
+        "Two columns, marks [FALTANTE] in red and [POR CONFIRMAR] in amber, Notas section, wrapping"
+      ],
+      "isolation": "repo",
+      "run_scope": "prior-run pass (run 1); not in run 2 regression scope"
     },
     {
       "id": "H3",
-      "uat_ref": 19,
+      "uat_ref": null,
       "name": "Checklist readability for the analyst",
       "kind": "human",
       "surface": "demo-cli",
       "recipe": "excerpt out/hn-agroexport-sula/paquete/checklist.md and out/ec-corp-andina/paquete/checklist.md",
       "asserts": [],
-      "human_checks": ["Wording of actions, table layout incl. País emisor / Aviso de emisor"],
-      "isolation": "repo"
-    },
-    {
-      "id": "H4",
-      "uat_ref": 20,
-      "name": "Tone of borrador-correo and ENVIO-SIMULADO",
-      "kind": "human",
-      "surface": "demo-cli",
-      "recipe": "excerpt ec borrador-correo.md and a confirmed ENVIO-SIMULADO.md from the T04 scratch run",
-      "asserts": [],
-      "human_checks": ["Professional Spanish tone for the client and the analyst; no bank data"],
-      "isolation": "repo"
-    },
-    {
-      "id": "H5",
-      "uat_ref": 21,
-      "name": "Product decisions from the fixes (WR-02, WR-03, IN-07)",
-      "kind": "human",
-      "surface": "none",
-      "recipe": "summarize each decision with the T08/T09/T13 evidence",
-      "asserts": [],
-      "human_checks": ["Non-text maestro values → requiere_confirmacion", "RN1 code-enforced", "Format chooses the template when both exist"],
-      "isolation": "repo"
+      "human_checks": [
+        "Wording of actions, table layout incl. País emisor / Aviso de emisor"
+      ],
+      "isolation": "repo",
+      "run_scope": "prior-run pass (run 1); not in run 2 regression scope"
     },
     {
       "id": "R1",
-      "uat_ref": 22,
+      "uat_ref": null,
       "name": "Supply-chain and Bun gate (recorded checkpoint 01-01)",
       "kind": "human",
       "surface": "none",
       "recipe": "cite 01-01-SUMMARY resume signal and current pins",
-      "asserts": ["resume signal recorded verbatim", "bun --version 1.4.3"],
-      "human_checks": ["Already decided by the human during execution"],
-      "isolation": "repo"
+      "asserts": [
+        "resume signal recorded verbatim",
+        "bun --version 1.4.3"
+      ],
+      "human_checks": [
+        "Already decided by the human during execution"
+      ],
+      "isolation": "repo",
+      "run_scope": "prior-run pass (run 1); not in run 2 regression scope"
     },
     {
       "id": "R2",
-      "uat_ref": 23,
+      "uat_ref": null,
       "name": "Tool contract v1 lock (recorded checkpoint 01-02)",
       "kind": "human",
       "surface": "none",
       "recipe": "cite 01-02-SUMMARY contrato_herramientas (option-a)",
-      "asserts": ["option-a recorded with the human resume signal"],
-      "human_checks": ["Already decided by the human during execution"],
-      "isolation": "repo"
+      "asserts": [
+        "option-a recorded with the human resume signal"
+      ],
+      "human_checks": [
+        "Already decided by the human during execution"
+      ],
+      "isolation": "repo",
+      "run_scope": "prior-run pass (run 1); not in run 2 regression scope"
+    }
+  ],
+  "revision": 2,
+  "runs": [
+    {
+      "run": 1,
+      "evidence": ".qa/evidence/01-n-cleo-determinista/01-QA-EVIDENCE-2026-10-13T02-11-12Z.md",
+      "uat": "94 tests (pre gap closure)"
+    },
+    {
+      "run": 2,
+      "scope": "gap-closure 01-12..01-15 + code-review fix (CR-01, WR-01..04, IN-01..06); regression replay T01-T16 via codegraph affected",
+      "evidence": ".qa/evidence/01-n-cleo-determinista/01-QA-EVIDENCE-2026-10-13T14-41-16Z.md",
+      "result": "20/20 pass"
     }
   ]
 }
