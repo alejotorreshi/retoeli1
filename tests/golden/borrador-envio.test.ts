@@ -13,6 +13,13 @@ const EC = "ec-corp-andina";
 const HN = "hn-agroexport-sula";
 const PA = "pa-logistica-istmo";
 const CASOS = [CO, EC, HN, PA] as const;
+const NOTA_EXTRANJERO = "Identificador extranjero: confirmar si el cliente acepta el NIT colombiano";
+const PREGUNTA_POR_CONFIRMAR = "Antes de la firma necesitamos que nos confirmen estos campos:";
+const FIRMA_LISTA = "El formulario queda listo para la firma de nuestro representante legal.";
+const FIRMA_TRAS_CONFIRMAR =
+  "Con su confirmación pasaremos el formulario a la firma de nuestro representante legal.";
+const FIRMA_BLOQUEADA =
+  "El formulario todavía no está listo para la firma de nuestro representante legal: falta completar los pendientes indicados.";
 const PROHIBIDOS = ["Bancolombia", "Ahorros", "03100012345", "COLOCOBM", "900123456", "71555123"];
 
 type Respuesta = {
@@ -126,6 +133,48 @@ describe("golden: borrador-correo.md y ENVIO-SIMULADO.md (PAQ-04, ENV-01, D-25, 
     const borrador = await leerPaquete(compartido.raiz, HN, "borrador-correo.md");
     expect(borrador).toContain("- parafiscales (vencido, enviaremos la versión actualizada)");
     expect(borrador).not.toContain("parafiscales-2026-07.txt");
+  });
+
+  test("co adjunta el formulario y queda listo para la firma del representante legal", async () => {
+    const borrador = await leerPaquete(compartido.raiz, CO, "borrador-correo.md");
+    expect(borrador).toContain(
+      "Adjuntamos el formulario de registro como proveedor (formulario.xlsx) y los siguientes soportes:",
+    );
+    expect(borrador).toContain(FIRMA_LISTA);
+    expect(borrador).not.toContain(FIRMA_TRAS_CONFIRMAR);
+    expect(borrador).not.toContain(FIRMA_BLOQUEADA);
+    expect(borrador).not.toContain(PREGUNTA_POR_CONFIRMAR);
+  });
+
+  test("ec pregunta por el RUC y dice que el formulario todavía no está listo para la firma", async () => {
+    const borrador = await leerPaquete(compartido.raiz, EC, "borrador-correo.md");
+    expect(borrador).toContain(PREGUNTA_POR_CONFIRMAR);
+    expect(borrador).toContain(`- RUC: ${NOTA_EXTRANJERO}\n`);
+    expect(borrador).toContain(FIRMA_BLOQUEADA);
+    expect(borrador).not.toContain(FIRMA_LISTA);
+  });
+
+  test("hn pregunta por el RTN y dice que el formulario todavía no está listo para la firma", async () => {
+    const borrador = await leerPaquete(compartido.raiz, HN, "borrador-correo.md");
+    expect(borrador).toContain(`- RTN: ${NOTA_EXTRANJERO}\n`);
+    expect(borrador).toContain(FIRMA_BLOQUEADA);
+    expect(borrador).not.toContain(FIRMA_LISTA);
+  });
+
+  test("pa explica el portal, pregunta por el RUC y no menciona el archivo de valores", async () => {
+    const borrador = await leerPaquete(compartido.raiz, PA, "borrador-correo.md");
+    expect(borrador).toContain("El formulario de registro como proveedor se diligencia en su portal.");
+    expect(borrador).toContain(`- RUC: ${NOTA_EXTRANJERO}\n`);
+    expect(borrador).toContain(FIRMA_TRAS_CONFIRMAR);
+    expect(borrador).not.toContain(FIRMA_LISTA);
+    expect(borrador).not.toContain("valores-portal.md");
+    expect(borrador).not.toContain("Adjuntamos el formulario");
+  });
+
+  test("ningún borrador de los cuatro casos afirma que el formulario está firmado (GC-1)", async () => {
+    for (const caso of CASOS) {
+      expect(await leerPaquete(compartido.raiz, caso, "borrador-correo.md")).not.toMatch(/firmad[oa]/i);
+    }
   });
 
   test("ENVIO-SIMULADO.md de co confirmado no trae datos bancarios ni identificaciones (RN2)", async () => {
