@@ -409,6 +409,30 @@ describe("trazador: bitácora global y por caso", () => {
     expect(existsSync(join(proyecto.raiz, "out", "co-industrias-delta"))).toBe(false);
   });
 
+  test("un sessionId demasiado largo o con caracteres fuera de [A-Za-z0-9_-] se registra como sin-sesion (IN-12)", async () => {
+    const proyecto = await nuevoProyecto();
+    for (const sessionId of ["x".repeat(129), "s 1", "s\n1", "../s"]) {
+      await ejecutarCon({ caso: "co-industrias-delta" }, { directory: proyecto.raiz, sessionId });
+    }
+    await ejecutarCon(
+      { caso: "co-industrias-delta" },
+      { directory: proyecto.raiz, sessionId: "x".repeat(129), sessionID: "s-8" },
+    );
+    await ejecutarCon(
+      { caso: "co-industrias-delta" },
+      { directory: proyecto.raiz, sessionId: "a".repeat(128) },
+    );
+    const sesiones = (await logGlobal(proyecto)).map((linea) => linea.sesion);
+    expect(sesiones).toEqual([
+      "sin-sesion",
+      "sin-sesion",
+      "sin-sesion",
+      "sin-sesion",
+      "s-8",
+      "a".repeat(128),
+    ]);
+  });
+
   test("un ctx con solo sessionID registra esa sesion", async () => {
     const proyecto = await nuevoProyecto();
     await ejecutarCon({ caso: "co-industrias-delta" }, { directory: proyecto.raiz, sessionID: "s-7" });

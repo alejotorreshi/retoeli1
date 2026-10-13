@@ -91,6 +91,8 @@ export const HOJA_RESERVADA_XLSX = "history";
 
 export const PREFIJO_HERRAMIENTA = "proveedor_";
 export const SESION_POR_DEFECTO = "sin-sesion";
+export const LONGITUD_MAXIMA_SESION = 128;
+export const PATRON_SESION: RegExp = new RegExp(`^[A-Za-z0-9_-]{1,${LONGITUD_MAXIMA_SESION}}$`);
 export const SESION_DEMO = "demo";
 export const MAX_ISSUES_ARGS = 5;
 export const ZONA_HORARIA_POR_DEFECTO = "America/Bogota";

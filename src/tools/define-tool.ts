@@ -1,6 +1,6 @@
 import { z } from "zod";
 import type { Entorno, EntradaBitacora } from "../application/puertos.ts";
-import { PATRON_CASO, PREFIJO_HERRAMIENTA, SESION_POR_DEFECTO } from "../config/constantes.ts";
+import { PATRON_CASO, PATRON_SESION, PREFIJO_HERRAMIENTA, SESION_POR_DEFECTO } from "../config/constantes.ts";
 import { exito, type Fallo, fallo, type Resultado } from "../domain/resultado.ts";
 import { formatearIssues } from "./issues.ts";
 import { type ContextoNormalizado, crearEntorno, type OpcionesEntorno } from "./wiring.ts";
@@ -32,7 +32,7 @@ type Respuesta = { readonly texto: string; readonly resumen: string };
 
 const mensajesEs = z.locales.es().localeError;
 
-const sesionOpcional = z.string().min(1).optional().catch(undefined);
+const sesionOpcional = z.string().regex(PATRON_SESION).optional().catch(undefined);
 
 const esquemaContexto = z.object({
   directory: z.string().min(1),
