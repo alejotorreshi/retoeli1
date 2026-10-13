@@ -8,9 +8,11 @@ import { HERRAMIENTA, PREFIJO_HERRAMIENTA } from "@/config/constants/tools.const
 import type {
   EventoAgente,
   EventoConfirmacionRequerida,
+  EventoError,
   EventoFinHerramienta,
   EventoFinTurno,
   EventoTexto,
+  EventoUso,
 } from "@/loop/types/evento.type.ts";
 
 export const SIMULAR = `${PREFIJO_HERRAMIENTA}${HERRAMIENTA.SIMULAR_ENVIO}`;
@@ -23,6 +25,14 @@ export function confirmaciones(eventos: readonly EventoAgente[]): EventoConfirma
 
 export function textos(eventos: readonly EventoAgente[]): EventoTexto[] {
   return eventos.filter((evento): evento is EventoTexto => evento.tipo === TIPO_EVENTO.TEXTO);
+}
+
+export function errores(eventos: readonly EventoAgente[]): EventoError[] {
+  return eventos.filter((evento): evento is EventoError => evento.tipo === TIPO_EVENTO.ERROR);
+}
+
+export function usos(eventos: readonly EventoAgente[]): EventoUso[] {
+  return eventos.filter((evento): evento is EventoUso => evento.tipo === TIPO_EVENTO.USO);
 }
 
 export function finesDeHerramienta(

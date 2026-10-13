@@ -28,6 +28,14 @@ function cuerpoPedido(texto: string): CuerpoPedido {
   return JSON.parse(texto);
 }
 
+function colgarHastaAbortar(signal: AbortSignal | null | undefined): Promise<never> {
+  return new Promise((_, rechazar) => {
+    const abortar = () => rechazar(new DOMException("pedido abortado", "AbortError"));
+    if (signal?.aborted) abortar();
+    else signal?.addEventListener("abort", abortar, { once: true });
+  });
+}
+
 export function crearFetchFalso(respuestas: readonly RespuestaGuion[]): FetchFalso {
   const pedidos: PedidoRegistrado[] = [];
   let indice = 0;
@@ -42,6 +50,7 @@ export function crearFetchFalso(respuestas: readonly RespuestaGuion[]): FetchFal
     const respuesta = respuestas[indice];
     indice += 1;
     if (respuesta === undefined) throw new Error("guion agotado");
+    if (respuesta.colgar === true) return colgarHastaAbortar(init.signal);
     if (respuesta.demora !== undefined) await respuesta.demora;
     return new Response(textoDe(respuesta.cuerpo), {
       status: respuesta.estado ?? 200,

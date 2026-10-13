@@ -4,6 +4,7 @@ export type RespuestaGuion = {
   readonly estado?: number;
   readonly cuerpo: unknown;
   readonly demora?: Promise<void>;
+  readonly colgar?: boolean;
 };
 
 export type MensajeWire = {

@@ -1,3 +1,4 @@
+import type { MensajeWire } from "@tests/helpers/types/fetch-falso.type.ts";
 import { ROL_MENSAJE } from "@/config/constants/llm.constants.ts";
 import type { Mensaje } from "@/llm/types/llm.type.ts";
 
@@ -46,4 +47,29 @@ export function historialIntegro(mensajes: readonly Mensaje[]): string[] {
     indice += 1 + resultados.length;
   }
   return violaciones;
+}
+
+function mensajeDeWire(mensaje: MensajeWire): Mensaje {
+  if (mensaje.role === ROL_MENSAJE.HERRAMIENTA) {
+    return {
+      rol: ROL_MENSAJE.HERRAMIENTA,
+      llamadaId: mensaje.tool_call_id ?? "",
+      contenido: mensaje.content,
+    };
+  }
+  if (mensaje.role === ROL_MENSAJE.ASISTENTE) {
+    return {
+      rol: ROL_MENSAJE.ASISTENTE,
+      contenido: mensaje.content,
+      llamadas: (mensaje.tool_calls ?? []).map(({ id }) => ({ id, nombre: "", argumentos: "" })),
+      razonamiento: null,
+    };
+  }
+  return mensaje.role === ROL_MENSAJE.SISTEMA
+    ? { rol: ROL_MENSAJE.SISTEMA, contenido: mensaje.content }
+    : { rol: ROL_MENSAJE.USUARIO, contenido: mensaje.content };
+}
+
+export function historialWireIntegro(mensajes: readonly MensajeWire[]): string[] {
+  return historialIntegro(mensajes.map(mensajeDeWire));
 }
