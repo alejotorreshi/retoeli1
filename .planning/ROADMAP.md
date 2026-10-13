@@ -89,7 +89,7 @@ Plans:
   4. Al llegar al tope de iteraciones (25 por defecto) o al de tokens por sesión, el usuario recibe en lenguaje claro lo que se tiene y lo que falta, no un error. Una instrucción inyectada en el cuerpo del correo del cliente no cambia el comportamiento del agente.
   5. Un cambio en `src/knowledge/registro-proveedor.md` o en `agent/prompt.md` cambia el comportamiento del agente sin tocar código del servidor. Los logs JSON llevan IDs de sesión, turno y tool call, sin clave ni PII. `bun test` cubre el ciclo con un LLM falso (tope, compuerta con "No envíes…" y el guion §11, CA5 e inyección) sin gastar tokens.
 
-**Plans:** 8 plans
+**Plans:** 9 plans
 
 Plans:
 **Wave 1**
@@ -102,13 +102,16 @@ Plans:
 - [ ] 02-05-PLAN.md — `redactar()` única y logs JSON con pino 10.3.1 y correlación sesión/turno/tool call
 
 **Wave 3** *(blocked on Wave 2 completion)*
-- [ ] 02-06-PLAN.md — Compuerta aplicada en el ciclo: guion §11, casos D-38 a D-63, botón estructurado, texto plano, forma PRD 6.4 e inyección con fixture sintético
+- [ ] 02-06-PLAN.md — Compuerta aplicada en el ciclo: guion §11, casos D-38 a D-63, botón estructurado, texto plano con limpieza determinista del servidor (D-60), forma PRD 6.4 e inyección con fixture sintético
 
 **Wave 4** *(blocked on Wave 3 completion)*
-- [ ] 02-07-PLAN.md — Topes de iteraciones y tokens con respuesta clara, CA5 con decoradores compuestos, deadline y abortos, y bitácora integrada
+- [ ] 02-07-PLAN.md — Topes con respuesta clara: presupuesto de tokens por sesión y tope de iteraciones con llamada de resumen sin herramientas y cierre determinista
 
 **Wave 5** *(blocked on Wave 4 completion)*
-- [ ] 02-08-PLAN.md — `agent/prompt.md` y `registro-proveedor.md` finales, edición en caliente, PII hacia el modelo, redacción de requisitos D-59 y corrida en vivo del guion §11
+- [ ] 02-08-PLAN.md — CA5 con decoradores compuestos y respaldo de modelo, deadline de turno, abortos y argumentos truncados, y bitácora JSON integrada
+
+**Wave 6** *(blocked on Wave 5 completion)*
+- [ ] 02-09-PLAN.md — `agent/prompt.md` y `registro-proveedor.md` finales, edición en caliente, PII hacia el modelo, redacción de requisitos D-59 y corrida en vivo obligatoria (criterio 1 y guion §11) con línea de evidencia VIVO PASS
 **Research flag**: Spike en vivo con DeepSeek antes de construir el ciclo: nombre de modelo vigente, thinking desactivado, `tool_choice`, forma de los tool calls y de los errores. La línea de modelos cambió 3 veces en 2026 y `deepseek-chat`/`deepseek-reasoner` se retiraron el 2026-07-24.
 
 ### Phase 3: Chat web, API SSE y despliegue

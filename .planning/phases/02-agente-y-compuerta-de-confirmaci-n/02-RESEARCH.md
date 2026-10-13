@@ -630,7 +630,7 @@ In `render.yaml`, declare the secret keys without values (`sync: false`, [ASSUME
 
 ### Pitfall 2: The model writes markdown (conflicts with D-46)
 **What goes wrong:** probes 2–5 replied with `**bold**` headings. The Phase 3 UI renders `pre-wrap`, so asterisks show.
-**How to avoid:** `agent/prompt.md` states "texto plano, sin asteriscos, sin #, sin tablas", and the live smoke test asserts no `**`. Optional deterministic safety net: strip `**`/`__` and leading `#` from final text (Open Question 3).
+**How to avoid:** `agent/prompt.md` states "texto plano, sin asteriscos, sin #, sin tablas", and the server deterministically strips `**`/`__`, leading `#` and `|` tables from the final text (D-60, Open Question 3 RESOLVED, plan 02-06). The live smoke test asserts no `**`.
 
 ### Pitfall 3: Default `io: "output"` makes `confirmado` required
 **What goes wrong:** the model is forced to always send `confirmado`, nudging it to set `true`.
@@ -742,25 +742,30 @@ Tests assert: (a) `historialIntegro` on every `pedidos[i].mensajes`; (b) no sens
 | A2 | OpenAI reasoning models reject non-default `temperature` | Provider table | A misconfigured switch gets a 400. The flag already covers it |
 | A3 | `render.yaml` uses `sync: false` for secret placeholders | Render steps | Phase 3 blueprint detail. Easy to fix |
 | A4 | DeepSeek may send `Retry-After` on 429 | Pattern 3 | If absent, the backoff formula applies. No harm |
-| A5 | Interpretation of D-38: a blocked `simular_envio` creates pending only for a caso whose package is known in the session | Pattern 6 | Otherwise "envía" could grant a caso that was never armed (the tool then returns PAQUETE_NO_ARMADO, which is harmless). Confirm with the user |
-| A6 | Interpretation of D-37: finalization (events + question + pending) also runs for error/cap/budget endings, not only `final` | Pattern 8 | If the user wants pending only on clean endings, change `cerrarTurno` |
-| A7 | Interpretation of D-40: FALTA_CASO keeps the pending casos for the next message (instead of cancelling) | Pattern 6 | If cancelled, "envía ec-corp-andina" after "¿cuál?" wouldn't authorize, contradicting D-40's flow |
+| A5 | Interpretation of D-38: a blocked `simular_envio` creates pending only for a caso whose package is known in the session | Pattern 6 | Otherwise "envía" could grant a caso that was never armed (the tool then returns PAQUETE_NO_ARMADO, which is harmless). RESOLVED: confirmed by D-63.1 |
+| A6 | Interpretation of D-37: finalization (events + question + pending) also runs for error/cap/budget endings, not only `final` | Pattern 8 | If the user wants pending only on clean endings, change `cerrarTurno`. RESOLVED: confirmed by D-63.2 |
+| A7 | Interpretation of D-40: FALTA_CASO keeps the pending casos for the next message (instead of cancelling) | Pattern 6 | If cancelled, "envía ec-corp-andina" after "¿cuál?" wouldn't authorize, contradicting D-40's flow. RESOLVED: confirmed by D-63.3 |
 | A8 | The classifier vocabulary covers the analyst's phrasing well enough | Pattern 7 | False negatives only (the agent re-asks). Never false positives by construction |
 | A9 | 100 sessions × typical history fits in Render's 512 MB | Pattern 11 | Lower `AGENT_MAX_SESSIONS` |
 | A10 | Gemini/Groq/Together honor `tool_choice: "none"` | Provider table | The cap call returns tool calls → deterministic fallback kicks in (still answers) |
 | A11 | Event value names equal to REQUIREMENTS API-01 (`turn_start`, `tool_start`, `tool_end`, `text`, `confirmation_required`, `usage`, `error`, `turn_end`) | Architecture | Phase 3 would need a mapping table instead of passthrough |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
-1. **CLAUDE.md rule amendments.** The new layers need "two composition roots" (`tools/wiring`, `loop/wiring`), `loop/wiring` as an env.ts importer, and new role suffixes (`adapter` under llm, `decorator`, `mapper`, `service` under loop).
+All four questions were closed by the post-research decisions D-60 to D-63 (02-CONTEXT.md, 2026-10-13). None remains open.
+
+1. **CLAUDE.md rule amendments. (RESOLVED)** The new layers need "two composition roots" (`tools/wiring`, `loop/wiring`), `loop/wiring` as an env.ts importer, and new role suffixes (`adapter` under llm, `decorator`, `mapper`, `service` under loop).
    - What we know: CONTEXT authorizes declaring the layers in `PERMITIDOS`.
-   - What's unclear: whether the user wants the CLAUDE.md text edited in the same plan.
-   - Recommendation: one task edits `tests/architecture.test.ts` and the CLAUDE.md "Reglas de código" list together, and states it in the plan.
-2. **pino SUS (too-new by seam, OK by D-35).**
-   - Recommendation: keep 10.4.0 with a `checkpoint:human-verify`, or pin 10.3.1 to avoid the flag.
-3. **Markdown safety net.** Prompt-only, or also a deterministic strip of `**`/`#` from the final text?
-   - Recommendation: prompt + live assertion first. Add the strip only if the live smoke test shows asterisks.
-4. **SOLI-03 wording.** D-50 orders a REQUIREMENTS.md edit. Include it as a docs task in the gate/injection plan.
+   - Resolution: **D-62**. The rules are applied in the same task to `.claude/CLAUDE.md`, the guardians in `tests/architecture.test.ts` (each new rule with its violation test) and `docs/estructura.md`. Implemented by plan **02-01**, Task 1.
+2. **pino SUS (too-new by seam, OK by D-35). (RESOLVED)**
+   - Resolution: **D-61**. pino is pinned to **10.3.1** (same API, mature, verified repository), so no human checkpoint is needed; pino-pretty stays dev-only under D-35. Implemented by plan **02-05**, Task 2 (registry checks as a precondition, then `bun add pino@10.3.1 --exact` and `bun audit`).
+3. **Markdown safety net. (RESOLVED)** Prompt-only, or also a deterministic strip of `**`/`#` from the final text?
+   - Resolution: **D-60**. Plain text is guaranteed in two layers. The prompt forbids markdown, **and** the server deterministically strips `**`/`__` bold, leading `#` headings and `|` tables from the final reply before emitting it. The regexes live only in `patterns.constants.ts`. The earlier recommendation, to strip only if the live test showed asterisks, is superseded.
+   - Implemented by plan **02-06**, Task 2: `limpiarMarkdown` in `src/domain/utils/texto-plano.util.ts`, with `PATRON_NEGRITA`, `PATRON_ENCABEZADO_MD`, `PATRON_SEPARADOR_TABLA_MD` and `PATRON_BORDE_TABLA_MD` in `patterns.constants.ts`. It is applied in `src/loop/services/cierre-turno.service.ts` to every model text that ends a turn, before the deterministic question, and is tested in `tests/unit/texto-plano.util.test.ts` and `tests/loop/compuerta-casos.test.ts`. Plan **02-07** routes the cap-summary text through the same closing. The prompt rule is finalized in plan **02-09**, Task 1, and its live test asserts no `**` in the real reply.
+4. **SOLI-03 wording. (RESOLVED)**
+   - Resolution: **D-50**. Implemented by plan **02-06**, Task 3, which replaces the SOLI-03 text in REQUIREMENTS.md with the D-50 wording alongside the injected-fixture test.
+
+Related interpretations A5, A6 and A7 (Assumptions Log) were confirmed by **D-63** (readings 1, 2 and 3) and are implemented and tested in plan **02-06**, Tasks 1 and 2.
 
 ## Environment Availability
 
