@@ -127,5 +127,8 @@ export const TEXTOS_PDF = {
   sinNotas: "Sin observaciones.",
   motivoFaltante: "no existe en el maestro",
   motivoPorConfirmar: "confirmar con el cliente",
+  motivoNoRepresentable:
+    "el valor tiene caracteres que el PDF no puede mostrar y salen como ?; revisarlo contra el maestro",
+  separadorNotas: ". ",
   reemplazo: "?",
 } as const;

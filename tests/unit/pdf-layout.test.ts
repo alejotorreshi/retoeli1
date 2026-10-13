@@ -2,7 +2,7 @@ import { describe, expect, test } from "bun:test";
 import { PDFDocument, StandardFonts } from "pdf-lib";
 import type { FilaFormulario } from "../../src/domain/formulario.ts";
 import { componerPdf, type EntradaLayoutPdf, type LineaPdf } from "../../src/infra/salida/pdf/layout.ts";
-import { renderizarPdf, sanearWinAnsi } from "../../src/infra/salida/pdf/render.ts";
+import { marcarNoRepresentables, renderizarPdf, sanearWinAnsi } from "../../src/infra/salida/pdf/render.ts";
 
 const ACTIVIDAD = "Desarrollo de sistemas informáticos y consultoría en tecnologías de la información";
 const NOTA_EXTRANJERO = "Identificador extranjero: confirmar si el cliente acepta el NIT colombiano";
@@ -137,6 +137,32 @@ describe("sanearWinAnsi (D-03, Pitfall 2)", () => {
     const saneado = sanearWinAnsi(crudo, caracteres);
     expect(saneado).toBe("Listo ? línea dos Razón € — ñ Ñ ¿¡ ?");
     expect(() => fuente.encodeText(saneado)).not.toThrow();
+  });
+});
+
+describe("marcarNoRepresentables (WR-01)", () => {
+  const caracteres = new Set(
+    Array.from("abcdefghijklmnopqrstuvwxyzó ", (letra) => letra.codePointAt(0) ?? 0),
+  );
+  const MOTIVO =
+    "el valor tiene caracteres que el PDF no puede mostrar y salen como ?; revisarlo contra el maestro";
+
+  test("un valor con caracteres fuera de la fuente pasa a por confirmar con el motivo en la nota", () => {
+    const [llena, conNota] = marcarNoRepresentables(
+      [fila({ etiqueta: "Ciudad", valor: "łódź" }), fila({ etiqueta: "País", valor: "ł", nota: "ISO" })],
+      caracteres,
+    );
+    expect(llena).toMatchObject({ estado: "requiere_confirmacion", valor: "łódź", nota: MOTIVO });
+    expect(conNota).toMatchObject({ estado: "requiere_confirmacion", nota: `ISO. ${MOTIVO}` });
+  });
+
+  test("los valores representables, los saltos de línea y los faltantes no cambian", () => {
+    const filas = [
+      fila({ etiqueta: "Ciudad", valor: "medellin" }),
+      fila({ etiqueta: "Dirección", valor: "calle\ndiez" }),
+      fila({ etiqueta: "Referencias", estado: "faltante", valor: null }),
+    ];
+    expect(marcarNoRepresentables(filas, caracteres)).toEqual(filas);
   });
 });
 

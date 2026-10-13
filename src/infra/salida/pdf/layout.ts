@@ -103,7 +103,9 @@ function etiquetaDe(fila: FilaFormulario): string {
 
 function motivoDe(fila: FilaFormulario): string | null {
   if (fila.estado === "faltante") {
-    return fila.nota === null ? TEXTOS_PDF.motivoFaltante : `${TEXTOS_PDF.motivoFaltante}. ${fila.nota}`;
+    return fila.nota === null
+      ? TEXTOS_PDF.motivoFaltante
+      : `${TEXTOS_PDF.motivoFaltante}${TEXTOS_PDF.separadorNotas}${fila.nota}`;
   }
   if (fila.estado === "requiere_confirmacion") return fila.nota ?? TEXTOS_PDF.motivoPorConfirmar;
   return fila.nota;

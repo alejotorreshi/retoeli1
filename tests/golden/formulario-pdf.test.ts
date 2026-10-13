@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import { existsSync } from "node:fs";
-import { readFile } from "node:fs/promises";
+import { readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { PDFDocument } from "pdf-lib";
 import { FIXTURES_DIR } from "../../src/config/constantes.ts";
@@ -119,6 +119,22 @@ describe("golden: proveedor_generar_formulario pdf (FORM-02, D-03)", () => {
       if (valor === null) throw new Error(`sin valor para ${item.ruta}`);
       expect(texto).toContain(valor);
     }
+  });
+
+  test("un valor con caracteres fuera de WinAnsi sale marcado por confirmar y con su motivo en las Notas", async () => {
+    const proyecto = await nuevoProyecto();
+    const rutaMaestro = join(proyecto.raiz, FIXTURES_DIR, "repositorio", "maestro.json");
+    await writeFile(rutaMaestro, JSON.stringify({ ...maestro, razon_social: "Łódź Logística S.A." }));
+    await generarEc(proyecto.raiz);
+    const trazos = await extraerTrazos(new Uint8Array(await readFile(archivoPdf(proyecto.raiz))));
+
+    const valor = indiceDe(trazos, "?ód? Logística S.A. [POR CONFIRMAR]");
+    expect(trazos[valor]?.color).toBe(COLOR_POR_CONFIRMAR);
+    expect(valor).toBe(indiceDe(trazos, "Nombre de la empresa *") + 1);
+    const textosNotas = trazos.slice(indiceDe(trazos, "Notas") + 1).map((trazo) => trazo.texto);
+    expect(textosNotas.join(" ")).toContain(
+      "Nombre de la empresa: el valor tiene caracteres que el PDF no puede mostrar y salen como ?;",
+    );
   });
 
   test("dos generaciones con la misma FECHA_EJECUCION dan bytes idénticos y metadatos fijos", async () => {
