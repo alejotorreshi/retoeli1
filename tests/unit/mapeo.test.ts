@@ -1,4 +1,5 @@
 import { describe, expect, test } from "bun:test";
+import { TEXTO_MAPEO } from "@/config/strings.ts";
 import {
   type CampoMapeado,
   construirIndiceGlosario,
@@ -10,7 +11,6 @@ import {
   leerRuta,
   type Maestro,
   mapearCampos,
-  NOTA_DATO_NO_TEXTUAL,
 } from "@/domain/mapeo.ts";
 import type { Reglas } from "@/domain/reglas.ts";
 
@@ -364,7 +364,7 @@ describe("reglas sobre etiquetas sintéticas", () => {
       regla: "clave_directa",
       confianza: 0.85,
       valor: null,
-      nota: NOTA_DATO_NO_TEXTUAL,
+      nota: TEXTO_MAPEO.datoNoTextual,
       propuesta: null,
     });
     expect(campo(campos, "Certificaciones")).toMatchObject({

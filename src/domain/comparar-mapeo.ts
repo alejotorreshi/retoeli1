@@ -1,3 +1,4 @@
+import { TEXTO_COMPARACION } from "@/config/strings.ts";
 import type { CampoMapeado } from "@/domain/mapeo.ts";
 import type { EstadoCampo } from "@/domain/reglas.ts";
 
@@ -26,13 +27,13 @@ function diferenciasDeEtiqueta(
   esperados: readonly CampoMapeado[],
   recibidos: readonly ItemMapeo[],
 ): string[] {
-  if (recibidos.length < esperados.length) return [`falta: ${etiqueta}`];
-  if (recibidos.length > esperados.length) return [`duplicado: ${etiqueta}`];
+  if (recibidos.length < esperados.length) return [TEXTO_COMPARACION.falta(etiqueta)];
+  if (recibidos.length > esperados.length) return [TEXTO_COMPARACION.duplicado(etiqueta)];
   const rutaDistinta = recibidos.some((item, indice) => item.ruta !== esperados[indice]?.ruta);
   const estadoDistinto = recibidos.some((item, indice) => item.estado !== esperados[indice]?.estado);
   return [
-    ...(rutaDistinta ? [`ruta distinta: ${etiqueta}`] : []),
-    ...(estadoDistinto ? [`estado distinto: ${etiqueta}`] : []),
+    ...(rutaDistinta ? [TEXTO_COMPARACION.rutaDistinta(etiqueta)] : []),
+    ...(estadoDistinto ? [TEXTO_COMPARACION.estadoDistinto(etiqueta)] : []),
   ];
 }
 
@@ -46,7 +47,7 @@ export function compararMapeo(
     diferenciasDeEtiqueta(etiqueta, grupo, recibidos.get(etiqueta) ?? []),
   );
   const sobrantes = recibido.flatMap((item, indice) =>
-    esperados.has(item.etiqueta) ? [] : [`sobrante: #${indice}`],
+    esperados.has(item.etiqueta) ? [] : [TEXTO_COMPARACION.sobrante(indice)],
   );
   const diferencias = [...porEtiqueta, ...sobrantes];
   return diferencias.length === 0 ? { iguales: true } : { iguales: false, diferencias };

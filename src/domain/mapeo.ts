@@ -15,6 +15,7 @@ import {
   PATRON_SEGMENTO_RUTA,
   PATRON_TEXTO_NO_VACIO,
 } from "@/config/constants/patterns.constants.ts";
+import { TEXTO_COMUN, TEXTO_MAPEO } from "@/config/strings.ts";
 import { aTexto, normalizarEtiqueta } from "@/domain/normalizar.ts";
 import { renderizarTextoPlano } from "@/domain/plantillas.ts";
 import type { EscalaConfianza, EstadoCampo, ReglaMapeo, Reglas, VariableNota } from "@/domain/reglas.ts";
@@ -55,9 +56,6 @@ export type HojaMaestro =
   | { readonly tipo: typeof TIPO_HOJA_MAESTRO.NO_TEXTUAL }
   | { readonly tipo: typeof TIPO_HOJA_MAESTRO.AUSENTE };
 
-export const NOTA_DATO_NO_TEXTUAL =
-  "El maestro tiene este dato, pero no como texto: confirmar qué valor escribir";
-
 type Fuente = { readonly ruta: string; readonly regla: ReglaMapeo };
 
 type Ajuste = {
@@ -74,7 +72,6 @@ type ContextoMapeo = {
   readonly identificador: string | null;
 };
 
-const SEPARADOR_NOTAS = ". ";
 const AUSENTE: HojaMaestro = { tipo: TIPO_HOJA_MAESTRO.AUSENTE };
 const NO_TEXTUAL: HojaMaestro = { tipo: TIPO_HOJA_MAESTRO.NO_TEXTUAL };
 
@@ -234,7 +231,7 @@ function campoNoTextual(etiqueta: string, fuente: Fuente, reglas: Reglas): Campo
     regla: fuente.regla,
     confianza: reglas.confianza[fuente.regla],
     valor: null,
-    nota: NOTA_DATO_NO_TEXTUAL,
+    nota: TEXTO_MAPEO.datoNoTextual,
     propuesta: null,
   };
 }
@@ -264,7 +261,7 @@ function mapearValor(
     regla,
     confianza: reglas.confianza[regla],
     valor,
-    nota: notas.length === 0 ? null : notas.join(SEPARADOR_NOTAS),
+    nota: notas.length === 0 ? null : notas.join(TEXTO_COMUN.separadorNotas),
     propuesta: ajuste.data.propuesta,
   });
 }

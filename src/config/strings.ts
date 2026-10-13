@@ -1,5 +1,6 @@
 import { CODIGO_ERROR } from "@/config/constants/errors.constants.ts";
 import { LONGITUD_MAXIMA_CASO } from "@/config/constants/limits.constants.ts";
+import { ESTADO_CAMPO } from "@/config/constants/mapping.constants.ts";
 import type { ValorDe } from "@/config/types/valor-de.type.ts";
 
 export const MENSAJE_ERROR = {
@@ -30,6 +31,7 @@ const MOTIVO_FALTANTE = "no existe en el maestro";
 export const TEXTO_COMUN = {
   separadorNotas: ". ",
   porConfirmar: "confirmar con el cliente",
+  celdaVacia: "—",
 } as const;
 
 export const TEXTO_PDF = {
@@ -51,4 +53,58 @@ export const TEXTO_PDF = {
 
 export const TEXTO_XLSX = {
   notaFaltante: `Faltante: ${MOTIVO_FALTANTE}`,
+} as const;
+
+export const TEXTO_CHECKLIST = {
+  sinVigencia: "no aplica",
+  estado: { listo: "LISTO", bloqueado: "BLOQUEADO" },
+  bloqueoAusente: (tipo: string): string => `ausente: ${tipo}`,
+  bloqueoVencido: (tipo: string, vigencia: string): string => `vencido: ${tipo} (${vigencia})`,
+} as const;
+
+export const TEXTO_BORRADOR = {
+  prefijoRespuesta: "RE: ",
+  pendienteVencido: (tipo: string): string => `${tipo} (vencido, enviaremos la versión actualizada)`,
+} as const;
+
+export const TEXTO_PORTAL = {
+  avisoFormatoNoSoportado: "formato no soportado",
+  estado: {
+    [ESTADO_CAMPO.LLENO]: "lleno",
+    [ESTADO_CAMPO.FALTANTE]: "faltante",
+    [ESTADO_CAMPO.REQUIERE_CONFIRMACION]: "por confirmar",
+  },
+} as const;
+
+export const TEXTO_VIGENCIA = {
+  venceHoy: "vence hoy",
+  venceEnUnDia: "vence en 1 día",
+  venceEnDias: (dias: number): string => `vence en ${dias} días`,
+} as const;
+
+export const TEXTO_MAPEO = {
+  datoNoTextual: "El maestro tiene este dato, pero no como texto: confirmar qué valor escribir",
+} as const;
+
+export const TEXTO_MASCARA = {
+  punto: "•",
+  monto: "[monto oculto]",
+  oculto: "[dato oculto]",
+} as const;
+
+export const TEXTO_COMPARACION = {
+  falta: (etiqueta: string): string => `falta: ${etiqueta}`,
+  duplicado: (etiqueta: string): string => `duplicado: ${etiqueta}`,
+  rutaDistinta: (etiqueta: string): string => `ruta distinta: ${etiqueta}`,
+  estadoDistinto: (etiqueta: string): string => `estado distinto: ${etiqueta}`,
+  sobrante: (indice: number): string => `sobrante: #${indice}`,
+} as const;
+
+export const TEXTO_MOTOR_PLANTILLAS = {
+  etiquetaSinCerrar: "tiene una etiqueta sin cerrar",
+  seccionSinCerrar: (nombre: string): string => `tiene una sección sin cerrar o anidada: ${nombre}`,
+  variableDesconocida: (nombre: string): string => `usa la variable desconocida ${nombre}`,
+  seccionDesconocida: (nombre: string): string => `usa la sección desconocida ${nombre}`,
+  plantillaInvalida: (plantilla: string, problema: string): string =>
+    `la plantilla ${plantilla} ${problema}.`,
 } as const;

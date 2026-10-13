@@ -1,13 +1,11 @@
 import { RUTA_MAESTRO, type RUTAS_BORRADOR } from "@/config/constants/maestro.constants.ts";
 import { ESTADO_SOPORTE } from "@/config/constants/supports.constants.ts";
-import { type Checklist, type SoporteEvaluado, TEXTO_CELDA_VACIA } from "@/domain/checklist.ts";
+import { TEXTO_BORRADOR, TEXTO_COMUN } from "@/config/strings.ts";
+import type { Checklist, SoporteEvaluado } from "@/domain/checklist.ts";
 import { leerRuta, type Maestro } from "@/domain/mapeo.ts";
 import type { Solicitud } from "@/domain/tipos.ts";
 
 export type RutaBorrador = (typeof RUTAS_BORRADOR)[number];
-
-export const PREFIJO_RESPUESTA = "RE: ";
-export const TEXTO_PENDIENTE_VENCIDO = "vencido, enviaremos la versión actualizada";
 
 type SinCampos = Readonly<Record<string, never>>;
 
@@ -25,11 +23,11 @@ export type DatosBorradorCorreo = {
 };
 
 export function asuntoRespuesta(solicitud: Solicitud): string {
-  return `${PREFIJO_RESPUESTA}${solicitud.asunto}`;
+  return `${TEXTO_BORRADOR.prefijoRespuesta}${solicitud.asunto}`;
 }
 
 function leerDelMaestro(maestro: Maestro, ruta: RutaBorrador): string {
-  return leerRuta(maestro, ruta) ?? TEXTO_CELDA_VACIA;
+  return leerRuta(maestro, ruta) ?? TEXTO_COMUN.celdaVacia;
 }
 
 function adjuntos(soportes: readonly SoporteEvaluado[]): DatosBorradorCorreo["soportes_adjuntos"] {
@@ -46,7 +44,7 @@ function pendientesDe(checklist: Checklist): readonly string[] {
   return [
     ...checklist.faltantes,
     ...ausentes.map((soporte) => soporte.tipo),
-    ...vencidos.map((soporte) => `${soporte.tipo} (${TEXTO_PENDIENTE_VENCIDO})`),
+    ...vencidos.map((soporte) => TEXTO_BORRADOR.pendienteVencido(soporte.tipo)),
   ];
 }
 

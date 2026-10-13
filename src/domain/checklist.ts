@@ -4,6 +4,7 @@ import {
   ESTADO_VIGENCIA,
   VIGENCIA_SIN_VENCIMIENTO,
 } from "@/config/constants/supports.constants.ts";
+import { TEXTO_CHECKLIST, TEXTO_COMUN } from "@/config/strings.ts";
 import type { ValorDe } from "@/config/types/valor-de.type.ts";
 import type { CampoMapeado } from "@/domain/mapeo.ts";
 import { renderizarTextoPlano } from "@/domain/plantillas.ts";
@@ -65,12 +66,6 @@ export type DatosChecklist = {
 };
 
 export type CasoChecklist = { readonly caso: string; readonly cliente: string };
-
-export const TEXTO_SIN_VIGENCIA = "no aplica";
-export const TEXTO_CELDA_VACIA = "—";
-export const ESTADO_LISTO = "LISTO";
-export const ESTADO_BLOQUEADO = "BLOQUEADO";
-export const NOTA_POR_CONFIRMAR = "confirmar con el cliente";
 
 function avisoEmisor(
   entrada: SoporteIndice,
@@ -155,9 +150,9 @@ export function evaluarSoportes(
 }
 
 function bloqueoDe(soporte: SoporteEvaluado): readonly string[] {
-  if (soporte.estado === ESTADO_SOPORTE.AUSENTE) return [`ausente: ${soporte.tipo}`];
+  if (soporte.estado === ESTADO_SOPORTE.AUSENTE) return [TEXTO_CHECKLIST.bloqueoAusente(soporte.tipo)];
   if (soporte.estado === ESTADO_SOPORTE.VENCIDO)
-    return [`vencido: ${soporte.tipo} (${soporte.vigencia_hasta ?? ""})`];
+    return [TEXTO_CHECKLIST.bloqueoVencido(soporte.tipo, soporte.vigencia_hasta ?? "")];
   return [];
 }
 
@@ -177,23 +172,23 @@ export function construirChecklist(
       .map((campo) => campo.etiqueta),
     requiere_confirmacion: campos
       .filter((campo) => campo.estado === ESTADO_CAMPO.REQUIERE_CONFIRMACION)
-      .map((campo) => ({ etiqueta: campo.etiqueta, nota: campo.nota ?? NOTA_POR_CONFIRMAR })),
+      .map((campo) => ({ etiqueta: campo.etiqueta, nota: campo.nota ?? TEXTO_COMUN.porConfirmar })),
   };
 }
 
 function vigenciaVisible(soporte: SoporteEvaluado): string {
-  if (soporte.estado === ESTADO_SOPORTE.AUSENTE) return TEXTO_CELDA_VACIA;
-  return soporte.vigencia_hasta ?? TEXTO_SIN_VIGENCIA;
+  if (soporte.estado === ESTADO_SOPORTE.AUSENTE) return TEXTO_COMUN.celdaVacia;
+  return soporte.vigencia_hasta ?? TEXTO_CHECKLIST.sinVigencia;
 }
 
 function filaSoporte(soporte: SoporteEvaluado): FilaSoporteChecklist {
   return {
     tipo: soporte.tipo,
-    archivo: soporte.archivo ?? TEXTO_CELDA_VACIA,
+    archivo: soporte.archivo ?? TEXTO_COMUN.celdaVacia,
     vigencia: vigenciaVisible(soporte),
     estado: soporte.estado,
-    aviso: soporte.aviso ?? TEXTO_CELDA_VACIA,
-    pais_emisor: soporte.aviso_emisor ?? TEXTO_CELDA_VACIA,
+    aviso: soporte.aviso ?? TEXTO_COMUN.celdaVacia,
+    pais_emisor: soporte.aviso_emisor ?? TEXTO_COMUN.celdaVacia,
   };
 }
 
@@ -203,7 +198,7 @@ export function construirDatosChecklist(caso: CasoChecklist, checklist: Checklis
     caso: caso.caso,
     cliente: caso.cliente,
     fecha_ejecucion: checklist.fecha_ejecucion,
-    estado: checklist.listo_para_firma ? ESTADO_LISTO : ESTADO_BLOQUEADO,
+    estado: checklist.listo_para_firma ? TEXTO_CHECKLIST.estado.listo : TEXTO_CHECKLIST.estado.bloqueado,
     motivos: checklist.bloqueos.map((motivo) => ({ motivo })),
     soportes: soportes.map(filaSoporte),
     faltantes: checklist.faltantes.map((etiqueta) => ({ etiqueta })),

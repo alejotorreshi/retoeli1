@@ -1,4 +1,5 @@
 import { CODIGO_ERROR } from "@/config/constants/errors.constants.ts";
+import { TEXTO_MOTOR_PLANTILLAS } from "@/config/strings.ts";
 import { exito, type Fallo, fallo, type Resultado } from "@/domain/resultado.ts";
 
 export type ValorEscalar = string | number;
@@ -50,12 +51,12 @@ function esEscalar(valor: ValorPlantilla | undefined): valor is ValorEscalar {
 function renderizarVariable(crudo: string, ambitos: readonly Ambito[], render: Render): string {
   const nombre = crudo.trim();
   if (MARCA_DE_SECCION.test(nombre)) {
-    render.problemas.push(`tiene una sección sin cerrar o anidada: ${nombre}`);
+    render.problemas.push(TEXTO_MOTOR_PLANTILLAS.seccionSinCerrar(nombre));
     return "";
   }
   const valor = buscar(nombre, ambitos);
   if (!esEscalar(valor)) {
-    render.problemas.push(`usa la variable desconocida ${nombre}`);
+    render.problemas.push(TEXTO_MOTOR_PLANTILLAS.variableDesconocida(nombre));
     return "";
   }
   return render.escapar(enUnaLinea(valor));
@@ -74,7 +75,7 @@ function renderizarSeccion(
 ): string {
   const lista = buscar(nombre.trim(), [contexto]);
   if (lista === undefined || esEscalar(lista)) {
-    render.problemas.push(`usa la sección desconocida ${nombre.trim()}`);
+    render.problemas.push(TEXTO_MOTOR_PLANTILLAS.seccionDesconocida(nombre.trim()));
     return "";
   }
   if (marca === "^") return lista.length === 0 ? renderizarVariables(interior, [contexto], render) : "";
@@ -82,7 +83,9 @@ function renderizarSeccion(
 }
 
 function plantillaInvalida(nombrePlantilla: string, problema: string): Fallo {
-  return fallo(CODIGO_ERROR.REGLAS_INVALIDAS, { detalle: `la plantilla ${nombrePlantilla} ${problema}.` });
+  return fallo(CODIGO_ERROR.REGLAS_INVALIDAS, {
+    detalle: TEXTO_MOTOR_PLANTILLAS.plantillaInvalida(nombrePlantilla, problema),
+  });
 }
 
 function renderizar(
@@ -92,7 +95,7 @@ function renderizar(
   escapar: Escape,
 ): Resultado<string> {
   if (!etiquetasBalanceadas(texto))
-    return plantillaInvalida(nombrePlantilla, "tiene una etiqueta sin cerrar");
+    return plantillaInvalida(nombrePlantilla, TEXTO_MOTOR_PLANTILLAS.etiquetaSinCerrar);
   const render: Render = { escapar, problemas: [] };
   const salida = texto.replace(
     BLOQUE,
