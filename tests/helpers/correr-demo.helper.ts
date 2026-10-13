@@ -1,5 +1,5 @@
 import type { Corrida, OpcionesCorrida, Respuesta } from "@tests/helpers/types/correr-demo.type.ts";
-import { ejecutarDemo } from "@/demo/ejecutar-demo.ts";
+import { ejecutarDemo } from "@/demo/ejecutar-demo.runner.ts";
 
 export async function correrDemo(directorio: string, opciones: OpcionesCorrida = {}): Promise<Corrida> {
   const previa = process.env.FECHA_EJECUCION;

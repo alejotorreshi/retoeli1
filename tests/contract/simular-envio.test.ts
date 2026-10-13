@@ -2,8 +2,8 @@ import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import { existsSync } from "node:fs";
 import { readdir, readFile } from "node:fs/promises";
 import { join, relative } from "node:path";
-import { generarCaso } from "@tests/helpers/flujo.ts";
-import { crearProyectoTemporal } from "@tests/helpers/proyecto-temporal.ts";
+import { generarCaso } from "@tests/helpers/flujo.helper.ts";
+import { crearProyectoTemporal } from "@tests/helpers/proyecto-temporal.helper.ts";
 import type { ProyectoTemporal } from "@tests/helpers/types/proyecto-temporal.type.ts";
 import { crearHerramientas } from "@/tools/herramientas.factory.ts";
 

@@ -477,7 +477,7 @@ describe("reglas de capas sobre el código real", () => {
 
   test("G2: el grafo de importaciones resuelve los alias", () => {
     const grafo = grafoDeFuentes();
-    expect(grafo.get("demo.ts")).toEqual(["src/demo/ejecutar-demo.ts"]);
+    expect(grafo.get("demo.ts")).toEqual(["src/demo/ejecutar-demo.runner.ts"]);
     expect([...grafo.values()].flat().length).toBeGreaterThan(listarFuentes().length);
   });
 
@@ -570,9 +570,9 @@ describe("superficie pública de herramientas (CAL-04)", () => {
 
   test("la regla de capas de src/demo se aplica a archivos reales", () => {
     const fuentes = listarFuentes();
-    expect(fuentes).toContain("src/demo/ejecutar-demo.ts");
+    expect(fuentes).toContain("src/demo/ejecutar-demo.runner.ts");
     expect(fuentes).toContain("demo.ts");
-    for (const ruta of ["src/demo/ejecutar-demo.ts", "demo.ts"]) {
+    for (const ruta of ["src/demo/ejecutar-demo.runner.ts", "demo.ts"]) {
       expect(violacionesDeCapas(ruta, leer(ruta))).toEqual([]);
     }
   });
@@ -653,9 +653,9 @@ describe("el escáner muerde sobre fuentes de muestra", () => {
     const permitido =
       'import { leer_solicitud } from "@/tools/proveedor.ts";\nimport { join } from "node:path";\n';
     const prohibido = 'import { crearEntorno } from "@/tools/entorno.wiring";\n';
-    expect(violacionesDeCapas("src/demo/ejecutar-demo.ts", permitido)).toEqual([]);
-    expect(violacionesDeCapas("src/demo/ejecutar-demo.ts", prohibido)).toEqual([
-      "src/demo/ejecutar-demo.ts: la capa demo no puede importar @/tools/entorno.wiring",
+    expect(violacionesDeCapas("src/demo/ejecutar-demo.runner.ts", permitido)).toEqual([]);
+    expect(violacionesDeCapas("src/demo/ejecutar-demo.runner.ts", prohibido)).toEqual([
+      "src/demo/ejecutar-demo.runner.ts: la capa demo no puede importar @/tools/entorno.wiring",
     ]);
   });
 

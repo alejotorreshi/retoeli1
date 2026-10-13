@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import { readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
-import { copiarConocimiento, crearProyectoTemporal } from "@tests/helpers/proyecto-temporal.ts";
+import { copiarConocimiento, crearProyectoTemporal } from "@tests/helpers/proyecto-temporal.helper.ts";
 import type { ConocimientoTemporal, ProyectoTemporal } from "@tests/helpers/types/proyecto-temporal.type.ts";
 import { MENSAJE_ERROR } from "@/config/strings.ts";
 import { crearHerramientas } from "@/tools/herramientas.factory.ts";

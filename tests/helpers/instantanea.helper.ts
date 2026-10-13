@@ -1,7 +1,7 @@
 import { readdir, readFile } from "node:fs/promises";
 import { extname, join } from "node:path";
 import type { Instantanea, LineaBitacora, ValorComparable } from "@tests/helpers/types/instantanea.type.ts";
-import { leerCeldasXlsx, leerMetadatosXlsx } from "@tests/helpers/xlsx-leer.ts";
+import { leerCeldasXlsx, leerMetadatosXlsx } from "@tests/helpers/xlsx-leer.helper.ts";
 import { OUT_DIR } from "@/config/constants/files.constants.ts";
 
 const CLAVE_MARCA_TIEMPO = "ts";

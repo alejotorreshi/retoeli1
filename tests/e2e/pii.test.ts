@@ -1,12 +1,12 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
-import { correrDemo } from "@tests/helpers/correr-demo.ts";
-import { listarSalida } from "@tests/helpers/instantanea.ts";
-import { crearProyectoTemporal } from "@tests/helpers/proyecto-temporal.ts";
+import { correrDemo } from "@tests/helpers/correr-demo.helper.ts";
+import { listarSalida } from "@tests/helpers/instantanea.helper.ts";
+import { crearProyectoTemporal } from "@tests/helpers/proyecto-temporal.helper.ts";
 import type { Corrida } from "@tests/helpers/types/correr-demo.type.ts";
 import type { ProyectoTemporal } from "@tests/helpers/types/proyecto-temporal.type.ts";
-import { celdaEn, leerCeldasXlsx } from "@tests/helpers/xlsx-leer.ts";
+import { celdaEn, leerCeldasXlsx } from "@tests/helpers/xlsx-leer.helper.ts";
 import { FECHA_DEMO, SESION_DEMO } from "@/config/constants/demo.constants.ts";
 import { FIXTURES_DIR, OUT_DIR } from "@/config/constants/files.constants.ts";
 import { RUTAS_BORRADOR, VARIABLES_NOTA_DEL_MAESTRO } from "@/config/constants/maestro.constants.ts";
