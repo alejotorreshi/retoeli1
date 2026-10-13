@@ -67,5 +67,15 @@ export function crearAgentePrueba(opciones: OpcionesAgentePrueba): AgentePrueba 
       sesionId = sesionDe(eventos);
       return eventos;
     },
+    async *iniciar(mensaje: string, extra: ExtraTurno = {}) {
+      for await (const evento of ejecutarTurno({ ...extra, sesionId, mensaje }, deps)) {
+        if (evento.tipo === TIPO_EVENTO.INICIO_TURNO) sesionId = evento.sesionId;
+        yield evento;
+      }
+    },
+    sesionActual() {
+      if (sesionId === null) throw new Error("todavía no hay sesión");
+      return deps.sesiones.abrir(sesionId).sesion;
+    },
   };
 }
