@@ -1,4 +1,4 @@
-import { CODIGO_AGENTE } from "@/config/constants/agent.constants.ts";
+import { CODIGO_AGENTE, SALTO_DE_LINEA } from "@/config/constants/agent.constants.ts";
 import { CODIGO_ERROR } from "@/config/constants/errors.constants.ts";
 import { ARCHIVO_PROYECTO, ARCHIVOS_SALIDA, OUT_DIR } from "@/config/constants/files.constants.ts";
 import { LONGITUD_MAXIMA_CASO } from "@/config/constants/limits.constants.ts";
@@ -26,8 +26,14 @@ export const MENSAJE_ERROR = {
   [CODIGO_ERROR.DATOS_INVALIDOS]: "Los datos del caso no son válidos o superan el tamaño permitido.",
 } as const satisfies Record<ValorDe<typeof CODIGO_ERROR>, string>;
 
+const FIN_DE_ORACION = ".";
+
+function conDetalle(mensaje: string, detalle: string): string {
+  return `${mensaje} Detalle: ${detalle}`;
+}
+
 export const TEXTO_ERROR = {
-  conDetalle: (mensaje: string, detalle: string): string => `${mensaje} Detalle: ${detalle}`,
+  conDetalle,
 } as const;
 
 const MOTIVO_FALTANTE = "no existe en el maestro";
@@ -189,7 +195,6 @@ export const RESUMEN_HERRAMIENTA = {
 } as const;
 
 const VINETA = "- ";
-const SALTO_DE_LINEA = "\n";
 
 function vinetas(lineas: readonly string[]): string {
   return lineas.map((linea) => `${VINETA}${linea}`).join(SALTO_DE_LINEA);
@@ -214,11 +219,15 @@ function confirmacionExplicita(ejemplos: readonly string[]): string {
 const CONFIRMA_UN_CASO = confirmacionExplicita(EJEMPLOS_CONFIRMACION);
 const CONFIRMA_VARIOS_CASOS = confirmacionExplicita([`${EJEMPLOS_CONFIRMACION[0]} ${MARCADOR_CASO}`]);
 
+function cierrePregunta(caso: string): string {
+  return `${CONFIRMA_UN_CASO}; ${SIN_CONFIRMACION_NO_ENVIA} nada. ¿Confirmas el envío simulado de ${caso}?`;
+}
+
 export const TEXTO_CONFIRMACION = {
   unCaso: (caso: string, bloqueos: readonly string[]): string =>
     bloqueos.length === 0
-      ? `El paquete de ${caso} queda ${ESTADO_PAQUETE.listo} para firma. Para registrar el envío simulado ${CONFIRMA_UN_CASO}; ${SIN_CONFIRMACION_NO_ENVIA} nada. ¿Confirmas el envío simulado de ${caso}?`
-      : `El paquete de ${caso} queda ${ESTADO_PAQUETE.bloqueado}: ${listaDeBloqueos(bloqueos)}. Para registrar el envío simulado con esos bloqueos ${CONFIRMA_UN_CASO}; ${SIN_CONFIRMACION_NO_ENVIA} nada. ¿Confirmas el envío simulado de ${caso}?`,
+      ? `El paquete de ${caso} queda ${ESTADO_PAQUETE.listo} para firma. Para registrar el envío simulado ${cierrePregunta(caso)}`
+      : `El paquete de ${caso} queda ${ESTADO_PAQUETE.bloqueado}: ${listaDeBloqueos(bloqueos)}. Para registrar el envío simulado con esos bloqueos ${cierrePregunta(caso)}`,
   variosCasos: (casos: readonly CasoPorConfirmar[]): string =>
     [
       "Quedaron armados estos paquetes:",
@@ -322,7 +331,8 @@ export const TEXTO_SESION = {
 } as const;
 
 export const TEXTO_AGENTE = {
-  conDetalle: (mensaje: string, detalle: string): string => `${mensaje} Detalle: ${detalle}.`,
+  conDetalle: (mensaje: string, detalle: string): string =>
+    `${conDetalle(mensaje, detalle)}${FIN_DE_ORACION}`,
 } as const;
 
 export const TEXTO_CONOCIMIENTO = {
