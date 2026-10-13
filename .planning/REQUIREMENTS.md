@@ -49,8 +49,8 @@ Fuente vinculante: `reto-01/PRD.md`, sin modificar. Fixtures: `reto-01/fixtures/
 ### Confirmación y envío simulado (CA3, RN4)
 
 - [x] **ENV-01**: Si `simular_envio` se llama sin confirmación válida, devuelve `{ ok: false, error: "requiere confirmación explícita" }`. Con confirmación, escribe solo `out/<caso>/ENVIO-SIMULADO.md` y deja registrados los bloqueos vigentes. No exige `listo_para_firma`. Si `paquete/` no coincide con lo que se armaría hoy (archivos faltantes, sobrantes o borrador desactualizado), rechaza con `PAQUETE_DESACTUALIZADO` y no escribe nada.
-- [ ] **ENV-02**: El servidor hace cumplir la compuerta de confirmación. La sesión guarda la confirmación pendiente `{ caso, accion }`, y la autorización vale una sola vez, para ese caso y solo si llega en el mensaje inmediatamente siguiente del usuario. La decide un clasificador determinista que entiende negaciones ("No envíes nada todavía" no confirma) o el botón de la UI. El servidor nunca confía solo en `confirmado: true` del modelo.
-- [ ] **ENV-03**: Cuando una acción requiere confirmación, el turno termina con una pregunta explícita que lista los bloqueos. El servidor calcula `needsConfirmation`.
+- [x] **ENV-02**: El servidor hace cumplir la compuerta de confirmación. La sesión guarda la confirmación pendiente `{ caso, accion }`, y la autorización vale una sola vez, para ese caso y solo si llega en el mensaje inmediatamente siguiente del usuario. La decide un clasificador determinista que entiende negaciones ("No envíes nada todavía" no confirma) o el botón de la UI. El servidor nunca confía solo en `confirmado: true` del modelo.
+- [x] **ENV-03**: Cuando una acción requiere confirmación, el turno termina con una pregunta explícita que lista los bloqueos. El servidor calcula `needsConfirmation`.
 
 ### Ciclo del agente (§6.1, §6.3)
 
@@ -200,8 +200,8 @@ Cada requisito v1 está asignado a exactamente una fase del roadmap (`.planning/
 | PAQ-04 | Phase 1 | Complete |
 | PAQ-05 | Phase 1 | Complete |
 | ENV-01 | Phase 1 | Complete |
-| ENV-02 | Phase 2 | Pending |
-| ENV-03 | Phase 2 | Pending |
+| ENV-02 | Phase 2 | Complete |
+| ENV-03 | Phase 2 | Complete |
 | AGT-01 | Phase 2 | Pending |
 | AGT-02 | Phase 2 | Complete |
 | AGT-03 | Phase 2 | Pending |
