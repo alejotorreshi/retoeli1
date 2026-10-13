@@ -1,5 +1,6 @@
 import { describe, expect, test } from "bun:test";
-import { NIVELES_LOG } from "@/config/constants/logging.constants.ts";
+import { NIVELES_LOG, RUTAS_REDACCION_LOG } from "@/config/constants/logging.constants.ts";
+import { CLAVES_SENSIBLES } from "@/config/constants/redaction.constants.ts";
 import type { ValorDe } from "@/config/types/valor-de.type.ts";
 import { createLogger } from "@/infra/logging/logger.adapter.ts";
 
@@ -147,5 +148,16 @@ describe("createLogger: niveles y estructuras peligrosas", () => {
   test("sin destino escribe a stdout sin lanzar", () => {
     const logger = createLogger({ level: NIVELES_LOG.SILENCIO, secrets: [] });
     expect(() => logger.info("server_start")).not.toThrow();
+  });
+});
+
+describe("createLogger: rutas de redacción de pino (IN-19)", () => {
+  test("salen de CLAVES_SENSIBLES en la raíz, un nivel abajo y en las cabeceras", () => {
+    for (const clave of CLAVES_SENSIBLES) {
+      expect(RUTAS_REDACCION_LOG).toEqual(
+        expect.arrayContaining([clave, `*.${clave}`, `headers.${clave}`, `*.headers.${clave}`]),
+      );
+    }
+    expect(RUTAS_REDACCION_LOG).toHaveLength(CLAVES_SENSIBLES.size * 4);
   });
 });
