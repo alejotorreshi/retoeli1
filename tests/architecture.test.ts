@@ -17,6 +17,7 @@ import { COLOR_TRAZO } from "@/config/constants/pdf.constants.ts";
 import { TIPO_MASCARA } from "@/config/constants/pii.constants.ts";
 import { ESTADO_SOPORTE, ESTADO_VIGENCIA } from "@/config/constants/supports.constants.ts";
 import { HERRAMIENTA } from "@/config/constants/tools.constants.ts";
+import * as STRINGS from "@/config/strings.ts";
 
 const RAIZ = join(import.meta.dir, "..");
 
@@ -159,6 +160,8 @@ const NOMBRES_CON_ROL: readonly RegExp[] = [
 const CASO_DE_USO = /^src\/application\/use-cases\//;
 
 const EXPORTA_FUNCION = /^export\s+(?:async\s+)?function\s/;
+
+const NOMBRE_DE_HERRAMIENTA_SUELTO = new RegExp(`\\b(?:${Object.values(HERRAMIENTA).join("|")})\\b`);
 
 const CAPAS_FUTURAS = /^src\/(?:server[^/]*|http|loop|llm)(?:\/|$)/;
 
@@ -395,6 +398,16 @@ function violacionesDeCasoDeUso(ruta: string, codigo: string): string[] {
     : [`${ruta}: un caso de uso exporta exactamente una función`];
 }
 
+function referenciasSinPrefijo(origen: string, texto: string): string[] {
+  return NOMBRE_DE_HERRAMIENTA_SUELTO.test(texto) ? [`${origen}: nombra una herramienta sin proveedor_`] : [];
+}
+
+function textosDe(valor: unknown, ruta: string): (readonly [string, string])[] {
+  if (typeof valor === "string") return [[ruta, valor]];
+  if (typeof valor !== "object" || valor === null) return [];
+  return Object.entries(valor).flatMap(([clave, hijo]) => textosDe(hijo, `${ruta}.${clave}`));
+}
+
 function violacionesDeShell(ruta: string, codigo: string): string[] {
   return codigo
     .split("\n")
@@ -587,6 +600,17 @@ describe("reglas de capas sobre el código real", () => {
     const fuentes = listarFuentes().filter((ruta) => CASO_DE_USO.test(ruta));
     expect(fuentes.length).toBe(5);
     expect(fuentes.flatMap((ruta) => violacionesDeCasoDeUso(ruta, leer(ruta)))).toEqual([]);
+  });
+
+  test("G12: strings.ts nombra las herramientas siempre con el prefijo proveedor_", () => {
+    const fuente = leer("src/config/strings.ts")
+      .split("\n")
+      .flatMap((linea, indice) => referenciasSinPrefijo(`src/config/strings.ts:${indice + 1}`, linea));
+    const valores = textosDe(STRINGS, "strings").flatMap(([ruta, texto]) =>
+      referenciasSinPrefijo(ruta, texto),
+    );
+    expect([...fuente, ...valores]).toEqual([]);
+    expect(STRINGS.MENSAJE_ERROR.FORMULARIO_NO_GENERADO).toContain("proveedor_generar_formulario");
   });
 
   test("src/ y demo.ts no usan APIs de shell", () => {
@@ -883,6 +907,16 @@ describe("el escáner muerde sobre fuentes de muestra", () => {
     const codigo = "export function a(): void {}\nexport async function b(): Promise<void> {}\n";
     expect(violacionesDeCasoDeUso("src/application/use-cases/x.use-case.ts", codigo)).toEqual([
       "src/application/use-cases/x.use-case.ts: un caso de uso exporta exactamente una función",
+    ]);
+  });
+
+  test("G12: reporta un nombre de herramienta sin prefijo y deja pasar el prefijado", () => {
+    expect(referenciasSinPrefijo("x", "Pasa el resultado completo de mapear_campos.")).toEqual([
+      "x: nombra una herramienta sin proveedor_",
+    ]);
+    expect(referenciasSinPrefijo("x", "Pasa el resultado completo de proveedor_mapear_campos.")).toEqual([]);
+    expect(textosDe({ a: { b: "con armar_paquete." }, c: () => "" }, "s")).toEqual([
+      ["s.a.b", "con armar_paquete."],
     ]);
   });
 
