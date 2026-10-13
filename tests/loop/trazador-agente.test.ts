@@ -2,6 +2,7 @@ import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { bitacoraMuda } from "@tests/helpers/bitacora.helper.ts";
+import { recoger, sesionDe } from "@tests/helpers/eventos.helper.ts";
 import { crearFetchFalso, cuerpoConHerramientas, cuerpoConTexto } from "@tests/helpers/fetch-falso.helper.ts";
 import { crearProyectoTemporal } from "@tests/helpers/proyecto-temporal.helper.ts";
 import type { MensajeWire, PedidoRegistrado, RespuestaGuion } from "@tests/helpers/types/fetch-falso.type.ts";
@@ -121,12 +122,6 @@ function crearDependencias(fetch: FetchLike): DependenciasTurno {
   };
 }
 
-async function recoger(eventos: AsyncIterable<EventoAgente>): Promise<EventoAgente[]> {
-  const recogidos: EventoAgente[] = [];
-  for await (const evento of eventos) recogidos.push(evento);
-  return recogidos;
-}
-
 function turnarConDependencias(deps: DependenciasTurno): Turnar {
   return (mensaje, sesionId) => recoger(ejecutarTurno({ sesionId, mensaje }, deps));
 }
@@ -140,12 +135,6 @@ function turnarConAgente(fetch: FetchLike): Turnar {
   if (!creacion.ok) throw new Error(creacion.mensaje);
   const { agente } = creacion;
   return (mensaje, sesionId) => recoger(agente.turno({ sesionId, mensaje }));
-}
-
-function sesionDe(eventos: readonly EventoAgente[]): string {
-  const inicio = eventos[0];
-  if (inicio?.tipo !== TIPO_EVENTO.INICIO_TURNO) throw new Error("falta turn_start");
-  return inicio.sesionId;
 }
 
 function mensajesDe(pedido: PedidoRegistrado | undefined): readonly MensajeWire[] {

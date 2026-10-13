@@ -11,11 +11,28 @@ import type {
   EventoError,
   EventoFinHerramienta,
   EventoFinTurno,
+  EventoInicioTurno,
   EventoTexto,
   EventoUso,
 } from "@/loop/types/evento.type.ts";
 
 export const SIMULAR = NOMBRE_VISIBLE[HERRAMIENTA.SIMULAR_ENVIO];
+
+export async function recoger(eventos: AsyncIterable<EventoAgente>): Promise<EventoAgente[]> {
+  const recogidos: EventoAgente[] = [];
+  for await (const evento of eventos) recogidos.push(evento);
+  return recogidos;
+}
+
+export function inicioDe(eventos: readonly EventoAgente[]): EventoInicioTurno {
+  const inicio = eventos[0];
+  if (inicio?.tipo !== TIPO_EVENTO.INICIO_TURNO) throw new Error(`falta ${TIPO_EVENTO.INICIO_TURNO}`);
+  return inicio;
+}
+
+export function sesionDe(eventos: readonly EventoAgente[]): string {
+  return inicioDe(eventos).sesionId;
+}
 
 export function confirmaciones(eventos: readonly EventoAgente[]): EventoConfirmacionRequerida[] {
   return eventos.filter(
@@ -47,13 +64,13 @@ export function finesDeHerramienta(
 
 export function finDeTurno(eventos: readonly EventoAgente[]): EventoFinTurno {
   const ultimo = eventos.at(-1);
-  if (ultimo?.tipo !== TIPO_EVENTO.FIN_TURNO) throw new Error("falta turn_end");
+  if (ultimo?.tipo !== TIPO_EVENTO.FIN_TURNO) throw new Error(`falta ${TIPO_EVENTO.FIN_TURNO}`);
   return ultimo;
 }
 
 export function textoFinal(eventos: readonly EventoAgente[]): string {
   const ultimo = textos(eventos).at(-1);
-  if (ultimo === undefined) throw new Error("falta el evento text");
+  if (ultimo === undefined) throw new Error(`falta el evento ${TIPO_EVENTO.TEXTO}`);
   return ultimo.texto;
 }
 

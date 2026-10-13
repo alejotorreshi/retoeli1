@@ -1,6 +1,7 @@
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test } from "bun:test";
 import { CLAVE_PRUEBA, crearAgenteFetch, MARCA_CLAVE } from "@tests/helpers/agente-fetch.helper.ts";
 import { capturarLogs } from "@tests/helpers/bitacora.helper.ts";
+import { inicioDe, SIMULAR } from "@tests/helpers/eventos.helper.ts";
 import { crearFetchFalso, cuerpoConHerramientas, cuerpoConTexto } from "@tests/helpers/fetch-falso.helper.ts";
 import { sensiblesDelProyecto } from "@tests/helpers/pii.helper.ts";
 import { crearProyectoTemporal } from "@tests/helpers/proyecto-temporal.helper.ts";
@@ -21,11 +22,10 @@ import { HERRAMIENTA, NOMBRE_VISIBLE } from "@/config/constants/tools.constants.
 import { pinExecutionDate } from "@/config/env.ts";
 import { TEXTO_MASCARA } from "@/config/strings.ts";
 import { redactar } from "@/domain/policies/redaccion.policy.ts";
-import type { EventoAgente, EventoInicioHerramienta } from "@/loop/types/evento.type.ts";
+import type { EventoInicioHerramienta } from "@/loop/types/evento.type.ts";
 
 const CASO = "co-industrias-delta";
 const LEER = NOMBRE_VISIBLE[HERRAMIENTA.LEER_SOLICITUD];
-const SIMULAR = NOMBRE_VISIBLE[HERRAMIENTA.SIMULAR_ENVIO];
 const MENSAJE = `procesa el caso ${CASO}, el NIT es 900123456`;
 const TEXTO_PRIVADO = "el NIT es 900123456";
 const CON_LOGS = { LOG_LEVEL: NIVELES_LOG.INFO };
@@ -57,12 +57,6 @@ afterEach(async () => {
 
 function deEvento(lineas: readonly LineaLog[], evento: string): LineaLog[] {
   return lineas.filter((linea) => linea.msg === evento);
-}
-
-function inicioDe(eventos: readonly EventoAgente[]): { readonly sesionId: string; readonly turnoId: string } {
-  const inicio = eventos[0];
-  if (inicio?.tipo !== TIPO_EVENTO.INICIO_TURNO) throw new Error("falta turn_start");
-  return inicio;
 }
 
 describe("cada turno deja líneas JSON correlacionadas sin clave ni PII (SEG-03)", () => {

@@ -1,5 +1,6 @@
 import { afterAll, afterEach, beforeAll, describe, expect, setSystemTime, test } from "bun:test";
 import { capturarLogs } from "@tests/helpers/bitacora.helper.ts";
+import { recoger, sesionDe } from "@tests/helpers/eventos.helper.ts";
 import {
   crearFetchFalso,
   cuerpoConHerramientas,
@@ -61,20 +62,8 @@ function agenteCon(fetch: FetchLike, extra: Readonly<Record<string, string>> = {
   return creacion.agente;
 }
 
-async function recoger(eventos: AsyncIterable<EventoAgente>): Promise<EventoAgente[]> {
-  const recogidos: EventoAgente[] = [];
-  for await (const evento of eventos) recogidos.push(evento);
-  return recogidos;
-}
-
 function turnar(agente: Agente, mensaje: string, sesionId: string | null): Promise<EventoAgente[]> {
   return recoger(agente.turno({ sesionId, mensaje }));
-}
-
-function sesionDe(eventos: readonly EventoAgente[]): string {
-  const inicio = eventos[0];
-  if (inicio?.tipo !== TIPO_EVENTO.INICIO_TURNO) throw new Error("falta turn_start");
-  return inicio.sesionId;
 }
 
 function sesionDeEvento(evento: EventoAgente | undefined): string {

@@ -3,6 +3,7 @@ import { join } from "node:path";
 import type { HojaMaestro } from "@tests/helpers/types/pii.type.ts";
 import { ARCHIVOS_REPOSITORIO, FIXTURES_DIR } from "@/config/constants/files.constants.ts";
 import { VARIABLES_NOTA_DEL_MAESTRO } from "@/config/constants/maestro.constants.ts";
+import { TIPO_MASCARA } from "@/config/constants/pii.constants.ts";
 import { POLITICA_PII } from "@/domain/policies/pii.policy.ts";
 
 const LARGO_MINIMO_SENSIBLE = 5;
@@ -19,7 +20,7 @@ function hojasDe(valor: unknown, ruta: string): HojaMaestro[] {
 }
 
 function esPublica(hoja: HojaMaestro): boolean {
-  return POLITICA_PII.get(hoja.ruta) === "publico";
+  return POLITICA_PII.get(hoja.ruta) === TIPO_MASCARA.PUBLICO;
 }
 
 export function sensiblesDelMaestro(maestro: unknown): HojaMaestro[] {

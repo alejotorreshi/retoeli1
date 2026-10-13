@@ -8,6 +8,7 @@ import {
   confirmaciones,
   finDeTurno,
   lineasDeEnvio,
+  recoger,
   usos,
 } from "@tests/helpers/eventos.helper.ts";
 import { sensiblesDelProyecto } from "@tests/helpers/pii.helper.ts";
@@ -64,12 +65,6 @@ const claves = [
   process.env.LLM_FALLBACK_API_KEY,
 ].filter((clave): clave is string => clave !== undefined && clave.trim() !== "");
 const hayClave = Boolean(process.env.LLM_API_KEY?.trim() || process.env.DEEPSEEK_API_KEY?.trim());
-
-async function recoger(eventos: AsyncIterable<EventoAgente>): Promise<EventoAgente[]> {
-  const recogidos: EventoAgente[] = [];
-  for await (const evento of eventos) recogidos.push(evento);
-  return recogidos;
-}
 
 function conversacion(agente: Agente) {
   let sesionId: string | null = null;

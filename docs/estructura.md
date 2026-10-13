@@ -57,3 +57,12 @@ Cada `export const …Schema` de `schemas/*.schema.ts` se comprueba con `satisfi
 ## Pruebas unitarias
 
 `tests/unit/` es plana y cada archivo se llama `<módulo>.<rol>.test.ts`, espejo de un `src/**/<módulo>.<rol>.ts`. La carpeta no se anida porque varias pruebas resuelven fixtures con `new URL("../../…", import.meta.url)`. Las pruebas de contrato, golden y e2e se nombran por escenario.
+
+## Dobles del modelo en las pruebas
+
+Hay dos LLM falsos porque prueban capas distintas:
+
+- `crearAdaptadorGuion` (`tests/helpers/adaptador-guion.helper.ts`) prueba los decoradores de `llm`. Cada paso es un `ResultadoEnvio` o una función de las `OpcionesEnvio`, para simular errores, esperas y abortos por señal. Repite el último paso y registra las opciones de cada llamada. Trae dos pares proveedor y modelo (primario y respaldo) porque `withFallback` cambia de uno a otro.
+- `crearLlmFalso` (`tests/helpers/llm-falso.helper.ts`) prueba el bucle. Cada paso es una `RespuestaLlm` (o un `ErrorLlm`) que puede construirse con los mensajes previos, para encadenar herramientas reales con sus resultados. Guarda una copia de los mensajes de cada pedido y falla si el guion se agota.
+
+Las utilidades comunes de eventos (`recoger`, `inicioDe`, `sesionDe`, `SIMULAR`) viven en `tests/helpers/eventos.helper.ts`.

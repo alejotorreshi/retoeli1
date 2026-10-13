@@ -1,4 +1,5 @@
 import { bitacoraMuda } from "@tests/helpers/bitacora.helper.ts";
+import { recoger, sesionDe } from "@tests/helpers/eventos.helper.ts";
 import { crearLlmFalso } from "@tests/helpers/llm-falso.helper.ts";
 import type {
   AgentePrueba,
@@ -18,24 +19,11 @@ import { createAuditLog } from "@/infra/logging/audit-log.adapter.ts";
 import { createMemorySessionStore } from "@/infra/sessions/memory-session-store.adapter.ts";
 import { ejecutarTurno, sesionVacia } from "@/loop/services/ejecutar-turno.service.ts";
 import { crearRegistroHerramientas } from "@/loop/services/registro-herramientas.service.ts";
-import type { EventoAgente } from "@/loop/types/evento.type.ts";
 import type { DependenciasTurno, Sesion } from "@/loop/types/turno.type.ts";
 import * as proveedor from "@/tools/proveedor.ts";
 
 const TTL_PRUEBA_MS = 60_000;
 const MAX_SESIONES_PRUEBA = 10;
-
-async function recoger(eventos: AsyncIterable<EventoAgente>): Promise<EventoAgente[]> {
-  const recogidos: EventoAgente[] = [];
-  for await (const evento of eventos) recogidos.push(evento);
-  return recogidos;
-}
-
-function sesionDe(eventos: readonly EventoAgente[]): string {
-  const inicio = eventos[0];
-  if (inicio?.tipo !== TIPO_EVENTO.INICIO_TURNO) throw new Error("falta turn_start");
-  return inicio.sesionId;
-}
 
 export function crearAgentePrueba(opciones: OpcionesAgentePrueba): AgentePrueba {
   const { raiz, guion, ...sobrescritas } = opciones;
