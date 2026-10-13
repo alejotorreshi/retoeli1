@@ -419,6 +419,21 @@ describe("umbral de confianza (D-19)", () => {
   });
 });
 
+describe("RN1 no depende de la escala de confianza (WR-03)", () => {
+  test("con regla_pais y etiqueta_generica sobre el umbral, el NIT extranjero y la genérica siguen por confirmar", () => {
+    const altas: Reglas = {
+      ...reglas,
+      confianza: { ...reglas.confianza, regla_pais: 0.9, etiqueta_generica: 1 },
+    };
+    const campos = mapear(entrada(["RUC", "Identificación tributaria", "NIT"], "EC", { reglas: altas }));
+    expect(campos.map((item) => [item.regla, item.confianza, item.estado])).toEqual([
+      ["regla_pais", 0.9, "requiere_confirmacion"],
+      ["etiqueta_generica", 1, "requiere_confirmacion"],
+      ["regla_pais", 0.9, "requiere_confirmacion"],
+    ]);
+  });
+});
+
 describe("notas de contexto como datos (D-36)", () => {
   test("una nota con una variable fuera de la lista permitida es REGLAS_INVALIDAS", () => {
     const rotas: Reglas = {

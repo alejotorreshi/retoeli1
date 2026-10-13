@@ -277,12 +277,12 @@ describe("golden: reglas cargadas en cada ejecución (D-28)", () => {
     );
     expect(antes.data?.conteo).toEqual({ lleno: 13, faltante: 1, requiere_confirmacion: 1 });
     const reglas = JSON.parse(await readFile(rutaReglas, "utf8"));
-    reglas.confianza.regla_pais = 0.9;
+    reglas.confianza.glosario_exacto = 0.7;
     await writeFile(rutaReglas, JSON.stringify(reglas));
     const despues: Respuesta = JSON.parse(
       await mapearEditable.execute({ caso: "ec-corp-andina", campos: [] }, ctx),
     );
-    expect(despues.data?.conteo).toEqual({ lleno: 14, faltante: 1, requiere_confirmacion: 0 });
+    expect(despues.data?.conteo).toEqual({ lleno: 0, faltante: 1, requiere_confirmacion: 14 });
   });
 });
 

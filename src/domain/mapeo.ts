@@ -1,7 +1,13 @@
 import { aTexto, normalizarEtiqueta } from "./normalizar.ts";
 import { VARIABLES_NOTA_DEL_MAESTRO, VARIABLES_NOTA_PERMITIDAS, type VariableNota } from "./pii.ts";
 import { renderizarPlantilla } from "./plantillas.ts";
-import type { EstadoCampo, ReglaMapeo, Reglas } from "./reglas.ts";
+import {
+  type EscalaConfianza,
+  type EstadoCampo,
+  REGLAS_SIEMPRE_POR_CONFIRMAR,
+  type ReglaMapeo,
+  type Reglas,
+} from "./reglas.ts";
 import { exito, fallo, type Resultado } from "./resultado.ts";
 
 export type Maestro = Readonly<Record<string, unknown>>;
@@ -223,6 +229,11 @@ function campoNoTextual(etiqueta: string, fuente: Fuente, reglas: Reglas): Campo
   };
 }
 
+function estadoDeValor(regla: ReglaMapeo, escala: EscalaConfianza): EstadoCampo {
+  const porConfirmar = REGLAS_SIEMPRE_POR_CONFIRMAR.has(regla) || escala[regla] < escala.umbral;
+  return porConfirmar ? "requiere_confirmacion" : "lleno";
+}
+
 function mapearValor(
   etiqueta: string,
   fuente: Fuente,
@@ -235,13 +246,13 @@ function mapearValor(
   const contextuales = notasDeContexto(fuente.ruta, contexto);
   if (!contextuales.ok) return contextuales;
   const notas = [...ajuste.data.notas, ...contextuales.data];
-  const confianza = reglas.confianza[ajuste.data.regla];
+  const { regla } = ajuste.data;
   return exito({
     etiqueta,
     ruta: fuente.ruta,
-    estado: confianza >= reglas.confianza.umbral ? "lleno" : "requiere_confirmacion",
-    regla: ajuste.data.regla,
-    confianza,
+    estado: estadoDeValor(regla, reglas.confianza),
+    regla,
+    confianza: reglas.confianza[regla],
     valor,
     nota: notas.length === 0 ? null : notas.join(SEPARADOR_NOTAS),
     propuesta: ajuste.data.propuesta,

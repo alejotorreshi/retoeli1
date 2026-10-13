@@ -11,6 +11,11 @@ export type ReglaMapeo = (typeof REGLAS_MAPEO)[number];
 
 export type EstadoCampo = "lleno" | "faltante" | "requiere_confirmacion";
 
+export const REGLAS_SIEMPRE_POR_CONFIRMAR: ReadonlySet<ReglaMapeo> = new Set([
+  "regla_pais",
+  "etiqueta_generica",
+]);
+
 export const APLICACIONES_NOTA = ["siempre", "extranjero"] as const;
 
 export type AplicaNota = (typeof APLICACIONES_NOTA)[number];

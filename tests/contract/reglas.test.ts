@@ -158,3 +158,24 @@ describe("el umbral de confianza se aplica desde el archivo (MAP-02)", () => {
     });
   }
 });
+
+describe("RN1 no se desactiva editando la escala de confianza (WR-03)", () => {
+  test("con regla_pais y etiqueta_generica en 0.95 el RUC de ec y la genérica siguen por confirmar", async () => {
+    const reglas = await copia();
+    await reglas.editar((crudas) => {
+      crudas.confianza.regla_pais = 0.95;
+      crudas.confianza.etiqueta_generica = 0.95;
+    });
+    const ec: Respuesta = JSON.parse(await mapearCrudo(reglas.herramientas, "ec-corp-andina"));
+    expect(item(ec.data, "RUC")).toMatchObject({
+      estado: "requiere_confirmacion",
+      regla: "regla_pais",
+      confianza: 0.95,
+    });
+    const generica: Respuesta = JSON.parse(await mapearCrudo(reglas.herramientas, "zz-generica-co"));
+    expect(item(generica.data, "Identificación tributaria")).toMatchObject({
+      estado: "requiere_confirmacion",
+      regla: "etiqueta_generica",
+    });
+  });
+});
