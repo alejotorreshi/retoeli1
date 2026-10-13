@@ -6,13 +6,14 @@ import { CODIGO_ERROR } from "@/config/constants/errors.constants.ts";
 import { ARCHIVO_REGLAS } from "@/config/constants/files.constants.ts";
 import { VERSION_REGLAS } from "@/config/constants/knowledge.constants.ts";
 import { LIMITE_LECTURA_BYTES, LIMITES_REGLAS } from "@/config/constants/limits.constants.ts";
+import { APLICA_NOTA, REGLA_MAPEO } from "@/config/constants/mapping.constants.ts";
 import {
   PATRON_PAIS,
   PATRON_PLANTILLA_CONOCIMIENTO,
   PATRON_RUTA_MAESTRO,
   PATRON_TEXTO_NO_VACIO,
 } from "@/config/constants/patterns.constants.ts";
-import { APLICACIONES_NOTA, type Reglas } from "@/domain/reglas.ts";
+import type { ReglaMapeo, Reglas } from "@/domain/reglas.ts";
 import { fallo, type Resultado } from "@/domain/resultado.ts";
 import { validarTextosDeReglas } from "@/domain/validar-reglas.ts";
 
@@ -26,20 +27,19 @@ const rutaMaestro = z.string().regex(PATRON_RUTA_MAESTRO);
 const pais = z.string().regex(PATRON_PAIS);
 const plantilla = z.string().regex(PATRON_PLANTILLA_CONOCIMIENTO);
 
+const confianzaPorRegla = {
+  [REGLA_MAPEO.GLOSARIO_EXACTO]: confianza,
+  [REGLA_MAPEO.GLOSARIO_NORMALIZADO]: confianza,
+  [REGLA_MAPEO.CLAVE_DIRECTA]: confianza,
+  [REGLA_MAPEO.REGLA_PAIS]: confianza,
+  [REGLA_MAPEO.ETIQUETA_GENERICA]: confianza,
+  [REGLA_MAPEO.SIN_FUENTE]: confianza,
+} satisfies Record<ReglaMapeo, typeof confianza>;
+
 export const esquemaReglas = z
   .object({
     version: z.literal(VERSION_REGLAS),
-    confianza: z
-      .object({
-        umbral: z.number().gt(0).max(1),
-        glosario_exacto: confianza,
-        glosario_normalizado: confianza,
-        clave_directa: confianza,
-        regla_pais: confianza,
-        etiqueta_generica: confianza,
-        sin_fuente: confianza,
-      })
-      .strict(),
+    confianza: z.object({ umbral: z.number().gt(0).max(1), ...confianzaPorRegla }).strict(),
     identificador_tributario: z
       .object({
         ruta: rutaMaestro,
@@ -53,7 +53,7 @@ export const esquemaReglas = z
       .array(z.string().max(LIMITES_REGLAS.etiqueta).regex(PATRON_TEXTO_NO_VACIO))
       .max(LIMITES_REGLAS.elementos),
     notas_contexto: z
-      .array(z.object({ ruta: rutaMaestro, aplica: z.enum(APLICACIONES_NOTA), texto }).strict())
+      .array(z.object({ ruta: rutaMaestro, aplica: z.enum(APLICA_NOTA), texto }).strict())
       .max(LIMITES_REGLAS.elementos),
     soportes: z
       .object({

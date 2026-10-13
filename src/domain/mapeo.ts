@@ -1,16 +1,23 @@
 import { CODIGO_ERROR } from "@/config/constants/errors.constants.ts";
-import { ESTADO_CAMPO } from "@/config/constants/mapping.constants.ts";
+import { VARIABLES_NOTA_DEL_MAESTRO } from "@/config/constants/maestro.constants.ts";
+import {
+  APLICA_NOTA,
+  CLAVES_PROHIBIDAS,
+  ESTADO_CAMPO,
+  NOMBRE_TEXTO_REGLA,
+  REGLA_MAPEO,
+  REGLAS_SIEMPRE_POR_CONFIRMAR,
+  TIPO_HOJA_MAESTRO,
+  VARIABLE_NOTA,
+} from "@/config/constants/mapping.constants.ts";
+import {
+  PATRON_ESPACIO,
+  PATRON_SEGMENTO_RUTA,
+  PATRON_TEXTO_NO_VACIO,
+} from "@/config/constants/patterns.constants.ts";
 import { aTexto, normalizarEtiqueta } from "@/domain/normalizar.ts";
 import { renderizarTextoPlano } from "@/domain/plantillas.ts";
-import {
-  type EscalaConfianza,
-  type EstadoCampo,
-  REGLAS_SIEMPRE_POR_CONFIRMAR,
-  type ReglaMapeo,
-  type Reglas,
-  VARIABLES_NOTA_DEL_MAESTRO,
-  type VariableNota,
-} from "@/domain/reglas.ts";
+import type { EscalaConfianza, EstadoCampo, ReglaMapeo, Reglas, VariableNota } from "@/domain/reglas.ts";
 import { exito, fallo, type Resultado } from "@/domain/resultado.ts";
 
 export type Maestro = Readonly<Record<string, unknown>>;
@@ -44,9 +51,9 @@ export type CampoMapeado = {
 export type ConteoEstados = Readonly<Record<EstadoCampo, number>>;
 
 export type HojaMaestro =
-  | { readonly tipo: "texto"; readonly valor: string }
-  | { readonly tipo: "no_textual" }
-  | { readonly tipo: "ausente" };
+  | { readonly tipo: typeof TIPO_HOJA_MAESTRO.TEXTO; readonly valor: string }
+  | { readonly tipo: typeof TIPO_HOJA_MAESTRO.NO_TEXTUAL }
+  | { readonly tipo: typeof TIPO_HOJA_MAESTRO.AUSENTE };
 
 export const NOTA_DATO_NO_TEXTUAL =
   "El maestro tiene este dato, pero no como texto: confirmar qué valor escribir";
@@ -67,13 +74,9 @@ type ContextoMapeo = {
   readonly identificador: string | null;
 };
 
-const SEGMENTO_RUTA = /^[a-z_]+$/;
-const CLAVES_PROHIBIDAS: ReadonlySet<string> = new Set(["__proto__", "constructor", "prototype"]);
-const ESPACIO = / /g;
-const TEXTO_CON_CONTENIDO = /\S/;
 const SEPARADOR_NOTAS = ". ";
-const AUSENTE: HojaMaestro = { tipo: "ausente" };
-const NO_TEXTUAL: HojaMaestro = { tipo: "no_textual" };
+const AUSENTE: HojaMaestro = { tipo: TIPO_HOJA_MAESTRO.AUSENTE };
+const NO_TEXTUAL: HojaMaestro = { tipo: TIPO_HOJA_MAESTRO.NO_TEXTUAL };
 
 function agregarSinColision(mapa: Map<string, string>, clave: string, ruta: string): boolean {
   const previa = mapa.get(clave);
@@ -95,7 +98,7 @@ export function construirIndiceGlosario(glosario: Glosario): Resultado<IndiceGlo
 }
 
 function segmentoValido(segmento: string): boolean {
-  return SEGMENTO_RUTA.test(segmento) && !CLAVES_PROHIBIDAS.has(segmento);
+  return PATRON_SEGMENTO_RUTA.test(segmento) && !CLAVES_PROHIBIDAS.has(segmento);
 }
 
 function valorEnRuta(maestro: Maestro, ruta: string): unknown {
@@ -111,8 +114,9 @@ function valorEnRuta(maestro: Maestro, ruta: string): unknown {
 }
 
 function hojaDe(valor: unknown): HojaMaestro {
-  if (typeof valor === "number") return { tipo: "texto", valor: aTexto(valor) };
-  if (typeof valor === "string") return TEXTO_CON_CONTENIDO.test(valor) ? { tipo: "texto", valor } : AUSENTE;
+  if (typeof valor === "number") return { tipo: TIPO_HOJA_MAESTRO.TEXTO, valor: aTexto(valor) };
+  if (typeof valor === "string")
+    return PATRON_TEXTO_NO_VACIO.test(valor) ? { tipo: TIPO_HOJA_MAESTRO.TEXTO, valor } : AUSENTE;
   if (typeof valor === "boolean") return NO_TEXTUAL;
   if (typeof valor === "object" && valor !== null && Object.keys(valor).length > 0) return NO_TEXTUAL;
   return AUSENTE;
@@ -124,17 +128,18 @@ export function leerHoja(maestro: Maestro, ruta: string): HojaMaestro {
 
 export function leerRuta(maestro: Maestro, ruta: string): string | null {
   const hoja = leerHoja(maestro, ruta);
-  return hoja.tipo === "texto" ? hoja.valor : null;
+  return hoja.tipo === TIPO_HOJA_MAESTRO.TEXTO ? hoja.valor : null;
 }
 
 function rutaCandidata(etiqueta: string, indice: IndiceGlosario): Fuente | null {
   const exacta = indice.exacto.get(etiqueta.normalize("NFC"));
-  if (exacta !== undefined) return { ruta: exacta, regla: "glosario_exacto" };
+  if (exacta !== undefined) return { ruta: exacta, regla: REGLA_MAPEO.GLOSARIO_EXACTO };
   const normalizada = normalizarEtiqueta(etiqueta);
   const porNormalizacion = indice.normalizado.get(normalizada);
-  if (porNormalizacion !== undefined) return { ruta: porNormalizacion, regla: "glosario_normalizado" };
-  const claveDirecta = normalizada.replace(ESPACIO, "_");
-  return segmentoValido(claveDirecta) ? { ruta: claveDirecta, regla: "clave_directa" } : null;
+  if (porNormalizacion !== undefined)
+    return { ruta: porNormalizacion, regla: REGLA_MAPEO.GLOSARIO_NORMALIZADO };
+  const claveDirecta = normalizada.replace(PATRON_ESPACIO, "_");
+  return segmentoValido(claveDirecta) ? { ruta: claveDirecta, regla: REGLA_MAPEO.CLAVE_DIRECTA } : null;
 }
 
 function propia(registro: Readonly<Record<string, string>>, clave: string): string | null {
@@ -150,8 +155,8 @@ function variablesDeNota(
     if (valor !== null) variables.set(nombre, valor);
   };
   for (const [nombre, ruta] of VARIABLES_NOTA_DEL_MAESTRO) fijar(nombre, leerRuta(entrada.maestro, ruta));
-  fijar("pais", entrada.pais);
-  fijar("identificador", identificador);
+  fijar(VARIABLE_NOTA.PAIS, entrada.pais);
+  fijar(VARIABLE_NOTA.IDENTIFICADOR, identificador);
   return Object.fromEntries(variables);
 }
 
@@ -175,28 +180,35 @@ function ajustarPorIdentificador(
 ): Resultado<Ajuste> {
   const tributario = contexto.entrada.reglas.identificador_tributario;
   const extranjero: readonly (readonly [string, string])[] = contexto.extranjero
-    ? [[tributario.nota_extranjero, "identificador_tributario.nota_extranjero"]]
+    ? [[tributario.nota_extranjero, NOMBRE_TEXTO_REGLA.NOTA_EXTRANJERO]]
     : [];
   if (contexto.genericas.has(normalizarEtiqueta(etiqueta))) {
     const notas = renderizarNotas(
-      [[tributario.nota_generica, "identificador_tributario.nota_generica"], ...extranjero],
+      [[tributario.nota_generica, NOMBRE_TEXTO_REGLA.NOTA_GENERICA], ...extranjero],
       contexto.variables,
     );
     if (!notas.ok) return notas;
-    return exito({ regla: "etiqueta_generica", notas: notas.data, propuesta: contexto.identificador });
+    return exito({
+      regla: REGLA_MAPEO.ETIQUETA_GENERICA,
+      notas: notas.data,
+      propuesta: contexto.identificador,
+    });
   }
   if (fuente.ruta === tributario.ruta && contexto.extranjero) {
     const notas = renderizarNotas(extranjero, contexto.variables);
     if (!notas.ok) return notas;
-    return exito({ regla: "regla_pais", notas: notas.data, propuesta: null });
+    return exito({ regla: REGLA_MAPEO.REGLA_PAIS, notas: notas.data, propuesta: null });
   }
   return exito({ regla: fuente.regla, notas: [], propuesta: null });
 }
 
 function notasDeContexto(ruta: string, contexto: ContextoMapeo): Resultado<readonly string[]> {
   const aplicables = contexto.entrada.reglas.notas_contexto.flatMap((nota, indice) => {
-    const aplica = nota.aplica === "siempre" || (nota.aplica === "extranjero" && contexto.extranjero);
-    return nota.ruta === ruta && aplica ? [[nota.texto, `notas_contexto[${indice}]`] as const] : [];
+    const aplica =
+      nota.aplica === APLICA_NOTA.SIEMPRE || (nota.aplica === APLICA_NOTA.EXTRANJERO && contexto.extranjero);
+    return nota.ruta === ruta && aplica
+      ? [[nota.texto, `${NOMBRE_TEXTO_REGLA.NOTAS_CONTEXTO}[${indice}]`] as const]
+      : [];
   });
   return renderizarNotas(aplicables, contexto.variables);
 }
@@ -206,7 +218,7 @@ function campoFaltante(etiqueta: string, reglas: Reglas): CampoMapeado {
     etiqueta,
     ruta: null,
     estado: ESTADO_CAMPO.FALTANTE,
-    regla: "sin_fuente",
+    regla: REGLA_MAPEO.SIN_FUENTE,
     confianza: reglas.confianza.sin_fuente,
     valor: null,
     nota: null,
@@ -259,7 +271,10 @@ function mapearValor(
 
 function fuenteDe(etiqueta: string, contexto: ContextoMapeo): Fuente | null {
   if (contexto.genericas.has(normalizarEtiqueta(etiqueta))) {
-    return { ruta: contexto.entrada.reglas.identificador_tributario.ruta, regla: "etiqueta_generica" };
+    return {
+      ruta: contexto.entrada.reglas.identificador_tributario.ruta,
+      regla: REGLA_MAPEO.ETIQUETA_GENERICA,
+    };
   }
   return rutaCandidata(etiqueta, contexto.entrada.indice);
 }
@@ -269,8 +284,8 @@ function mapearEtiqueta(etiqueta: string, contexto: ContextoMapeo): Resultado<Ca
   const fuente = fuenteDe(etiqueta, contexto);
   if (fuente === null) return exito(campoFaltante(etiqueta, reglas));
   const hoja = leerHoja(maestro, fuente.ruta);
-  if (hoja.tipo === "ausente") return exito(campoFaltante(etiqueta, reglas));
-  if (hoja.tipo === "no_textual") return exito(campoNoTextual(etiqueta, fuente, reglas));
+  if (hoja.tipo === TIPO_HOJA_MAESTRO.AUSENTE) return exito(campoFaltante(etiqueta, reglas));
+  if (hoja.tipo === TIPO_HOJA_MAESTRO.NO_TEXTUAL) return exito(campoNoTextual(etiqueta, fuente, reglas));
   return mapearValor(etiqueta, fuente, hoja.valor, contexto);
 }
 

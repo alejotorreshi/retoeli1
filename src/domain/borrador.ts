@@ -1,13 +1,8 @@
+import { RUTA_MAESTRO, type RUTAS_BORRADOR } from "@/config/constants/maestro.constants.ts";
 import { ESTADO_SOPORTE } from "@/config/constants/supports.constants.ts";
 import { type Checklist, type SoporteEvaluado, TEXTO_CELDA_VACIA } from "@/domain/checklist.ts";
 import { leerRuta, type Maestro } from "@/domain/mapeo.ts";
 import type { Solicitud } from "@/domain/tipos.ts";
-
-export const RUTAS_BORRADOR = [
-  "razon_social",
-  "contacto_financiero.nombre",
-  "contacto_financiero.cargo",
-] as const;
 
 export type RutaBorrador = (typeof RUTAS_BORRADOR)[number];
 
@@ -66,9 +61,9 @@ export function construirDatosBorrador(
     para: solicitud.de,
     asunto: asuntoRespuesta(solicitud),
     cliente: solicitud.cliente,
-    razon_social: leerDelMaestro(maestro, "razon_social"),
-    firmante_nombre: leerDelMaestro(maestro, "contacto_financiero.nombre"),
-    firmante_cargo: leerDelMaestro(maestro, "contacto_financiero.cargo"),
+    razon_social: leerDelMaestro(maestro, RUTA_MAESTRO.RAZON_SOCIAL),
+    firmante_nombre: leerDelMaestro(maestro, RUTA_MAESTRO.CONTACTO_FINANCIERO_NOMBRE),
+    firmante_cargo: leerDelMaestro(maestro, RUTA_MAESTRO.CONTACTO_FINANCIERO_CARGO),
     formulario: nombreFormulario,
     soportes_adjuntos: adjuntos(checklist.soportes),
     pendientes: pendientes.map((texto) => ({ texto })),

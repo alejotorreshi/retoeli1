@@ -11,3 +11,5 @@ export const PATRON_FECHA: RegExp = /^\d{4}-\d{2}-\d{2}$/;
 export const PATRON_CELDA: RegExp = /^([A-Z]{1,3})([1-9][0-9]{0,6})$/;
 export const PATRON_NOMBRE_HOJA: RegExp = /^[^*?:\\/[\]']([^*?:\\/[\]]*[^*?:\\/[\]'])?$/;
 export const PATRON_TIPO_SOPORTE: RegExp = /^[a-z0-9_]{1,64}$/;
+export const PATRON_SEGMENTO_RUTA: RegExp = /^[a-z_]+$/;
+export const PATRON_ESPACIO: RegExp = / /g;

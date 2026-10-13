@@ -1,5 +1,11 @@
+import {
+  NOMBRE_TEXTO_REGLA,
+  VALOR_DE_MUESTRA,
+  VARIABLES_AVISO_SOPORTE,
+  VARIABLES_NOTA_CAMPO,
+} from "@/config/constants/mapping.constants.ts";
 import { renderizarTextoPlano } from "@/domain/plantillas.ts";
-import { type Reglas, VARIABLES_AVISO_SOPORTE, VARIABLES_NOTA_CAMPO } from "@/domain/reglas.ts";
+import type { Reglas } from "@/domain/reglas.ts";
 import { exito, type Resultado } from "@/domain/resultado.ts";
 
 type TextoDeRegla = {
@@ -8,28 +14,26 @@ type TextoDeRegla = {
   readonly variables: readonly string[];
 };
 
-const VALOR_DE_MUESTRA = "x";
-
 function textosDe(reglas: Reglas): readonly TextoDeRegla[] {
   const tributario = reglas.identificador_tributario;
   return [
     {
-      nombre: "identificador_tributario.nota_extranjero",
+      nombre: NOMBRE_TEXTO_REGLA.NOTA_EXTRANJERO,
       texto: tributario.nota_extranjero,
       variables: VARIABLES_NOTA_CAMPO,
     },
     {
-      nombre: "identificador_tributario.nota_generica",
+      nombre: NOMBRE_TEXTO_REGLA.NOTA_GENERICA,
       texto: tributario.nota_generica,
       variables: VARIABLES_NOTA_CAMPO,
     },
     ...reglas.notas_contexto.map((nota, indice) => ({
-      nombre: `notas_contexto[${indice}]`,
+      nombre: `${NOMBRE_TEXTO_REGLA.NOTAS_CONTEXTO}[${indice}]`,
       texto: nota.texto,
       variables: VARIABLES_NOTA_CAMPO,
     })),
     {
-      nombre: "soportes.aviso_emisor_distinto",
+      nombre: NOMBRE_TEXTO_REGLA.AVISO_EMISOR,
       texto: reglas.soportes.aviso_emisor_distinto,
       variables: VARIABLES_AVISO_SOPORTE,
     },

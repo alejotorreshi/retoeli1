@@ -1,4 +1,5 @@
 import { describe, expect, test } from "bun:test";
+import { VARIABLES_NOTA_PERMITIDAS } from "@/config/constants/mapping.constants.ts";
 import {
   type CampoMapeado,
   construirIndiceGlosario,
@@ -8,7 +9,6 @@ import {
 } from "@/domain/mapeo.ts";
 import { enmascarar, POLITICA_PII, presentarCampo } from "@/domain/pii.ts";
 import type { Reglas } from "@/domain/reglas.ts";
-import { VARIABLES_NOTA_PERMITIDAS } from "@/domain/reglas.ts";
 
 const FIXTURES = new URL("../../reto-01/fixtures/reto-01/", import.meta.url);
 

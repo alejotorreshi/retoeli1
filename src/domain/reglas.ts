@@ -1,39 +1,17 @@
-import type { ESTADO_CAMPO } from "@/config/constants/mapping.constants.ts";
+import type {
+  APLICA_NOTA,
+  ESTADO_CAMPO,
+  REGLA_MAPEO,
+  VARIABLE_NOTA,
+} from "@/config/constants/mapping.constants.ts";
 import type { ValorDe } from "@/config/types/valor-de.type.ts";
-export const REGLAS_MAPEO = [
-  "glosario_exacto",
-  "glosario_normalizado",
-  "clave_directa",
-  "regla_pais",
-  "etiqueta_generica",
-  "sin_fuente",
-] as const;
-
-export type ReglaMapeo = (typeof REGLAS_MAPEO)[number];
+export type ReglaMapeo = ValorDe<typeof REGLA_MAPEO>;
 
 export type EstadoCampo = ValorDe<typeof ESTADO_CAMPO>;
 
-export const REGLAS_SIEMPRE_POR_CONFIRMAR: ReadonlySet<ReglaMapeo> = new Set([
-  "regla_pais",
-  "etiqueta_generica",
-]);
+export type VariableNota = ValorDe<typeof VARIABLE_NOTA>;
 
-export const VARIABLES_NOTA_CAMPO = ["moneda", "ano", "pais", "identificador"] as const;
-
-export const VARIABLES_AVISO_SOPORTE = ["pais_emisor"] as const;
-
-export const VARIABLES_NOTA_PERMITIDAS = [...VARIABLES_NOTA_CAMPO, ...VARIABLES_AVISO_SOPORTE] as const;
-
-export type VariableNota = (typeof VARIABLES_NOTA_PERMITIDAS)[number];
-
-export const VARIABLES_NOTA_DEL_MAESTRO: readonly (readonly [VariableNota, string])[] = [
-  ["moneda", "ingresos_ultimo_ano.moneda"],
-  ["ano", "ingresos_ultimo_ano.ano"],
-];
-
-export const APLICACIONES_NOTA = ["siempre", "extranjero"] as const;
-
-export type AplicaNota = (typeof APLICACIONES_NOTA)[number];
+export type AplicaNota = ValorDe<typeof APLICA_NOTA>;
 
 export type EscalaConfianza = Readonly<Record<ReglaMapeo, number>> & { readonly umbral: number };
 

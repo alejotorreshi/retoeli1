@@ -1,4 +1,4 @@
-import { ESTADO_CAMPO } from "@/config/constants/mapping.constants.ts";
+import { ESTADO_CAMPO, NOMBRE_TEXTO_REGLA, VARIABLE_NOTA } from "@/config/constants/mapping.constants.ts";
 import {
   ESTADO_SOPORTE,
   ESTADO_VIGENCIA,
@@ -71,7 +71,6 @@ export const TEXTO_CELDA_VACIA = "—";
 export const ESTADO_LISTO = "LISTO";
 export const ESTADO_BLOQUEADO = "BLOQUEADO";
 export const NOTA_POR_CONFIRMAR = "confirmar con el cliente";
-const NOMBRE_AVISO_EMISOR = "soportes.aviso_emisor_distinto";
 
 function avisoEmisor(
   entrada: SoporteIndice,
@@ -81,8 +80,8 @@ function avisoEmisor(
   if (entrada.pais_emisor === paisCliente) return exito(null);
   return renderizarTextoPlano(
     reglas.aviso_emisor_distinto,
-    { pais_emisor: entrada.pais_emisor },
-    NOMBRE_AVISO_EMISOR,
+    { [VARIABLE_NOTA.PAIS_EMISOR]: entrada.pais_emisor },
+    NOMBRE_TEXTO_REGLA.AVISO_EMISOR,
   );
 }
 
