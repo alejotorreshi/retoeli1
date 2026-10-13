@@ -2,7 +2,11 @@ import { describe, expect, test } from "bun:test";
 import { existsSync, readFileSync } from "node:fs";
 import { join, posix } from "node:path";
 import { ACCION, CODIGO_AGENTE, MOTIVO_FIN, TIPO_EVENTO } from "@/config/constants/agent.constants.ts";
-import { DECISION_CONFIRMACION } from "@/config/constants/confirmacion.constants.ts";
+import {
+  DECISION_CONFIRMACION,
+  ESTADO_COMPUERTA,
+  EVENTO_COMPUERTA,
+} from "@/config/constants/confirmacion.constants.ts";
 import { CODIGO_ERROR, CODIGO_FS } from "@/config/constants/errors.constants.ts";
 import { ARCHIVOS_PAQUETE, ARCHIVOS_SALIDA } from "@/config/constants/files.constants.ts";
 import { FORMATO, TIPO_PLANTILLA } from "@/config/constants/forms.constants.ts";
@@ -133,6 +137,8 @@ const FAMILIAS_DE_CODIGOS: readonly Readonly<Record<string, string>>[] = [
   NIVELES_LOG,
   BOOLEANO_ENV,
   DECISION_CONFIRMACION,
+  ESTADO_COMPUERTA,
+  EVENTO_COMPUERTA,
 ];
 
 function escaparRegex(texto: string): string {

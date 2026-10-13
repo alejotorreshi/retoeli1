@@ -6,6 +6,7 @@ export const DECISION_CONFIRMACION = {
 } as const;
 
 export const MAX_PALABRAS_CONFIRMACION = 12;
+export const SIGNO_PREGUNTA = "?";
 
 export const AFIRMACIONES: ReadonlySet<string> = new Set([
   "si",
@@ -105,3 +106,14 @@ export const CONDICIONALES: ReadonlySet<string> = new Set([
   "cuando",
   "primero",
 ]);
+
+export const ESTADO_COMPUERTA = {
+  LIBRE: "libre",
+  PENDIENTE: "pendiente",
+} as const;
+
+export const EVENTO_COMPUERTA = {
+  ARMADO: "armado",
+  BLOQUEADO: "bloqueado",
+  ENVIADO: "enviado",
+} as const;

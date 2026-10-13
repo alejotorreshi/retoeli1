@@ -193,6 +193,56 @@ export const RESUMEN_HERRAMIENTA = {
     `${caso}: envío simulado registrado con bloqueos (${listaDeBloqueos(bloqueos)})`,
 } as const;
 
+const VINETA = "- ";
+const SALTO_DE_LINEA = "\n";
+
+function vinetas(lineas: readonly string[]): string {
+  return lineas.map((linea) => `${VINETA}${linea}`).join(SALTO_DE_LINEA);
+}
+
+type CasoPorConfirmar = { readonly caso: string; readonly bloqueos: readonly string[] };
+
+function estadoPorConfirmar({ caso, bloqueos }: CasoPorConfirmar): string {
+  const estado = bloqueos.length === 0 ? ESTADO_PAQUETE.listo : TEXTO_CHECKLIST.bloqueadoPor(bloqueos);
+  return `${caso}: ${estado}`;
+}
+
+export const TEXTO_CONFIRMACION = {
+  unCaso: (caso: string, bloqueos: readonly string[]): string =>
+    bloqueos.length === 0
+      ? `El paquete de ${caso} queda ${ESTADO_PAQUETE.listo} para firma. Responde "envía" para registrar el envío simulado, o cualquier otra cosa para no enviarlo. ¿Confirmas el envío simulado de ${caso}?`
+      : `El paquete de ${caso} queda ${ESTADO_PAQUETE.bloqueado}: ${listaDeBloqueos(bloqueos)}. Responde "envía" para registrar el envío simulado con esos bloqueos, o cualquier otra cosa para no enviarlo. ¿Confirmas el envío simulado de ${caso}?`,
+  variosCasos: (casos: readonly CasoPorConfirmar[]): string =>
+    [
+      "Quedaron armados estos paquetes:",
+      vinetas(casos.map(estadoPorConfirmar)),
+      'Cada confirmación registra un solo envío simulado. Responde "envía <caso>" con el caso que quieres registrar, o cualquier otra cosa para no enviar ninguno.',
+      "¿Cuál caso confirmas para el envío simulado?",
+    ].join(SALTO_DE_LINEA),
+} as const;
+
+const SIGUIENTE_PASO = {
+  [HERRAMIENTA.LEER_SOLICITUD]: (caso: string): string =>
+    `leer la solicitud de ${caso} con ${nombreVisible(HERRAMIENTA.LEER_SOLICITUD)}`,
+  [HERRAMIENTA.MAPEAR_CAMPOS]: (caso: string): string =>
+    `mapear los campos de ${caso} con ${PROVEEDOR_MAPEAR_CAMPOS}`,
+  [HERRAMIENTA.GENERAR_FORMULARIO]: (caso: string): string =>
+    `generar el formulario de ${caso} con ${nombreVisible(HERRAMIENTA.GENERAR_FORMULARIO)}`,
+  [HERRAMIENTA.ARMAR_PAQUETE]: (caso: string): string =>
+    `armar el paquete de ${caso} con ${nombreVisible(HERRAMIENTA.ARMAR_PAQUETE)}`,
+  [HERRAMIENTA.SIMULAR_ENVIO]: (caso: string): string =>
+    `confirmar el envío simulado de ${caso}: responde "envía" para registrarlo o cualquier otra cosa para no enviarlo`,
+} as const satisfies Record<ValorDe<typeof HERRAMIENTA>, (caso: string) => string>;
+
+export const TEXTO_CIERRE = {
+  completado: (resumenes: readonly string[]): string => `Completé:${SALTO_DE_LINEA}${vinetas(resumenes)}`,
+  falta: (pasos: readonly string[]): string => `Falta:${SALTO_DE_LINEA}${vinetas(pasos)}`,
+  sinPasos: "No alcancé a completar ningún paso en este turno. Escríbeme de nuevo para continuar.",
+  siguientePaso: SIGUIENTE_PASO,
+  instruccionTope:
+    "Llegaste al tope de pasos de este turno. Sin llamar herramientas, resume en texto plano lo que se completó y lo que falta según los resultados anteriores.",
+} as const;
+
 const SESION_SIGUE_ABIERTA = "La sesión sigue abierta; puedes volver a intentarlo.";
 
 function conSesionAbierta(mensaje: string): string {
