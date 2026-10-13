@@ -51,6 +51,10 @@ export function errorFromException(abortedByCaller: boolean): ErrorLlm {
   return errorOfType(abortedByCaller ? TIPO_ERROR_LLM.ABORTADO : TIPO_ERROR_LLM.RED, null);
 }
 
+export function timeoutError(): ErrorLlm {
+  return errorOfType(TIPO_ERROR_LLM.TIMEOUT, null);
+}
+
 export function invalidResponseError(): ErrorLlm {
   return errorOfType(TIPO_ERROR_LLM.RESPUESTA_INVALIDA, null);
 }

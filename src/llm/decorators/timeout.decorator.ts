@@ -1,15 +1,7 @@
-import { TIPO_ERROR_LLM, TIPOS_ERROR_LLM_REINTENTABLES } from "@/config/constants/llm.constants.ts";
+import { timeoutError } from "@/llm/mappers/provider-error.mapper.ts";
 import type { AdaptadorLlm, ResultadoEnvio } from "@/llm/types/llm.type.ts";
 
-const TIMED_OUT: ResultadoEnvio = {
-  ok: false,
-  error: {
-    tipo: TIPO_ERROR_LLM.TIMEOUT,
-    reintentable: TIPOS_ERROR_LLM_REINTENTABLES.has(TIPO_ERROR_LLM.TIMEOUT),
-    estado: null,
-    reintentarTrasMs: null,
-  },
-};
+const TIMED_OUT: ResultadoEnvio = { ok: false, error: timeoutError() };
 
 export function withTimeout(base: AdaptadorLlm, ms: number): AdaptadorLlm {
   return {

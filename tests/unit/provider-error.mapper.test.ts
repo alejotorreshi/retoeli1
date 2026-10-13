@@ -13,6 +13,7 @@ import {
   errorFromFinishReason,
   errorFromStatus,
   invalidResponseError,
+  timeoutError,
 } from "@/llm/mappers/provider-error.mapper.ts";
 
 const SEGUNDOS_REINTENTO = 3;
@@ -114,6 +115,15 @@ describe("errores sin estado HTTP", () => {
     expect(errorFromException(false).reintentable).toBe(true);
     expect(errorFromException(true).tipo).toBe(TIPO_ERROR_LLM.ABORTADO);
     expect(errorFromException(true).reintentable).toBe(false);
+  });
+
+  test("un plazo vencido es timeout y se reintenta", () => {
+    expect(timeoutError()).toEqual({
+      tipo: TIPO_ERROR_LLM.TIMEOUT,
+      reintentable: true,
+      estado: null,
+      reintentarTrasMs: null,
+    });
   });
 
   test("una respuesta ilegible es respuesta_invalida y se reintenta", () => {
