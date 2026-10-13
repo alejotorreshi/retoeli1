@@ -1,6 +1,6 @@
-export const FORMATOS = ["xlsx", "pdf", "portal"] as const;
-
-export type Formato = (typeof FORMATOS)[number];
+import type { FORMATO, TIPO_PLANTILLA } from "@/config/constants/forms.constants.ts";
+import type { ValorDe } from "@/config/types/valor-de.type.ts";
+export type Formato = ValorDe<typeof FORMATO>;
 
 export type FechaISO = `${number}-${number}-${number}`;
 
@@ -29,11 +29,19 @@ export type CampoLista = {
   readonly obligatorio: boolean;
 };
 
-export type TipoPlantilla = "celdas" | "campos";
+export type TipoPlantilla = ValorDe<typeof TIPO_PLANTILLA>;
 
 export type Plantilla =
-  | { readonly tipo: "celdas"; readonly archivo: string; readonly campos: readonly CampoCelda[] }
-  | { readonly tipo: "campos"; readonly archivo: string; readonly campos: readonly CampoLista[] };
+  | {
+      readonly tipo: typeof TIPO_PLANTILLA.CELDAS;
+      readonly archivo: string;
+      readonly campos: readonly CampoCelda[];
+    }
+  | {
+      readonly tipo: typeof TIPO_PLANTILLA.CAMPOS;
+      readonly archivo: string;
+      readonly campos: readonly CampoLista[];
+    };
 
 export type CampoSolicitado = {
   readonly etiqueta: string;

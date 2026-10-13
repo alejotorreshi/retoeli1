@@ -2,6 +2,7 @@ import { type ContextoCaso, cargarContextoCaso } from "@/application/contexto-ca
 import { escribirMapeo, mapeoCanonico } from "@/application/mapear-campos.ts";
 import type { Entorno } from "@/application/puertos.ts";
 import { CODIGO_ERROR } from "@/config/constants/errors.constants.ts";
+import { FORMATO, TIPO_PLANTILLA } from "@/config/constants/forms.constants.ts";
 import { compararMapeo, type ItemMapeo } from "@/domain/comparar-mapeo.ts";
 import { construirFilas } from "@/domain/formulario.ts";
 import { type CampoMapeado, type ConteoEstados, contarEstados } from "@/domain/mapeo.ts";
@@ -42,10 +43,10 @@ async function generarXlsx(
 ): Promise<Resultado<DatosFormulario>> {
   const formulario = construirFilas(contexto.plantilla, canonico);
   if (!formulario.ok) return formulario;
-  if (formulario.data.tipo !== "celdas") return fallo(CODIGO_ERROR.PLANTILLA_INVALIDA);
+  if (formulario.data.tipo !== TIPO_PLANTILLA.CELDAS) return fallo(CODIGO_ERROR.PLANTILLA_INVALIDA);
   const bytes = await entorno.formularios.xlsx(formulario.data.filas, entorno.reloj.hoy());
   const ruta = await entorno.salida.binario(contexto.caso, "formularioXlsx", bytes);
-  return cerrar(contexto, canonico, entorno, ruta, "xlsx");
+  return cerrar(contexto, canonico, entorno, ruta, FORMATO.XLSX);
 }
 
 async function generarPdf(
@@ -58,7 +59,7 @@ async function generarPdf(
   const entrada = { caso: contexto.caso, cliente: contexto.solicitud.cliente, filas: formulario.data.filas };
   const bytes = await entorno.formularios.pdf(entrada, entorno.reloj.hoy());
   const ruta = await entorno.salida.binario(contexto.caso, "formularioPdf", bytes);
-  return cerrar(contexto, canonico, entorno, ruta, "pdf");
+  return cerrar(contexto, canonico, entorno, ruta, FORMATO.PDF);
 }
 
 async function generarPortal(
@@ -73,7 +74,7 @@ async function generarPortal(
   const texto = renderizarPlantilla(plantilla.data, datos, contexto.reglas.plantillas.valores_portal);
   if (!texto.ok) return texto;
   const ruta = await entorno.salida.escribir(contexto.caso, "valoresPortal", texto.data);
-  return cerrar(contexto, canonico, entorno, ruta, "portal", AVISO_FORMATO_NO_SOPORTADO);
+  return cerrar(contexto, canonico, entorno, ruta, FORMATO.PORTAL, AVISO_FORMATO_NO_SOPORTADO);
 }
 
 async function despachar(
@@ -82,11 +83,11 @@ async function despachar(
   entorno: Entorno,
 ): Promise<Resultado<DatosFormulario>> {
   switch (contexto.solicitud.formato) {
-    case "xlsx":
+    case FORMATO.XLSX:
       return generarXlsx(contexto, canonico, entorno);
-    case "pdf":
+    case FORMATO.PDF:
       return generarPdf(contexto, canonico, entorno);
-    case "portal":
+    case FORMATO.PORTAL:
       return generarPortal(contexto, canonico, entorno);
   }
 }

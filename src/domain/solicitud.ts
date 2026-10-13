@@ -1,9 +1,10 @@
+import { FORMATO, PLANTILLA_DEL_FORMATO, TIPO_PLANTILLA } from "@/config/constants/forms.constants.ts";
 import { ESTADO_CAMPO } from "@/config/constants/mapping.constants.ts";
 import { normalizarEtiqueta } from "@/domain/normalizar.ts";
 import type { Reglas } from "@/domain/reglas.ts";
 import type { CampoSolicitado, Formato, Plantilla, TipoPlantilla } from "@/domain/tipos.ts";
 
-export type PlantillasPresentes = { readonly celdas: boolean; readonly campos: boolean };
+export type PlantillasPresentes = Readonly<Record<TipoPlantilla, boolean>>;
 
 export type CampoAmbiguo = {
   readonly etiqueta: string;
@@ -11,21 +12,17 @@ export type CampoAmbiguo = {
   readonly propuesta: string | null;
 };
 
-const PLANTILLA_DEL_FORMATO: Readonly<Record<Formato, TipoPlantilla>> = {
-  xlsx: "celdas",
-  pdf: "campos",
-  portal: "campos",
-};
-
 export function elegirPlantilla(formato: Formato, presentes: PlantillasPresentes): TipoPlantilla | null {
-  if (presentes.celdas && presentes.campos) return PLANTILLA_DEL_FORMATO[formato];
-  if (presentes.celdas) return "celdas";
-  if (presentes.campos && formato !== "xlsx") return "campos";
+  const celdas = presentes[TIPO_PLANTILLA.CELDAS];
+  const campos = presentes[TIPO_PLANTILLA.CAMPOS];
+  if (celdas && campos) return PLANTILLA_DEL_FORMATO[formato];
+  if (celdas) return TIPO_PLANTILLA.CELDAS;
+  if (campos && formato !== FORMATO.XLSX) return TIPO_PLANTILLA.CAMPOS;
   return null;
 }
 
 export function camposSolicitados(plantilla: Plantilla): CampoSolicitado[] {
-  if (plantilla.tipo === "celdas") {
+  if (plantilla.tipo === TIPO_PLANTILLA.CELDAS) {
     return plantilla.campos.map((campo) => ({ etiqueta: campo.etiqueta, obligatorio: null }));
   }
   return plantilla.campos.map((campo) => ({ etiqueta: campo.etiqueta, obligatorio: campo.obligatorio }));

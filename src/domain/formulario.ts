@@ -1,4 +1,5 @@
 import { CODIGO_ERROR } from "@/config/constants/errors.constants.ts";
+import { TIPO_PLANTILLA } from "@/config/constants/forms.constants.ts";
 import { ESTADO_CAMPO } from "@/config/constants/mapping.constants.ts";
 import type { CampoMapeado } from "@/domain/mapeo.ts";
 import type { EstadoCampo } from "@/domain/reglas.ts";
@@ -20,8 +21,8 @@ export type FilaCelda = FilaFormulario & {
 };
 
 export type Formulario =
-  | { readonly tipo: "celdas"; readonly filas: readonly FilaCelda[] }
-  | { readonly tipo: "campos"; readonly filas: readonly FilaFormulario[] };
+  | { readonly tipo: typeof TIPO_PLANTILLA.CELDAS; readonly filas: readonly FilaCelda[] }
+  | { readonly tipo: typeof TIPO_PLANTILLA.CAMPOS; readonly filas: readonly FilaFormulario[] };
 
 type Ubicable = { readonly etiqueta: string };
 
@@ -55,15 +56,15 @@ export function construirFilas(
   plantilla: Plantilla,
   canonico: readonly CampoMapeado[],
 ): Resultado<Formulario> {
-  if (plantilla.tipo === "celdas") {
+  if (plantilla.tipo === TIPO_PLANTILLA.CELDAS) {
     const filas = emparejar(plantilla.campos, canonico, (campo, mapeado) => ({
       ...filaDe(mapeado, null),
       hoja: campo.hoja,
       celda_etiqueta: campo.celda_etiqueta,
       celda_valor: campo.celda_valor,
     }));
-    return filas.ok ? exito({ tipo: "celdas", filas: filas.data }) : filas;
+    return filas.ok ? exito({ tipo: TIPO_PLANTILLA.CELDAS, filas: filas.data }) : filas;
   }
   const filas = emparejar(plantilla.campos, canonico, (campo, mapeado) => filaDe(mapeado, campo.obligatorio));
-  return filas.ok ? exito({ tipo: "campos", filas: filas.data }) : filas;
+  return filas.ok ? exito({ tipo: TIPO_PLANTILLA.CAMPOS, filas: filas.data }) : filas;
 }

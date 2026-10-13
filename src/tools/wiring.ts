@@ -1,6 +1,7 @@
 import type { Entorno, Lectura, OrigenCopia, Registrar, Reloj } from "@/application/puertos.ts";
 import { CODIGO_ERROR } from "@/config/constants/errors.constants.ts";
 import { ARCHIVOS_CASO, ARCHIVOS_SALIDA } from "@/config/constants/files.constants.ts";
+import { TIPO_PLANTILLA } from "@/config/constants/forms.constants.ts";
 import { ZONA_HORARIA_POR_DEFECTO } from "@/config/constants/runtime.constants.ts";
 import { readToolEnv, type ToolEnv } from "@/config/env.ts";
 import { exito, fallo, type Resultado } from "@/domain/resultado.ts";
@@ -50,14 +51,14 @@ export type EntornoEjecucion = {
 };
 
 const ARCHIVO_PLANTILLA: Readonly<Record<TipoPlantilla, string>> = {
-  celdas: ARCHIVOS_CASO.plantillaCeldas,
-  campos: ARCHIVOS_CASO.plantillaCampos,
+  [TIPO_PLANTILLA.CELDAS]: ARCHIVOS_CASO.plantillaCeldas,
+  [TIPO_PLANTILLA.CAMPOS]: ARCHIVOS_CASO.plantillaCampos,
 };
 
 async function leerPlantilla(directorioCaso: string, tipo: TipoPlantilla): Promise<Lectura<Plantilla>> {
   const archivo = ARCHIVO_PLANTILLA[tipo];
   const ruta = rutaEnCaso(directorioCaso, archivo);
-  if (tipo === "celdas") {
+  if (tipo === TIPO_PLANTILLA.CELDAS) {
     const lectura = await leerJsonValidado(ruta, esquemaPlantillaCeldas);
     return lectura.estado === "ok"
       ? { estado: "ok", valor: { tipo, archivo, campos: lectura.valor } }

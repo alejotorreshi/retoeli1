@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { NOMBRES_RESERVADOS_PAQUETE } from "@/config/constants/files.constants.ts";
+import { FORMATO } from "@/config/constants/forms.constants.ts";
 import { LIMITES_FIXTURES } from "@/config/constants/limits.constants.ts";
 import {
   PATRON_ARCHIVO_SOPORTE,
@@ -13,7 +14,6 @@ import {
 import { HOJA_RESERVADA_XLSX, LIMITES_XLSX } from "@/config/constants/xlsx.constants.ts";
 import type { SoporteIndice } from "@/domain/checklist.ts";
 import { esFechaReal } from "@/domain/fecha.ts";
-import { FORMATOS } from "@/domain/tipos.ts";
 
 const textoCorto = z.string().max(LIMITES_FIXTURES.textoCorto);
 const etiqueta = z.string().min(1).max(LIMITES_FIXTURES.etiqueta);
@@ -72,7 +72,7 @@ export const esquemaSolicitud = z
     fecha: z.string().regex(PATRON_FECHA),
     pais: z.string().regex(PATRON_PAIS),
     cliente: textoCorto,
-    formato: z.enum(FORMATOS),
+    formato: z.enum(FORMATO),
     cuerpo: z.string().max(LIMITES_FIXTURES.cuerpo),
     adjuntos: z.array(textoCorto).max(LIMITES_FIXTURES.adjuntos),
   })

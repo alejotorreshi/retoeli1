@@ -1,5 +1,6 @@
 import type { Entorno } from "@/application/puertos.ts";
 import { CODIGO_ERROR } from "@/config/constants/errors.constants.ts";
+import { TIPO_PLANTILLA } from "@/config/constants/forms.constants.ts";
 import { PATRON_CASO } from "@/config/constants/patterns.constants.ts";
 import { construirIndiceGlosario, type IndiceGlosario, type Maestro } from "@/domain/mapeo.ts";
 import type { Reglas } from "@/domain/reglas.ts";
@@ -45,8 +46,8 @@ export async function cargarSolicitudCaso(caso: string, entorno: Entorno): Promi
   const parcial = { pais, cliente, formato, soportes: soportes.valor };
 
   const presentes = {
-    celdas: await entorno.fixtures.existePlantilla(directorio, "celdas"),
-    campos: await entorno.fixtures.existePlantilla(directorio, "campos"),
+    [TIPO_PLANTILLA.CELDAS]: await entorno.fixtures.existePlantilla(directorio, TIPO_PLANTILLA.CELDAS),
+    [TIPO_PLANTILLA.CAMPOS]: await entorno.fixtures.existePlantilla(directorio, TIPO_PLANTILLA.CAMPOS),
   };
   const tipo = elegirPlantilla(formato, presentes);
   if (tipo === null) return fallo(CODIGO_ERROR.PLANTILLA_INVALIDA, { parcial });
