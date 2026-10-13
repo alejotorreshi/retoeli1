@@ -227,7 +227,7 @@ describe("construirDatosEnvio: archivos que van al cliente (GC-3, G-01-H4a)", ()
     expect(datos.archivos.map((fila) => fila.archivo)).not.toContain("parafiscales-ficticio.txt");
   });
 
-  test("un archivo del cliente que no está en el listado no se declara enviado", () => {
+  test("como defensa, un archivo del cliente que no está en el listado nunca se declara enviado", () => {
     const datos = construirDatosEnvio(CASO, solicitud(FORMATO.XLSX), checklist(true, []), FORMULARIO_XLSX, [
       FORMULARIO_XLSX,
     ]);

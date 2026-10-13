@@ -7,6 +7,7 @@ import { ARCHIVO_FORMULARIO, ARCHIVOS_PAQUETE, ARCHIVOS_SALIDA } from "@/config/
 import { CLAVE_PLANTILLA } from "@/config/constants/knowledge.constants.ts";
 import { construirDatosEnvio } from "@/domain/builders/borrador.builder.ts";
 import { renderizarPlantilla } from "@/domain/engines/motor-plantillas.engine.ts";
+import { archivosFaltantesEnPaquete } from "@/domain/policies/paquete-vigente.policy.ts";
 import type { Resultado } from "@/domain/types/resultado.type.ts";
 import { exito, fallo } from "@/domain/utils/resultado.util.ts";
 
@@ -24,11 +25,15 @@ async function simularBajoCandado(args: ArgsSimularEnvio, entorno: Entorno): Pro
   const checklist = await evaluarEstadoPaquete(contexto.data, entorno);
   if (!checklist.ok) return checklist;
 
-  const plantilla = await entorno.conocimiento.cargar(contexto.data.reglas, CLAVE_PLANTILLA.ENVIO_SIMULADO);
-  if (!plantilla.ok) return plantilla;
   const { solicitud } = contexto.data;
   const listado = await entorno.salida.listarPaquete(caso);
   const formulario = ARCHIVO_FORMULARIO[solicitud.formato];
+  const faltantes = archivosFaltantesEnPaquete(checklist.data, formulario, listado);
+  if (faltantes.length > 0)
+    return fallo(CODIGO_ERROR.PAQUETE_DESACTUALIZADO, { parcial: { archivos_faltantes: faltantes } });
+
+  const plantilla = await entorno.conocimiento.cargar(contexto.data.reglas, CLAVE_PLANTILLA.ENVIO_SIMULADO);
+  if (!plantilla.ok) return plantilla;
   const datos = construirDatosEnvio(caso, solicitud, checklist.data, formulario, listado);
   const texto = renderizarPlantilla(
     plantilla.data,

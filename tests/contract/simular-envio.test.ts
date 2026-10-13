@@ -1,10 +1,11 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import { existsSync } from "node:fs";
-import { readdir, readFile, rm } from "node:fs/promises";
+import { readdir, readFile, rm, writeFile } from "node:fs/promises";
 import { join, relative } from "node:path";
 import { generarCaso } from "@tests/helpers/flujo.helper.ts";
 import { crearProyectoTemporal } from "@tests/helpers/proyecto-temporal.helper.ts";
 import type { ProyectoTemporal } from "@tests/helpers/types/proyecto-temporal.type.ts";
+import { FIXTURES_DIR, INDICE_SOPORTES, SOPORTES_DIR } from "@/config/constants/files.constants.ts";
 import { crearHerramientas } from "@/tools/factories/herramientas.factory.ts";
 
 const CO = "co-industrias-delta";
@@ -39,12 +40,19 @@ const BLOQUEO_EC = "ausente: certificado_cumplimiento_tributario";
 const LINEA_BLOQUEO_EC = "- ausente: Certificado de cumplimiento tributario";
 const LINEA_BLOQUEO_HN = "- vencido: Certificación de aportes parafiscales (2026-08-31)";
 const BLOQUEOS_VIGENTES = "## Bloqueos vigentes al confirmar";
+const RENOVADO_HN = {
+  tipo: "parafiscales",
+  archivo: "parafiscales-2026-09.txt",
+  vigencia_hasta: "2026-12-31",
+  pais_emisor: "CO",
+};
 
 type RespuestaEnvio = {
   readonly ok: boolean;
   readonly data?: { readonly ruta: string; readonly bloqueos: readonly string[] };
   readonly error?: string;
   readonly codigo?: string;
+  readonly parcial?: unknown;
   readonly resumen?: string;
 };
 
@@ -216,12 +224,43 @@ describe("contrato: proveedor_simular_envio (ENV-01, D-13, RN4)", () => {
     }
   });
 
-  test("un soporte borrado de paquete/ no aparece como enviado", async () => {
+  test("un soporte borrado de paquete/ rechaza el envío con PAQUETE_DESACTUALIZADO y no escribe el registro (CR-01)", async () => {
     const proyecto = await armado(CO);
     await rm(join(proyecto.raiz, "out", CO, "paquete", "rut-2026.txt"));
-    const enviados = enviadosDe(await confirmarYLeer(proyecto, CO));
-    expect(enviados).not.toContain("rut-2026.txt");
-    expect(enviados).toContain("formulario.xlsx");
+    const respuesta = await simular(proyecto.raiz, { caso: CO, confirmado: true });
+    expect(respuesta.ok).toBe(false);
+    expect(respuesta.codigo).toBe("PAQUETE_DESACTUALIZADO");
+    expect(respuesta.error).toContain("proveedor_armar_paquete");
+    expect(respuesta.parcial).toEqual({ archivos_faltantes: ["rut-2026.txt"] });
+    expect(respuesta.resumen).toBe("simular_envio: PAQUETE_DESACTUALIZADO");
+    expect(existsSync(envioSimulado(proyecto.raiz, CO))).toBe(false);
+  });
+
+  test("el formulario borrado de paquete/ también rechaza el envío (CR-01)", async () => {
+    const proyecto = await armado(PA);
+    await rm(join(proyecto.raiz, "out", PA, "paquete", "valores-portal.md"));
+    const respuesta = await simular(proyecto.raiz, { caso: PA, confirmado: true });
+    expect(respuesta.codigo).toBe("PAQUETE_DESACTUALIZADO");
+    expect(respuesta.parcial).toEqual({ archivos_faltantes: ["valores-portal.md"] });
+    expect(existsSync(envioSimulado(proyecto.raiz, PA))).toBe(false);
+  });
+
+  test("un soporte renovado entre armar_paquete y simular_envio rechaza el envío hasta volver a armar (CR-01)", async () => {
+    const proyecto = await armado(HN);
+    const soportes = join(proyecto.raiz, FIXTURES_DIR, SOPORTES_DIR);
+    const indice = JSON.parse(await readFile(join(soportes, INDICE_SOPORTES), "utf8"));
+    indice.push({ ...RENOVADO_HN, descripcion: "Renovación ficticia" });
+    await writeFile(join(soportes, INDICE_SOPORTES), JSON.stringify(indice));
+    await writeFile(join(soportes, RENOVADO_HN.archivo), "soporte ficticio renovado\n");
+    const respuesta = await simular(proyecto.raiz, { caso: HN, confirmado: true });
+    expect(respuesta.codigo).toBe("PAQUETE_DESACTUALIZADO");
+    expect(respuesta.parcial).toEqual({ archivos_faltantes: [RENOVADO_HN.archivo] });
+    expect(existsSync(envioSimulado(proyecto.raiz, HN))).toBe(false);
+    const rearmado = JSON.parse(await herramientas.armar_paquete.execute({ caso: HN }, ctx(proyecto.raiz)));
+    expect(rearmado.ok).toBe(true);
+    const registro = await confirmarYLeer(proyecto, HN);
+    expect(enviadosDe(registro)).toContain(RENOVADO_HN.archivo);
+    expect(registro).not.toContain("parafiscales-2026-07.txt");
   });
 
   test("hn deja el soporte vencido en su sección y en paquete/ (WR-06)", async () => {

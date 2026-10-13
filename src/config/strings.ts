@@ -23,6 +23,7 @@ export const MENSAJE_ERROR = {
     "Algunas etiquetas pedidas no pertenecen a la plantilla del caso.",
   [CODIGO_ERROR.FORMULARIO_NO_GENERADO]: `Primero genera el formulario del caso con ${nombreVisible(HERRAMIENTA.GENERAR_FORMULARIO)}.`,
   [CODIGO_ERROR.PAQUETE_NO_ARMADO]: `Primero arma el paquete del caso con ${nombreVisible(HERRAMIENTA.ARMAR_PAQUETE)}.`,
+  [CODIGO_ERROR.PAQUETE_DESACTUALIZADO]: `Al paquete del caso le faltan archivos o ya no coincide con los soportes vigentes; vuelve a armarlo con ${nombreVisible(HERRAMIENTA.ARMAR_PAQUETE)} antes de registrar el envío.`,
   [CODIGO_ERROR.CONFIRMACION_REQUERIDA]: "requiere confirmación explícita",
   [CODIGO_ERROR.ERROR_INTERNO]: "Ocurrió un error interno al ejecutar la herramienta; inténtalo de nuevo.",
   [CODIGO_ERROR.CONFIGURACION_INVALIDA]: "La configuración de la ejecución no es válida.",
