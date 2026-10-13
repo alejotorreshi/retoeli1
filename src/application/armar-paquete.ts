@@ -47,11 +47,12 @@ export async function evaluarEstadoPaquete(
   const indice = await entorno.soportes.indice();
   if (indice.estado !== "ok") return fallo("DATOS_INVALIDOS");
   const presentes = await entorno.soportes.presentes();
+  if (presentes.estado !== "ok") return fallo("DATOS_INVALIDOS");
   const hoy = entorno.reloj.hoy();
   const soportes = evaluarSoportes(
     contexto.soportesExigidos,
     indice.valor,
-    presentes,
+    presentes.valor,
     hoy,
     contexto.solicitud.pais,
     contexto.reglas.soportes,

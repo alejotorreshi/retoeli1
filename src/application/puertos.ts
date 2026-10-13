@@ -68,7 +68,7 @@ export type SalidaCaso = {
 
 export type SoportesRepositorio = {
   indice(): Promise<Lectura<readonly SoporteIndice[]>>;
-  presentes(): Promise<ReadonlySet<string>>;
+  presentes(): Promise<Lectura<ReadonlySet<string>>>;
 };
 
 export type EntradaFormularioPdf = {

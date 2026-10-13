@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import { existsSync } from "node:fs";
-import { readdir, readFile, writeFile } from "node:fs/promises";
+import { chmod, readdir, readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { FIXTURES_DIR } from "../../src/config/constantes.ts";
 import { crearHerramientas } from "../../src/tools/fabrica.ts";
@@ -212,6 +212,20 @@ describe("golden: proveedor_armar_paquete (PAQ-01, PAQ-02, PAQ-03, D-21)", () =>
     expect(respuesta.codigo).toBe("FORMULARIO_NO_GENERADO");
     expect(respuesta.error?.startsWith("Primero genera el formulario")).toBe(true);
     expect(existsSync(carpetaPaquete(proyecto.raiz, CO))).toBe(false);
+  });
+
+  test("armar_paquete con la carpeta de soportes ilegible da DATOS_INVALIDOS y no inventa ausencias (IN-08)", async () => {
+    const proyecto = await nuevoProyecto();
+    await generarCaso(herramientas, ctx(proyecto.raiz), CO);
+    const soportes = join(proyecto.raiz, FIXTURES_DIR, "repositorio", "soportes");
+    await chmod(soportes, 0o300);
+    try {
+      const respuesta = await armar(proyecto.raiz, CO);
+      expect(respuesta.ok).toBe(false);
+      expect(respuesta.codigo).toBe("DATOS_INVALIDOS");
+    } finally {
+      await chmod(soportes, 0o755);
+    }
   });
 
   test("armar_paquete recrea paquete/ vacío y quita archivos ajenos", async () => {

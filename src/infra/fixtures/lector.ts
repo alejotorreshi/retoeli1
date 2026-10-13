@@ -76,18 +76,17 @@ export function leerIndiceSoportes(raiz: string): Promise<Lectura<readonly Sopor
   return leerJsonValidado(join(directorioSoportes(raiz), INDICE_SOPORTES), esquemaIndiceSoportes);
 }
 
-export async function soportesPresentes(raiz: string): Promise<ReadonlySet<string>> {
+export async function soportesPresentes(raiz: string): Promise<Lectura<ReadonlySet<string>>> {
   try {
     const entradas = await readdir(directorioSoportes(raiz), { withFileTypes: true });
-    return new Set(
-      entradas
-        .filter(
-          (entrada) =>
-            entrada.isFile() && entrada.name !== INDICE_SOPORTES && PATRON_ARCHIVO_SOPORTE.test(entrada.name),
-        )
-        .map((entrada) => entrada.name),
-    );
-  } catch {
-    return new Set();
+    const archivos = entradas
+      .filter(
+        (entrada) =>
+          entrada.isFile() && entrada.name !== INDICE_SOPORTES && PATRON_ARCHIVO_SOPORTE.test(entrada.name),
+      )
+      .map((entrada) => entrada.name);
+    return { estado: "ok", valor: new Set(archivos) };
+  } catch (error) {
+    return esNoEncontrado(error) ? NO_ENCONTRADO : INVALIDO;
   }
 }
