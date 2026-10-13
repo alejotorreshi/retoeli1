@@ -1,9 +1,9 @@
-import { construirIndiceGlosario, type IndiceGlosario, type Maestro } from "../domain/mapeo.ts";
-import type { Reglas } from "../domain/reglas.ts";
-import { exito, type Fallo, fallo, type Resultado } from "../domain/resultado.ts";
-import { elegirPlantilla } from "../domain/solicitud.ts";
-import type { Plantilla, Solicitud } from "../domain/tipos.ts";
-import type { Entorno } from "./puertos.ts";
+import type { Entorno } from "@/application/puertos.ts";
+import { construirIndiceGlosario, type IndiceGlosario, type Maestro } from "@/domain/mapeo.ts";
+import type { Reglas } from "@/domain/reglas.ts";
+import { exito, type Fallo, fallo, type Resultado } from "@/domain/resultado.ts";
+import { elegirPlantilla } from "@/domain/solicitud.ts";
+import type { Plantilla, Solicitud } from "@/domain/tipos.ts";
 
 export type SolicitudCaso = {
   readonly caso: string;

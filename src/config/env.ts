@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { PATRON_FECHA, ZONA_HORARIA_POR_DEFECTO } from "./constantes.ts";
+import { PATRON_FECHA, ZONA_HORARIA_POR_DEFECTO } from "@/config/constantes.ts";
 
 function vacioComoAusente(valor: unknown): unknown {
   return valor === "" ? undefined : valor;

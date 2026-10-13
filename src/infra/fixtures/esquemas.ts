@@ -11,10 +11,10 @@ import {
   PATRON_PAIS,
   PATRON_RUTA_MAESTRO,
   PATRON_TIPO_SOPORTE,
-} from "../../config/constantes.ts";
-import { esFechaReal } from "../../config/env.ts";
-import type { SoporteIndice } from "../../domain/checklist.ts";
-import { FORMATOS } from "../../domain/tipos.ts";
+} from "@/config/constantes.ts";
+import { esFechaReal } from "@/config/env.ts";
+import type { SoporteIndice } from "@/domain/checklist.ts";
+import { FORMATOS } from "@/domain/tipos.ts";
 
 const textoCorto = z.string().max(LIMITES_FIXTURES.textoCorto);
 const etiqueta = z.string().min(1).max(LIMITES_FIXTURES.etiqueta);

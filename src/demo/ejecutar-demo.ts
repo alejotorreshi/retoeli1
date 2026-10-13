@@ -1,13 +1,13 @@
 import { rm, stat } from "node:fs/promises";
 import { join, resolve } from "node:path";
-import { FECHA_DEMO, OUT_DIR, SESION_DEMO } from "../config/constantes.ts";
+import { FECHA_DEMO, OUT_DIR, SESION_DEMO } from "@/config/constantes.ts";
 import {
   armar_paquete,
   generar_formulario,
   leer_solicitud,
   mapear_campos,
   simular_envio,
-} from "../tools/proveedor.ts";
+} from "@/tools/proveedor.ts";
 
 export type OpcionesDemo = {
   readonly directorio: string;

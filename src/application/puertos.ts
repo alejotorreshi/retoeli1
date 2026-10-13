@@ -1,10 +1,10 @@
-import type { SoporteIndice } from "../domain/checklist.ts";
-import type { CodigoError } from "../domain/errores.ts";
-import type { FilaCelda, FilaFormulario } from "../domain/formulario.ts";
-import type { Glosario, Maestro } from "../domain/mapeo.ts";
-import type { ClavePlantilla, Reglas } from "../domain/reglas.ts";
-import type { Resultado } from "../domain/resultado.ts";
-import type { FechaISO, Plantilla, Solicitud, TipoPlantilla } from "../domain/tipos.ts";
+import type { SoporteIndice } from "@/domain/checklist.ts";
+import type { CodigoError } from "@/domain/errores.ts";
+import type { FilaCelda, FilaFormulario } from "@/domain/formulario.ts";
+import type { Glosario, Maestro } from "@/domain/mapeo.ts";
+import type { ClavePlantilla, Reglas } from "@/domain/reglas.ts";
+import type { Resultado } from "@/domain/resultado.ts";
+import type { FechaISO, Plantilla, Solicitud, TipoPlantilla } from "@/domain/tipos.ts";
 
 export type Lectura<T> =
   | { readonly estado: "ok"; readonly valor: T }

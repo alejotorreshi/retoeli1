@@ -1,6 +1,6 @@
-import { renderizarTextoPlano } from "./plantillas.ts";
-import { type Reglas, VARIABLES_AVISO_SOPORTE, VARIABLES_NOTA_CAMPO } from "./reglas.ts";
-import { exito, type Resultado } from "./resultado.ts";
+import { renderizarTextoPlano } from "@/domain/plantillas.ts";
+import { type Reglas, VARIABLES_AVISO_SOPORTE, VARIABLES_NOTA_CAMPO } from "@/domain/reglas.ts";
+import { exito, type Resultado } from "@/domain/resultado.ts";
 
 type TextoDeRegla = {
   readonly nombre: string;

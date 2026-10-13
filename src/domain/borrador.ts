@@ -1,7 +1,7 @@
-import type { Checklist, SoporteEvaluado } from "./checklist.ts";
-import { TEXTO_CELDA_VACIA } from "./checklist.ts";
-import { leerRuta, type Maestro } from "./mapeo.ts";
-import type { Solicitud } from "./tipos.ts";
+import type { Checklist, SoporteEvaluado } from "@/domain/checklist.ts";
+import { TEXTO_CELDA_VACIA } from "@/domain/checklist.ts";
+import { leerRuta, type Maestro } from "@/domain/mapeo.ts";
+import type { Solicitud } from "@/domain/tipos.ts";
 
 export const RUTAS_BORRADOR = [
   "razon_social",

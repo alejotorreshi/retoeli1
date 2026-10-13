@@ -1,5 +1,5 @@
-import type { CampoMapeado } from "./mapeo.ts";
-import type { EstadoCampo, ReglaMapeo } from "./reglas.ts";
+import type { CampoMapeado } from "@/domain/mapeo.ts";
+import type { EstadoCampo, ReglaMapeo } from "@/domain/reglas.ts";
 
 export type TipoMascara = "publico" | "ultimos4" | "iniciales" | "correo" | "telefono" | "monto" | "oculto";
 

@@ -1,15 +1,15 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import { readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
-import { FIXTURES_DIR } from "../../src/config/constantes.ts";
-import type { FilaCelda } from "../../src/domain/formulario.ts";
-import { leerRuta, type Maestro } from "../../src/domain/mapeo.ts";
-import type { CampoCelda } from "../../src/domain/tipos.ts";
-import { escribirXlsx } from "../../src/infra/salida/xlsx.ts";
-import { crearHerramientas } from "../../src/tools/fabrica.ts";
-import { generarCaso, type ItemProyectado } from "../helpers/flujo.ts";
-import { crearProyectoTemporal, type ProyectoTemporal } from "../helpers/proyecto-temporal.ts";
-import { celdaEn, leerCeldasXlsx, leerMetadatosXlsx } from "../helpers/xlsx-leer.ts";
+import { generarCaso, type ItemProyectado } from "@tests/helpers/flujo.ts";
+import { crearProyectoTemporal, type ProyectoTemporal } from "@tests/helpers/proyecto-temporal.ts";
+import { celdaEn, leerCeldasXlsx, leerMetadatosXlsx } from "@tests/helpers/xlsx-leer.ts";
+import { FIXTURES_DIR } from "@/config/constantes.ts";
+import type { FilaCelda } from "@/domain/formulario.ts";
+import { leerRuta, type Maestro } from "@/domain/mapeo.ts";
+import type { CampoCelda } from "@/domain/tipos.ts";
+import { escribirXlsx } from "@/infra/salida/xlsx.ts";
+import { crearHerramientas } from "@/tools/fabrica.ts";
 
 const RELLENO_FALTANTE = "FFFFC7CE";
 const RELLENO_POR_CONFIRMAR = "FFFFEB9C";

@@ -1,7 +1,7 @@
 import { readdir, readFile, stat } from "node:fs/promises";
 import { join, resolve } from "node:path";
 import type { z } from "zod";
-import type { Lectura } from "../../application/puertos.ts";
+import type { Lectura } from "@/application/puertos.ts";
 import {
   ARCHIVOS_REPOSITORIO,
   FIXTURES_DIR,
@@ -9,10 +9,10 @@ import {
   LIMITE_LECTURA_BYTES,
   PATRON_ARCHIVO_SOPORTE,
   SOPORTES_DIR,
-} from "../../config/constantes.ts";
-import type { SoporteIndice } from "../../domain/checklist.ts";
-import type { Glosario, Maestro } from "../../domain/mapeo.ts";
-import { esquemaGlosario, esquemaIndiceSoportes, esquemaMaestro } from "./esquemas.ts";
+} from "@/config/constantes.ts";
+import type { SoporteIndice } from "@/domain/checklist.ts";
+import type { Glosario, Maestro } from "@/domain/mapeo.ts";
+import { esquemaGlosario, esquemaIndiceSoportes, esquemaMaestro } from "@/infra/fixtures/esquemas.ts";
 
 const NO_ENCONTRADO = { estado: "no_encontrado" } as const;
 const INVALIDO = { estado: "invalido" } as const;

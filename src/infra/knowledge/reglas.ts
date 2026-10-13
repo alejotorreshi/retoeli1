@@ -11,10 +11,10 @@ import {
   PATRON_RUTA_MAESTRO,
   PATRON_TEXTO_NO_VACIO,
   VERSION_REGLAS,
-} from "../../config/constantes.ts";
-import { APLICACIONES_NOTA, type Reglas } from "../../domain/reglas.ts";
-import { fallo, type Resultado } from "../../domain/resultado.ts";
-import { validarTextosDeReglas } from "../../domain/validar-reglas.ts";
+} from "@/config/constantes.ts";
+import { APLICACIONES_NOTA, type Reglas } from "@/domain/reglas.ts";
+import { fallo, type Resultado } from "@/domain/resultado.ts";
+import { validarTextosDeReglas } from "@/domain/validar-reglas.ts";
 
 export const DIRECTORIO_CONOCIMIENTO_POR_DEFECTO = fileURLToPath(
   new URL("../../knowledge/", import.meta.url),

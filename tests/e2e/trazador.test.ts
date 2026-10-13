@@ -3,13 +3,13 @@ import { existsSync } from "node:fs";
 import { cp, mkdir, readFile, symlink, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { crearProyectoTemporal, type ProyectoTemporal } from "@tests/helpers/proyecto-temporal.ts";
 import { z } from "zod";
-import { LIMITE_LECTURA_BYTES, MAX_ISSUES_ARGS } from "../../src/config/constantes.ts";
-import { exito } from "../../src/domain/resultado.ts";
-import { relojFijo, relojSistema } from "../../src/infra/reloj.ts";
-import { type ContextoHerramienta, defineTool, normalizarContexto } from "../../src/tools/define-tool.ts";
-import { leer_solicitud } from "../../src/tools/proveedor.ts";
-import { crearProyectoTemporal, type ProyectoTemporal } from "../helpers/proyecto-temporal.ts";
+import { LIMITE_LECTURA_BYTES, MAX_ISSUES_ARGS } from "@/config/constantes.ts";
+import { exito } from "@/domain/resultado.ts";
+import { relojFijo, relojSistema } from "@/infra/reloj.ts";
+import { type ContextoHerramienta, defineTool, normalizarContexto } from "@/tools/define-tool.ts";
+import { leer_solicitud } from "@/tools/proveedor.ts";
 
 const RAIZ_REPO = join(import.meta.dir, "..", "..");
 const CASOS_REALES = ["co-industrias-delta", "ec-corp-andina", "hn-agroexport-sula", "pa-logistica-istmo"];
@@ -253,7 +253,7 @@ describe("trazador: excepciones internas", () => {
       [
         process.execPath,
         "-e",
-        'const m = await import("./src/tools/proveedor.ts"); console.log(Object.keys(m).join(","));',
+        'const m = await import("@/tools/proveedor.ts"); console.log(Object.keys(m).join(","));',
       ],
       { cwd: RAIZ_REPO, env: {}, stdout: "pipe", stderr: "pipe" },
     );

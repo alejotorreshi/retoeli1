@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { aTexto, normalizarEtiqueta } from "../../src/domain/normalizar.ts";
+import { aTexto, normalizarEtiqueta } from "@/domain/normalizar.ts";
 
 describe("normalizarEtiqueta", () => {
   test("quita tildes, mayúsculas y marcas finales", () => {

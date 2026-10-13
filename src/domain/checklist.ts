@@ -1,9 +1,9 @@
-import type { CampoMapeado } from "./mapeo.ts";
-import { renderizarTextoPlano } from "./plantillas.ts";
-import type { ReglasSoportes } from "./reglas.ts";
-import { exito, type Resultado } from "./resultado.ts";
-import type { FechaISO } from "./tipos.ts";
-import { evaluarVigencia } from "./vigencias.ts";
+import type { CampoMapeado } from "@/domain/mapeo.ts";
+import { renderizarTextoPlano } from "@/domain/plantillas.ts";
+import type { ReglasSoportes } from "@/domain/reglas.ts";
+import { exito, type Resultado } from "@/domain/resultado.ts";
+import type { FechaISO } from "@/domain/tipos.ts";
+import { evaluarVigencia } from "@/domain/vigencias.ts";
 
 export type SoporteIndice = {
   readonly tipo: string;

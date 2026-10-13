@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
-import { renderizarPlantilla, renderizarTextoPlano } from "../../src/domain/plantillas.ts";
-import type { Reglas } from "../../src/domain/reglas.ts";
+import { renderizarPlantilla, renderizarTextoPlano } from "@/domain/plantillas.ts";
+import type { Reglas } from "@/domain/reglas.ts";
 
 const RUTA_REGLAS = new URL("../../src/knowledge/reglas.json", import.meta.url);
 

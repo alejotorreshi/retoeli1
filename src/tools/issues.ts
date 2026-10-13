@@ -1,5 +1,5 @@
 import type { z } from "zod";
-import { MAX_ISSUES_ARGS } from "../config/constantes.ts";
+import { MAX_ISSUES_ARGS } from "@/config/constantes.ts";
 
 export function formatearIssues(issues: readonly z.core.$ZodIssue[]): string {
   return issues

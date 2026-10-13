@@ -1,5 +1,5 @@
-import { aTexto, normalizarEtiqueta } from "./normalizar.ts";
-import { renderizarTextoPlano } from "./plantillas.ts";
+import { aTexto, normalizarEtiqueta } from "@/domain/normalizar.ts";
+import { renderizarTextoPlano } from "@/domain/plantillas.ts";
 import {
   type EscalaConfianza,
   type EstadoCampo,
@@ -8,8 +8,8 @@ import {
   type Reglas,
   VARIABLES_NOTA_DEL_MAESTRO,
   type VariableNota,
-} from "./reglas.ts";
-import { exito, fallo, type Resultado } from "./resultado.ts";
+} from "@/domain/reglas.ts";
+import { exito, fallo, type Resultado } from "@/domain/resultado.ts";
 
 export type Maestro = Readonly<Record<string, unknown>>;
 

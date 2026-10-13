@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test";
-import { compararMapeo, type ItemMapeo } from "../../src/domain/comparar-mapeo.ts";
-import type { CampoMapeado } from "../../src/domain/mapeo.ts";
-import type { EstadoCampo } from "../../src/domain/reglas.ts";
+import { compararMapeo, type ItemMapeo } from "@/domain/comparar-mapeo.ts";
+import type { CampoMapeado } from "@/domain/mapeo.ts";
+import type { EstadoCampo } from "@/domain/reglas.ts";
 
 function campo(etiqueta: string, ruta: string | null, estado: EstadoCampo): CampoMapeado {
   return {

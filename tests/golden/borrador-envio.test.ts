@@ -2,15 +2,15 @@ import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import { existsSync } from "node:fs";
 import { readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
-import { FIXTURES_DIR } from "../../src/config/constantes.ts";
-import { crearHerramientas } from "../../src/tools/fabrica.ts";
-import { generarCaso } from "../helpers/flujo.ts";
+import { generarCaso } from "@tests/helpers/flujo.ts";
 import {
   type ConocimientoTemporal,
   copiarConocimiento,
   crearProyectoTemporal,
   type ProyectoTemporal,
-} from "../helpers/proyecto-temporal.ts";
+} from "@tests/helpers/proyecto-temporal.ts";
+import { FIXTURES_DIR } from "@/config/constantes.ts";
+import { crearHerramientas } from "@/tools/fabrica.ts";
 
 const CO = "co-industrias-delta";
 const EC = "ec-corp-andina";

@@ -3,10 +3,10 @@ import { existsSync } from "node:fs";
 import { mkdir, mkdtemp, readdir, readFile, rm, symlink, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { FIXTURES_DIR, SOPORTES_DIR } from "../../src/config/constantes.ts";
-import { esquemaIndiceSoportes } from "../../src/infra/fixtures/esquemas.ts";
-import { reiniciarPaquete } from "../../src/infra/salida/archivos.ts";
-import { copiarAlPaquete } from "../../src/infra/salida/copias.ts";
+import { FIXTURES_DIR, SOPORTES_DIR } from "@/config/constantes.ts";
+import { esquemaIndiceSoportes } from "@/infra/fixtures/esquemas.ts";
+import { reiniciarPaquete } from "@/infra/salida/archivos.ts";
+import { copiarAlPaquete } from "@/infra/salida/copias.ts";
 
 const CASO = "co-industrias-delta";
 const temporales: string[] = [];

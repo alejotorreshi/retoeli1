@@ -1,10 +1,10 @@
 import { afterAll, describe, expect, test } from "bun:test";
 import { readFile, realpath } from "node:fs/promises";
 import { join } from "node:path";
-import { OUT_DIR } from "../../src/config/constantes.ts";
-import { type Corrida, correrDemo } from "../helpers/correr-demo.ts";
-import { type Instantanea, listarSalida, tomarInstantanea } from "../helpers/instantanea.ts";
-import { crearProyectoTemporal, type ProyectoTemporal } from "../helpers/proyecto-temporal.ts";
+import { type Corrida, correrDemo } from "@tests/helpers/correr-demo.ts";
+import { type Instantanea, listarSalida, tomarInstantanea } from "@tests/helpers/instantanea.ts";
+import { crearProyectoTemporal, type ProyectoTemporal } from "@tests/helpers/proyecto-temporal.ts";
+import { OUT_DIR } from "@/config/constantes.ts";
 
 const EXTENSIONES_TEXTO = /\.(?:md|json|jsonl)$/;
 const proyectos: ProyectoTemporal[] = [];

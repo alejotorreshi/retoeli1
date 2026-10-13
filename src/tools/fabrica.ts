@@ -1,17 +1,17 @@
-import { armarPaquete } from "../application/armar-paquete.ts";
-import { generarFormulario } from "../application/generar-formulario.ts";
-import { leerSolicitud } from "../application/leer-solicitud.ts";
-import { mapearCamposCaso } from "../application/mapear-campos.ts";
-import { simularEnvio } from "../application/simular-envio.ts";
+import { armarPaquete } from "@/application/armar-paquete.ts";
+import { generarFormulario } from "@/application/generar-formulario.ts";
+import { leerSolicitud } from "@/application/leer-solicitud.ts";
+import { mapearCamposCaso } from "@/application/mapear-campos.ts";
+import { simularEnvio } from "@/application/simular-envio.ts";
 import {
   argsArmarPaquete,
   argsGenerarFormulario,
   argsLeerSolicitud,
   argsMapearCampos,
   argsSimularEnvio,
-} from "./argumentos.ts";
-import { defineTool } from "./define-tool.ts";
-import type { OpcionesEntorno } from "./wiring.ts";
+} from "@/tools/argumentos.ts";
+import { defineTool } from "@/tools/define-tool.ts";
+import type { OpcionesEntorno } from "@/tools/wiring.ts";
 
 export type OpcionesHerramientas = OpcionesEntorno;
 

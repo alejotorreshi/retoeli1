@@ -1,6 +1,6 @@
-import { normalizarEtiqueta } from "./normalizar.ts";
-import type { Reglas } from "./reglas.ts";
-import type { CampoSolicitado, Formato, Plantilla, TipoPlantilla } from "./tipos.ts";
+import { normalizarEtiqueta } from "@/domain/normalizar.ts";
+import type { Reglas } from "@/domain/reglas.ts";
+import type { CampoSolicitado, Formato, Plantilla, TipoPlantilla } from "@/domain/tipos.ts";
 
 export type PlantillasPresentes = { readonly celdas: boolean; readonly campos: boolean };
 

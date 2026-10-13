@@ -1,7 +1,7 @@
-import type { CampoMapeado } from "./mapeo.ts";
-import type { EstadoCampo } from "./reglas.ts";
-import { exito, fallo, type Resultado } from "./resultado.ts";
-import type { Plantilla } from "./tipos.ts";
+import type { CampoMapeado } from "@/domain/mapeo.ts";
+import type { EstadoCampo } from "@/domain/reglas.ts";
+import { exito, fallo, type Resultado } from "@/domain/resultado.ts";
+import type { Plantilla } from "@/domain/tipos.ts";
 
 export type FilaFormulario = {
   readonly etiqueta: string;

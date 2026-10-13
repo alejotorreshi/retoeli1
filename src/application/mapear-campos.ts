@@ -1,10 +1,10 @@
-import { type CampoMapeado, type ConteoEstados, contarEstados, mapearCampos } from "../domain/mapeo.ts";
-import { normalizarEtiqueta } from "../domain/normalizar.ts";
-import { type CampoPresentado, presentarCampo } from "../domain/pii.ts";
-import type { EstadoCampo } from "../domain/reglas.ts";
-import { exito, fallo, type Resultado } from "../domain/resultado.ts";
-import { type ContextoCaso, cargarContextoCaso } from "./contexto-caso.ts";
-import type { Entorno } from "./puertos.ts";
+import { type ContextoCaso, cargarContextoCaso } from "@/application/contexto-caso.ts";
+import type { Entorno } from "@/application/puertos.ts";
+import { type CampoMapeado, type ConteoEstados, contarEstados, mapearCampos } from "@/domain/mapeo.ts";
+import { normalizarEtiqueta } from "@/domain/normalizar.ts";
+import { type CampoPresentado, presentarCampo } from "@/domain/pii.ts";
+import type { EstadoCampo } from "@/domain/reglas.ts";
+import { exito, fallo, type Resultado } from "@/domain/resultado.ts";
 
 export type ArgsMapearCampos = { readonly caso: string; readonly campos: readonly string[] };
 

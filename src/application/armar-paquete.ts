@@ -1,4 +1,7 @@
-import { construirDatosBorrador } from "../domain/borrador.ts";
+import { type ContextoCaso, cargarContextoCaso } from "@/application/contexto-caso.ts";
+import { mapeoCanonico } from "@/application/mapear-campos.ts";
+import type { ArchivoFormulario, Entorno } from "@/application/puertos.ts";
+import { construirDatosBorrador } from "@/domain/borrador.ts";
 import {
   type CampoPorConfirmar,
   type Checklist,
@@ -6,13 +9,10 @@ import {
   construirDatosChecklist,
   evaluarSoportes,
   type SoporteEvaluado,
-} from "../domain/checklist.ts";
-import { renderizarPlantilla, renderizarTextoPlano } from "../domain/plantillas.ts";
-import { exito, fallo, type Resultado } from "../domain/resultado.ts";
-import type { Formato } from "../domain/tipos.ts";
-import { type ContextoCaso, cargarContextoCaso } from "./contexto-caso.ts";
-import { mapeoCanonico } from "./mapear-campos.ts";
-import type { ArchivoFormulario, Entorno } from "./puertos.ts";
+} from "@/domain/checklist.ts";
+import { renderizarPlantilla, renderizarTextoPlano } from "@/domain/plantillas.ts";
+import { exito, fallo, type Resultado } from "@/domain/resultado.ts";
+import type { Formato } from "@/domain/tipos.ts";
 
 export type ArgsArmarPaquete = { readonly caso: string };
 

@@ -1,8 +1,8 @@
 import { appendFile, mkdir } from "node:fs/promises";
 import { join } from "node:path";
-import type { EntradaBitacora, Registrar, Reloj } from "../application/puertos.ts";
-import { ARCHIVOS_SALIDA, OUT_DIR, PATRON_CASO } from "../config/constantes.ts";
-import { directorioSalidaCaso } from "./salida/rutas-seguras.ts";
+import type { EntradaBitacora, Registrar, Reloj } from "@/application/puertos.ts";
+import { ARCHIVOS_SALIDA, OUT_DIR, PATRON_CASO } from "@/config/constantes.ts";
+import { directorioSalidaCaso } from "@/infra/salida/rutas-seguras.ts";
 
 async function anexar(directorio: string, linea: Readonly<Record<string, unknown>>): Promise<void> {
   await mkdir(directorio, { recursive: true });

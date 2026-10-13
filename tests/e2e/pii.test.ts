@@ -1,15 +1,15 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
-import { FECHA_DEMO, FIXTURES_DIR, OUT_DIR, SESION_DEMO } from "../../src/config/constantes.ts";
-import { RUTAS_BORRADOR } from "../../src/domain/borrador.ts";
-import { POLITICA_PII } from "../../src/domain/pii.ts";
-import { VARIABLES_NOTA_DEL_MAESTRO } from "../../src/domain/reglas.ts";
-import { simular_envio } from "../../src/tools/proveedor.ts";
-import { type Corrida, correrDemo } from "../helpers/correr-demo.ts";
-import { listarSalida } from "../helpers/instantanea.ts";
-import { crearProyectoTemporal, type ProyectoTemporal } from "../helpers/proyecto-temporal.ts";
-import { celdaEn, leerCeldasXlsx } from "../helpers/xlsx-leer.ts";
+import { type Corrida, correrDemo } from "@tests/helpers/correr-demo.ts";
+import { listarSalida } from "@tests/helpers/instantanea.ts";
+import { crearProyectoTemporal, type ProyectoTemporal } from "@tests/helpers/proyecto-temporal.ts";
+import { celdaEn, leerCeldasXlsx } from "@tests/helpers/xlsx-leer.ts";
+import { FECHA_DEMO, FIXTURES_DIR, OUT_DIR, SESION_DEMO } from "@/config/constantes.ts";
+import { RUTAS_BORRADOR } from "@/domain/borrador.ts";
+import { POLITICA_PII } from "@/domain/pii.ts";
+import { VARIABLES_NOTA_DEL_MAESTRO } from "@/domain/reglas.ts";
+import { simular_envio } from "@/tools/proveedor.ts";
 
 const CASO_CONFIRMADO = "ec-corp-andina";
 const LARGO_MINIMO_SENSIBLE = 5;

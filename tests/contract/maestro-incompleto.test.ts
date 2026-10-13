@@ -1,11 +1,11 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import { readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
-import { FIXTURES_DIR } from "../../src/config/constantes.ts";
-import { crearHerramientas } from "../../src/tools/fabrica.ts";
-import { generarCaso } from "../helpers/flujo.ts";
-import { crearProyectoTemporal, type ProyectoTemporal } from "../helpers/proyecto-temporal.ts";
-import { celdaEn, leerCeldasXlsx } from "../helpers/xlsx-leer.ts";
+import { generarCaso } from "@tests/helpers/flujo.ts";
+import { crearProyectoTemporal, type ProyectoTemporal } from "@tests/helpers/proyecto-temporal.ts";
+import { celdaEn, leerCeldasXlsx } from "@tests/helpers/xlsx-leer.ts";
+import { FIXTURES_DIR } from "@/config/constantes.ts";
+import { crearHerramientas } from "@/tools/fabrica.ts";
 
 const CO = "co-industrias-delta";
 const HOJA = "Datos Proveedor";

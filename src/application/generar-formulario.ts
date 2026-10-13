@@ -1,13 +1,13 @@
-import { compararMapeo, type ItemMapeo } from "../domain/comparar-mapeo.ts";
-import { construirFilas } from "../domain/formulario.ts";
-import { type CampoMapeado, type ConteoEstados, contarEstados } from "../domain/mapeo.ts";
-import { renderizarPlantilla } from "../domain/plantillas.ts";
-import { AVISO_FORMATO_NO_SOPORTADO, construirDatosPortal } from "../domain/portal.ts";
-import { exito, fallo, type Resultado } from "../domain/resultado.ts";
-import type { Formato } from "../domain/tipos.ts";
-import { type ContextoCaso, cargarContextoCaso } from "./contexto-caso.ts";
-import { escribirMapeo, mapeoCanonico } from "./mapear-campos.ts";
-import type { Entorno } from "./puertos.ts";
+import { type ContextoCaso, cargarContextoCaso } from "@/application/contexto-caso.ts";
+import { escribirMapeo, mapeoCanonico } from "@/application/mapear-campos.ts";
+import type { Entorno } from "@/application/puertos.ts";
+import { compararMapeo, type ItemMapeo } from "@/domain/comparar-mapeo.ts";
+import { construirFilas } from "@/domain/formulario.ts";
+import { type CampoMapeado, type ConteoEstados, contarEstados } from "@/domain/mapeo.ts";
+import { renderizarPlantilla } from "@/domain/plantillas.ts";
+import { AVISO_FORMATO_NO_SOPORTADO, construirDatosPortal } from "@/domain/portal.ts";
+import { exito, fallo, type Resultado } from "@/domain/resultado.ts";
+import type { Formato } from "@/domain/tipos.ts";
 
 export type ArgsGenerarFormulario = {
   readonly caso: string;

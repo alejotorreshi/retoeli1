@@ -4,12 +4,12 @@ import {
   evaluarSoportes,
   type SoporteEvaluado,
   type SoporteIndice,
-} from "../../src/domain/checklist.ts";
-import type { CampoMapeado } from "../../src/domain/mapeo.ts";
-import type { ReglasSoportes } from "../../src/domain/reglas.ts";
-import type { Resultado } from "../../src/domain/resultado.ts";
-import type { FechaISO } from "../../src/domain/tipos.ts";
-import { evaluarVigencia, textoVence } from "../../src/domain/vigencias.ts";
+} from "@/domain/checklist.ts";
+import type { CampoMapeado } from "@/domain/mapeo.ts";
+import type { ReglasSoportes } from "@/domain/reglas.ts";
+import type { Resultado } from "@/domain/resultado.ts";
+import type { FechaISO } from "@/domain/tipos.ts";
+import { evaluarVigencia, textoVence } from "@/domain/vigencias.ts";
 
 const HOY: FechaISO = "2026-09-03";
 const DIAS_AVISO = 30;

@@ -3,10 +3,10 @@ import { existsSync } from "node:fs";
 import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { ejecutarDemo } from "../../src/demo/ejecutar-demo.ts";
-import { type Corrida, correrDemo } from "../helpers/correr-demo.ts";
-import { listarSalida } from "../helpers/instantanea.ts";
-import { crearProyectoTemporal, type ProyectoTemporal } from "../helpers/proyecto-temporal.ts";
+import { type Corrida, correrDemo } from "@tests/helpers/correr-demo.ts";
+import { listarSalida } from "@tests/helpers/instantanea.ts";
+import { crearProyectoTemporal, type ProyectoTemporal } from "@tests/helpers/proyecto-temporal.ts";
+import { ejecutarDemo } from "@/demo/ejecutar-demo.ts";
 
 const CASOS_REALES = ["co-industrias-delta", "ec-corp-andina", "hn-agroexport-sula", "pa-logistica-istmo"];
 const proyectos: ProyectoTemporal[] = [];

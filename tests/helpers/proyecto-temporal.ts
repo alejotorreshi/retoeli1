@@ -1,7 +1,7 @@
 import { cp, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { CASOS_DIR, FIXTURES_DIR } from "../../src/config/constantes.ts";
+import { CASOS_DIR, FIXTURES_DIR } from "@/config/constantes.ts";
 
 const RAIZ_REPO = join(import.meta.dir, "..", "..");
 const CASOS_SINTETICOS = join(RAIZ_REPO, "tests", "fixtures", "casos");

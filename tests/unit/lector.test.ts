@@ -2,8 +2,8 @@ import { afterAll, describe, expect, test } from "bun:test";
 import { chmod, mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { directorioSoportes, soportesPresentes } from "../../src/infra/fixtures/lector.ts";
-import { crearProyectoTemporal, type ProyectoTemporal } from "../helpers/proyecto-temporal.ts";
+import { crearProyectoTemporal, type ProyectoTemporal } from "@tests/helpers/proyecto-temporal.ts";
+import { directorioSoportes, soportesPresentes } from "@/infra/fixtures/lector.ts";
 
 const SOLO_ESCRITURA_Y_PASO = 0o300;
 const LECTURA_COMPLETA = 0o755;

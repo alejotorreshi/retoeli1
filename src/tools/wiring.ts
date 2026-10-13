@@ -1,20 +1,20 @@
-import type { Entorno, Lectura, OrigenCopia, Registrar, Reloj } from "../application/puertos.ts";
+import type { Entorno, Lectura, OrigenCopia, Registrar, Reloj } from "@/application/puertos.ts";
 import {
   ARCHIVOS_CASO,
   ARCHIVOS_SALIDA,
   PATRON_CASO,
   ZONA_HORARIA_POR_DEFECTO,
-} from "../config/constantes.ts";
-import { parseToolEnv, type ToolEnv } from "../config/env.ts";
-import { exito, fallo, type Resultado } from "../domain/resultado.ts";
-import type { Plantilla, TipoPlantilla } from "../domain/tipos.ts";
-import { crearBitacora } from "../infra/bitacora.ts";
+} from "@/config/constantes.ts";
+import { parseToolEnv, type ToolEnv } from "@/config/env.ts";
+import { exito, fallo, type Resultado } from "@/domain/resultado.ts";
+import type { Plantilla, TipoPlantilla } from "@/domain/tipos.ts";
+import { crearBitacora } from "@/infra/bitacora.ts";
 import {
   esquemaPlantillaCampos,
   esquemaPlantillaCeldas,
   esquemaSolicitud,
   esquemaSoportesExigidos,
-} from "../infra/fixtures/esquemas.ts";
+} from "@/infra/fixtures/esquemas.ts";
 import {
   directorioSoportes,
   existeArchivo,
@@ -25,23 +25,23 @@ import {
   resolverRaiz,
   rutaEnCaso,
   soportesPresentes,
-} from "../infra/fixtures/lector.ts";
-import { cargarPlantillaTexto } from "../infra/knowledge/plantillas.ts";
-import { cargarReglas, DIRECTORIO_CONOCIMIENTO_POR_DEFECTO } from "../infra/knowledge/reglas.ts";
-import { relojFijo, relojSistema } from "../infra/reloj.ts";
+} from "@/infra/fixtures/lector.ts";
+import { cargarPlantillaTexto } from "@/infra/knowledge/plantillas.ts";
+import { cargarReglas, DIRECTORIO_CONOCIMIENTO_POR_DEFECTO } from "@/infra/knowledge/reglas.ts";
+import { relojFijo, relojSistema } from "@/infra/reloj.ts";
 import {
   escribirArchivoSalida,
   escribirBinarioSalida,
   limpiarArtefactosPrevios,
   listarPaquete,
   reiniciarPaquete,
-} from "../infra/salida/archivos.ts";
-import { copiarAlPaquete } from "../infra/salida/copias.ts";
-import { conCandadoCaso } from "../infra/salida/mutex.ts";
-import { renderizarPdf } from "../infra/salida/pdf/render.ts";
-import { directorioSalidaCaso, listarCasos, resolverCaso } from "../infra/salida/rutas-seguras.ts";
-import { escribirXlsx } from "../infra/salida/xlsx.ts";
-import { formatearIssues } from "./issues.ts";
+} from "@/infra/salida/archivos.ts";
+import { copiarAlPaquete } from "@/infra/salida/copias.ts";
+import { conCandadoCaso } from "@/infra/salida/mutex.ts";
+import { renderizarPdf } from "@/infra/salida/pdf/render.ts";
+import { directorioSalidaCaso, listarCasos, resolverCaso } from "@/infra/salida/rutas-seguras.ts";
+import { escribirXlsx } from "@/infra/salida/xlsx.ts";
+import { formatearIssues } from "@/tools/issues.ts";
 
 export type OpcionesEntorno = { readonly directorioConocimiento?: string };
 

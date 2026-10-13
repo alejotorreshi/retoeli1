@@ -1,4 +1,4 @@
-import { exito, type Fallo, fallo, type Resultado } from "./resultado.ts";
+import { exito, type Fallo, fallo, type Resultado } from "@/domain/resultado.ts";
 
 export type ValorEscalar = string | number;
 

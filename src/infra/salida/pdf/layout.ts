@@ -1,7 +1,7 @@
-import type { EntradaFormularioPdf } from "../../../application/puertos.ts";
-import { DISENO_PDF, TEXTOS_PDF } from "../../../config/constantes.ts";
-import type { FilaFormulario } from "../../../domain/formulario.ts";
-import type { FechaISO } from "../../../domain/tipos.ts";
+import type { EntradaFormularioPdf } from "@/application/puertos.ts";
+import { DISENO_PDF, TEXTOS_PDF } from "@/config/constantes.ts";
+import type { FilaFormulario } from "@/domain/formulario.ts";
+import type { FechaISO } from "@/domain/tipos.ts";
 
 export type ColorTrazo = "texto" | "faltante" | "por_confirmar";
 

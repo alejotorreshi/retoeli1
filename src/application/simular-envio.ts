@@ -1,9 +1,9 @@
-import { construirDatosEnvio } from "../domain/borrador.ts";
-import { renderizarPlantilla } from "../domain/plantillas.ts";
-import { exito, fallo, type Resultado } from "../domain/resultado.ts";
-import { evaluarEstadoPaquete } from "./armar-paquete.ts";
-import { cargarSolicitudCaso, completarContextoCaso } from "./contexto-caso.ts";
-import type { Entorno } from "./puertos.ts";
+import { evaluarEstadoPaquete } from "@/application/armar-paquete.ts";
+import { cargarSolicitudCaso, completarContextoCaso } from "@/application/contexto-caso.ts";
+import type { Entorno } from "@/application/puertos.ts";
+import { construirDatosEnvio } from "@/domain/borrador.ts";
+import { renderizarPlantilla } from "@/domain/plantillas.ts";
+import { exito, fallo, type Resultado } from "@/domain/resultado.ts";
 
 export type ArgsSimularEnvio = { readonly caso: string; readonly confirmado: boolean };
 

@@ -2,9 +2,9 @@ import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import { existsSync } from "node:fs";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
-import { generar_formulario, mapear_campos } from "../../src/tools/proveedor.ts";
-import { type ItemProyectado, mapearProyectado, type RespuestaGenerar } from "../helpers/flujo.ts";
-import { crearProyectoTemporal, type ProyectoTemporal } from "../helpers/proyecto-temporal.ts";
+import { type ItemProyectado, mapearProyectado, type RespuestaGenerar } from "@tests/helpers/flujo.ts";
+import { crearProyectoTemporal, type ProyectoTemporal } from "@tests/helpers/proyecto-temporal.ts";
+import { generar_formulario, mapear_campos } from "@/tools/proveedor.ts";
 
 const CO = "co-industrias-delta";
 const HN = "hn-agroexport-sula";

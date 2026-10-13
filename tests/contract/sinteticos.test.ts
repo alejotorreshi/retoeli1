@@ -1,10 +1,10 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import { copyFile, readFile } from "node:fs/promises";
 import { join } from "node:path";
-import { generar_formulario, leer_solicitud, mapear_campos } from "../../src/tools/proveedor.ts";
-import { generarCaso } from "../helpers/flujo.ts";
-import { extraerTrazos } from "../helpers/pdf-texto.ts";
-import { crearProyectoTemporal, type ProyectoTemporal } from "../helpers/proyecto-temporal.ts";
+import { generarCaso } from "@tests/helpers/flujo.ts";
+import { extraerTrazos } from "@tests/helpers/pdf-texto.ts";
+import { crearProyectoTemporal, type ProyectoTemporal } from "@tests/helpers/proyecto-temporal.ts";
+import { generar_formulario, leer_solicitud, mapear_campos } from "@/tools/proveedor.ts";
 
 type Item = {
   etiqueta: string;

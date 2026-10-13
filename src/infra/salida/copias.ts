@@ -6,9 +6,9 @@ import {
   OUT_DIR,
   PATRON_ARCHIVO_SOPORTE,
   PATRON_CASO,
-} from "../../config/constantes.ts";
-import { directorioSoportes } from "../fixtures/lector.ts";
-import { directorioSalidaCaso, rutaRelativa } from "./rutas-seguras.ts";
+} from "@/config/constantes.ts";
+import { directorioSoportes } from "@/infra/fixtures/lector.ts";
+import { directorioSalidaCaso, rutaRelativa } from "@/infra/salida/rutas-seguras.ts";
 
 const COPIAS_DE_FORMULARIO: ReadonlySet<string> = new Set([
   ARCHIVOS_SALIDA.paqueteFormularioXlsx,

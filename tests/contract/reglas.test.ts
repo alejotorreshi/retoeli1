@@ -1,14 +1,14 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import { readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
-import { MENSAJES_ERROR } from "../../src/domain/errores.ts";
-import { crearHerramientas } from "../../src/tools/fabrica.ts";
 import {
   type ConocimientoTemporal,
   copiarConocimiento,
   crearProyectoTemporal,
   type ProyectoTemporal,
-} from "../helpers/proyecto-temporal.ts";
+} from "@tests/helpers/proyecto-temporal.ts";
+import { MENSAJES_ERROR } from "@/domain/errores.ts";
+import { crearHerramientas } from "@/tools/fabrica.ts";
 
 type Item = { etiqueta: string; estado: string; regla: string; confianza: number; nota: string | null };
 

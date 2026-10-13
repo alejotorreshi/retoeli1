@@ -1,7 +1,7 @@
 import { mkdir, readdir, realpath, rm, writeFile } from "node:fs/promises";
 import { dirname, join, sep } from "node:path";
-import { ARCHIVOS_SALIDA, OUT_DIR, PATRON_CASO } from "../../config/constantes.ts";
-import { directorioSalidaCaso, rutaRelativa } from "./rutas-seguras.ts";
+import { ARCHIVOS_SALIDA, OUT_DIR, PATRON_CASO } from "@/config/constantes.ts";
+import { directorioSalidaCaso, rutaRelativa } from "@/infra/salida/rutas-seguras.ts";
 
 const NOMBRES_PERMITIDOS: ReadonlySet<string> = new Set(Object.values(ARCHIVOS_SALIDA));
 

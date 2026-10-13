@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, setSystemTime, test } from "bun:test";
-import { relojFijo, relojSistema } from "../../src/infra/reloj.ts";
+import { relojFijo, relojSistema } from "@/infra/reloj.ts";
 
 afterEach(() => {
   setSystemTime();

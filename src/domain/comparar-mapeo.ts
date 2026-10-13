@@ -1,5 +1,5 @@
-import type { CampoMapeado } from "./mapeo.ts";
-import type { EstadoCampo } from "./reglas.ts";
+import type { CampoMapeado } from "@/domain/mapeo.ts";
+import type { EstadoCampo } from "@/domain/reglas.ts";
 
 export type ItemMapeo = {
   readonly etiqueta: string;

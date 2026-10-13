@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { esquemaPlantillaCeldas } from "../../src/infra/fixtures/esquemas.ts";
+import { esquemaPlantillaCeldas } from "@/infra/fixtures/esquemas.ts";
 
 type Entrada = { hoja: string; celda_etiqueta: string; etiqueta: string; celda_valor: string };
 

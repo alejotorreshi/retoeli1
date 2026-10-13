@@ -54,10 +54,23 @@ function nombreDePaquete(especificador: string): string {
   return especificador.startsWith("@") ? partes.slice(0, 2).join("/") : (partes[0] ?? especificador);
 }
 
-function capaDeDestino(origen: string, especificador: string): string {
-  if (especificador.startsWith(".")) {
-    return capaDeRuta(posix.normalize(posix.join(posix.dirname(origen), especificador)));
+const ALIAS: readonly (readonly [string, string])[] = [
+  ["@/", "src/"],
+  ["@tests/", "tests/"],
+];
+
+function rutaLocal(origen: string, especificador: string): string | null {
+  for (const [prefijo, carpeta] of ALIAS) {
+    if (especificador.startsWith(prefijo))
+      return posix.normalize(carpeta + especificador.slice(prefijo.length));
   }
+  if (especificador.startsWith(".")) return posix.normalize(posix.join(posix.dirname(origen), especificador));
+  return null;
+}
+
+function capaDeDestino(origen: string, especificador: string): string {
+  const local = rutaLocal(origen, especificador);
+  if (local !== null) return capaDeRuta(local);
   if (especificador.startsWith("node:")) return "node";
   const paquete = nombreDePaquete(especificador);
   return PAQUETES_CON_CAPA.has(paquete) ? paquete : `paquete:${paquete}`;
@@ -141,9 +154,24 @@ function leer(ruta: string): string {
 type Grafo = ReadonlyMap<string, readonly string[]>;
 
 function dependenciasLocales(ruta: string, codigo: string): string[] {
+  return extraerImportaciones(codigo).flatMap((especificador) => {
+    const local = rutaLocal(ruta, especificador);
+    return local === null ? [] : [local];
+  });
+}
+
+function listarTodasLasFuentes(): string[] {
+  const rutas = ["src", "tests"]
+    .filter((carpeta) => existsSync(join(RAIZ, carpeta)))
+    .flatMap((carpeta) => [...new Bun.Glob(`${carpeta}/**/*.ts`).scanSync({ cwd: RAIZ })]);
+  if (existsSync(join(RAIZ, "demo.ts"))) rutas.push("demo.ts");
+  return rutas.map((ruta) => ruta.split("\\").join("/")).sort();
+}
+
+function importacionesRelativas(ruta: string, codigo: string): string[] {
   return extraerImportaciones(codigo)
     .filter((especificador) => especificador.startsWith("."))
-    .map((especificador) => posix.normalize(posix.join(posix.dirname(ruta), especificador)));
+    .map((especificador) => `${ruta}: importación relativa ${especificador}`);
 }
 
 function grafoDeFuentes(): Grafo {
@@ -180,6 +208,17 @@ describe("reglas de capas sobre el código real", () => {
     expect(ciclosDe(grafoDeFuentes())).toEqual([]);
   });
 
+  test("G1: src/, tests/ y demo.ts no usan importaciones relativas", () => {
+    const violaciones = listarTodasLasFuentes().flatMap((ruta) => importacionesRelativas(ruta, leer(ruta)));
+    expect(violaciones).toEqual([]);
+  });
+
+  test("G2: el grafo de importaciones resuelve los alias", () => {
+    const grafo = grafoDeFuentes();
+    expect(grafo.get("demo.ts")).toEqual(["src/demo/ejecutar-demo.ts"]);
+    expect([...grafo.values()].flat().length).toBeGreaterThan(listarFuentes().length);
+  });
+
   test("el detector de ciclos muerde sobre un grafo de muestra", () => {
     const grafo = new Map([
       ["a.ts", ["b.ts"]],
@@ -187,6 +226,17 @@ describe("reglas de capas sobre el código real", () => {
       ["c.ts", ["a.ts"]],
     ]);
     expect(ciclosDe(grafo)).toEqual(["a.ts -> b.ts -> a.ts"]);
+  });
+
+  test("G2: el detector de ciclos muerde sobre un ciclo con alias", () => {
+    const fuentes: Readonly<Record<string, string>> = {
+      "src/domain/a.ts": 'import { b } from "@/domain/b.ts";\n',
+      "src/domain/b.ts": 'import type { A } from "@/domain/a.ts";\n',
+    };
+    const grafo = new Map(
+      Object.entries(fuentes).map(([ruta, codigo]) => [ruta, dependenciasLocales(ruta, codigo)]),
+    );
+    expect(ciclosDe(grafo)).toEqual(["src/domain/a.ts -> src/domain/b.ts -> src/domain/a.ts"]);
   });
 
   test("src/ y demo.ts no usan APIs de shell", () => {
@@ -197,13 +247,13 @@ describe("reglas de capas sobre el código real", () => {
 
 describe("superficie pública de herramientas (CAL-04)", () => {
   test("proveedor.ts solo exporta nombres del PRD con descripción de una oración", async () => {
-    const modulo = Object.fromEntries(Object.entries(await import("../src/tools/proveedor.ts")));
+    const modulo = Object.fromEntries(Object.entries(await import("@/tools/proveedor.ts")));
     expect(Object.keys(modulo).length).toBeGreaterThan(0);
     expect(violacionesDeHerramientas(modulo)).toEqual([]);
   });
 
   test("proveedor.ts exporta exactamente las cinco herramientas con description, args y execute (HERR-01)", async () => {
-    const modulo = Object.fromEntries(Object.entries(await import("../src/tools/proveedor.ts")));
+    const modulo = Object.fromEntries(Object.entries(await import("@/tools/proveedor.ts")));
     expect(Object.keys(modulo).sort()).toEqual([...HERRAMIENTAS_PRD].sort());
     expect(Object.keys(modulo).sort()).toEqual([
       "armar_paquete",
@@ -242,16 +292,16 @@ describe("superficie pública de herramientas (CAL-04)", () => {
 
 describe("el escáner muerde sobre fuentes de muestra", () => {
   test("reporta import type desde infra dentro de domain", () => {
-    const codigo = 'import type { Lector } from "../infra/lector";\nexport const a = 1;\n';
+    const codigo = 'import type { Lector } from "@/infra/lector";\nexport const a = 1;\n';
     expect(violacionesDeCapas("src/domain/a.ts", codigo)).toEqual([
-      "src/domain/a.ts: la capa domain no puede importar ../infra/lector",
+      "src/domain/a.ts: la capa domain no puede importar @/infra/lector",
     ]);
   });
 
   test("reporta export type desde un módulo exterior", () => {
-    const codigo = 'export type { Puerto } from "../application/puertos";\n';
+    const codigo = 'export type { Puerto } from "@/application/puertos";\n';
     expect(violacionesDeCapas("src/domain/b.ts", codigo)).toEqual([
-      "src/domain/b.ts: la capa domain no puede importar ../application/puertos",
+      "src/domain/b.ts: la capa domain no puede importar @/application/puertos",
     ]);
   });
 
@@ -263,10 +313,10 @@ describe("el escáner muerde sobre fuentes de muestra", () => {
 
   test("reporta una importación multilínea y una dinámica hacia capas futuras", () => {
     const codigo =
-      'import {\n  servidor,\n} from "../server";\nconst llm = await import("../llm/adaptador");\n';
+      'import {\n  servidor,\n} from "@/server";\nconst llm = await import("@/llm/adaptador");\n';
     expect(violacionesDeCapas("src/application/d.ts", codigo)).toEqual([
-      "src/application/d.ts: la capa application no puede importar ../server",
-      "src/application/d.ts: la capa application no puede importar ../llm/adaptador",
+      "src/application/d.ts: la capa application no puede importar @/server",
+      "src/application/d.ts: la capa application no puede importar @/llm/adaptador",
     ]);
   });
 
@@ -285,25 +335,47 @@ describe("el escáner muerde sobre fuentes de muestra", () => {
   });
 
   test("deja pasar una importación de domain a domain", () => {
-    const codigo = 'import { normalizar } from "./normalizar";\nimport type { Campo } from "./tipos.ts";\n';
+    const codigo =
+      'import { normalizar } from "@/domain/normalizar";\nimport type { Campo } from "./tipos.ts";\n';
     expect(violacionesDeCapas("src/domain/mapeo.ts", codigo)).toEqual([]);
   });
 
   test("solo wiring.ts puede importar infra desde tools", () => {
-    const codigo = 'import { crearLector } from "../infra/fixtures/lector";\n';
+    const codigo = 'import { crearLector } from "@/infra/fixtures/lector";\n';
     expect(violacionesDeCapas("src/tools/wiring.ts", codigo)).toEqual([]);
     expect(violacionesDeCapas("src/tools/define-tool.ts", codigo)).toEqual([
-      "src/tools/define-tool.ts: la capa tools no puede importar ../infra/fixtures/lector",
+      "src/tools/define-tool.ts: la capa tools no puede importar @/infra/fixtures/lector",
     ]);
   });
 
   test("src/demo solo llega a la herramienta exportada, config y node:", () => {
     const permitido =
-      'import { leer_solicitud } from "../tools/proveedor.ts";\nimport { join } from "node:path";\n';
-    const prohibido = 'import { crearEntorno } from "../tools/wiring";\n';
+      'import { leer_solicitud } from "@/tools/proveedor.ts";\nimport { join } from "node:path";\n';
+    const prohibido = 'import { crearEntorno } from "@/tools/wiring";\n';
     expect(violacionesDeCapas("src/demo/ejecutar-demo.ts", permitido)).toEqual([]);
     expect(violacionesDeCapas("src/demo/ejecutar-demo.ts", prohibido)).toEqual([
-      "src/demo/ejecutar-demo.ts: la capa demo no puede importar ../tools/wiring",
+      "src/demo/ejecutar-demo.ts: la capa demo no puede importar @/tools/wiring",
+    ]);
+  });
+
+  test("G1: reporta importaciones relativas estáticas, de reexportación y dinámicas", () => {
+    const comilla = '"';
+    const codigo = [
+      'import { a } from "./a.ts";',
+      'export { b } from "../b.ts";',
+      `const c = await import(${comilla}../c.ts${comilla});`,
+      'import { d } from "@/domain/d.ts";',
+    ].join("\n");
+    expect(importacionesRelativas("src/x.ts", codigo)).toEqual([
+      "src/x.ts: importación relativa ./a.ts",
+      "src/x.ts: importación relativa ../b.ts",
+      "src/x.ts: importación relativa ../c.ts",
+    ]);
+  });
+
+  test("src no puede importar desde @tests/", () => {
+    expect(violacionesDeCapas("src/domain/e.ts", 'import { f } from "@tests/helpers/f.ts";\n')).toEqual([
+      "src/domain/e.ts: la capa domain no puede importar @tests/helpers/f.ts",
     ]);
   });
 

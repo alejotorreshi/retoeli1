@@ -1,7 +1,7 @@
 import { beforeAll, describe, expect, test } from "bun:test";
-import type { Reglas } from "../../src/domain/reglas.ts";
-import { validarTextosDeReglas } from "../../src/domain/validar-reglas.ts";
-import { cargarReglas, DIRECTORIO_CONOCIMIENTO_POR_DEFECTO } from "../../src/infra/knowledge/reglas.ts";
+import type { Reglas } from "@/domain/reglas.ts";
+import { validarTextosDeReglas } from "@/domain/validar-reglas.ts";
+import { cargarReglas, DIRECTORIO_CONOCIMIENTO_POR_DEFECTO } from "@/infra/knowledge/reglas.ts";
 
 let reglas: Reglas;
 

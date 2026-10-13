@@ -1,4 +1,4 @@
-import { ejecutarDemo } from "../../src/demo/ejecutar-demo.ts";
+import { ejecutarDemo } from "@/demo/ejecutar-demo.ts";
 
 export type Respuesta = { readonly herramienta: string; readonly respuesta: string };
 

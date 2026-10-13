@@ -1,4 +1,4 @@
-import { type CodigoError, MENSAJES_ERROR } from "./errores.ts";
+import { type CodigoError, MENSAJES_ERROR } from "@/domain/errores.ts";
 
 export type Parcial = Readonly<Record<string, unknown>>;
 

@@ -2,14 +2,14 @@ import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import { existsSync } from "node:fs";
 import { readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
-import { crearHerramientas } from "../../src/tools/fabrica.ts";
-import { mapear_campos } from "../../src/tools/proveedor.ts";
 import {
   type ConocimientoTemporal,
   copiarConocimiento,
   crearProyectoTemporal,
   type ProyectoTemporal,
-} from "../helpers/proyecto-temporal.ts";
+} from "@tests/helpers/proyecto-temporal.ts";
+import { crearHerramientas } from "@/tools/fabrica.ts";
+import { mapear_campos } from "@/tools/proveedor.ts";
 
 const NOTA_EXTRANJERO = "Identificador extranjero: confirmar si el cliente acepta el NIT colombiano";
 const CLAVES_ITEM = [

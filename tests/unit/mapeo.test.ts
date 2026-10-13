@@ -11,8 +11,8 @@ import {
   type Maestro,
   mapearCampos,
   NOTA_DATO_NO_TEXTUAL,
-} from "../../src/domain/mapeo.ts";
-import type { Reglas } from "../../src/domain/reglas.ts";
+} from "@/domain/mapeo.ts";
+import type { Reglas } from "@/domain/reglas.ts";
 
 const FIXTURES = new URL("../../reto-01/fixtures/reto-01/", import.meta.url);
 const RUTA_REGLAS = new URL("../../src/knowledge/reglas.json", import.meta.url);

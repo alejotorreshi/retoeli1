@@ -1,8 +1,8 @@
-import { exito, type Resultado } from "../domain/resultado.ts";
-import { type CampoAmbiguo, camposSolicitados, detectarAmbiguos } from "../domain/solicitud.ts";
-import type { CampoSolicitado, Formato } from "../domain/tipos.ts";
-import { cargarSolicitudCaso } from "./contexto-caso.ts";
-import type { Entorno } from "./puertos.ts";
+import { cargarSolicitudCaso } from "@/application/contexto-caso.ts";
+import type { Entorno } from "@/application/puertos.ts";
+import { exito, type Resultado } from "@/domain/resultado.ts";
+import { type CampoAmbiguo, camposSolicitados, detectarAmbiguos } from "@/domain/solicitud.ts";
+import type { CampoSolicitado, Formato } from "@/domain/tipos.ts";
 
 export type ArgsLeerSolicitud = { readonly caso: string };
 

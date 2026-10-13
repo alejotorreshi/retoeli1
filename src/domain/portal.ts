@@ -1,6 +1,6 @@
-import type { CampoMapeado } from "./mapeo.ts";
-import type { EstadoCampo } from "./reglas.ts";
-import type { FechaISO } from "./tipos.ts";
+import type { CampoMapeado } from "@/domain/mapeo.ts";
+import type { EstadoCampo } from "@/domain/reglas.ts";
+import type { FechaISO } from "@/domain/tipos.ts";
 
 export const AVISO_FORMATO_NO_SOPORTADO = "formato no soportado";
 
