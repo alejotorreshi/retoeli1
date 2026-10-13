@@ -1,11 +1,19 @@
 import type { Reloj } from "@/application/types/puertos.type.ts";
 import { CODIGO_AGENTE, MS_POR_MINUTO } from "@/config/constants/agent.constants.ts";
 import { MAX_ISSUES_ARGS } from "@/config/constants/limits.constants.ts";
+import { BACKOFF_BASE_MS, BACKOFF_TOPE_MS } from "@/config/constants/llm.constants.ts";
 import { ZONA_HORARIA_POR_DEFECTO } from "@/config/constants/runtime.constants.ts";
-import { type AgentEnv, parseAgentEnv, readAgentEnv, readToolEnv } from "@/config/env.ts";
+import {
+  type AgentEnv,
+  type ProviderSettings,
+  parseAgentEnv,
+  readAgentEnv,
+  readToolEnv,
+} from "@/config/env.ts";
 import { MENSAJE_AGENTE, TEXTO_AGENTE } from "@/config/strings.ts";
 import { formatearIssues } from "@/domain/utils/formatear-issues.util.ts";
 import { clockFromToolEnv, systemClock } from "@/infra/clock/clock.adapter.ts";
+import { sleepWithSignal } from "@/infra/clock/sleep.util.ts";
 import { resolveRoot } from "@/infra/fixtures/fixtures-reader.adapter.ts";
 import {
   createInstructionsLoader,
@@ -15,6 +23,10 @@ import { DEFAULT_KNOWLEDGE_DIRECTORY } from "@/infra/knowledge/rules-loader.adap
 import { createAuditLog } from "@/infra/logging/audit-log.adapter.ts";
 import { createMemorySessionStore } from "@/infra/sessions/memory-session-store.adapter.ts";
 import { createOpenAICompatibleAdapter } from "@/llm/adapters/openai-compatible.adapter.ts";
+import { withFallback } from "@/llm/decorators/fallback.decorator.ts";
+import { withRetry } from "@/llm/decorators/retry.decorator.ts";
+import { withTimeout } from "@/llm/decorators/timeout.decorator.ts";
+import type { AdaptadorLlm } from "@/llm/types/llm.type.ts";
 import { ejecutarTurno, sesionVacia } from "@/loop/services/ejecutar-turno.service.ts";
 import { crearRegistroHerramientas } from "@/loop/services/registro-herramientas.service.ts";
 import type { CreacionAgente, OpcionesAgente } from "@/loop/types/agente.type.ts";
@@ -41,10 +53,39 @@ function leerConfiguracion(opciones: OpcionesAgente) {
   return opciones.fuenteEntorno === undefined ? readAgentEnv() : parseAgentEnv(opciones.fuenteEntorno);
 }
 
+function resiliente(
+  slot: ProviderSettings,
+  apiKey: string,
+  config: AgentEnv,
+  opciones: OpcionesAgente,
+): AdaptadorLlm {
+  const base = createOpenAICompatibleAdapter({ ...slot, apiKey }, { fetch: opciones.fetch });
+  return withRetry(withTimeout(base, config.timeoutMs), {
+    maxReintentos: config.maxRetries,
+    baseMs: BACKOFF_BASE_MS,
+    topeMs: BACKOFF_TOPE_MS,
+    esperar: opciones.esperar ?? sleepWithSignal,
+    azar: Math.random,
+  });
+}
+
+function respaldoDe(config: AgentEnv, opciones: OpcionesAgente): AdaptadorLlm | null {
+  const { fallback } = config;
+  if (fallback === null || fallback.apiKey === null) return null;
+  return resiliente(fallback, fallback.apiKey, config, opciones);
+}
+
+function sinAviso(): void {}
+
+function modeloDelAgente(opciones: OpcionesAgente, config: AgentEnv, apiKey: string): AdaptadorLlm {
+  const primario = resiliente(config.primary, apiKey, config, opciones);
+  return withFallback(primario, respaldoDe(config, opciones), sinAviso);
+}
+
 function dependencias(opciones: OpcionesAgente, config: AgentEnv, apiKey: string): DependenciasTurno {
   const reloj = relojCompartidoConHerramientas();
   return {
-    llm: createOpenAICompatibleAdapter({ ...config.primary, apiKey }, { fetch: opciones.fetch }),
+    llm: modeloDelAgente(opciones, config, apiKey),
     herramientas: crearRegistroHerramientas(proveedor),
     instrucciones: createInstructionsLoader({
       agentDirectory: opciones.directorioAgente ?? DEFAULT_AGENT_DIRECTORY,
