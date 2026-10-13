@@ -1,8 +1,7 @@
 import type { RUTAS_BORRADOR } from "@/config/constants/maestro.constants.ts";
+import type { SeccionCondicional } from "@/domain/types/motor-plantillas.type.ts";
 
 export type RutaBorrador = (typeof RUTAS_BORRADOR)[number];
-
-type SinCampos = Readonly<Record<string, never>>;
 
 export type DatosBorradorCorreo = {
   readonly para: string;
@@ -14,7 +13,7 @@ export type DatosBorradorCorreo = {
   readonly formulario: string;
   readonly soportes_adjuntos: readonly { readonly tipo: string; readonly archivo: string }[];
   readonly pendientes: readonly { readonly texto: string }[];
-  readonly hay_pendientes: readonly SinCampos[];
+  readonly hay_pendientes: SeccionCondicional;
 };
 
 export type DatosEnvioSimulado = {

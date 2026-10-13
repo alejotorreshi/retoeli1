@@ -3,6 +3,7 @@ import { TEXTO_MOTOR_PLANTILLAS } from "@/config/strings.ts";
 import { exito, fallo } from "@/domain/resultado.ts";
 import type {
   ContextoPlantilla,
+  SeccionCondicional,
   ValorEscalar,
   ValorPlantilla,
 } from "@/domain/types/motor-plantillas.type.ts";
@@ -128,4 +129,8 @@ export function renderizarTextoPlano(
   nombrePlantilla: string,
 ): Resultado<string> {
   return renderizar(texto, contexto, nombrePlantilla, SIN_ESCAPE);
+}
+
+export function seccionSi(condicion: boolean): SeccionCondicional {
+  return condicion ? [{}] : [];
 }

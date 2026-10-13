@@ -2,6 +2,7 @@ import { RUTA_MAESTRO } from "@/config/constants/maestro.constants.ts";
 import { ESTADO_SOPORTE } from "@/config/constants/supports.constants.ts";
 import { TEXTO_BORRADOR, TEXTO_COMUN } from "@/config/strings.ts";
 import { leerRuta } from "@/domain/maestro.ts";
+import { seccionSi } from "@/domain/motor-plantillas.ts";
 import type { DatosBorradorCorreo, DatosEnvioSimulado, RutaBorrador } from "@/domain/types/borrador.type.ts";
 import type { Checklist, SoporteEvaluado } from "@/domain/types/checklist.type.ts";
 import type { Maestro } from "@/domain/types/maestro.type.ts";
@@ -50,7 +51,7 @@ export function construirDatosBorrador(
     formulario: nombreFormulario,
     soportes_adjuntos: adjuntos(checklist.soportes),
     pendientes: pendientes.map((texto) => ({ texto })),
-    hay_pendientes: pendientes.length === 0 ? [] : [{}],
+    hay_pendientes: seccionSi(pendientes.length > 0),
   };
 }
 
