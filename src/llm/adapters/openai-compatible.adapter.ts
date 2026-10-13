@@ -32,73 +32,73 @@ type ToolPart = Pick<ChatCompletionRequest, "tools" | "tool_choice">;
 
 function toolPart(
   slot: ProviderSlot,
-  definiciones: readonly DefinicionHerramienta[],
-  desactivadas: boolean,
+  definitions: readonly DefinicionHerramienta[],
+  toolsDisabled: boolean,
 ): ToolPart {
-  if (definiciones.length === 0) return {};
-  const tools: readonly WireTool[] = toWireTools(definiciones);
-  if (!desactivadas) return { tools, tool_choice: TOOL_CHOICE.AUTO };
+  if (definitions.length === 0) return {};
+  const tools: readonly WireTool[] = toWireTools(definitions);
+  if (!toolsDisabled) return { tools, tool_choice: TOOL_CHOICE.AUTO };
   return slot.capabilities.toolChoiceNone ? { tools, tool_choice: TOOL_CHOICE.NINGUNA } : {};
 }
 
 function buildRequest(
   slot: ProviderSlot,
-  mensajes: readonly Mensaje[],
-  definiciones: readonly DefinicionHerramienta[],
-  desactivadas: boolean,
+  messages: readonly Mensaje[],
+  definitions: readonly DefinicionHerramienta[],
+  toolsDisabled: boolean,
 ): ChatCompletionRequest {
   const { capabilities } = slot;
   return {
     model: slot.model,
-    messages: toWireMessages(mensajes, capabilities.reasoningPassback),
+    messages: toWireMessages(messages, capabilities.reasoningPassback),
     stream: false,
     [capabilities.maxTokensParam]: slot.maxOutputTokens,
     ...(capabilities.temperature === null ? {} : { temperature: capabilities.temperature }),
     ...(capabilities.thinking === null ? {} : { thinking: { type: capabilities.thinking } }),
-    ...toolPart(slot, definiciones, desactivadas),
+    ...toolPart(slot, definitions, toolsDisabled),
   };
 }
 
-function requestInit(slot: ProviderSlot, cuerpo: string, signal: AbortSignal): RequestInit {
+function requestInit(slot: ProviderSlot, body: string, signal: AbortSignal): RequestInit {
   return {
     method: METODO_POST,
     headers: {
       [CABECERA_HTTP.AUTORIZACION]: `${PREFIJO_BEARER}${slot.apiKey}`,
       [CABECERA_HTTP.TIPO_CONTENIDO]: TIPO_CONTENIDO_JSON,
     },
-    body: cuerpo,
+    body,
     signal,
   };
 }
 
-async function discardBody(respuesta: Response): Promise<void> {
+async function discardBody(response: Response): Promise<void> {
   try {
-    await respuesta.body?.cancel();
+    await response.body?.cancel();
   } catch {
     return;
   }
 }
 
-function parseCompletion(texto: string, proveedor: string, caracteresPeticion: number): ResultadoEnvio {
+function parseCompletion(text: string, provider: string, requestCharacters: number): ResultadoEnvio {
   let json: unknown;
   try {
-    json = JSON.parse(texto.trim());
+    json = JSON.parse(text.trim());
   } catch {
     return { ok: false, error: invalidResponseError() };
   }
-  const validado = chatCompletionSchema.safeParse(json, { error: z.locales.es().localeError });
-  if (!validado.success) return { ok: false, error: invalidResponseError() };
-  return fromChatCompletion(validado.data, proveedor, caracteresPeticion);
+  const parsed = chatCompletionSchema.safeParse(json, { error: z.locales.es().localeError });
+  if (!parsed.success) return { ok: false, error: invalidResponseError() };
+  return fromChatCompletion(parsed.data, provider, requestCharacters);
 }
 
 async function readCompletion(
-  respuesta: Response,
-  proveedor: string,
-  caracteresPeticion: number,
+  response: Response,
+  provider: string,
+  requestCharacters: number,
   signal: AbortSignal,
 ): Promise<ResultadoEnvio> {
   try {
-    return parseCompletion(await respuesta.text(), proveedor, caracteresPeticion);
+    return parseCompletion(await response.text(), provider, requestCharacters);
   } catch {
     return { ok: false, error: errorFromException(signal.aborted) };
   }
@@ -107,26 +107,26 @@ async function readCompletion(
 async function send(
   slot: ProviderSlot,
   dependencies: AdapterDependencies,
-  peticion: ChatCompletionRequest,
-  opciones: OpcionesEnvio,
+  request: ChatCompletionRequest,
+  options: OpcionesEnvio,
 ): Promise<ResultadoEnvio> {
-  if (opciones.signal.aborted) return { ok: false, error: errorFromException(true) };
-  const cuerpo = JSON.stringify(peticion);
-  let respuesta: Response;
+  if (options.signal.aborted) return { ok: false, error: errorFromException(true) };
+  const body = JSON.stringify(request);
+  let response: Response;
   try {
-    respuesta = await dependencies.fetch(
+    response = await dependencies.fetch(
       `${slot.baseUrl}${RUTA_CHAT_COMPLETIONS}`,
-      requestInit(slot, cuerpo, opciones.signal),
+      requestInit(slot, body, options.signal),
     );
   } catch {
-    return { ok: false, error: errorFromException(opciones.signal.aborted) };
+    return { ok: false, error: errorFromException(options.signal.aborted) };
   }
-  if (!respuesta.ok) {
-    const retryAfter = respuesta.headers.get(CABECERA_HTTP.REINTENTAR_TRAS);
-    await discardBody(respuesta);
-    return { ok: false, error: errorFromStatus(respuesta.status, retryAfter) };
+  if (!response.ok) {
+    const retryAfter = response.headers.get(CABECERA_HTTP.REINTENTAR_TRAS);
+    await discardBody(response);
+    return { ok: false, error: errorFromStatus(response.status, retryAfter) };
   }
-  return readCompletion(respuesta, slot.provider, cuerpo.length, opciones.signal);
+  return readCompletion(response, slot.provider, body.length, options.signal);
 }
 
 export function createOpenAICompatibleAdapter(
@@ -136,12 +136,12 @@ export function createOpenAICompatibleAdapter(
   return {
     proveedor: slot.provider,
     modelo: slot.model,
-    enviar: (mensajes, herramientas, opciones) =>
+    enviar: (messages, tools, options) =>
       send(
         slot,
         dependencies,
-        buildRequest(slot, mensajes, herramientas, opciones.herramientasDesactivadas),
-        opciones,
+        buildRequest(slot, messages, tools, options.herramientasDesactivadas),
+        options,
       ),
   };
 }

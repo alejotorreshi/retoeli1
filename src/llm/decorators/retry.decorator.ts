@@ -7,51 +7,46 @@ import type {
   OpcionesEnvio,
   ResultadoEnvio,
 } from "@/llm/types/llm.type.ts";
-import type { OpcionesReintento } from "@/llm/types/resiliencia.type.ts";
+import type { RetryOptions } from "@/llm/types/resilience.type.ts";
 
-const ABORTADO: ResultadoEnvio = { ok: false, error: errorFromException(true) };
+const ABORTED: ResultadoEnvio = { ok: false, error: errorFromException(true) };
 
-function esperaPara(error: ErrorLlm, intento: number, opciones: OpcionesReintento): number {
-  const exponencial = Math.min(opciones.topeMs, opciones.baseMs * 2 ** intento);
-  return Math.min(opciones.topeMs, error.reintentarTrasMs ?? opciones.azar() * exponencial);
+function delayFor(error: ErrorLlm, attempt: number, retry: RetryOptions): number {
+  const exponential = Math.min(retry.capMs, retry.baseMs * 2 ** attempt);
+  return Math.min(retry.capMs, error.reintentarTrasMs ?? retry.random() * exponential);
 }
 
-async function esperoSinAbortar(
-  ms: number,
-  reintento: OpcionesReintento,
-  signal: AbortSignal,
-): Promise<boolean> {
+async function waitUnlessAborted(ms: number, retry: RetryOptions, signal: AbortSignal): Promise<boolean> {
   try {
-    await reintento.esperar(ms, signal);
+    await retry.wait(ms, signal);
   } catch {
     return false;
   }
   return !signal.aborted;
 }
 
-async function enviarConReintentos(
+async function sendWithRetries(
   base: AdaptadorLlm,
-  reintento: OpcionesReintento,
-  mensajes: readonly Mensaje[],
-  herramientas: readonly DefinicionHerramienta[],
-  opciones: OpcionesEnvio,
+  retry: RetryOptions,
+  messages: readonly Mensaje[],
+  tools: readonly DefinicionHerramienta[],
+  options: OpcionesEnvio,
 ): Promise<ResultadoEnvio> {
-  let resultado = await base.enviar(mensajes, herramientas, opciones);
-  for (let intento = 0; intento < reintento.maxReintentos; intento += 1) {
-    if (resultado.ok || !resultado.error.reintentable) return resultado;
-    if (opciones.signal.aborted) return ABORTADO;
-    const espera = esperaPara(resultado.error, intento, reintento);
-    if (!(await esperoSinAbortar(espera, reintento, opciones.signal))) return ABORTADO;
-    resultado = await base.enviar(mensajes, herramientas, opciones);
+  let result = await base.enviar(messages, tools, options);
+  for (let attempt = 0; attempt < retry.maxRetries; attempt += 1) {
+    if (result.ok || !result.error.reintentable) return result;
+    if (options.signal.aborted) return ABORTED;
+    const delay = delayFor(result.error, attempt, retry);
+    if (!(await waitUnlessAborted(delay, retry, options.signal))) return ABORTED;
+    result = await base.enviar(messages, tools, options);
   }
-  return resultado;
+  return result;
 }
 
-export function withRetry(base: AdaptadorLlm, reintento: OpcionesReintento): AdaptadorLlm {
+export function withRetry(base: AdaptadorLlm, retry: RetryOptions): AdaptadorLlm {
   return {
     proveedor: base.proveedor,
     modelo: base.modelo,
-    enviar: (mensajes, herramientas, opciones) =>
-      enviarConReintentos(base, reintento, mensajes, herramientas, opciones),
+    enviar: (messages, tools, options) => sendWithRetries(base, retry, messages, tools, options),
   };
 }

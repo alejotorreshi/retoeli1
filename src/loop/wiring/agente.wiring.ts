@@ -25,7 +25,7 @@ import { createLogger } from "@/infra/logging/logger.adapter.ts";
 import { createMemorySessionStore } from "@/infra/sessions/memory-session-store.adapter.ts";
 import { createOpenAICompatibleAdapter } from "@/llm/adapters/openai-compatible.adapter.ts";
 import { withFallback } from "@/llm/decorators/fallback.decorator.ts";
-import { withObservacion } from "@/llm/decorators/observacion.decorator.ts";
+import { withObservation } from "@/llm/decorators/observation.decorator.ts";
 import { withRetry } from "@/llm/decorators/retry.decorator.ts";
 import { withTimeout } from "@/llm/decorators/timeout.decorator.ts";
 import type { AdaptadorLlm, ErrorLlm, OpcionesEnvio } from "@/llm/types/llm.type.ts";
@@ -62,12 +62,12 @@ function resiliente(
   opciones: OpcionesAgente,
 ): AdaptadorLlm {
   const base = createOpenAICompatibleAdapter({ ...slot, apiKey }, { fetch: opciones.fetch });
-  return withRetry(withObservacion(withTimeout(base, config.timeoutMs)), {
-    maxReintentos: config.maxRetries,
+  return withRetry(withObservation(withTimeout(base, config.timeoutMs)), {
+    maxRetries: config.maxRetries,
     baseMs: BACKOFF_BASE_MS,
-    topeMs: BACKOFF_TOPE_MS,
-    esperar: opciones.esperar ?? sleepWithSignal,
-    azar: Math.random,
+    capMs: BACKOFF_TOPE_MS,
+    wait: opciones.esperar ?? sleepWithSignal,
+    random: Math.random,
   });
 }
 

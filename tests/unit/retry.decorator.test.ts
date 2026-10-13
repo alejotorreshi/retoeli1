@@ -3,27 +3,27 @@ import { crearAdaptadorGuion, exito, falla, opcionesCon } from "@tests/helpers/a
 import { BACKOFF_BASE_MS, BACKOFF_TOPE_MS, TIPO_ERROR_LLM } from "@/config/constants/llm.constants.ts";
 import { withRetry } from "@/llm/decorators/retry.decorator.ts";
 import type { ResultadoEnvio, TipoErrorLlm } from "@/llm/types/llm.type.ts";
-import type { OpcionesReintento } from "@/llm/types/resiliencia.type.ts";
+import type { RetryOptions } from "@/llm/types/resilience.type.ts";
 
 const MAX_REINTENTOS = 2;
 const AZAR_MEDIO = 0.5;
 const RETRY_AFTER_MS = 3_000;
 
-type Reloj = { readonly esperas: number[]; readonly opciones: OpcionesReintento };
+type Reloj = { readonly esperas: number[]; readonly opciones: RetryOptions };
 
 function reloj(maxReintentos = MAX_REINTENTOS, alEsperar: () => Promise<void> = async () => {}): Reloj {
   const esperas: number[] = [];
   return {
     esperas,
     opciones: {
-      maxReintentos,
+      maxRetries: maxReintentos,
       baseMs: BACKOFF_BASE_MS,
-      topeMs: BACKOFF_TOPE_MS,
-      esperar: async (ms) => {
+      capMs: BACKOFF_TOPE_MS,
+      wait: async (ms) => {
         esperas.push(ms);
         await alEsperar();
       },
-      azar: () => AZAR_MEDIO,
+      random: () => AZAR_MEDIO,
     },
   };
 }
@@ -108,9 +108,9 @@ describe("withRetry", () => {
     const senales: AbortSignal[] = [];
     const base = crearAdaptadorGuion([falla(TIPO_ERROR_LLM.SERVIDOR), exito()]);
     const { opciones } = reloj();
-    const conSenal: OpcionesReintento = {
+    const conSenal: RetryOptions = {
       ...opciones,
-      esperar: async (_ms, signal) => {
+      wait: async (_ms, signal) => {
         senales.push(signal);
       },
     };
@@ -118,7 +118,7 @@ describe("withRetry", () => {
     expect(senales).toEqual([controlador.signal]);
   });
 
-  test("maxReintentos 0 hace una sola llamada", async () => {
+  test("maxRetries 0 hace una sola llamada", async () => {
     const base = crearAdaptadorGuion([falla(TIPO_ERROR_LLM.SERVIDOR), exito()]);
     const resultado = await withRetry(base, reloj(0).opciones).enviar([], [], opcionesCon());
     expect(base.llamadas).toHaveLength(1);

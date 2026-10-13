@@ -207,6 +207,7 @@ Conventions not yet established. Will populate as patterns emerge during develop
 - Hay dos composition roots, los únicos que importan infra: `tools/wiring/entorno.wiring.ts` (herramientas) y `loop/wiring/agente.wiring.ts` (agente). El guardián los reconoce por su ruta exacta.
 - pino solo se importa desde infra.
 - Dominio, aplicación y herramientas en español (contrato del PRD); infraestructura y `config/env.ts` en inglés; documentación en español.
+- Idioma de las capas del agente: `loop` va en español. En `llm`, el puerto neutral (`llm/types/llm.type.ts`: `AdaptadorLlm`, `enviar`, `Mensaje`) va en español porque lo consume el bucle; el protocolo del proveedor (`llm/types/provider.type.ts`, `adapters/`, `mappers/`, `schemas/`) y los decoradores (`decorators/` y `llm/types/resilience.type.ts`) van en inglés, como infra, aunque usen los miembros en español del puerto.
 - Tipos exportados solo en `types/<nombre>.type.ts` de su capa, con solo `type` e `import type`. Las uniones de códigos se derivan de su constante (`ValorDe<typeof X>`) y los esquemas zod se comprueban contra el tipo con `satisfies z.ZodType<T>`. Única excepción: los tipos del entorno (`ToolEnv`, `AgentEnv`, `ProviderSettings` y `EnvSource`), junto a sus esquemas en `config/env.ts`.
 - Códigos y estados son objetos `as const`, nunca `enum`. Toda comparación, asignación, `case` y `fallo(...)` usa el objeto (`ESTADO_CAMPO.FALTANTE`, no `"faltante"`), y los `z.enum` se construyen desde él.
 - Archivos en kebab-case, cada uno en la carpeta de su rol y con el sufijo de ese rol:

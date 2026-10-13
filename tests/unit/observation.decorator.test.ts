@@ -8,7 +8,7 @@ import {
   PROVEEDOR_PRIMARIO,
 } from "@tests/helpers/adaptador-guion.helper.ts";
 import { TIPO_ERROR_LLM } from "@/config/constants/llm.constants.ts";
-import { withObservacion } from "@/llm/decorators/observacion.decorator.ts";
+import { withObservation } from "@/llm/decorators/observation.decorator.ts";
 import type { ErrorLlm, FalloLlm, ObservadorLlm } from "@/llm/types/llm.type.ts";
 
 function observadorQueAnota(): {
@@ -25,11 +25,11 @@ function observadorQueAnota(): {
   };
 }
 
-describe("withObservacion", () => {
+describe("withObservation", () => {
   test("informa cada intento fallido con el proveedor, el modelo, la duración y el error", async () => {
     const error = falla(TIPO_ERROR_LLM.SERVIDOR);
     const { fallos, observador } = observadorQueAnota();
-    const resultado = await withObservacion(crearAdaptadorGuion([error])).enviar([], [], {
+    const resultado = await withObservation(crearAdaptadorGuion([error])).enviar([], [], {
       ...opcionesCon(),
       observador,
     });
@@ -45,7 +45,7 @@ describe("withObservacion", () => {
 
   test("un intento exitoso no se informa y el resultado no cambia", async () => {
     const { fallos, observador } = observadorQueAnota();
-    const resultado = await withObservacion(crearAdaptadorGuion([exito()])).enviar([], [], {
+    const resultado = await withObservation(crearAdaptadorGuion([exito()])).enviar([], [], {
       ...opcionesCon(),
       observador,
     });
@@ -55,11 +55,11 @@ describe("withObservacion", () => {
 
   test("sin observador en las opciones también funciona", async () => {
     const error = falla(TIPO_ERROR_LLM.RED);
-    expect(await withObservacion(crearAdaptadorGuion([error])).enviar([], [], opcionesCon())).toEqual(error);
+    expect(await withObservation(crearAdaptadorGuion([error])).enviar([], [], opcionesCon())).toEqual(error);
   });
 
   test("conserva el proveedor y el modelo de la base", () => {
-    const decorado = withObservacion(crearAdaptadorGuion([exito()]));
+    const decorado = withObservation(crearAdaptadorGuion([exito()]));
     expect([decorado.proveedor, decorado.modelo]).toEqual([PROVEEDOR_PRIMARIO, MODELO_PRIMARIO]);
   });
 });

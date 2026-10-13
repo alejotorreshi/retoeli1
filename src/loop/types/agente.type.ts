@@ -1,5 +1,5 @@
 import type { FetchLike } from "@/llm/types/provider.type.ts";
-import type { OpcionesReintento } from "@/llm/types/resiliencia.type.ts";
+import type { RetryOptions } from "@/llm/types/resilience.type.ts";
 import type { CodigoAgente, EventoAgente } from "@/loop/types/evento.type.ts";
 import type { EntradaTurno } from "@/loop/types/turno.type.ts";
 
@@ -9,7 +9,7 @@ export type OpcionesAgente = {
   readonly fuenteEntorno?: Readonly<Record<string, string | undefined>>;
   readonly directorioAgente?: string;
   readonly directorioConocimiento?: string;
-  readonly esperar?: OpcionesReintento["esperar"];
+  readonly esperar?: RetryOptions["wait"];
   readonly destinoLogs?: { write(linea: string): void };
 };
 

@@ -19,7 +19,7 @@ import { withFallback } from "@/llm/decorators/fallback.decorator.ts";
 import { withRetry } from "@/llm/decorators/retry.decorator.ts";
 import { withTimeout } from "@/llm/decorators/timeout.decorator.ts";
 import type { ErrorLlm, ResultadoEnvio } from "@/llm/types/llm.type.ts";
-import type { OpcionesReintento } from "@/llm/types/resiliencia.type.ts";
+import type { RetryOptions } from "@/llm/types/resilience.type.ts";
 
 const MAX_REINTENTOS = 2;
 
@@ -132,14 +132,14 @@ describe("withFallback", () => {
 describe("composición timeout, reintento y respaldo", () => {
   test("un primario que siempre falla agota sus reintentos y luego usa el respaldo", async () => {
     const esperas: number[] = [];
-    const reintento: OpcionesReintento = {
-      maxReintentos: MAX_REINTENTOS,
+    const reintento: RetryOptions = {
+      maxRetries: MAX_REINTENTOS,
       baseMs: BACKOFF_BASE_MS,
-      topeMs: BACKOFF_TOPE_MS,
-      esperar: async (ms) => {
+      capMs: BACKOFF_TOPE_MS,
+      wait: async (ms) => {
         esperas.push(ms);
       },
-      azar: () => 0,
+      random: () => 0,
     };
     const primario = crearAdaptadorGuion([falla(TIPO_ERROR_LLM.SERVIDOR)]);
     const respaldo = respaldoExitoso();

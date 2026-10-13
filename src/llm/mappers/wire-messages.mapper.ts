@@ -25,82 +25,79 @@ import type {
   WireToolCall,
 } from "@/llm/types/provider.type.ts";
 
-function esObjetoJson(texto: string): boolean {
+function isJsonObject(text: string): boolean {
   try {
-    const valor: unknown = JSON.parse(texto);
-    return typeof valor === "object" && valor !== null && !Array.isArray(valor);
+    const value: unknown = JSON.parse(text);
+    return typeof value === "object" && value !== null && !Array.isArray(value);
   } catch {
     return false;
   }
 }
 
-function toWireToolCall(llamada: LlamadaHerramienta): WireToolCall {
-  const argumentos = esObjetoJson(llamada.argumentos) ? llamada.argumentos : ARGUMENTOS_VACIOS;
+function toWireToolCall(call: LlamadaHerramienta): WireToolCall {
+  const args = isJsonObject(call.argumentos) ? call.argumentos : ARGUMENTOS_VACIOS;
   return {
-    id: llamada.id,
+    id: call.id,
     type: TIPO_HERRAMIENTA_WIRE,
-    function: { name: llamada.nombre, arguments: argumentos },
+    function: { name: call.nombre, arguments: args },
   };
 }
 
-function toWireAssistant(mensaje: MensajeAsistente, reasoningPassback: boolean): WireMessage {
-  const toolCalls = mensaje.llamadas.length === 0 ? {} : { tool_calls: mensaje.llamadas.map(toWireToolCall) };
+function toWireAssistant(message: MensajeAsistente, reasoningPassback: boolean): WireMessage {
+  const toolCalls = message.llamadas.length === 0 ? {} : { tool_calls: message.llamadas.map(toWireToolCall) };
   const reasoning =
-    reasoningPassback && mensaje.razonamiento !== null ? { reasoning_content: mensaje.razonamiento } : {};
-  return { role: ROL_MENSAJE.ASISTENTE, content: mensaje.contenido ?? "", ...toolCalls, ...reasoning };
+    reasoningPassback && message.razonamiento !== null ? { reasoning_content: message.razonamiento } : {};
+  return { role: ROL_MENSAJE.ASISTENTE, content: message.contenido ?? "", ...toolCalls, ...reasoning };
 }
 
-function toWireMessage(mensaje: Mensaje, reasoningPassback: boolean): WireMessage {
-  switch (mensaje.rol) {
+function toWireMessage(message: Mensaje, reasoningPassback: boolean): WireMessage {
+  switch (message.rol) {
     case ROL_MENSAJE.SISTEMA:
     case ROL_MENSAJE.USUARIO:
-      return { role: mensaje.rol, content: mensaje.contenido };
+      return { role: message.rol, content: message.contenido };
     case ROL_MENSAJE.ASISTENTE:
-      return toWireAssistant(mensaje, reasoningPassback);
+      return toWireAssistant(message, reasoningPassback);
     case ROL_MENSAJE.HERRAMIENTA:
-      return { role: ROL_MENSAJE.HERRAMIENTA, tool_call_id: mensaje.llamadaId, content: mensaje.contenido };
+      return { role: ROL_MENSAJE.HERRAMIENTA, tool_call_id: message.llamadaId, content: message.contenido };
   }
 }
 
-export function toWireMessages(mensajes: readonly Mensaje[], reasoningPassback: boolean): WireMessage[] {
-  return mensajes.map((mensaje) => toWireMessage(mensaje, reasoningPassback));
+export function toWireMessages(messages: readonly Mensaje[], reasoningPassback: boolean): WireMessage[] {
+  return messages.map((message) => toWireMessage(message, reasoningPassback));
 }
 
-export function toWireTools(definiciones: readonly DefinicionHerramienta[]): WireTool[] {
-  return definiciones.map((definicion) => ({
+export function toWireTools(definitions: readonly DefinicionHerramienta[]): WireTool[] {
+  return definitions.map((definition) => ({
     type: TIPO_HERRAMIENTA_WIRE,
     function: {
-      name: definicion.nombre,
-      description: definicion.descripcion,
-      parameters: definicion.parametros,
+      name: definition.nombre,
+      description: definition.descripcion,
+      parameters: definition.parametros,
     },
   }));
 }
 
-function fromToolCall(llamada: ChatCompletionToolCall): LlamadaHerramienta {
-  return { id: llamada.id, nombre: llamada.function.name, argumentos: llamada.function.arguments };
+function fromToolCall(call: ChatCompletionToolCall): LlamadaHerramienta {
+  return { id: call.id, nombre: call.function.name, argumentos: call.function.arguments };
 }
 
-function tokensEstimados(caracteres: number): number {
-  return Math.ceil(caracteres / CARACTERES_POR_TOKEN);
+function estimatedTokens(characters: number): number {
+  return Math.ceil(characters / CARACTERES_POR_TOKEN);
 }
 
-function caracteresDeSalida(
-  contenido: string | null | undefined,
-  llamadas: readonly LlamadaHerramienta[],
-): number {
-  return (contenido ?? "").length + llamadas.reduce((total, llamada) => total + llamada.argumentos.length, 0);
+function outputCharacters(content: string | null | undefined, calls: readonly LlamadaHerramienta[]): number {
+  return (content ?? "").length + calls.reduce((total, call) => total + call.argumentos.length, 0);
 }
 
-function usoDe(
+function usageFrom(
   usage: ChatCompletionUsage | null | undefined,
-  caracteresPeticion: number,
-  caracteresRespuesta: number,
+  requestCharacters: number,
+  responseCharacters: number,
 ): Uso {
   if (usage === null || usage === undefined) {
     return {
-      entrada: tokensEstimados(caracteresPeticion),
-      salida: tokensEstimados(caracteresRespuesta),
+      entrada: estimatedTokens(requestCharacters),
+      salida: estimatedTokens(responseCharacters),
       cacheHit: 0,
     };
   }
@@ -111,39 +108,35 @@ function usoDe(
   };
 }
 
-function finDe(finishReason: string | null | undefined, conLlamadas: boolean): FinLlm {
+function finishFrom(finishReason: string | null | undefined, hasToolCalls: boolean): FinLlm {
   if (finishReason === FINISH_REASON.LENGTH) return FIN_LLM.LIMITE;
-  if (conLlamadas || finishReason === FINISH_REASON.TOOL_CALLS) return FIN_LLM.HERRAMIENTAS;
+  if (hasToolCalls || finishReason === FINISH_REASON.TOOL_CALLS) return FIN_LLM.HERRAMIENTAS;
   return FIN_LLM.TEXTO;
 }
 
-function textoDe(contenido: string | null | undefined): string | null {
-  return contenido === null || contenido === undefined || contenido === "" ? null : contenido;
+function textFrom(content: string | null | undefined): string | null {
+  return content === null || content === undefined || content === "" ? null : content;
 }
 
 export function fromChatCompletion(
   completion: ChatCompletion,
-  proveedor: string,
-  caracteresPeticion: number,
+  provider: string,
+  requestCharacters: number,
 ): ResultadoEnvio {
-  const eleccion = completion.choices[0];
-  if (eleccion === undefined) return { ok: false, error: invalidResponseError() };
-  const errorDeFin = errorFromFinishReason(eleccion.finish_reason);
-  if (errorDeFin !== null) return { ok: false, error: errorDeFin };
-  const llamadas = (eleccion.message.tool_calls ?? []).map(fromToolCall);
+  const choice = completion.choices[0];
+  if (choice === undefined) return { ok: false, error: invalidResponseError() };
+  const finishError = errorFromFinishReason(choice.finish_reason);
+  if (finishError !== null) return { ok: false, error: finishError };
+  const calls = (choice.message.tool_calls ?? []).map(fromToolCall);
   return {
     ok: true,
     respuesta: {
-      texto: textoDe(eleccion.message.content),
-      llamadas,
-      uso: usoDe(
-        completion.usage,
-        caracteresPeticion,
-        caracteresDeSalida(eleccion.message.content, llamadas),
-      ),
-      razonamiento: eleccion.message.reasoning_content ?? null,
-      fin: finDe(eleccion.finish_reason, llamadas.length > 0),
-      proveedor,
+      texto: textFrom(choice.message.content),
+      llamadas: calls,
+      uso: usageFrom(completion.usage, requestCharacters, outputCharacters(choice.message.content, calls)),
+      razonamiento: choice.message.reasoning_content ?? null,
+      fin: finishFrom(choice.finish_reason, calls.length > 0),
+      proveedor: provider,
       modelo: completion.model,
     },
   };

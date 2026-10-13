@@ -7,16 +7,16 @@ import type {
 } from "@/config/constants/llm.constants.ts";
 import type { ValorDe } from "@/config/types/valor-de.type.ts";
 
-export type ModoThinking = ValorDe<typeof MODO_THINKING>;
+export type ThinkingMode = ValorDe<typeof MODO_THINKING>;
 
-export type ParametroMaxTokens = ValorDe<typeof PARAMETRO_MAX_TOKENS>;
+export type MaxTokensParam = ValorDe<typeof PARAMETRO_MAX_TOKENS>;
 
 export type ToolChoice = ValorDe<typeof TOOL_CHOICE>;
 
 export type ProviderCapabilities = {
-  readonly maxTokensParam: ParametroMaxTokens;
+  readonly maxTokensParam: MaxTokensParam;
   readonly temperature: number | null;
-  readonly thinking: ModoThinking | null;
+  readonly thinking: ThinkingMode | null;
   readonly reasoningPassback: boolean;
   readonly toolChoiceNone: boolean;
 };
@@ -68,10 +68,10 @@ export type ChatCompletionRequest = {
   readonly messages: readonly WireMessage[];
   readonly stream: false;
   readonly temperature?: number;
-  readonly thinking?: { readonly type: ModoThinking };
+  readonly thinking?: { readonly type: ThinkingMode };
   readonly tools?: readonly WireTool[];
   readonly tool_choice?: ToolChoice;
-} & Readonly<Partial<Record<ParametroMaxTokens, number>>>;
+} & Readonly<Partial<Record<MaxTokensParam, number>>>;
 
 export type ChatCompletionToolCall = {
   readonly id: string;

@@ -40,6 +40,8 @@ El agente agrega dos capas. El guardián de capas de `tests/architecture.test.ts
 | `loop/services/` | `.service.ts` | El bucle del agente (`ejecutarTurno`, un generador de eventos tipados) y el registro de herramientas `proveedor_<export>`. |
 | `loop/wiring/` | `.wiring.ts` | `agente.wiring.ts`, el composition root del agente: lee el entorno y arma adaptadores, sesiones e instrucciones. |
 
+Idioma: `loop` va en español. En `llm`, el puerto neutral (`llm.type.ts`) va en español porque lo consume el bucle; el protocolo del proveedor (`provider.type.ts`, `adapters/`, `mappers/`, `schemas/`) y los decoradores (`decorators/` y `resilience.type.ts`) van en inglés, como infra. Un archivo en inglés sigue usando los miembros en español del puerto (`enviar`, `proveedor`, `rol`).
+
 Direcciones permitidas:
 
 - `llm` solo importa `llm`, la config pura y zod. No conoce el dominio, el bucle, infra ni `node:`.
