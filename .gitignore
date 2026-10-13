@@ -11,3 +11,4 @@ web/dist/
 .qa/logs/
 .qa/evidence/**/screenshots/
 .qa/*.token
+.codegraph/
