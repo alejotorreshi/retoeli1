@@ -2,6 +2,7 @@ import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import { existsSync } from "node:fs";
 import { readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
+import { FIXTURES_DIR } from "../../src/config/constantes.ts";
 import { crearHerramientas } from "../../src/tools/fabrica.ts";
 import { generarCaso } from "../helpers/flujo.ts";
 import {
@@ -155,6 +156,18 @@ describe("golden: borrador-correo.md y ENVIO-SIMULADO.md (PAQ-04, ENV-01, D-25, 
     expect(enviados).not.toContain("parafiscales-2026-07.txt");
     expect(retenidos).toContain("- paquete/parafiscales-2026-07.txt");
     expect(existsSync(rutaPaquete(compartido.raiz, HN, "parafiscales-2026-07.txt"))).toBe(true);
+  });
+
+  test("el borrador es texto plano y no escapa la barra vertical de la razón social (IN-02)", async () => {
+    const proyecto = await nuevoProyecto();
+    const rutaMaestro = join(proyecto.raiz, FIXTURES_DIR, "repositorio", "maestro.json");
+    const maestro = JSON.parse(await readFile(rutaMaestro, "utf8"));
+    await writeFile(rutaMaestro, JSON.stringify({ ...maestro, razon_social: "Periferia | IT Group" }));
+    await generarCaso(herramientas, ctx(proyecto.raiz), CO);
+    expect((await armar(herramientas, proyecto.raiz, CO)).ok).toBe(true);
+    const borrador = await leerPaquete(proyecto.raiz, CO, "borrador-correo.md");
+    expect(borrador.trimEnd().endsWith("\nPeriferia | IT Group")).toBe(true);
+    expect(borrador).not.toContain("\\|");
   });
 
   test("una plantilla editada con {{banco.numero_cuenta}} da REGLAS_INVALIDAS y no escribe el borrador", async () => {

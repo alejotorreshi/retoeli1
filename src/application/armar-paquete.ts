@@ -7,7 +7,7 @@ import {
   evaluarSoportes,
   type SoporteEvaluado,
 } from "../domain/checklist.ts";
-import { renderizarPlantilla } from "../domain/plantillas.ts";
+import { renderizarPlantilla, renderizarTextoPlano } from "../domain/plantillas.ts";
 import { exito, fallo, type Resultado } from "../domain/resultado.ts";
 import type { Formato } from "../domain/tipos.ts";
 import { type ContextoCaso, cargarContextoCaso } from "./contexto-caso.ts";
@@ -82,7 +82,7 @@ async function renderizarBorrador(
   if (!plantilla.ok) return plantilla;
   const nombreFormulario = entorno.salida.nombre(formulario);
   const datos = construirDatosBorrador(contexto.solicitud, contexto.maestro, checklist, nombreFormulario);
-  return renderizarPlantilla(plantilla.data, datos, contexto.reglas.plantillas.borrador_correo);
+  return renderizarTextoPlano(plantilla.data, datos, contexto.reglas.plantillas.borrador_correo);
 }
 
 async function copiarContenido(

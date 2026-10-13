@@ -1,6 +1,6 @@
 import { aTexto, normalizarEtiqueta } from "./normalizar.ts";
 import { VARIABLES_NOTA_DEL_MAESTRO, VARIABLES_NOTA_PERMITIDAS, type VariableNota } from "./pii.ts";
-import { renderizarPlantilla } from "./plantillas.ts";
+import { renderizarTextoPlano } from "./plantillas.ts";
 import {
   type EscalaConfianza,
   type EstadoCampo,
@@ -163,7 +163,7 @@ function renderizarNotas(
 ): Resultado<readonly string[]> {
   const notas: string[] = [];
   for (const [texto, nombre] of plantillas) {
-    const nota = renderizarPlantilla(texto, variables, nombre);
+    const nota = renderizarTextoPlano(texto, variables, nombre);
     if (!nota.ok) return nota;
     notas.push(nota.data);
   }

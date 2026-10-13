@@ -10,6 +10,10 @@ export type ContextoPlantilla = Readonly<Record<string, ValorPlantilla>>;
 
 type Ambito = Readonly<Record<string, ValorPlantilla>>;
 
+type Escape = (valor: string) => string;
+
+type Render = { readonly escapar: Escape; readonly problemas: string[] };
+
 const ETIQUETA = /\{\{([^{}]*)\}\}/g;
 const BLOQUE = /\{\{([#^])([^{}]*)\}\}([\s\S]*?)\{\{\/\2\}\}|\{\{([^{}]*)\}\}/g;
 const MARCA_DE_SECCION = /^[#^/]/;
@@ -25,8 +29,12 @@ function etiquetasBalanceadas(texto: string): boolean {
   return contar(texto, "{{") === completas && contar(texto, "}}") === completas;
 }
 
-function escapar(valor: ValorEscalar): string {
-  return String(valor).replace(SALTO_DE_LINEA, " ").replace(BARRA_VERTICAL, "\\|");
+const ESCAPE_MARKDOWN: Escape = (valor) => valor.replace(BARRA_VERTICAL, "\\|");
+
+const SIN_ESCAPE: Escape = (valor) => valor;
+
+function enUnaLinea(valor: ValorEscalar): string {
+  return String(valor).replace(SALTO_DE_LINEA, " ");
 }
 
 function buscar(nombre: string, ambitos: readonly Ambito[]): ValorPlantilla | undefined {
@@ -38,22 +46,22 @@ function esEscalar(valor: ValorPlantilla | undefined): valor is ValorEscalar {
   return typeof valor === "string" || typeof valor === "number";
 }
 
-function renderizarVariable(crudo: string, ambitos: readonly Ambito[], problemas: string[]): string {
+function renderizarVariable(crudo: string, ambitos: readonly Ambito[], render: Render): string {
   const nombre = crudo.trim();
   if (MARCA_DE_SECCION.test(nombre)) {
-    problemas.push(`tiene una sección sin cerrar o anidada: ${nombre}`);
+    render.problemas.push(`tiene una sección sin cerrar o anidada: ${nombre}`);
     return "";
   }
   const valor = buscar(nombre, ambitos);
   if (!esEscalar(valor)) {
-    problemas.push(`usa la variable desconocida ${nombre}`);
+    render.problemas.push(`usa la variable desconocida ${nombre}`);
     return "";
   }
-  return escapar(valor);
+  return render.escapar(enUnaLinea(valor));
 }
 
-function renderizarVariables(texto: string, ambitos: readonly Ambito[], problemas: string[]): string {
-  return texto.replace(ETIQUETA, (_etiqueta, crudo: string) => renderizarVariable(crudo, ambitos, problemas));
+function renderizarVariables(texto: string, ambitos: readonly Ambito[], render: Render): string {
+  return texto.replace(ETIQUETA, (_etiqueta, crudo: string) => renderizarVariable(crudo, ambitos, render));
 }
 
 function renderizarSeccion(
@@ -61,29 +69,30 @@ function renderizarSeccion(
   nombre: string,
   interior: string,
   contexto: ContextoPlantilla,
-  problemas: string[],
+  render: Render,
 ): string {
   const lista = buscar(nombre.trim(), [contexto]);
   if (lista === undefined || esEscalar(lista)) {
-    problemas.push(`usa la sección desconocida ${nombre.trim()}`);
+    render.problemas.push(`usa la sección desconocida ${nombre.trim()}`);
     return "";
   }
-  if (marca === "^") return lista.length === 0 ? renderizarVariables(interior, [contexto], problemas) : "";
-  return lista.map((fila) => renderizarVariables(interior, [fila, contexto], problemas)).join("");
+  if (marca === "^") return lista.length === 0 ? renderizarVariables(interior, [contexto], render) : "";
+  return lista.map((fila) => renderizarVariables(interior, [fila, contexto], render)).join("");
 }
 
 function plantillaInvalida(nombrePlantilla: string, problema: string): Fallo {
   return fallo("REGLAS_INVALIDAS", { detalle: `la plantilla ${nombrePlantilla} ${problema}.` });
 }
 
-export function renderizarPlantilla(
+function renderizar(
   texto: string,
   contexto: ContextoPlantilla,
   nombrePlantilla: string,
+  escapar: Escape,
 ): Resultado<string> {
   if (!etiquetasBalanceadas(texto))
     return plantillaInvalida(nombrePlantilla, "tiene una etiqueta sin cerrar");
-  const problemas: string[] = [];
+  const render: Render = { escapar, problemas: [] };
   const salida = texto.replace(
     BLOQUE,
     (
@@ -94,11 +103,27 @@ export function renderizarPlantilla(
       variable: string | undefined,
     ) => {
       if (marca !== undefined && seccion !== undefined) {
-        return renderizarSeccion(marca, seccion, interior ?? "", contexto, problemas);
+        return renderizarSeccion(marca, seccion, interior ?? "", contexto, render);
       }
-      return renderizarVariable(variable ?? "", [contexto], problemas);
+      return renderizarVariable(variable ?? "", [contexto], render);
     },
   );
-  const primero = problemas[0];
+  const primero = render.problemas[0];
   return primero === undefined ? exito(salida) : plantillaInvalida(nombrePlantilla, primero);
+}
+
+export function renderizarPlantilla(
+  texto: string,
+  contexto: ContextoPlantilla,
+  nombrePlantilla: string,
+): Resultado<string> {
+  return renderizar(texto, contexto, nombrePlantilla, ESCAPE_MARKDOWN);
+}
+
+export function renderizarTextoPlano(
+  texto: string,
+  contexto: ContextoPlantilla,
+  nombrePlantilla: string,
+): Resultado<string> {
+  return renderizar(texto, contexto, nombrePlantilla, SIN_ESCAPE);
 }

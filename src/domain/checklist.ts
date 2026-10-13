@@ -1,5 +1,5 @@
 import type { CampoMapeado } from "./mapeo.ts";
-import { renderizarPlantilla } from "./plantillas.ts";
+import { renderizarTextoPlano } from "./plantillas.ts";
 import type { ReglasSoportes } from "./reglas.ts";
 import { exito, type Resultado } from "./resultado.ts";
 import type { FechaISO } from "./tipos.ts";
@@ -73,7 +73,7 @@ function avisoEmisor(
   reglas: ReglasSoportes,
 ): Resultado<string | null> {
   if (entrada.pais_emisor === paisCliente) return exito(null);
-  return renderizarPlantilla(
+  return renderizarTextoPlano(
     reglas.aviso_emisor_distinto,
     { pais_emisor: entrada.pais_emisor },
     NOMBRE_AVISO_EMISOR,

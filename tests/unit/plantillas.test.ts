@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { renderizarPlantilla } from "../../src/domain/plantillas.ts";
+import { renderizarPlantilla, renderizarTextoPlano } from "../../src/domain/plantillas.ts";
 import type { Reglas } from "../../src/domain/reglas.ts";
 
 const RUTA_REGLAS = new URL("../../src/knowledge/reglas.json", import.meta.url);
@@ -17,6 +17,15 @@ function textoDe(resultado: ReturnType<typeof renderizarPlantilla>): string {
 describe("variables", () => {
   test("reemplaza variables conocidas y escapa la barra vertical", () => {
     expect(textoDe(renderizarPlantilla("Hola {{nombre}}", { nombre: "A|B" }, "saludo"))).toBe("Hola A\\|B");
+  });
+
+  test("el texto plano no escapa la barra vertical pero sí une las líneas (IN-02)", () => {
+    expect(textoDe(renderizarTextoPlano("Hola {{nombre}}", { nombre: "A|B\nC" }, "correo"))).toBe(
+      "Hola A|B C",
+    );
+    const fila = renderizarTextoPlano("{{#filas}}{{v}};{{/filas}}", { filas: [{ v: "x|y" }] }, "lista");
+    expect(textoDe(fila)).toBe("x|y;");
+    expect(renderizarTextoPlano("{{falta}}", {}, "correo").ok).toBe(false);
   });
 
   test("los saltos de línea dentro de un valor se vuelven espacios", () => {
