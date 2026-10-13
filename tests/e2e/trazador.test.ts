@@ -7,7 +7,7 @@ import { crearProyectoTemporal } from "@tests/helpers/proyecto-temporal.helper.t
 import type { ProyectoTemporal } from "@tests/helpers/types/proyecto-temporal.type.ts";
 import { z } from "zod";
 import { LIMITE_LECTURA_BYTES, MAX_ISSUES_ARGS } from "@/config/constants/limits.constants.ts";
-import { exito } from "@/domain/resultado.ts";
+import { exito } from "@/domain/utils/resultado.util.ts";
 import { fixedClock, systemClock } from "@/infra/clock/clock.adapter.ts";
 import { definirHerramienta, normalizarContexto } from "@/tools/definir-herramienta.factory.ts";
 import { leer_solicitud } from "@/tools/proveedor.ts";

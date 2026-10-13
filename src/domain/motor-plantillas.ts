@@ -1,6 +1,5 @@
 import { CODIGO_ERROR } from "@/config/constants/errors.constants.ts";
 import { TEXTO_MOTOR_PLANTILLAS } from "@/config/strings.ts";
-import { exito, fallo } from "@/domain/resultado.ts";
 import type {
   ContextoPlantilla,
   SeccionCondicional,
@@ -8,6 +7,7 @@ import type {
   ValorPlantilla,
 } from "@/domain/types/motor-plantillas.type.ts";
 import type { Fallo, Resultado } from "@/domain/types/resultado.type.ts";
+import { exito, fallo } from "@/domain/utils/resultado.util.ts";
 
 type Ambito = Readonly<Record<string, ValorPlantilla>>;
 

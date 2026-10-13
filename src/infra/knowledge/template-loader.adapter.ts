@@ -2,9 +2,9 @@ import { join } from "node:path";
 import { PATRON_PLANTILLA_CONOCIMIENTO } from "@/config/constants/patterns.constants.ts";
 import { TEXTO_CONOCIMIENTO } from "@/config/strings.ts";
 import { plantillaInvalida } from "@/domain/motor-plantillas.ts";
-import { exito } from "@/domain/resultado.ts";
 import type { ClavePlantilla, Reglas } from "@/domain/types/reglas.type.ts";
 import type { Resultado } from "@/domain/types/resultado.type.ts";
+import { exito } from "@/domain/utils/resultado.util.ts";
 import { readText } from "@/infra/fs/fs.util.ts";
 
 export async function loadKnowledgeTemplate(

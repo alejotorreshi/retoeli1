@@ -17,11 +17,11 @@ import {
   LETRAS_DEL_ALFABETO,
   LIMITES_XLSX,
 } from "@/config/constants/xlsx.constants.ts";
-import { esFechaReal } from "@/domain/fecha.ts";
 import type { SoporteIndice } from "@/domain/types/checklist.type.ts";
 import type { Maestro, ValorMaestro } from "@/domain/types/maestro.type.ts";
 import type { Glosario } from "@/domain/types/mapeo.type.ts";
 import type { Solicitud } from "@/domain/types/solicitud.type.ts";
+import { esFechaReal } from "@/domain/utils/fecha.util.ts";
 
 const textoCorto = z.string().max(LIMITES_FIXTURES.textoCorto);
 const etiqueta = z.string().min(1).max(LIMITES_FIXTURES.etiqueta);

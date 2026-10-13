@@ -1,9 +1,9 @@
 import { cargarSolicitudCaso } from "@/application/services/contexto-caso.service.ts";
 import type { ArgsLeerSolicitud, DatosSolicitud } from "@/application/types/leer-solicitud.type.ts";
 import type { Entorno } from "@/application/types/puertos.type.ts";
-import { exito } from "@/domain/resultado.ts";
 import { camposSolicitados, detectarAmbiguos } from "@/domain/solicitud.ts";
 import type { Resultado } from "@/domain/types/resultado.type.ts";
+import { exito } from "@/domain/utils/resultado.util.ts";
 
 export async function leerSolicitud(
   args: ArgsLeerSolicitud,

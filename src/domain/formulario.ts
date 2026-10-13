@@ -1,11 +1,11 @@
 import { CODIGO_ERROR } from "@/config/constants/errors.constants.ts";
 import { TIPO_PLANTILLA } from "@/config/constants/forms.constants.ts";
 import { ESTADO_CAMPO } from "@/config/constants/mapping.constants.ts";
-import { exito, fallo } from "@/domain/resultado.ts";
 import type { FilaFormulario, Formulario } from "@/domain/types/formulario.type.ts";
 import type { CampoMapeado } from "@/domain/types/mapeo.type.ts";
 import type { PlantillaCaso } from "@/domain/types/plantilla-caso.type.ts";
 import type { Resultado } from "@/domain/types/resultado.type.ts";
+import { exito, fallo } from "@/domain/utils/resultado.util.ts";
 
 type Ubicable = { readonly etiqueta: string };
 

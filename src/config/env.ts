@@ -2,7 +2,7 @@ import { z } from "zod";
 import { PATRON_FECHA } from "@/config/constants/patterns.constants.ts";
 import { LOCALE_INTL, ZONA_HORARIA_POR_DEFECTO } from "@/config/constants/runtime.constants.ts";
 import { TEXTO_ENV } from "@/config/strings.ts";
-import { esFechaReal } from "@/domain/fecha.ts";
+import { esFechaReal } from "@/domain/utils/fecha.util.ts";
 
 function emptyAsUndefined(valor: unknown): unknown {
   return valor === "" ? undefined : valor;

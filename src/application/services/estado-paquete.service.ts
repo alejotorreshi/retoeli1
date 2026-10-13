@@ -4,9 +4,9 @@ import type { Entorno } from "@/application/types/puertos.type.ts";
 import { CODIGO_ERROR } from "@/config/constants/errors.constants.ts";
 import { ESTADO_LECTURA } from "@/config/constants/io.constants.ts";
 import { construirChecklist, evaluarSoportes } from "@/domain/checklist.ts";
-import { exito, fallo } from "@/domain/resultado.ts";
 import type { Checklist } from "@/domain/types/checklist.type.ts";
 import type { Resultado } from "@/domain/types/resultado.type.ts";
+import { exito, fallo } from "@/domain/utils/resultado.util.ts";
 
 export async function evaluarEstadoPaquete(
   contexto: ContextoCaso,

@@ -6,7 +6,6 @@ import {
 } from "@/config/constants/supports.constants.ts";
 import { TEXTO_CHECKLIST, TEXTO_COMUN } from "@/config/strings.ts";
 import { renderizarTextoPlano } from "@/domain/motor-plantillas.ts";
-import { exito } from "@/domain/resultado.ts";
 import type {
   CasoChecklist,
   Checklist,
@@ -20,6 +19,7 @@ import type { FechaISO } from "@/domain/types/fecha.type.ts";
 import type { CampoMapeado } from "@/domain/types/mapeo.type.ts";
 import type { ReglasSoportes } from "@/domain/types/reglas.type.ts";
 import type { Resultado } from "@/domain/types/resultado.type.ts";
+import { exito } from "@/domain/utils/resultado.util.ts";
 import { evaluarVigencia } from "@/domain/vigencias.ts";
 
 function avisoEmisor(

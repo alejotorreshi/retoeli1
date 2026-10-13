@@ -1,8 +1,8 @@
 import { CODIGO_ERROR } from "@/config/constants/errors.constants.ts";
-import { normalizarEtiqueta } from "@/domain/normalizar.ts";
-import { exito, fallo } from "@/domain/resultado.ts";
 import type { Glosario, IndiceGlosario } from "@/domain/types/mapeo.type.ts";
 import type { Resultado } from "@/domain/types/resultado.type.ts";
+import { normalizarEtiqueta } from "@/domain/utils/normalizar.util.ts";
+import { exito, fallo } from "@/domain/utils/resultado.util.ts";
 
 function agregarSinColision(mapa: Map<string, string>, clave: string, ruta: string): boolean {
   const previa = mapa.get(clave);

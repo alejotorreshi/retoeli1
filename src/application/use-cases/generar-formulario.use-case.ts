@@ -17,9 +17,9 @@ import { construirFilas } from "@/domain/formulario.ts";
 import { contarEstados } from "@/domain/mapeo.ts";
 import { renderizarPlantilla } from "@/domain/motor-plantillas.ts";
 import { construirDatosPortal } from "@/domain/portal.ts";
-import { exito, fallo } from "@/domain/resultado.ts";
 import type { CampoMapeado } from "@/domain/types/mapeo.type.ts";
 import type { Resultado } from "@/domain/types/resultado.type.ts";
+import { exito, fallo } from "@/domain/utils/resultado.util.ts";
 
 async function cerrar(cierre: CierreFormulario, entorno: Entorno): Promise<Resultado<DatosFormulario>> {
   const { contexto, canonico, ruta, formato, aviso } = cierre;

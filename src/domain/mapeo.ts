@@ -12,8 +12,6 @@ import { PATRON_ESPACIO } from "@/config/constants/patterns.constants.ts";
 import { TEXTO_COMUN, TEXTO_MAPEO } from "@/config/strings.ts";
 import { leerHoja, leerRuta, segmentoValido } from "@/domain/maestro.ts";
 import { renderizarTextoPlano } from "@/domain/motor-plantillas.ts";
-import { normalizarEtiqueta } from "@/domain/normalizar.ts";
-import { exito } from "@/domain/resultado.ts";
 import type { CampoMapeado, ConteoEstados, EntradaMapeo, IndiceGlosario } from "@/domain/types/mapeo.type.ts";
 import type {
   EscalaConfianza,
@@ -23,6 +21,8 @@ import type {
   VariableNota,
 } from "@/domain/types/reglas.type.ts";
 import type { Resultado } from "@/domain/types/resultado.type.ts";
+import { normalizarEtiqueta } from "@/domain/utils/normalizar.util.ts";
+import { exito } from "@/domain/utils/resultado.util.ts";
 
 type Fuente = { readonly ruta: string; readonly regla: ReglaMapeo };
 

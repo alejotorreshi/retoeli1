@@ -7,9 +7,9 @@ import { ESTADO_LECTURA, ORIGEN_COPIA } from "@/config/constants/io.constants.ts
 import { MAX_ISSUES_ARGS } from "@/config/constants/limits.constants.ts";
 import { ZONA_HORARIA_POR_DEFECTO } from "@/config/constants/runtime.constants.ts";
 import { readToolEnv, type ToolEnv } from "@/config/env.ts";
-import { formatearIssues } from "@/domain/formatear-issues.ts";
-import { exito, fallo } from "@/domain/resultado.ts";
 import type { PlantillaCaso, TipoPlantilla } from "@/domain/types/plantilla-caso.type.ts";
+import { formatearIssues } from "@/domain/utils/formatear-issues.util.ts";
+import { exito, fallo } from "@/domain/utils/resultado.util.ts";
 import { fixedClock, systemClock } from "@/infra/clock/clock.adapter.ts";
 import { listCases, resolveCase } from "@/infra/fixtures/case-resolver.adapter.ts";
 import {

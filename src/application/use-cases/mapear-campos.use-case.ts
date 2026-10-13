@@ -5,13 +5,13 @@ import type { Entorno } from "@/application/types/puertos.type.ts";
 import { CODIGO_ERROR } from "@/config/constants/errors.constants.ts";
 import { ESTADO_CAMPO } from "@/config/constants/mapping.constants.ts";
 import { contarEstados } from "@/domain/mapeo.ts";
-import { normalizarEtiqueta } from "@/domain/normalizar.ts";
 import { presentarCampo } from "@/domain/pii.ts";
-import { exito, fallo } from "@/domain/resultado.ts";
 import type { CampoMapeado } from "@/domain/types/mapeo.type.ts";
 import type { CampoPresentado } from "@/domain/types/pii.type.ts";
 import type { EstadoCampo } from "@/domain/types/reglas.type.ts";
 import type { Resultado } from "@/domain/types/resultado.type.ts";
+import { normalizarEtiqueta } from "@/domain/utils/normalizar.util.ts";
+import { exito, fallo } from "@/domain/utils/resultado.util.ts";
 
 function conEstado(campos: readonly CampoPresentado[], estado: EstadoCampo): readonly CampoPresentado[] {
   return campos.filter((campo) => campo.estado === estado);

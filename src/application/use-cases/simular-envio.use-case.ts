@@ -7,8 +7,8 @@ import { ARCHIVOS_PAQUETE, ARCHIVOS_SALIDA } from "@/config/constants/files.cons
 import { CLAVE_PLANTILLA } from "@/config/constants/knowledge.constants.ts";
 import { construirDatosEnvio } from "@/domain/borrador.ts";
 import { renderizarPlantilla } from "@/domain/motor-plantillas.ts";
-import { exito, fallo } from "@/domain/resultado.ts";
 import type { Resultado } from "@/domain/types/resultado.type.ts";
+import { exito, fallo } from "@/domain/utils/resultado.util.ts";
 
 async function simularBajoCandado(args: ArgsSimularEnvio, entorno: Entorno): Promise<Resultado<DatosEnvio>> {
   const cargada = await cargarSolicitudCaso(args.caso, entorno);

@@ -1,6 +1,5 @@
 import { FORMATO, PLANTILLA_DEL_FORMATO, TIPO_PLANTILLA } from "@/config/constants/forms.constants.ts";
 import { ESTADO_CAMPO } from "@/config/constants/mapping.constants.ts";
-import { normalizarEtiqueta } from "@/domain/normalizar.ts";
 import type { PlantillaCaso, TipoPlantilla } from "@/domain/types/plantilla-caso.type.ts";
 import type { Reglas } from "@/domain/types/reglas.type.ts";
 import type {
@@ -9,6 +8,7 @@ import type {
   Formato,
   PlantillasPresentes,
 } from "@/domain/types/solicitud.type.ts";
+import { normalizarEtiqueta } from "@/domain/utils/normalizar.util.ts";
 
 export function elegirPlantilla(formato: Formato, presentes: PlantillasPresentes): TipoPlantilla | null {
   const celdas = presentes[TIPO_PLANTILLA.CELDAS];

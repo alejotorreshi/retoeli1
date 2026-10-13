@@ -728,7 +728,7 @@ describe("el escáner muerde sobre fuentes de muestra", () => {
 
   test("deja pasar una importación de domain a domain", () => {
     const codigo =
-      'import { normalizar } from "@/domain/normalizar";\nimport type { Campo } from "./tipos.ts";\n';
+      'import { normalizar } from "@/domain/utils/normalizar.util";\nimport type { Campo } from "./tipos.ts";\n';
     expect(violacionesDeCapas("src/domain/mapeo.ts", codigo)).toEqual([]);
   });
 

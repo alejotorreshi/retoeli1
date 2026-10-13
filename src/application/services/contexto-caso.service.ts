@@ -5,9 +5,9 @@ import { TIPO_PLANTILLA } from "@/config/constants/forms.constants.ts";
 import { ESTADO_LECTURA } from "@/config/constants/io.constants.ts";
 import { PATRON_CASO } from "@/config/constants/patterns.constants.ts";
 import { construirIndiceGlosario } from "@/domain/glosario.ts";
-import { exito, fallo } from "@/domain/resultado.ts";
 import { elegirPlantilla } from "@/domain/solicitud.ts";
 import type { Fallo, Resultado } from "@/domain/types/resultado.type.ts";
+import { exito, fallo } from "@/domain/utils/resultado.util.ts";
 
 async function casoNoEncontrado(entorno: Entorno): Promise<Fallo> {
   const casosDisponibles = await entorno.casos.disponibles();
