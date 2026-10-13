@@ -119,6 +119,12 @@ const DUENOS_DE_REGEX: ReadonlySet<string> = new Set([
   "src/domain/plantillas.ts",
 ]);
 
+const TEXTO_LEGIBLE = /[A-Za-zÁÉÍÓÚÑáéíóúñ]{2,}\s+[A-Za-zÁÉÍÓÚÑáéíóúñ]{2,}/;
+
+const DUENOS_DE_TEXTO = /^src\/(?:config\/strings\.ts|knowledge\/)/;
+
+const ANTES_DE_REGEX = new Set(["", "(", ",", "=", ":", "[", "!", "&", "|", "?", "{", "}", ";"]);
+
 const CAPAS_FUTURAS = /^src\/(?:server[^/]*|http|loop|llm)(?:\/|$)/;
 
 function sinExtension(ruta: string): string {
@@ -212,6 +218,118 @@ function violacionesDeEnum(ruta: string, codigo: string): string[] {
 function violacionesDeRegex(ruta: string, codigo: string): string[] {
   if (DUENOS_DE_REGEX.has(ruta)) return [];
   return lineasQueCumplen(ruta, codigo, LITERAL_DE_REGEX, "declara una expresión regular fuera de patterns");
+}
+
+function finDeComillas(codigo: string, inicio: number): number {
+  const comilla = codigo.charAt(inicio);
+  let indice = inicio + 1;
+  while (indice < codigo.length && codigo.charAt(indice) !== comilla && codigo.charAt(indice) !== "\n") {
+    indice += codigo.charAt(indice) === "\\" ? 2 : 1;
+  }
+  return indice + 1;
+}
+
+function finDeExpresion(codigo: string, inicio: number): number {
+  let profundidad = 1;
+  let indice = inicio;
+  while (indice < codigo.length && profundidad > 0) {
+    const caracter = codigo.charAt(indice);
+    if (caracter === '"' || caracter === "'" || caracter === "`") {
+      indice = caracter === "`" ? finDePlantilla(codigo, indice) : finDeComillas(codigo, indice);
+      continue;
+    }
+    if (caracter === "{") profundidad += 1;
+    if (caracter === "}") profundidad -= 1;
+    indice += 1;
+  }
+  return indice;
+}
+
+function finDePlantilla(codigo: string, inicio: number): number {
+  let indice = inicio + 1;
+  while (indice < codigo.length && codigo.charAt(indice) !== "`") {
+    if (codigo.charAt(indice) === "\\") indice += 2;
+    else if (codigo.startsWith("${", indice)) indice = finDeExpresion(codigo, indice + 2);
+    else indice += 1;
+  }
+  return indice + 1;
+}
+
+function textoDePlantilla(cuerpo: string): string {
+  let texto = "";
+  let indice = 0;
+  while (indice < cuerpo.length) {
+    if (cuerpo.startsWith("${", indice)) {
+      indice = finDeExpresion(cuerpo, indice + 2);
+      texto += " ";
+    } else {
+      texto += cuerpo.charAt(indice);
+      indice += 1;
+    }
+  }
+  return texto;
+}
+
+function expresionesDePlantilla(cuerpo: string): string[] {
+  const expresiones: string[] = [];
+  let indice = 0;
+  while (indice < cuerpo.length) {
+    if (cuerpo.startsWith("${", indice)) {
+      const fin = finDeExpresion(cuerpo, indice + 2);
+      expresiones.push(cuerpo.slice(indice + 2, fin - 1));
+      indice = fin;
+    } else indice += 1;
+  }
+  return expresiones;
+}
+
+function empiezaRegex(codigo: string, posicion: number): boolean {
+  let indice = posicion - 1;
+  while (indice >= 0 && /\s/.test(codigo.charAt(indice))) indice -= 1;
+  if (ANTES_DE_REGEX.has(indice < 0 ? "" : codigo.charAt(indice))) return true;
+  return /\breturn$/.test(codigo.slice(Math.max(0, indice - 6), indice + 1));
+}
+
+function finDeRegex(codigo: string, inicio: number): number {
+  let indice = inicio + 1;
+  let enClase = false;
+  while (indice < codigo.length && codigo.charAt(indice) !== "\n") {
+    const caracter = codigo.charAt(indice);
+    if (caracter === "\\") indice += 1;
+    else if (caracter === "[") enClase = true;
+    else if (caracter === "]") enClase = false;
+    else if (caracter === "/" && !enClase) return indice + 1;
+    indice += 1;
+  }
+  return indice;
+}
+
+function literalesDeTexto(codigo: string): string[] {
+  const literales: string[] = [];
+  let indice = 0;
+  while (indice < codigo.length) {
+    const caracter = codigo.charAt(indice);
+    if (caracter === '"' || caracter === "'") {
+      const fin = finDeComillas(codigo, indice);
+      literales.push(codigo.slice(indice + 1, fin - 1));
+      indice = fin;
+    } else if (caracter === "`") {
+      const fin = finDePlantilla(codigo, indice);
+      const cuerpo = codigo.slice(indice + 1, fin - 1);
+      literales.push(textoDePlantilla(cuerpo), ...expresionesDePlantilla(cuerpo).flatMap(literalesDeTexto));
+      indice = fin;
+    } else if (caracter === "/" && codigo.charAt(indice + 1) !== "/" && empiezaRegex(codigo, indice)) {
+      indice = finDeRegex(codigo, indice);
+    } else indice += 1;
+  }
+  return literales;
+}
+
+function violacionesDeTexto(ruta: string, codigo: string): string[] {
+  if (DUENOS_DE_TEXTO.test(ruta)) return [];
+  return literalesDeTexto(codigo)
+    .filter((literal) => TEXTO_LEGIBLE.test(literal))
+    .map((literal) => `${ruta}: texto legible fuera de strings.ts: ${literal}`);
 }
 
 function violacionesDeShell(ruta: string, codigo: string): string[] {
@@ -380,6 +498,10 @@ describe("reglas de capas sobre el código real", () => {
 
   test("G11: las expresiones regulares viven en patterns.constants.ts", () => {
     expect(listarFuentes().flatMap((ruta) => violacionesDeRegex(ruta, leer(ruta)))).toEqual([]);
+  });
+
+  test("G8: el texto legible vive solo en src/config/strings.ts", () => {
+    expect(listarFuentes().flatMap((ruta) => violacionesDeTexto(ruta, leer(ruta)))).toEqual([]);
   });
 
   test("src/ y demo.ts no usan APIs de shell", () => {
@@ -597,6 +719,24 @@ describe("el escáner muerde sobre fuentes de muestra", () => {
       "src/infra/x.ts:2: declara una expresión regular fuera de patterns",
     ]);
     expect(violacionesDeRegex("src/config/constants/patterns.constants.ts", codigo)).toEqual([]);
+  });
+
+  test("G8: reporta texto legible en cadenas, plantillas y expresiones anidadas", () => {
+    const dolar = "$";
+    const codigo = [
+      'throw new RangeError("La fecha no es válida.");',
+      `const a = \`${dolar}{caso}: formulario generado\`;`,
+      `const b = \`${dolar}{x ? "sin datos" : y}\`;`,
+      'const c = "@/config/strings.ts";',
+      `const d = \`${dolar}{caso}: ${dolar}{codigo}\`;`,
+      "const e = texto.split(/[\"'] [a-z]+/);",
+    ].join("\n");
+    expect(violacionesDeTexto("src/infra/x.ts", codigo)).toEqual([
+      "src/infra/x.ts: texto legible fuera de strings.ts: La fecha no es válida.",
+      "src/infra/x.ts: texto legible fuera de strings.ts:  : formulario generado",
+      "src/infra/x.ts: texto legible fuera de strings.ts: sin datos",
+    ]);
+    expect(violacionesDeTexto("src/config/strings.ts", codigo)).toEqual([]);
   });
 
   test("reporta un archivo en una capa no declarada", () => {
