@@ -1,8 +1,8 @@
-import { armarPaquete } from "@/application/armar-paquete.ts";
-import { generarFormulario } from "@/application/generar-formulario.ts";
-import { leerSolicitud } from "@/application/leer-solicitud.ts";
-import { mapearCamposCaso } from "@/application/mapear-campos.ts";
-import { simularEnvio } from "@/application/simular-envio.ts";
+import { armarPaquete } from "@/application/use-cases/armar-paquete.use-case.ts";
+import { generarFormulario } from "@/application/use-cases/generar-formulario.use-case.ts";
+import { leerSolicitud } from "@/application/use-cases/leer-solicitud.use-case.ts";
+import { mapearCamposCaso } from "@/application/use-cases/mapear-campos.use-case.ts";
+import { simularEnvio } from "@/application/use-cases/simular-envio.use-case.ts";
 import { HERRAMIENTA } from "@/config/constants/tools.constants.ts";
 import { DESCRIPCION_HERRAMIENTA, RESUMEN_HERRAMIENTA } from "@/config/strings.ts";
 import {

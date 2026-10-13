@@ -1,4 +1,4 @@
-import { cargarSolicitudCaso } from "@/application/contexto-caso.ts";
+import { cargarSolicitudCaso } from "@/application/services/contexto-caso.service.ts";
 import type { ArgsLeerSolicitud, DatosSolicitud } from "@/application/types/leer-solicitud.type.ts";
 import type { Entorno } from "@/application/types/puertos.type.ts";
 import { exito } from "@/domain/resultado.ts";

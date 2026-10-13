@@ -1,12 +1,10 @@
-import { cargarContextoCaso } from "@/application/contexto-caso.ts";
-import type { ContextoCaso } from "@/application/types/contexto-caso.type.ts";
-import type { ArgsMapearCampos, DatosMapeo, DocumentoMapeo } from "@/application/types/mapear-campos.type.ts";
+import { cargarContextoCaso } from "@/application/services/contexto-caso.service.ts";
+import { escribirMapeo, mapeoCanonico } from "@/application/services/mapeo-canonico.service.ts";
+import type { ArgsMapearCampos, DatosMapeo } from "@/application/types/mapear-campos.type.ts";
 import type { Entorno } from "@/application/types/puertos.type.ts";
 import { CODIGO_ERROR } from "@/config/constants/errors.constants.ts";
-import { ARCHIVOS_SALIDA } from "@/config/constants/files.constants.ts";
-import { SANGRIA_JSON } from "@/config/constants/limits.constants.ts";
 import { ESTADO_CAMPO } from "@/config/constants/mapping.constants.ts";
-import { contarEstados, mapearCampos } from "@/domain/mapeo.ts";
+import { contarEstados } from "@/domain/mapeo.ts";
 import { normalizarEtiqueta } from "@/domain/normalizar.ts";
 import { presentarCampo } from "@/domain/pii.ts";
 import { exito, fallo } from "@/domain/resultado.ts";
@@ -37,38 +35,6 @@ function seleccionar(
   }
   const elegidas = new Set(normalizadas);
   return exito(canonicos.filter((campo) => elegidas.has(normalizarEtiqueta(campo.etiqueta))));
-}
-
-function serializar(documento: DocumentoMapeo): string {
-  return `${JSON.stringify(documento, null, SANGRIA_JSON)}\n`;
-}
-
-export function mapeoCanonico(contexto: ContextoCaso): Resultado<readonly CampoMapeado[]> {
-  const { solicitud, plantilla, maestro, indice, reglas } = contexto;
-  return mapearCampos({
-    etiquetas: plantilla.campos.map((campo) => campo.etiqueta),
-    pais: solicitud.pais,
-    indice,
-    maestro,
-    reglas,
-  });
-}
-
-export function escribirMapeo(
-  contexto: ContextoCaso,
-  canonico: readonly CampoMapeado[],
-  entorno: Entorno,
-): Promise<string> {
-  return entorno.salida.escribir(
-    contexto.caso,
-    ARCHIVOS_SALIDA.MAPEO,
-    serializar({
-      caso: contexto.caso,
-      pais: contexto.solicitud.pais,
-      fecha_ejecucion: entorno.reloj.hoy(),
-      campos: canonico.map(presentarCampo),
-    }),
-  );
 }
 
 async function mapearBajoCandado(args: ArgsMapearCampos, entorno: Entorno): Promise<Resultado<DatosMapeo>> {

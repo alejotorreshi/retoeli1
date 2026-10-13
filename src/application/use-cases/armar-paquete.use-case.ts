@@ -1,5 +1,5 @@
-import { cargarContextoCaso } from "@/application/contexto-caso.ts";
-import { mapeoCanonico } from "@/application/mapear-campos.ts";
+import { cargarContextoCaso } from "@/application/services/contexto-caso.service.ts";
+import { evaluarEstadoPaquete } from "@/application/services/estado-paquete.service.ts";
 import type {
   ArgsArmarPaquete,
   DatosPaquete,
@@ -9,37 +9,14 @@ import type { ContextoCaso } from "@/application/types/contexto-caso.type.ts";
 import type { ArchivoFormulario, Entorno } from "@/application/types/puertos.type.ts";
 import { CODIGO_ERROR } from "@/config/constants/errors.constants.ts";
 import { ARCHIVO_FORMULARIO, ARCHIVOS_PAQUETE } from "@/config/constants/files.constants.ts";
-import { ESTADO_LECTURA, ORIGEN_COPIA } from "@/config/constants/io.constants.ts";
+import { ORIGEN_COPIA } from "@/config/constants/io.constants.ts";
 import { CLAVE_PLANTILLA } from "@/config/constants/knowledge.constants.ts";
 import { construirDatosBorrador } from "@/domain/borrador.ts";
-import { construirChecklist, construirDatosChecklist, evaluarSoportes } from "@/domain/checklist.ts";
+import { construirDatosChecklist } from "@/domain/checklist.ts";
 import { renderizarPlantilla, renderizarTextoPlano } from "@/domain/motor-plantillas.ts";
 import { exito, fallo } from "@/domain/resultado.ts";
 import type { Checklist, SoporteEvaluado } from "@/domain/types/checklist.type.ts";
 import type { Resultado } from "@/domain/types/resultado.type.ts";
-
-export async function evaluarEstadoPaquete(
-  contexto: ContextoCaso,
-  entorno: Entorno,
-): Promise<Resultado<Checklist>> {
-  const canonico = mapeoCanonico(contexto);
-  if (!canonico.ok) return canonico;
-  const indice = await entorno.soportes.indice();
-  if (indice.estado !== ESTADO_LECTURA.OK) return fallo(CODIGO_ERROR.DATOS_INVALIDOS);
-  const presentes = await entorno.soportes.presentes();
-  if (presentes.estado !== ESTADO_LECTURA.OK) return fallo(CODIGO_ERROR.DATOS_INVALIDOS);
-  const hoy = entorno.reloj.hoy();
-  const soportes = evaluarSoportes(
-    contexto.soportesExigidos,
-    indice.valor,
-    presentes.valor,
-    hoy,
-    contexto.solicitud.pais,
-    contexto.reglas.soportes,
-  );
-  if (!soportes.ok) return soportes;
-  return exito(construirChecklist(soportes.data, canonico.data, hoy));
-}
 
 async function renderizarChecklist(
   contexto: ContextoCaso,

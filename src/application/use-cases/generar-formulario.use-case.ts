@@ -1,5 +1,5 @@
-import { cargarContextoCaso } from "@/application/contexto-caso.ts";
-import { escribirMapeo, mapeoCanonico } from "@/application/mapear-campos.ts";
+import { cargarContextoCaso } from "@/application/services/contexto-caso.service.ts";
+import { escribirMapeo, mapeoCanonico } from "@/application/services/mapeo-canonico.service.ts";
 import type { ContextoCaso } from "@/application/types/contexto-caso.type.ts";
 import type { ArgsGenerarFormulario, DatosFormulario } from "@/application/types/generar-formulario.type.ts";
 import type { Entorno } from "@/application/types/puertos.type.ts";

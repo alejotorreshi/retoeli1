@@ -12,10 +12,3 @@ export type DatosMapeo = {
   readonly requiere_confirmacion: readonly CampoPresentado[];
   readonly mapeo: string;
 };
-
-export type DocumentoMapeo = {
-  readonly caso: string;
-  readonly pais: string;
-  readonly fecha_ejecucion: string;
-  readonly campos: readonly CampoPresentado[];
-};

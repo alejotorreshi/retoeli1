@@ -1,5 +1,5 @@
-import { evaluarEstadoPaquete } from "@/application/armar-paquete.ts";
-import { cargarSolicitudCaso, completarContextoCaso } from "@/application/contexto-caso.ts";
+import { cargarSolicitudCaso, completarContextoCaso } from "@/application/services/contexto-caso.service.ts";
+import { evaluarEstadoPaquete } from "@/application/services/estado-paquete.service.ts";
 import type { Entorno } from "@/application/types/puertos.type.ts";
 import type { ArgsSimularEnvio, DatosEnvio } from "@/application/types/simular-envio.type.ts";
 import { CODIGO_ERROR } from "@/config/constants/errors.constants.ts";
