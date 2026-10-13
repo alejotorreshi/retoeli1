@@ -105,7 +105,6 @@ export type PlantillasConocimiento = {
 export type Candado = <T>(caso: string, seccion: () => Promise<T>) => Promise<T>;
 
 export type Entorno = {
-  readonly raiz: string;
   readonly reloj: Reloj;
   readonly casos: CasosDisponibles;
   readonly fixtures: FixturesCaso;

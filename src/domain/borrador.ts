@@ -7,7 +7,7 @@ import type { Checklist, SoporteEvaluado } from "@/domain/types/checklist.type.t
 import type { Maestro } from "@/domain/types/maestro.type.ts";
 import type { Solicitud } from "@/domain/types/solicitud.type.ts";
 
-export function asuntoRespuesta(solicitud: Solicitud): string {
+function asuntoRespuesta(solicitud: Solicitud): string {
   return `${TEXTO_BORRADOR.prefijoRespuesta}${solicitud.asunto}`;
 }
 

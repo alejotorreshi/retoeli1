@@ -16,7 +16,7 @@ function isTimeZone(zona: string): boolean {
   }
 }
 
-export const toolEnvSchema = z.object({
+const toolEnvSchema = z.object({
   FECHA_EJECUCION: z.preprocess(
     emptyAsUndefined,
     z
@@ -35,7 +35,7 @@ export type ToolEnv = z.output<typeof toolEnvSchema>;
 
 type EnvSource = Readonly<Record<string, string | undefined>>;
 
-export function parseToolEnv(source: EnvSource) {
+function parseToolEnv(source: EnvSource) {
   return toolEnvSchema.safeParse(source, { error: z.locales.es().localeError });
 }
 

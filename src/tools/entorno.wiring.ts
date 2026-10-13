@@ -77,7 +77,6 @@ function relojDe(config: ToolEnv): Reloj {
 
 function entornoDeFixtures(raiz: string, reloj: Reloj, directorioConocimiento: string): Entorno {
   return {
-    raiz,
     reloj,
     casos: {
       resolver: (caso) => resolveCase(raiz, caso),
