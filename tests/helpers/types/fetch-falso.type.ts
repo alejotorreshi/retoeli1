@@ -11,7 +11,10 @@ export type MensajeWire = {
   readonly role: string;
   readonly content: string;
   readonly tool_call_id?: string;
-  readonly tool_calls?: readonly { readonly id: string }[];
+  readonly tool_calls?: readonly {
+    readonly id: string;
+    readonly function?: { readonly name: string; readonly arguments: string };
+  }[];
 };
 
 export type CuerpoPedido = {

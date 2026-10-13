@@ -8,7 +8,12 @@ import {
   lineasBitacora,
   textoFinal,
 } from "@tests/helpers/eventos.helper.ts";
-import { crearFetchFalso, cuerpoConHerramientas, cuerpoConTexto } from "@tests/helpers/fetch-falso.helper.ts";
+import {
+  crearFetchFalso,
+  cuerpoConArgumentosCrudos,
+  cuerpoConHerramientas,
+  cuerpoConTexto,
+} from "@tests/helpers/fetch-falso.helper.ts";
 import { historialIntegro, historialWireIntegro } from "@tests/helpers/historial.helper.ts";
 import {
   llamar,
@@ -18,21 +23,30 @@ import {
 } from "@tests/helpers/llm-falso.helper.ts";
 import { crearProyectoTemporal } from "@tests/helpers/proyecto-temporal.helper.ts";
 import type { AgentePrueba } from "@tests/helpers/types/agente-prueba.type.ts";
-import type { PedidoRegistrado, RespuestaGuion } from "@tests/helpers/types/fetch-falso.type.ts";
+import type { MensajeWire, PedidoRegistrado, RespuestaGuion } from "@tests/helpers/types/fetch-falso.type.ts";
 import type { PasoLlmFalso } from "@tests/helpers/types/llm-falso.type.ts";
 import type { ProyectoTemporal } from "@tests/helpers/types/proyecto-temporal.type.ts";
 import { CODIGO_AGENTE, MOTIVO_FIN, TIPO_EVENTO } from "@/config/constants/agent.constants.ts";
 import { ESTADO_COMPUERTA } from "@/config/constants/confirmacion.constants.ts";
 import { FECHA_DEMO } from "@/config/constants/demo.constants.ts";
-import { FIN_LLM, REINTENTOS_LLM_POR_DEFECTO, ROL_MENSAJE } from "@/config/constants/llm.constants.ts";
+import {
+  ARGUMENTOS_VACIOS,
+  FIN_LLM,
+  FINISH_REASON,
+  REINTENTOS_LLM_POR_DEFECTO,
+  ROL_MENSAJE,
+} from "@/config/constants/llm.constants.ts";
 import { HERRAMIENTA, PREFIJO_HERRAMIENTA } from "@/config/constants/tools.constants.ts";
 import { pinExecutionDate } from "@/config/env.ts";
 import { MENSAJE_AGENTE } from "@/config/strings.ts";
-import type { Mensaje } from "@/llm/types/llm.type.ts";
+import type { LlamadaHerramienta, Mensaje, RespuestaLlm } from "@/llm/types/llm.type.ts";
 import type { EventoAgente } from "@/loop/types/evento.type.ts";
 
 const CASO = "co-industrias-delta";
 const LEER = `${PREFIJO_HERRAMIENTA}${HERRAMIENTA.LEER_SOLICITUD}`;
+const GENERAR = `${PREFIJO_HERRAMIENTA}${HERRAMIENTA.GENERAR_FORMULARIO}`;
+const TRUNCADO = '{"caso":"co-industrias-delta","mapeo":[{"etiq';
+const VUELVO = "Vuelvo a pedirla.";
 const SIN_RESPALDO = { LLM_FALLBACK_ENABLED: "false" };
 const INTENTOS = 1 + REINTENTOS_LLM_POR_DEFECTO;
 const NO_DISPONIBLE: RespuestaGuion = {
@@ -85,8 +99,46 @@ function pedido(pedidos: readonly PedidoRegistrado[], indice: number): PedidoReg
   return registrado;
 }
 
+function esObjetoJson(texto: string): boolean {
+  try {
+    const valor: unknown = JSON.parse(texto);
+    return typeof valor === "object" && valor !== null && !Array.isArray(valor);
+  } catch {
+    return false;
+  }
+}
+
+function argumentosWireNoObjeto(mensajes: readonly MensajeWire[]): string[] {
+  return mensajes.flatMap((mensaje) =>
+    (mensaje.tool_calls ?? [])
+      .filter((llamada) => !esObjetoJson(llamada.function?.arguments ?? ""))
+      .map((llamada) => `${llamada.id}: ${llamada.function?.arguments}`),
+  );
+}
+
+function argumentosNoObjeto(mensajes: readonly Mensaje[]): string[] {
+  return mensajes.flatMap((mensaje) =>
+    mensaje.rol === ROL_MENSAJE.ASISTENTE
+      ? mensaje.llamadas
+          .filter((llamada) => !esObjetoJson(llamada.argumentos))
+          .map((llamada) => `${llamada.id}: ${llamada.argumentos}`)
+      : [],
+  );
+}
+
 function historialesSanos(pedidos: readonly PedidoRegistrado[]): void {
-  for (const registrado of pedidos) expect(historialWireIntegro(registrado.cuerpo.messages)).toEqual([]);
+  for (const registrado of pedidos) {
+    expect(historialWireIntegro(registrado.cuerpo.messages)).toEqual([]);
+    expect(argumentosWireNoObjeto(registrado.cuerpo.messages)).toEqual([]);
+  }
+}
+
+function llamadasWire(pedidos: readonly PedidoRegistrado[], id: string): unknown[] {
+  return pedidos.flatMap((registrado) =>
+    registrado.cuerpo.messages.flatMap((mensaje) =>
+      (mensaje.tool_calls ?? []).filter((llamada) => llamada.id === id),
+    ),
+  );
 }
 
 describe("los fallos del proveedor nunca matan la sesión (CA5, LLM-03, AGT-05)", () => {
@@ -189,7 +241,24 @@ function idsDeLlamadas(mensajes: readonly Mensaje[]): string[] {
 }
 
 function pedidosSanos(prueba: AgentePrueba): void {
-  for (const registrado of prueba.llm.pedidos) expect(historialIntegro(registrado.mensajes)).toEqual([]);
+  for (const registrado of prueba.llm.pedidos) {
+    expect(historialIntegro(registrado.mensajes)).toEqual([]);
+    expect(argumentosNoObjeto(registrado.mensajes)).toEqual([]);
+  }
+}
+
+function llamadasCon(mensajes: readonly Mensaje[], ids: readonly string[]): LlamadaHerramienta[] {
+  return mensajes.flatMap((mensaje) =>
+    mensaje.rol === ROL_MENSAJE.ASISTENTE
+      ? mensaje.llamadas.filter((llamada) => ids.includes(llamada.id))
+      : [],
+  );
+}
+
+function eventosDeHerramienta(eventos: readonly EventoAgente[]): EventoAgente[] {
+  return eventos.filter(
+    (evento) => evento.tipo === TIPO_EVENTO.INICIO_HERRAMIENTA || evento.tipo === TIPO_EVENTO.FIN_HERRAMIENTA,
+  );
 }
 
 function esInicioDe(evento: EventoAgente, llamadaId: string): boolean {
@@ -285,28 +354,28 @@ describe("las interrupciones nunca corrompen la sesión (AGT-04, CA5)", () => {
     pedidosSanos(prueba);
   });
 
-  test("un paso cortado por limite no ejecuta herramientas y responde ARGUMENTOS_TRUNCADOS a cada llamada", async () => {
-    const cortado = {
-      ...respuestaHerramientas(
-        llamar("leer-a", HERRAMIENTA.LEER_SOLICITUD, { caso: CASO }),
-        llamar("leer-b", HERRAMIENTA.LEER_SOLICITUD, { caso: EC }),
-      ),
-      fin: FIN_LLM.LIMITE,
-    };
+  test("un paso cortado por limite no ejecuta herramientas, responde ARGUMENTOS_TRUNCADOS y guarda argumentos JSON válidos (CR-03)", async () => {
+    expect(() => JSON.parse(TRUNCADO)).toThrow();
+    const cortadas: readonly LlamadaHerramienta[] = [
+      { id: "generar-a", nombre: GENERAR, argumentos: TRUNCADO },
+      { id: "leer-b", nombre: LEER, argumentos: TRUNCADO },
+    ];
+    const cortado: RespuestaLlm = { ...respuestaHerramientas(...cortadas), fin: FIN_LLM.LIMITE };
     const prueba = crearAgentePrueba({
       raiz: proyecto.raiz,
-      guion: [cortado, respuestaTexto("Vuelvo a pedirla."), respuestaTexto(SIGO)],
+      guion: [cortado, respuestaTexto(VUELVO), respuestaTexto(SIGO)],
     });
 
     const turno1 = await prueba.turno(`procesa el caso ${CASO}`);
     expect(await lineasBitacora(proyecto.raiz)).toEqual([]);
     expect(prueba.llm.pedidos).toHaveLength(2);
+    expect(eventosDeHerramienta(turno1)).toEqual([]);
     const respuestas = (prueba.llm.pedidos[1]?.mensajes ?? []).filter(
       (mensaje) => mensaje.rol === ROL_MENSAJE.HERRAMIENTA,
     );
     expect(
       respuestas.map((mensaje) => (mensaje.rol === ROL_MENSAJE.HERRAMIENTA ? mensaje.llamadaId : "")),
-    ).toEqual(["leer-a", "leer-b"]);
+    ).toEqual(["generar-a", "leer-b"]);
     for (const respuesta of respuestas) {
       expect(JSON.parse(respuesta.contenido)).toEqual({
         ok: false,
@@ -314,10 +383,56 @@ describe("las interrupciones nunca corrompen la sesión (AGT-04, CA5)", () => {
         error: MENSAJE_AGENTE[CODIGO_AGENTE.ARGUMENTOS_TRUNCADOS],
       });
     }
-    expect(textoFinal(turno1)).toBe("Vuelvo a pedirla.");
+    expect(textoFinal(turno1)).toBe(VUELVO);
 
     const siguiente = await prueba.turno("¿sigues?");
+    expect(finDeTurno(siguiente).motivo).toBe(MOTIVO_FIN.FINAL);
     expect(textoFinal(siguiente)).toBe(SIGO);
+
+    const vacias = cortadas.map((llamada) => ({ ...llamada, argumentos: ARGUMENTOS_VACIOS }));
+    const ids = cortadas.map((llamada) => llamada.id);
+    expect(prueba.llm.pedidos).toHaveLength(3);
+    for (const registrado of prueba.llm.pedidos.slice(1)) {
+      expect(llamadasCon(registrado.mensajes, ids)).toEqual(vacias);
+    }
+    const { historial } = prueba.sesionActual();
+    expect(llamadasCon(historial, ids)).toEqual(vacias);
+    expect(argumentosNoObjeto(historial)).toEqual([]);
+    for (const llamada of llamadasCon(historial, ids)) expect(JSON.parse(llamada.argumentos)).toEqual({});
     pedidosSanos(prueba);
+  });
+
+  test("con el adaptador real, un finish_reason length con argumentos cortados deja JSON válido en cada pedido siguiente (CR-03)", async () => {
+    expect(() => JSON.parse(TRUNCADO)).toThrow();
+    const { fetch, pedidos } = crearFetchFalso([
+      {
+        cuerpo: cuerpoConArgumentosCrudos(FINISH_REASON.LENGTH, {
+          id: "call_cortado",
+          nombre: GENERAR,
+          argumentos: TRUNCADO,
+        }),
+      },
+      { cuerpo: cuerpoConTexto(VUELVO) },
+      { cuerpo: cuerpoConTexto(SIGO) },
+    ]);
+    const prueba = crearAgenteFetch({ raiz: proyecto.raiz, fetch, entorno: SIN_RESPALDO });
+
+    const turno1 = await prueba.turno(`procesa el caso ${CASO}`);
+    expect(eventosDeHerramienta(turno1)).toEqual([]);
+    expect(textoFinal(turno1)).toBe(VUELVO);
+    const turno2 = await prueba.turno("¿sigues?");
+    expect(finDeTurno(turno2).motivo).toBe(MOTIVO_FIN.FINAL);
+    expect(textoFinal(turno2)).toBe(SIGO);
+
+    expect(pedidos).toHaveLength(3);
+    for (const registrado of pedidos.slice(1)) {
+      expect(llamadasWire([registrado], "call_cortado")).toEqual([
+        expect.objectContaining({
+          id: "call_cortado",
+          function: { name: GENERAR, arguments: ARGUMENTOS_VACIOS },
+        }),
+      ]);
+    }
+    historialesSanos(pedidos);
   });
 });

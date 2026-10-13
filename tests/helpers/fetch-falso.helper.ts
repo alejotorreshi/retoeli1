@@ -6,7 +6,8 @@ import type {
   PedidoRegistrado,
   RespuestaGuion,
 } from "@tests/helpers/types/fetch-falso.type.ts";
-import { PRESET_DEEPSEEK } from "@/config/constants/llm.constants.ts";
+import { FINISH_REASON, PRESET_DEEPSEEK } from "@/config/constants/llm.constants.ts";
+import type { LlamadaHerramienta } from "@/llm/types/llm.type.ts";
 import type { FetchLike } from "@/llm/types/provider.type.ts";
 
 const USO_SPIKE = {
@@ -60,7 +61,10 @@ export function crearFetchFalso(respuestas: readonly RespuestaGuion[]): FetchFal
   return { fetch, pedidos };
 }
 
-export function cuerpoConHerramientas(...llamadas: readonly LlamadaFalsa[]): unknown {
+export function cuerpoConArgumentosCrudos(
+  finishReason: string,
+  ...llamadas: readonly LlamadaHerramienta[]
+): unknown {
   return {
     id: "redactado",
     object: "chat.completion",
@@ -69,15 +73,15 @@ export function cuerpoConHerramientas(...llamadas: readonly LlamadaFalsa[]): unk
     choices: [
       {
         index: 0,
-        finish_reason: "tool_calls",
+        finish_reason: finishReason,
         message: {
           role: "assistant",
           content: "",
           tool_calls: llamadas.map((llamada, posicion) => ({
             index: posicion,
-            id: llamada.id ?? `call_00_${posicion}`,
+            id: llamada.id,
             type: "function",
-            function: { name: llamada.nombre, arguments: JSON.stringify(llamada.argumentos) },
+            function: { name: llamada.nombre, arguments: llamada.argumentos },
           })),
         },
       },
@@ -85,6 +89,17 @@ export function cuerpoConHerramientas(...llamadas: readonly LlamadaFalsa[]): unk
     usage: USO_SPIKE,
     system_fingerprint: "redactado",
   };
+}
+
+export function cuerpoConHerramientas(...llamadas: readonly LlamadaFalsa[]): unknown {
+  return cuerpoConArgumentosCrudos(
+    FINISH_REASON.TOOL_CALLS,
+    ...llamadas.map((llamada, posicion) => ({
+      id: llamada.id ?? `call_00_${posicion}`,
+      nombre: llamada.nombre,
+      argumentos: JSON.stringify(llamada.argumentos),
+    })),
+  );
 }
 
 export function cuerpoConTexto(texto: string): unknown {

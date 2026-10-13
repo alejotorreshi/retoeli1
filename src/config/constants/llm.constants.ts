@@ -70,6 +70,7 @@ export const TOOL_CHOICE = {
 } as const;
 
 export const TIPO_HERRAMIENTA_WIRE = "function";
+export const ARGUMENTOS_VACIOS = "{}";
 
 export const ESTADO_HTTP = {
   PETICION_INVALIDA: 400,
