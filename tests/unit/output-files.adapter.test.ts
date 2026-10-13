@@ -1,11 +1,16 @@
 import { afterAll, describe, expect, test } from "bun:test";
 import { existsSync } from "node:fs";
-import { mkdir, mkdtemp, readFile, rm, symlink, writeFile } from "node:fs/promises";
+import { link, mkdir, mkdtemp, readFile, rm, symlink, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { isNotFound } from "@/infra/fs/fs.util.ts";
 import { withCaseLock } from "@/infra/output/case-lock.adapter.ts";
-import { clearPreviousArtifacts, writeOutputFile } from "@/infra/output/output-files.adapter.ts";
+import {
+  clearPreviousArtifacts,
+  listPackage,
+  readPackageFile,
+  writeOutputFile,
+} from "@/infra/output/output-files.adapter.ts";
 
 const temporales: string[] = [];
 
@@ -100,6 +105,66 @@ describe("clearPreviousArtifacts (D-12)", () => {
       await expect(clearPreviousArtifacts(raiz, caso)).rejects.toThrow(RangeError);
     });
   }
+});
+
+describe("listPackage y readPackageFile (T-01-33)", () => {
+  const CASO = "co-industrias-delta";
+
+  async function paqueteCon(raiz: string, archivos: Readonly<Record<string, string>>): Promise<string> {
+    const paquete = join(raiz, "out", CASO, "paquete");
+    await mkdir(paquete, { recursive: true });
+    for (const [nombre, contenido] of Object.entries(archivos))
+      await writeFile(join(paquete, nombre), contenido);
+    return paquete;
+  }
+
+  test("lista solo los archivos regulares de paquete/, ordenados", async () => {
+    const raiz = await raizTemporal();
+    const paquete = await paqueteCon(raiz, { "checklist.md": "c", "borrador-correo.md": "b" });
+    await mkdir(join(paquete, "sub"));
+    expect(await listPackage(raiz, CASO)).toEqual(["borrador-correo.md", "checklist.md"]);
+  });
+
+  test("falla cerrado cuando paquete/ es un symlink que sale del caso", async () => {
+    const raiz = await raizTemporal();
+    const afuera = await raizTemporal();
+    await writeFile(join(afuera, "secreto-ajeno.txt"), "x");
+    await mkdir(join(raiz, "out", CASO), { recursive: true });
+    await symlink(afuera, join(raiz, "out", CASO, "paquete"));
+    await expect(listPackage(raiz, CASO)).rejects.toThrow(RangeError);
+  });
+
+  test("no crea out/<caso> al listar un caso sin salida", async () => {
+    const raiz = await raizTemporal();
+    await expect(listPackage(raiz, CASO)).rejects.toThrow();
+    expect(existsSync(join(raiz, "out", CASO))).toBe(false);
+  });
+
+  test("lee el borrador del paquete y devuelve null si no existe", async () => {
+    const raiz = await raizTemporal();
+    await paqueteCon(raiz, { "borrador-correo.md": "Hola\n" });
+    expect(await readPackageFile(raiz, CASO, "borrador-correo.md")).toBe("Hola\n");
+    expect(await readPackageFile(raiz, CASO, "checklist.md")).toBeNull();
+  });
+
+  test("rechaza un borrador que es un symlink a un archivo de afuera", async () => {
+    const raiz = await raizTemporal();
+    const afuera = await raizTemporal();
+    const ajeno = join(afuera, "ajeno.md");
+    await writeFile(ajeno, "contenido ajeno\n");
+    const paquete = await paqueteCon(raiz, {});
+    await symlink(ajeno, join(paquete, "borrador-correo.md"));
+    await expect(readPackageFile(raiz, CASO, "borrador-correo.md")).rejects.toThrow(RangeError);
+  });
+
+  test("rechaza un borrador que es un enlace duro a otro archivo", async () => {
+    const raiz = await raizTemporal();
+    const ajeno = join(raiz, "ajeno.md");
+    await writeFile(ajeno, "contenido ajeno\n");
+    const paquete = await paqueteCon(raiz, {});
+    await link(ajeno, join(paquete, "borrador-correo.md"));
+    await expect(readPackageFile(raiz, CASO, "borrador-correo.md")).rejects.toThrow(RangeError);
+  });
 });
 
 describe("withCaseLock", () => {
