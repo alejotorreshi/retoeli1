@@ -2,6 +2,7 @@ export const LONGITUD_MAXIMA_CASO = 64;
 export const LONGITUD_MAXIMA_SESION = 128;
 export const LIMITE_LECTURA_BYTES = 1_048_576;
 export const MAX_ISSUES_ARGS = 5;
+export const MAX_ISSUES_REGLAS = 1;
 
 export const LIMITES_REGLAS = {
   texto: 500,

@@ -2,12 +2,14 @@ import { z } from "zod";
 import type { Entorno, EntradaBitacora } from "@/application/types/puertos.type.ts";
 import { CODIGO_ERROR } from "@/config/constants/errors.constants.ts";
 import { ESTADO_LECTURA } from "@/config/constants/io.constants.ts";
+import { MAX_ISSUES_ARGS } from "@/config/constants/limits.constants.ts";
 import { PATRON_CASO, PATRON_SESION } from "@/config/constants/patterns.constants.ts";
 import { PREFIJO_HERRAMIENTA, SESION_POR_DEFECTO } from "@/config/constants/tools.constants.ts";
+import { formatearIssues } from "@/domain/formatear-issues.ts";
+import { nombreDeError } from "@/domain/nombre-error.ts";
 import { exito, fallo } from "@/domain/resultado.ts";
 import type { Fallo, Resultado } from "@/domain/types/resultado.type.ts";
 import { crearEntorno } from "@/tools/entorno.wiring.ts";
-import { formatearIssues } from "@/tools/formatear-issues.util.ts";
 import type { ContextoNormalizado, OpcionesEntorno } from "@/tools/types/entorno.type.ts";
 import type { ContextoHerramienta, EspecHerramienta, Herramienta } from "@/tools/types/herramienta.type.ts";
 
@@ -29,10 +31,6 @@ const esquemaContexto = z.object({
   sessionID: sesionOpcional,
 });
 
-function nombreDeError(error: unknown): string {
-  return error instanceof Error ? error.name : typeof error;
-}
-
 function casoValidoDe(datos: unknown): string | undefined {
   if (typeof datos !== "object" || datos === null || !("caso" in datos)) return undefined;
   const { caso } = datos;
@@ -42,7 +40,9 @@ function casoValidoDe(datos: unknown): string | undefined {
 export function normalizarContexto(ctx: ContextoHerramienta): Resultado<ContextoNormalizado> {
   const parseado = esquemaContexto.safeParse(ctx, { error: mensajesEs });
   if (!parseado.success) {
-    return fallo(CODIGO_ERROR.CONFIGURACION_INVALIDA, { detalle: formatearIssues(parseado.error.issues) });
+    return fallo(CODIGO_ERROR.CONFIGURACION_INVALIDA, {
+      detalle: formatearIssues(parseado.error.issues, MAX_ISSUES_ARGS),
+    });
   }
   const { directory, sessionId, sessionID } = parseado.data;
   return exito({ directorio: directory, sesion: sessionId ?? sessionID ?? SESION_POR_DEFECTO });
@@ -75,7 +75,9 @@ export function definirHerramienta<A extends z.ZodRawShape, D>(
   async function resolverArgs(crudos: unknown, entorno: Entorno): Promise<Resultado<D>> {
     const parseado = esquema.safeParse(crudos, { error: mensajesEs });
     if (!parseado.success) {
-      return fallo(CODIGO_ERROR.ARGS_INVALIDOS, { detalle: formatearIssues(parseado.error.issues) });
+      return fallo(CODIGO_ERROR.ARGS_INVALIDOS, {
+        detalle: formatearIssues(parseado.error.issues, MAX_ISSUES_ARGS),
+      });
     }
     return ejecutarProtegido(parseado.data, entorno);
   }

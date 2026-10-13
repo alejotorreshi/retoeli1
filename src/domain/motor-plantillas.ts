@@ -80,7 +80,7 @@ function renderizarSeccion(
   return lista.map((fila) => renderizarVariables(interior, [fila, contexto], render)).join("");
 }
 
-function plantillaInvalida(nombrePlantilla: string, problema: string): Fallo {
+export function plantillaInvalida(nombrePlantilla: string, problema: string): Fallo {
   return fallo(CODIGO_ERROR.REGLAS_INVALIDAS, {
     detalle: TEXTO_MOTOR_PLANTILLAS.plantillaInvalida(nombrePlantilla, problema),
   });

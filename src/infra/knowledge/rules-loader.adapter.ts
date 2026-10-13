@@ -3,7 +3,9 @@ import { fileURLToPath } from "node:url";
 import { z } from "zod";
 import { CODIGO_ERROR } from "@/config/constants/errors.constants.ts";
 import { ARCHIVO_REGLAS } from "@/config/constants/files.constants.ts";
-import { TEXTO_COMUN, TEXTO_CONOCIMIENTO } from "@/config/strings.ts";
+import { MAX_ISSUES_REGLAS } from "@/config/constants/limits.constants.ts";
+import { TEXTO_CONOCIMIENTO } from "@/config/strings.ts";
+import { formatearIssues } from "@/domain/formatear-issues.ts";
 import { fallo } from "@/domain/resultado.ts";
 import type { Reglas } from "@/domain/types/reglas.type.ts";
 import type { Resultado } from "@/domain/types/resultado.type.ts";
@@ -18,10 +20,9 @@ function reglasInvalidas(detalle: string): Resultado<Reglas> {
 }
 
 function detalleDe(issues: readonly z.core.$ZodIssue[]): string {
-  const primero = issues[0];
-  if (primero === undefined) return TEXTO_CONOCIMIENTO.esquemaNoCumplido;
-  const ruta = primero.path.length === 0 ? TEXTO_COMUN.raiz : primero.path.map(String).join(".");
-  return `${ruta}: ${primero.message}`;
+  return issues.length === 0
+    ? TEXTO_CONOCIMIENTO.esquemaNoCumplido
+    : formatearIssues(issues, MAX_ISSUES_REGLAS);
 }
 
 export async function loadRules(directorio: string): Promise<Resultado<Reglas>> {

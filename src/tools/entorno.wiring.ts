@@ -3,8 +3,10 @@ import { CODIGO_ERROR } from "@/config/constants/errors.constants.ts";
 import { ARCHIVO_PLANTILLA, ARCHIVOS_CASO } from "@/config/constants/files.constants.ts";
 import { TIPO_PLANTILLA } from "@/config/constants/forms.constants.ts";
 import { ESTADO_LECTURA, ORIGEN_COPIA } from "@/config/constants/io.constants.ts";
+import { MAX_ISSUES_ARGS } from "@/config/constants/limits.constants.ts";
 import { ZONA_HORARIA_POR_DEFECTO } from "@/config/constants/runtime.constants.ts";
 import { readToolEnv, type ToolEnv } from "@/config/env.ts";
+import { formatearIssues } from "@/domain/formatear-issues.ts";
 import { exito, fallo } from "@/domain/resultado.ts";
 import type { Plantilla, TipoPlantilla } from "@/domain/types/plantilla-caso.type.ts";
 import { fixedClock, systemClock } from "@/infra/clock/clock.adapter.ts";
@@ -42,7 +44,6 @@ import {
 import { copyIntoPackage } from "@/infra/output/package-copy.adapter.ts";
 import { renderPdf } from "@/infra/output/pdf/pdf-renderer.adapter.ts";
 import { writeXlsx } from "@/infra/output/xlsx-writer.adapter.ts";
-import { formatearIssues } from "@/tools/formatear-issues.util.ts";
 import type { ContextoNormalizado, EntornoEjecucion, OpcionesEntorno } from "@/tools/types/entorno.type.ts";
 
 async function leerPlantilla(directorioCaso: string, tipo: TipoPlantilla): Promise<Lectura<Plantilla>> {
@@ -127,7 +128,9 @@ export function crearEntorno(
   if (!config.success) {
     return {
       registrar: createAuditLog(raiz, systemClock(ZONA_HORARIA_POR_DEFECTO)),
-      entorno: fallo(CODIGO_ERROR.CONFIGURACION_INVALIDA, { detalle: formatearIssues(config.error.issues) }),
+      entorno: fallo(CODIGO_ERROR.CONFIGURACION_INVALIDA, {
+        detalle: formatearIssues(config.error.issues, MAX_ISSUES_ARGS),
+      }),
     };
   }
   const reloj = relojDe(config.data);
