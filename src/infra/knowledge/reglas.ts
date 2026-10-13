@@ -4,7 +4,7 @@ import { fileURLToPath } from "node:url";
 import { z } from "zod";
 import { CODIGO_ERROR } from "@/config/constants/errors.constants.ts";
 import { ARCHIVO_REGLAS } from "@/config/constants/files.constants.ts";
-import { VERSION_REGLAS } from "@/config/constants/knowledge.constants.ts";
+import { CLAVE_PLANTILLA, VERSION_REGLAS } from "@/config/constants/knowledge.constants.ts";
 import { LIMITE_LECTURA_BYTES, LIMITES_REGLAS } from "@/config/constants/limits.constants.ts";
 import { APLICA_NOTA, REGLA_MAPEO } from "@/config/constants/mapping.constants.ts";
 import {
@@ -13,7 +13,7 @@ import {
   PATRON_RUTA_MAESTRO,
   PATRON_TEXTO_NO_VACIO,
 } from "@/config/constants/patterns.constants.ts";
-import type { ReglaMapeo, Reglas } from "@/domain/reglas.ts";
+import type { ClavePlantilla, ReglaMapeo, Reglas } from "@/domain/reglas.ts";
 import { fallo, type Resultado } from "@/domain/resultado.ts";
 import { validarTextosDeReglas } from "@/domain/validar-reglas.ts";
 
@@ -35,6 +35,13 @@ const confianzaPorRegla = {
   [REGLA_MAPEO.ETIQUETA_GENERICA]: confianza,
   [REGLA_MAPEO.SIN_FUENTE]: confianza,
 } satisfies Record<ReglaMapeo, typeof confianza>;
+
+const plantillaPorClave = {
+  [CLAVE_PLANTILLA.CHECKLIST]: plantilla,
+  [CLAVE_PLANTILLA.BORRADOR_CORREO]: plantilla,
+  [CLAVE_PLANTILLA.ENVIO_SIMULADO]: plantilla,
+  [CLAVE_PLANTILLA.VALORES_PORTAL]: plantilla,
+} satisfies Record<ClavePlantilla, typeof plantilla>;
 
 export const esquemaReglas = z
   .object({
@@ -61,14 +68,7 @@ export const esquemaReglas = z
         aviso_emisor_distinto: texto,
       })
       .strict(),
-    plantillas: z
-      .object({
-        checklist: plantilla,
-        borrador_correo: plantilla,
-        envio_simulado: plantilla,
-        valores_portal: plantilla,
-      })
-      .strict(),
+    plantillas: z.object(plantillaPorClave).strict(),
   })
   .strict() satisfies z.ZodType<Reglas>;
 

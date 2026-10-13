@@ -2,7 +2,7 @@ import { rm, stat } from "node:fs/promises";
 import { join, resolve } from "node:path";
 import { FECHA_DEMO, GRUPOS_MAPEO, SESION_DEMO } from "@/config/constants/demo.constants.ts";
 import { CODIGO_ERROR } from "@/config/constants/errors.constants.ts";
-import { OUT_DIR } from "@/config/constants/files.constants.ts";
+import { ARCHIVO_PROYECTO, OUT_DIR } from "@/config/constants/files.constants.ts";
 import { ESTADO_CAMPO } from "@/config/constants/mapping.constants.ts";
 import { ESTADO_SOPORTE } from "@/config/constants/supports.constants.ts";
 import { pinExecutionDate } from "@/config/env.ts";
@@ -88,7 +88,7 @@ function exitosa(respuesta: Registro): respuesta is Exitosa {
 
 async function raizDelProyecto(directorio: string): Promise<string | null> {
   const raiz = resolve(directorio);
-  const paquete = await stat(join(raiz, "package.json")).catch(() => null);
+  const paquete = await stat(join(raiz, ARCHIVO_PROYECTO)).catch(() => null);
   return paquete?.isFile() === true ? raiz : null;
 }
 

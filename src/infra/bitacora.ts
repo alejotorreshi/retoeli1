@@ -1,13 +1,13 @@
 import { appendFile, mkdir } from "node:fs/promises";
 import { join } from "node:path";
 import type { EntradaBitacora, Registrar, Reloj } from "@/application/puertos.ts";
-import { ARCHIVOS_SALIDA, OUT_DIR } from "@/config/constants/files.constants.ts";
+import { ARCHIVO_BITACORA, OUT_DIR } from "@/config/constants/files.constants.ts";
 import { PATRON_CASO } from "@/config/constants/patterns.constants.ts";
 import { directorioSalidaCaso } from "@/infra/salida/rutas-seguras.ts";
 
 async function anexar(directorio: string, linea: Readonly<Record<string, unknown>>): Promise<void> {
   await mkdir(directorio, { recursive: true });
-  await appendFile(join(directorio, ARCHIVOS_SALIDA.bitacora), `${JSON.stringify(linea)}\n`);
+  await appendFile(join(directorio, ARCHIVO_BITACORA), `${JSON.stringify(linea)}\n`);
 }
 
 function casoSeguro(caso: string | undefined): string | undefined {

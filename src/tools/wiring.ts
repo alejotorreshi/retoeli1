@@ -1,6 +1,6 @@
 import type { Entorno, Lectura, OrigenCopia, Registrar, Reloj } from "@/application/puertos.ts";
 import { CODIGO_ERROR } from "@/config/constants/errors.constants.ts";
-import { ARCHIVOS_CASO, ARCHIVOS_SALIDA } from "@/config/constants/files.constants.ts";
+import { ARCHIVO_PLANTILLA, ARCHIVOS_CASO } from "@/config/constants/files.constants.ts";
 import { TIPO_PLANTILLA } from "@/config/constants/forms.constants.ts";
 import { ESTADO_LECTURA, ORIGEN_COPIA } from "@/config/constants/io.constants.ts";
 import { ZONA_HORARIA_POR_DEFECTO } from "@/config/constants/runtime.constants.ts";
@@ -34,6 +34,7 @@ import {
   limpiarArtefactosPrevios,
   listarPaquete,
   reiniciarPaquete,
+  rutaEnPaquete,
 } from "@/infra/salida/archivos.ts";
 import { copiarAlPaquete } from "@/infra/salida/copias.ts";
 import { conCandadoCaso } from "@/infra/salida/mutex.ts";
@@ -49,11 +50,6 @@ export type ContextoNormalizado = { readonly directorio: string; readonly sesion
 export type EntornoEjecucion = {
   readonly registrar: Registrar;
   readonly entorno: Resultado<Entorno>;
-};
-
-const ARCHIVO_PLANTILLA: Readonly<Record<TipoPlantilla, string>> = {
-  [TIPO_PLANTILLA.CELDAS]: ARCHIVOS_CASO.plantillaCeldas,
-  [TIPO_PLANTILLA.CAMPOS]: ARCHIVOS_CASO.plantillaCampos,
 };
 
 async function leerPlantilla(directorioCaso: string, tipo: TipoPlantilla): Promise<Lectura<Plantilla>> {
@@ -75,7 +71,7 @@ function copiar(raiz: string, caso: string, origen: OrigenCopia): Promise<string
   if (origen.tipo === ORIGEN_COPIA.SOPORTE) {
     return copiarAlPaquete(raiz, caso, rutaEnCaso(directorioSoportes(raiz), origen.archivo), origen.archivo);
   }
-  const nombre = ARCHIVOS_SALIDA[origen.archivo];
+  const nombre = origen.archivo;
   return copiarAlPaquete(raiz, caso, rutaEnCaso(directorioSalidaCaso(raiz, caso), nombre), nombre);
 }
 
@@ -102,13 +98,14 @@ function entornoDeFixtures(raiz: string, reloj: Reloj, directorioConocimiento: s
       leerPlantilla,
     },
     salida: {
-      escribir: (caso, archivo, contenido) =>
-        escribirArchivoSalida(raiz, caso, ARCHIVOS_SALIDA[archivo], contenido),
-      binario: (caso, archivo, bytes) => escribirBinarioSalida(raiz, caso, ARCHIVOS_SALIDA[archivo], bytes),
+      escribir: (caso, archivo, contenido) => escribirArchivoSalida(raiz, caso, archivo, contenido),
+      escribirEnPaquete: (caso, archivo, contenido) =>
+        escribirArchivoSalida(raiz, caso, rutaEnPaquete(archivo), contenido),
+      binario: (caso, archivo, bytes) => escribirBinarioSalida(raiz, caso, archivo, bytes),
       limpiarPrevios: (caso) => limpiarArtefactosPrevios(raiz, caso),
-      existe: (caso, archivo) =>
-        existeArchivo(rutaEnCaso(directorioSalidaCaso(raiz, caso), ARCHIVOS_SALIDA[archivo])),
-      nombre: (archivo) => ARCHIVOS_SALIDA[archivo],
+      existe: (caso, archivo) => existeArchivo(rutaEnCaso(directorioSalidaCaso(raiz, caso), archivo)),
+      existeEnPaquete: (caso, archivo) =>
+        existeArchivo(rutaEnCaso(directorioSalidaCaso(raiz, caso), rutaEnPaquete(archivo))),
       reiniciarPaquete: (caso) => reiniciarPaquete(raiz, caso),
       listarPaquete: (caso) => listarPaquete(raiz, caso),
       copiar: (caso, origen) => copiar(raiz, caso, origen),

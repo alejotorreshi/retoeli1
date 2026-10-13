@@ -1,3 +1,4 @@
+import type { CLAVE_PLANTILLA } from "@/config/constants/knowledge.constants.ts";
 import type {
   APLICA_NOTA,
   ESTADO_CAMPO,
@@ -34,14 +35,9 @@ export type ReglasSoportes = {
   readonly aviso_emisor_distinto: string;
 };
 
-export type RutasPlantillas = {
-  readonly checklist: string;
-  readonly borrador_correo: string;
-  readonly envio_simulado: string;
-  readonly valores_portal: string;
-};
+export type ClavePlantilla = ValorDe<typeof CLAVE_PLANTILLA>;
 
-export type ClavePlantilla = keyof RutasPlantillas;
+export type RutasPlantillas = Readonly<Record<ClavePlantilla, string>>;
 
 export type Reglas = {
   readonly version: number;

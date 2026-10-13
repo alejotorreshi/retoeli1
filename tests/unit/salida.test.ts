@@ -36,7 +36,7 @@ describe("escribirArchivoSalida (D-33.3)", () => {
     expect(ruta).toBe("out/ec-corp-andina/paquete/checklist.md");
   });
 
-  for (const nombre of ["otro.json", "../mapeo.json", "paquete/../../x.md", ""]) {
+  for (const nombre of ["otro.json", "../mapeo.json", "paquete/../../x.md", "", "paquete", "log.jsonl"]) {
     test(`rechaza el nombre "${nombre}" fuera de la lista blanca sin escribir`, async () => {
       const raiz = await raizTemporal();
       await expect(escribirArchivoSalida(raiz, "co-industrias-delta", nombre, "x")).rejects.toThrow(

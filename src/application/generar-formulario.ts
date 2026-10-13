@@ -2,7 +2,9 @@ import { type ContextoCaso, cargarContextoCaso } from "@/application/contexto-ca
 import { escribirMapeo, mapeoCanonico } from "@/application/mapear-campos.ts";
 import type { Entorno } from "@/application/puertos.ts";
 import { CODIGO_ERROR } from "@/config/constants/errors.constants.ts";
+import { ARCHIVOS_SALIDA } from "@/config/constants/files.constants.ts";
 import { FORMATO, TIPO_PLANTILLA } from "@/config/constants/forms.constants.ts";
+import { CLAVE_PLANTILLA } from "@/config/constants/knowledge.constants.ts";
 import { compararMapeo, type ItemMapeo } from "@/domain/comparar-mapeo.ts";
 import { construirFilas } from "@/domain/formulario.ts";
 import { type CampoMapeado, type ConteoEstados, contarEstados } from "@/domain/mapeo.ts";
@@ -45,7 +47,7 @@ async function generarXlsx(
   if (!formulario.ok) return formulario;
   if (formulario.data.tipo !== TIPO_PLANTILLA.CELDAS) return fallo(CODIGO_ERROR.PLANTILLA_INVALIDA);
   const bytes = await entorno.formularios.xlsx(formulario.data.filas, entorno.reloj.hoy());
-  const ruta = await entorno.salida.binario(contexto.caso, "formularioXlsx", bytes);
+  const ruta = await entorno.salida.binario(contexto.caso, ARCHIVOS_SALIDA.FORMULARIO_XLSX, bytes);
   return cerrar(contexto, canonico, entorno, ruta, FORMATO.XLSX);
 }
 
@@ -58,7 +60,7 @@ async function generarPdf(
   if (!formulario.ok) return formulario;
   const entrada = { caso: contexto.caso, cliente: contexto.solicitud.cliente, filas: formulario.data.filas };
   const bytes = await entorno.formularios.pdf(entrada, entorno.reloj.hoy());
-  const ruta = await entorno.salida.binario(contexto.caso, "formularioPdf", bytes);
+  const ruta = await entorno.salida.binario(contexto.caso, ARCHIVOS_SALIDA.FORMULARIO_PDF, bytes);
   return cerrar(contexto, canonico, entorno, ruta, FORMATO.PDF);
 }
 
@@ -67,13 +69,17 @@ async function generarPortal(
   canonico: readonly CampoMapeado[],
   entorno: Entorno,
 ): Promise<Resultado<DatosFormulario>> {
-  const plantilla = await entorno.plantillas.cargar(contexto.reglas, "valores_portal");
+  const plantilla = await entorno.plantillas.cargar(contexto.reglas, CLAVE_PLANTILLA.VALORES_PORTAL);
   if (!plantilla.ok) return plantilla;
   const caso = { caso: contexto.caso, cliente: contexto.solicitud.cliente };
   const datos = construirDatosPortal(caso, canonico, entorno.reloj.hoy());
-  const texto = renderizarPlantilla(plantilla.data, datos, contexto.reglas.plantillas.valores_portal);
+  const texto = renderizarPlantilla(
+    plantilla.data,
+    datos,
+    contexto.reglas.plantillas[CLAVE_PLANTILLA.VALORES_PORTAL],
+  );
   if (!texto.ok) return texto;
-  const ruta = await entorno.salida.escribir(contexto.caso, "valoresPortal", texto.data);
+  const ruta = await entorno.salida.escribir(contexto.caso, ARCHIVOS_SALIDA.VALORES_PORTAL, texto.data);
   return cerrar(contexto, canonico, entorno, ruta, FORMATO.PORTAL, AVISO_FORMATO_NO_SOPORTADO);
 }
 

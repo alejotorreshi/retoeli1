@@ -1,6 +1,7 @@
 import { type ContextoCaso, cargarContextoCaso } from "@/application/contexto-caso.ts";
 import type { Entorno } from "@/application/puertos.ts";
 import { CODIGO_ERROR } from "@/config/constants/errors.constants.ts";
+import { ARCHIVOS_SALIDA } from "@/config/constants/files.constants.ts";
 import { ESTADO_CAMPO } from "@/config/constants/mapping.constants.ts";
 import { type CampoMapeado, type ConteoEstados, contarEstados, mapearCampos } from "@/domain/mapeo.ts";
 import { normalizarEtiqueta } from "@/domain/normalizar.ts";
@@ -75,7 +76,7 @@ export function escribirMapeo(
 ): Promise<string> {
   return entorno.salida.escribir(
     contexto.caso,
-    "mapeo",
+    ARCHIVOS_SALIDA.MAPEO,
     serializar({
       caso: contexto.caso,
       pais: contexto.solicitud.pais,

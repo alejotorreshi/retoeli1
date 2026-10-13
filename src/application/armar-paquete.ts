@@ -2,7 +2,9 @@ import { type ContextoCaso, cargarContextoCaso } from "@/application/contexto-ca
 import { mapeoCanonico } from "@/application/mapear-campos.ts";
 import type { ArchivoFormulario, Entorno } from "@/application/puertos.ts";
 import { CODIGO_ERROR } from "@/config/constants/errors.constants.ts";
+import { ARCHIVO_FORMULARIO, ARCHIVOS_PAQUETE } from "@/config/constants/files.constants.ts";
 import { ESTADO_LECTURA, ORIGEN_COPIA } from "@/config/constants/io.constants.ts";
+import { CLAVE_PLANTILLA } from "@/config/constants/knowledge.constants.ts";
 import { construirDatosBorrador } from "@/domain/borrador.ts";
 import {
   type CampoPorConfirmar,
@@ -14,7 +16,6 @@ import {
 } from "@/domain/checklist.ts";
 import { renderizarPlantilla, renderizarTextoPlano } from "@/domain/plantillas.ts";
 import { exito, fallo, type Resultado } from "@/domain/resultado.ts";
-import type { Formato } from "@/domain/tipos.ts";
 
 export type ArgsArmarPaquete = { readonly caso: string };
 
@@ -32,12 +33,6 @@ export type DatosPaquete = {
   readonly bloqueos: readonly string[];
   readonly checklist: ResumenChecklist;
   readonly archivos: readonly string[];
-};
-
-const ARCHIVO_FORMULARIO: Readonly<Record<Formato, ArchivoFormulario>> = {
-  xlsx: "formularioXlsx",
-  pdf: "formularioPdf",
-  portal: "valoresPortal",
 };
 
 export async function evaluarEstadoPaquete(
@@ -68,11 +63,11 @@ async function renderizarChecklist(
   checklist: Checklist,
   entorno: Entorno,
 ): Promise<Resultado<string>> {
-  const plantilla = await entorno.plantillas.cargar(contexto.reglas, "checklist");
+  const plantilla = await entorno.plantillas.cargar(contexto.reglas, CLAVE_PLANTILLA.CHECKLIST);
   if (!plantilla.ok) return plantilla;
   const caso = { caso: contexto.caso, cliente: contexto.solicitud.cliente };
   const datos = construirDatosChecklist(caso, checklist);
-  return renderizarPlantilla(plantilla.data, datos, contexto.reglas.plantillas.checklist);
+  return renderizarPlantilla(plantilla.data, datos, contexto.reglas.plantillas[CLAVE_PLANTILLA.CHECKLIST]);
 }
 
 async function renderizarBorrador(
@@ -81,11 +76,14 @@ async function renderizarBorrador(
   formulario: ArchivoFormulario,
   entorno: Entorno,
 ): Promise<Resultado<string>> {
-  const plantilla = await entorno.plantillas.cargar(contexto.reglas, "borrador_correo");
+  const plantilla = await entorno.plantillas.cargar(contexto.reglas, CLAVE_PLANTILLA.BORRADOR_CORREO);
   if (!plantilla.ok) return plantilla;
-  const nombreFormulario = entorno.salida.nombre(formulario);
-  const datos = construirDatosBorrador(contexto.solicitud, contexto.maestro, checklist, nombreFormulario);
-  return renderizarTextoPlano(plantilla.data, datos, contexto.reglas.plantillas.borrador_correo);
+  const datos = construirDatosBorrador(contexto.solicitud, contexto.maestro, checklist, formulario);
+  return renderizarTextoPlano(
+    plantilla.data,
+    datos,
+    contexto.reglas.plantillas[CLAVE_PLANTILLA.BORRADOR_CORREO],
+  );
 }
 
 async function copiarContenido(
@@ -125,8 +123,12 @@ async function armarBajoCandado(args: ArgsArmarPaquete, entorno: Entorno): Promi
 
   const ruta = await entorno.salida.reiniciarPaquete(caso);
   const copias = await copiarContenido(caso, formulario, checklist.data.soportes, entorno);
-  const rutaChecklist = await entorno.salida.escribir(caso, "checklist", texto.data);
-  const rutaBorrador = await entorno.salida.escribir(caso, "borradorCorreo", borrador.data);
+  const rutaChecklist = await entorno.salida.escribirEnPaquete(caso, ARCHIVOS_PAQUETE.CHECKLIST, texto.data);
+  const rutaBorrador = await entorno.salida.escribirEnPaquete(
+    caso,
+    ARCHIVOS_PAQUETE.BORRADOR_CORREO,
+    borrador.data,
+  );
 
   return exito({
     caso,

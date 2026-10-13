@@ -1,22 +1,23 @@
 import { realpath } from "node:fs/promises";
 import { join, sep } from "node:path";
-import { ARCHIVOS_SALIDA, NOMBRES_RESERVADOS_PAQUETE, OUT_DIR } from "@/config/constants/files.constants.ts";
+import {
+  ARCHIVO_FORMULARIO,
+  DIRECTORIO_PAQUETE,
+  NOMBRES_RESERVADOS_PAQUETE,
+  OUT_DIR,
+} from "@/config/constants/files.constants.ts";
 import { PATRON_ARCHIVO_SOPORTE, PATRON_CASO } from "@/config/constants/patterns.constants.ts";
 import { directorioSoportes } from "@/infra/fixtures/lector.ts";
 import { directorioSalidaCaso, rutaRelativa } from "@/infra/salida/rutas-seguras.ts";
 
-const COPIAS_DE_FORMULARIO: ReadonlySet<string> = new Set([
-  ARCHIVOS_SALIDA.paqueteFormularioXlsx,
-  ARCHIVOS_SALIDA.paqueteFormularioPdf,
-  ARCHIVOS_SALIDA.paqueteValoresPortal,
-]);
+const COPIAS_DE_FORMULARIO: ReadonlySet<string> = new Set(Object.values(ARCHIVO_FORMULARIO));
 
 function dentroDe(base: string, ruta: string): boolean {
   return ruta.startsWith(base + sep);
 }
 
 function esCopiaDeFormulario(nombre: string): boolean {
-  return COPIAS_DE_FORMULARIO.has(`${ARCHIVOS_SALIDA.paquete}/${nombre}`);
+  return COPIAS_DE_FORMULARIO.has(nombre);
 }
 
 function esCopiaDeSoporte(nombre: string): boolean {
@@ -32,7 +33,7 @@ async function directoriosReales(
   const salidaReal = await realpath(join(raiz, OUT_DIR));
   const casoReal = await realpath(directorioSalidaCaso(raiz, caso));
   if (!dentroDe(salidaReal, casoReal)) throw new RangeError("La carpeta de salida del caso sale de out/.");
-  const paqueteReal = await realpath(join(casoReal, ARCHIVOS_SALIDA.paquete));
+  const paqueteReal = await realpath(join(casoReal, DIRECTORIO_PAQUETE));
   if (!dentroDe(casoReal, paqueteReal)) throw new RangeError("La carpeta del paquete sale del caso.");
   return { caso: casoReal, paquete: paqueteReal, soportes: await realpath(directorioSoportes(raiz)) };
 }
@@ -61,5 +62,5 @@ export async function copiarAlPaquete(
     throw new RangeError("El origen de la copia no está en los soportes ni en la salida del caso.");
   }
   await Bun.write(join(directorios.paquete, nombreDestino), Bun.file(origenReal));
-  return rutaRelativa(raiz, join(directorioSalidaCaso(raiz, caso), ARCHIVOS_SALIDA.paquete, nombreDestino));
+  return rutaRelativa(raiz, join(directorioSalidaCaso(raiz, caso), DIRECTORIO_PAQUETE, nombreDestino));
 }

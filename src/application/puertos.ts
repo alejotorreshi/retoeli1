@@ -1,4 +1,10 @@
+import type {
+  ARCHIVO_FORMULARIO,
+  ARCHIVOS_PAQUETE,
+  ARCHIVOS_SALIDA,
+} from "@/config/constants/files.constants.ts";
 import type { ESTADO_LECTURA, ORIGEN_COPIA } from "@/config/constants/io.constants.ts";
+import type { ValorDe } from "@/config/types/valor-de.type.ts";
 import type { SoporteIndice } from "@/domain/checklist.ts";
 import type { CodigoError } from "@/domain/errores.ts";
 import type { FilaCelda, FilaFormulario } from "@/domain/formulario.ts";
@@ -46,22 +52,28 @@ export type EntradaBitacora = {
 
 export type Registrar = (entrada: EntradaBitacora) => Promise<void>;
 
-export type ArchivoSalida = "mapeo" | "valoresPortal" | "checklist" | "borradorCorreo" | "envioSimulado";
+export type ArchivoTexto =
+  | typeof ARCHIVOS_SALIDA.MAPEO
+  | typeof ARCHIVOS_SALIDA.VALORES_PORTAL
+  | typeof ARCHIVOS_SALIDA.ENVIO_SIMULADO;
 
-export type ArchivoBinario = "formularioXlsx" | "formularioPdf";
+export type ArchivoBinario = typeof ARCHIVOS_SALIDA.FORMULARIO_XLSX | typeof ARCHIVOS_SALIDA.FORMULARIO_PDF;
 
-export type ArchivoFormulario = "formularioXlsx" | "formularioPdf" | "valoresPortal";
+export type ArchivoFormulario = ValorDe<typeof ARCHIVO_FORMULARIO>;
+
+export type ArchivoPaquete = ValorDe<typeof ARCHIVOS_PAQUETE>;
 
 export type OrigenCopia =
   | { readonly tipo: typeof ORIGEN_COPIA.FORMULARIO; readonly archivo: ArchivoFormulario }
   | { readonly tipo: typeof ORIGEN_COPIA.SOPORTE; readonly archivo: string };
 
 export type SalidaCaso = {
-  escribir(caso: string, archivo: ArchivoSalida, contenido: string): Promise<string>;
+  escribir(caso: string, archivo: ArchivoTexto, contenido: string): Promise<string>;
+  escribirEnPaquete(caso: string, archivo: ArchivoPaquete, contenido: string): Promise<string>;
   binario(caso: string, archivo: ArchivoBinario, bytes: Uint8Array): Promise<string>;
   limpiarPrevios(caso: string): Promise<void>;
-  existe(caso: string, archivo: ArchivoFormulario | ArchivoSalida): Promise<boolean>;
-  nombre(archivo: ArchivoFormulario): string;
+  existe(caso: string, archivo: ArchivoFormulario): Promise<boolean>;
+  existeEnPaquete(caso: string, archivo: ArchivoPaquete): Promise<boolean>;
   reiniciarPaquete(caso: string): Promise<string>;
   listarPaquete(caso: string): Promise<readonly string[]>;
   copiar(caso: string, origen: OrigenCopia): Promise<string>;
