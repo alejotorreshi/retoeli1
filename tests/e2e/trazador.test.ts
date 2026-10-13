@@ -470,9 +470,9 @@ describe("reloj inyectable", () => {
     expect(relojFijo("2026-09-03").hoy()).toBe("2026-09-03");
   });
 
-  test("relojSistema en America/Bogota da una fecha YYYY-MM-DD y ahora() es ISO", () => {
+  test("relojSistema en America/Bogota da una fecha YYYY-MM-DD e instanteReal() es ISO", () => {
     const reloj = relojSistema("America/Bogota");
     expect(reloj.hoy()).toMatch(/^\d{4}-\d{2}-\d{2}$/);
-    expect(Number.isNaN(Date.parse(reloj.ahora()))).toBe(false);
+    expect(Number.isNaN(Date.parse(reloj.instanteReal()))).toBe(false);
   });
 });

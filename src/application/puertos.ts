@@ -30,7 +30,7 @@ export type FixturesCaso = {
 
 export type Reloj = {
   hoy(): FechaISO;
-  ahora(): string;
+  instanteReal(): string;
 };
 
 export type EntradaBitacora = {

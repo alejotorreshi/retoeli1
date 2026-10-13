@@ -11,7 +11,7 @@ function comoFechaISO(texto: string): FechaISO {
   throw new RangeError("La fecha no tiene el formato YYYY-MM-DD.");
 }
 
-function ahora(): string {
+function instanteReal(): string {
   return new Date().toISOString();
 }
 
@@ -22,10 +22,10 @@ export function relojSistema(zona: string): Reloj {
     month: "2-digit",
     day: "2-digit",
   });
-  return { hoy: () => comoFechaISO(formato.format(new Date())), ahora };
+  return { hoy: () => comoFechaISO(formato.format(new Date())), instanteReal };
 }
 
 export function relojFijo(fecha: string): Reloj {
   const hoy = comoFechaISO(fecha);
-  return { hoy: () => hoy, ahora };
+  return { hoy: () => hoy, instanteReal };
 }

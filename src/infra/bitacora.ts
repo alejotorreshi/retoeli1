@@ -20,7 +20,7 @@ function nombreDeError(error: unknown): string {
 export function crearBitacora(raiz: string, reloj: Reloj): Registrar {
   return async (entrada: EntradaBitacora) => {
     const comun = {
-      ts: reloj.ahora(),
+      ts: reloj.instanteReal(),
       herramienta: entrada.herramienta,
       ok: entrada.ok,
       resumen: entrada.resumen,
