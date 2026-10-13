@@ -118,6 +118,7 @@ const LITERAL_DE_REGEX =
 const DUENOS_DE_REGEX: ReadonlySet<string> = new Set([
   "src/config/constants/patterns.constants.ts",
   "src/domain/motor-plantillas.ts",
+  "src/domain/engines/motor-plantillas.engine.ts",
 ]);
 
 const TEXTO_LEGIBLE = /[A-Za-zÁÉÍÓÚÑáéíóúñ]{2,}\s+[A-Za-zÁÉÍÓÚÑáéíóúñ]{2,}/;
@@ -139,6 +140,21 @@ const IMPORTA_VALOR = /^import\s+(?!type\b)/;
 
 const KEBAB = "[a-z0-9]+(?:-[a-z0-9]+)*";
 
+const CARPETAS_DE_ROL: Readonly<Record<string, string>> = {
+  "domain/engines": "engine",
+  "domain/builders": "builder",
+  "domain/policies": "policy",
+  "domain/selectors": "selector",
+  "domain/utils": "util",
+  "application/use-cases": "use-case",
+  "application/services": "service",
+  "tools/factories": "factory",
+  "tools/wiring": "wiring",
+  "demo/runners": "runner",
+};
+
+const ROLES_DE_PRUEBA = [...new Set([...Object.values(CARPETAS_DE_ROL), "adapter", "schema"])].join("|");
+
 const NOMBRES_CON_ROL: readonly RegExp[] = [
   /^demo\.ts$/,
   /^src\/tools\/proveedor\.ts$/,
@@ -147,12 +163,14 @@ const NOMBRES_CON_ROL: readonly RegExp[] = [
   new RegExp(`^src/(?:config|domain|application|infra|tools|demo)/(?:${KEBAB}/)*types/${KEBAB}\\.type\\.ts$`),
   new RegExp(`^tests/helpers/types/${KEBAB}\\.type\\.ts$`),
   new RegExp(`^src/(?:infra|tools)/(?:${KEBAB}/)*schemas/${KEBAB}\\.schema\\.ts$`),
-  new RegExp(`^src/application/use-cases/${KEBAB}\\.use-case\\.ts$`),
-  new RegExp(`^src/application/services/${KEBAB}\\.service\\.ts$`),
+  ...Object.entries(CARPETAS_DE_ROL).map(
+    ([carpeta, rol]) => new RegExp(`^src/${carpeta}/${KEBAB}\\.${rol}\\.ts$`),
+  ),
   new RegExp(`^src/domain/${KEBAB}\\.ts$`),
-  new RegExp(`^src/infra/(?:${KEBAB}/)*${KEBAB}\\.(?:adapter|util)\\.ts$`),
+  new RegExp(`^src/infra/${KEBAB}/(?:${KEBAB}/)*${KEBAB}\\.(?:adapter|util)\\.ts$`),
   new RegExp(`^src/tools/${KEBAB}\\.(?:factory|wiring|util)\\.ts$`),
   new RegExp(`^src/demo/${KEBAB}\\.runner\\.ts$`),
+  new RegExp(`^tests/unit/${KEBAB}\\.(?:${ROLES_DE_PRUEBA})\\.test\\.ts$`),
   new RegExp(`^tests/(?:${KEBAB}/)*${KEBAB}\\.test\\.ts$`),
   new RegExp(`^tests/helpers/${KEBAB}\\.helper\\.ts$`),
 ];
@@ -172,7 +190,7 @@ function sinExtension(ruta: string): string {
 function capaDeRuta(ruta: string): string {
   const base = sinExtension(ruta);
   if (base === "demo") return "raiz-demo";
-  if (base === "src/tools/entorno.wiring") return "wiring";
+  if (base === "src/tools/entorno.wiring" || base === "src/tools/wiring/entorno.wiring") return "wiring";
   if (base === "src/tools/proveedor") return "proveedor";
   if (base.startsWith("tests/")) return "tests";
   if (CONFIG_PURA.test(base)) return "config-pure";
