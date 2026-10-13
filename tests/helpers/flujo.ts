@@ -1,5 +1,5 @@
-import type { ContextoHerramienta } from "@/tools/define-tool.ts";
 import type { crearHerramientas } from "@/tools/fabrica.ts";
+import type { ContextoHerramienta } from "@/tools/types/herramienta.type.ts";
 
 export type Herramientas = Pick<ReturnType<typeof crearHerramientas>, "mapear_campos" | "generar_formulario">;
 

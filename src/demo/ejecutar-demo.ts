@@ -8,6 +8,7 @@ import { ESTADO_SOPORTE } from "@/config/constants/supports.constants.ts";
 import { HERRAMIENTA } from "@/config/constants/tools.constants.ts";
 import { pinExecutionDate } from "@/config/env.ts";
 import { TEXTO_CHECKLIST, TEXTO_COMUN, TEXTO_DEMO } from "@/config/strings.ts";
+import type { OpcionesDemo, ResultadoDemo } from "@/demo/types/demo.type.ts";
 import {
   armar_paquete,
   generar_formulario,
@@ -15,14 +16,6 @@ import {
   mapear_campos,
   simular_envio,
 } from "@/tools/proveedor.ts";
-
-export type OpcionesDemo = {
-  readonly directorio: string;
-  escribir(linea: string): void;
-  observar?(herramienta: string, respuesta: string): void;
-};
-
-export type ResultadoDemo = { readonly fallido: boolean };
 
 type Registro = Readonly<Record<string, unknown>>;
 

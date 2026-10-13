@@ -8,8 +8,9 @@ import { z } from "zod";
 import { LIMITE_LECTURA_BYTES, MAX_ISSUES_ARGS } from "@/config/constants/limits.constants.ts";
 import { exito } from "@/domain/resultado.ts";
 import { relojFijo, relojSistema } from "@/infra/reloj.ts";
-import { type ContextoHerramienta, defineTool, normalizarContexto } from "@/tools/define-tool.ts";
+import { defineTool, normalizarContexto } from "@/tools/define-tool.ts";
 import { leer_solicitud } from "@/tools/proveedor.ts";
+import type { ContextoHerramienta } from "@/tools/types/herramienta.type.ts";
 
 const RAIZ_REPO = join(import.meta.dir, "..", "..");
 const CASOS_REALES = ["co-industrias-delta", "ec-corp-andina", "hn-agroexport-sula", "pa-logistica-istmo"];

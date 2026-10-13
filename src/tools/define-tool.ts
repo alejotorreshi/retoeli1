@@ -7,24 +7,9 @@ import { PREFIJO_HERRAMIENTA, SESION_POR_DEFECTO } from "@/config/constants/tool
 import { exito, fallo } from "@/domain/resultado.ts";
 import type { Fallo, Resultado } from "@/domain/types/resultado.type.ts";
 import { formatearIssues } from "@/tools/issues.ts";
-import { type ContextoNormalizado, crearEntorno, type OpcionesEntorno } from "@/tools/wiring.ts";
-
-export type ContextoHerramienta = { directory: string; sessionId?: string; sessionID?: string };
-
-export type Herramienta<A extends z.ZodRawShape> = {
-  readonly description: string;
-  readonly args: A;
-  execute(args: unknown, ctx: ContextoHerramienta): Promise<string>;
-};
-
-export type EspecHerramienta<A extends z.ZodRawShape, D> = {
-  readonly nombre: string;
-  readonly description: string;
-  readonly args: A;
-  ejecutar(args: z.output<z.ZodObject<A>>, entorno: Entorno): Promise<Resultado<D>>;
-  presentar(data: D): unknown;
-  resumir(data: D): string;
-};
+import type { ContextoNormalizado, OpcionesEntorno } from "@/tools/types/entorno.type.ts";
+import type { ContextoHerramienta, EspecHerramienta, Herramienta } from "@/tools/types/herramienta.type.ts";
+import { crearEntorno } from "@/tools/wiring.ts";
 
 type Desenlace<D> = {
   readonly resultado: Resultado<D>;

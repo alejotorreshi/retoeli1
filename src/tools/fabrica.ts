@@ -13,11 +13,9 @@ import {
   argsSimularEnvio,
 } from "@/tools/argumentos.ts";
 import { defineTool } from "@/tools/define-tool.ts";
-import type { OpcionesEntorno } from "@/tools/wiring.ts";
+import type { OpcionesEntorno } from "@/tools/types/entorno.type.ts";
 
-export type OpcionesHerramientas = OpcionesEntorno;
-
-export function crearHerramientas(opciones: OpcionesHerramientas = {}) {
+export function crearHerramientas(opciones: OpcionesEntorno = {}) {
   const leer_solicitud = defineTool(
     {
       nombre: HERRAMIENTA.LEER_SOLICITUD,

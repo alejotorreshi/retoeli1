@@ -33,7 +33,7 @@ export const toolEnvSchema = z.object({
 
 export type ToolEnv = z.output<typeof toolEnvSchema>;
 
-export type FuenteEntorno = Readonly<Record<string, string | undefined>>;
+type FuenteEntorno = Readonly<Record<string, string | undefined>>;
 
 export function parseToolEnv(source: FuenteEntorno) {
   return toolEnvSchema.safeParse(source, { error: z.locales.es().localeError });

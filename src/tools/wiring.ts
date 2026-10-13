@@ -1,4 +1,4 @@
-import type { Entorno, Lectura, OrigenCopia, Registrar, Reloj } from "@/application/types/puertos.type.ts";
+import type { Entorno, Lectura, OrigenCopia, Reloj } from "@/application/types/puertos.type.ts";
 import { CODIGO_ERROR } from "@/config/constants/errors.constants.ts";
 import { ARCHIVO_PLANTILLA, ARCHIVOS_CASO } from "@/config/constants/files.constants.ts";
 import { TIPO_PLANTILLA } from "@/config/constants/forms.constants.ts";
@@ -7,7 +7,6 @@ import { ZONA_HORARIA_POR_DEFECTO } from "@/config/constants/runtime.constants.t
 import { readToolEnv, type ToolEnv } from "@/config/env.ts";
 import { exito, fallo } from "@/domain/resultado.ts";
 import type { Plantilla, TipoPlantilla } from "@/domain/types/plantilla-caso.type.ts";
-import type { Resultado } from "@/domain/types/resultado.type.ts";
 import { crearBitacora } from "@/infra/bitacora.ts";
 import {
   esquemaPlantillaCampos,
@@ -43,15 +42,7 @@ import { renderizarPdf } from "@/infra/salida/pdf/render.ts";
 import { directorioSalidaCaso, listarCasos, resolverCaso } from "@/infra/salida/rutas-seguras.ts";
 import { escribirXlsx } from "@/infra/salida/xlsx.ts";
 import { formatearIssues } from "@/tools/issues.ts";
-
-export type OpcionesEntorno = { readonly directorioConocimiento?: string };
-
-export type ContextoNormalizado = { readonly directorio: string; readonly sesion: string };
-
-export type EntornoEjecucion = {
-  readonly registrar: Registrar;
-  readonly entorno: Resultado<Entorno>;
-};
+import type { ContextoNormalizado, EntornoEjecucion, OpcionesEntorno } from "@/tools/types/entorno.type.ts";
 
 async function leerPlantilla(directorioCaso: string, tipo: TipoPlantilla): Promise<Lectura<Plantilla>> {
   const archivo = ARCHIVO_PLANTILLA[tipo];
