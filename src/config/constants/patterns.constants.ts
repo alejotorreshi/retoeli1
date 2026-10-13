@@ -19,3 +19,6 @@ export const PATRON_MARCAS_FINALES: RegExp = /[\s:*]+$/u;
 export const PATRON_SEPARADORES_DE_LINEA: RegExp = /[\t\r\n]+/g;
 export const PATRON_SALTO_DE_LINEA: RegExp = /\r\n|\r|\n/;
 export const PATRON_BARRA_FINAL: RegExp = /\/+$/;
+export const PATRON_PREGUNTA: RegExp = /[?¿]/;
+export const PATRON_SLUG_EN_TEXTO: RegExp = /[a-z0-9]+(?:-[a-z0-9]+)+/g;
+export const PATRON_NO_PALABRA: RegExp = /[^a-z0-9ñ]+/;
