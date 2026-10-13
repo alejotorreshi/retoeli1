@@ -19,7 +19,12 @@ import type {
   ObservadorLlm,
   RespuestaLlm,
 } from "@/llm/types/llm.type.ts";
-import type { EventoConfirmacionRequerida } from "@/loop/types/evento.type.ts";
+import type {
+  CodigoAgente,
+  EventoAgente,
+  EventoConfirmacionRequerida,
+  MotivoFin,
+} from "@/loop/types/evento.type.ts";
 import type { ContextoHerramienta } from "@/tools/types/herramienta.type.ts";
 
 export type PaquetesConocidos = Readonly<Record<string, CasoPendiente>>;
@@ -131,3 +136,41 @@ export type ResultadoTope = {
   readonly texto: string;
   readonly respuesta: RespuestaLlm | null;
 };
+
+export type Ejecucion<R> = AsyncGenerator<EventoAgente, R>;
+
+export type Cierre = {
+  readonly motivo: MotivoFin;
+  readonly texto: string;
+  readonly razonamiento: string | null;
+  readonly porError: boolean;
+  readonly codigo: CodigoAgente | null;
+};
+
+export type Turno = {
+  readonly turnoId: string;
+  readonly candado: string;
+  sesion: Sesion;
+  readonly usuario: Mensaje;
+  readonly pasos: Mensaje[];
+  readonly signal: AbortSignal;
+  readonly llamante: AbortSignal | null;
+  readonly deps: DependenciasTurno;
+  readonly bitacora: BitacoraEstructurada;
+  readonly observador: ObservadorLlm;
+  readonly inicioMs: number;
+  readonly arrastrados: readonly CasoPendiente[];
+  readonly eventosCompuerta: EventoCompuerta[];
+  readonly llamadas: LlamadaResumida[];
+  autorizacion: AutorizacionTurno;
+  conocidos: PaquetesConocidos;
+  guardado: boolean;
+};
+
+export type FinAnotado = {
+  readonly needsConfirmation: boolean;
+  readonly abandonado: boolean;
+  readonly sesionGuardada: boolean;
+};
+
+export type Desenlace = { readonly motivo: MotivoFin; readonly needsConfirmation: boolean };
