@@ -1,5 +1,8 @@
 import { describe, expect, test } from "bun:test";
+import { SEPARADOR_PARRAFOS } from "@/config/constants/agent.constants.ts";
 import { DECISION_CONFIRMACION } from "@/config/constants/confirmacion.constants.ts";
+import { HERRAMIENTA } from "@/config/constants/tools.constants.ts";
+import { EJEMPLOS_CONFIRMACION, TEXTO_CIERRE, TEXTO_CONFIRMACION } from "@/config/strings.ts";
 import { clasificarConfirmacion } from "@/domain/policies/confirmacion.policy.ts";
 import type { DecisionConfirmacion } from "@/domain/types/confirmacion.type.ts";
 
@@ -117,5 +120,74 @@ describe("clasificarConfirmacion: nunca autoriza más de un caso", () => {
 
   test("el resultado es determinista", () => {
     expect(clasificarConfirmacion("envía", UNO)).toEqual(clasificarConfirmacion("envía", UNO));
+  });
+});
+
+const CITA = /"([^"]*)"/g;
+const MARCADOR_CASO = "<caso>";
+const BLOQUEO_LEGIBLE = "ausente: Certificado de cumplimiento tributario";
+const PREGUNTA_UN_CASO = `¿Confirmas el envío simulado de ${EC}?`;
+const PREGUNTA_VARIOS = "¿Cuál caso confirmas para el envío simulado?";
+
+const PREGUNTA_LISTO = TEXTO_CONFIRMACION.unCaso(EC, []);
+const PREGUNTA_BLOQUEADO = TEXTO_CONFIRMACION.unCaso(EC, [BLOQUEO_LEGIBLE]);
+const PASO_ENVIO = TEXTO_CIERRE.siguientePaso[HERRAMIENTA.SIMULAR_ENVIO](EC);
+const PREGUNTA_VARIOS_CASOS = TEXTO_CONFIRMACION.variosCasos([
+  { caso: EC, bloqueos: [BLOQUEO_LEGIBLE] },
+  { caso: CO, bloqueos: [] },
+]);
+type TextoServidor = readonly [string, string];
+
+const TEXTOS_UN_CASO: readonly TextoServidor[] = [
+  ["la pregunta LISTO", PREGUNTA_LISTO],
+  ["la pregunta BLOQUEADO", PREGUNTA_BLOQUEADO],
+  ["el siguiente paso de simular_envio", PASO_ENVIO],
+];
+const TEXTOS: readonly TextoServidor[] = [
+  ...TEXTOS_UN_CASO,
+  ["la pregunta con varios casos", PREGUNTA_VARIOS_CASOS],
+];
+
+function citas(texto: string): readonly string[] {
+  return [...texto.matchAll(CITA)].map(([, cita]) => cita ?? "");
+}
+
+describe("la pregunta del servidor y el clasificador coinciden (ENV-02)", () => {
+  test.each(TEXTOS_UN_CASO)("cada ejemplo citado en %s confirma el caso pendiente", (_, texto) => {
+    const ejemplos = citas(texto);
+    expect(ejemplos.length).toBeGreaterThan(0);
+    for (const ejemplo of ejemplos) expect(clasificarConfirmacion(ejemplo, UNO)).toEqual(confirma(EC));
+  });
+
+  test("cada ejemplo citado con varios casos confirma el caso que nombra", () => {
+    const ejemplos = citas(PREGUNTA_VARIOS_CASOS);
+    expect(ejemplos.length).toBeGreaterThan(0);
+    for (const ejemplo of ejemplos) {
+      expect(clasificarConfirmacion(ejemplo.replace(MARCADOR_CASO, CO), DOS)).toEqual(confirma(CO));
+    }
+  });
+
+  test.each(TEXTOS_UN_CASO.slice(0, 2))("%s cita cada ejemplo de confirmación", (_, texto) => {
+    for (const ejemplo of EJEMPLOS_CONFIRMACION) expect(citas(texto)).toContain(ejemplo);
+  });
+
+  test.each(TEXTOS)(
+    "%s no promete que cualquier otra respuesta no envía y es un solo párrafo",
+    (_, texto) => {
+      expect(texto).not.toContain("cualquier otra cosa");
+      expect(texto).not.toContain(SEPARADOR_PARRAFOS);
+    },
+  );
+
+  test("con un caso nombra el caso, lista los bloqueos legibles y cierra con su pregunta", () => {
+    expect(PREGUNTA_LISTO.endsWith(PREGUNTA_UN_CASO)).toBe(true);
+    expect(PREGUNTA_BLOQUEADO.endsWith(PREGUNTA_UN_CASO)).toBe(true);
+    expect(PREGUNTA_BLOQUEADO).toContain("con esos bloqueos");
+    expect(PREGUNTA_BLOQUEADO).toContain(BLOQUEO_LEGIBLE);
+  });
+
+  test("con varios casos pide nombrar el caso y cierra con su pregunta", () => {
+    expect(PREGUNTA_VARIOS_CASOS).toContain(`envía ${MARCADOR_CASO}`);
+    expect(PREGUNTA_VARIOS_CASOS.endsWith(PREGUNTA_VARIOS)).toBe(true);
   });
 });

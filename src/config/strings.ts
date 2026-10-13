@@ -207,6 +207,8 @@ function estadoPorConfirmar({ caso, bloqueos }: CasoPorConfirmar): string {
   return `${caso}: ${estado}`;
 }
 
+export const EJEMPLOS_CONFIRMACION = ["envía", "sí"] as const;
+
 export const TEXTO_CONFIRMACION = {
   unCaso: (caso: string, bloqueos: readonly string[]): string =>
     bloqueos.length === 0
