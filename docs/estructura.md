@@ -8,7 +8,7 @@ Cada archivo vive en la carpeta de su rol y lleva el sufijo de ese rol. `tests/a
 |---|---|---|
 | `domain/engines/` | `.engine.ts` | Algoritmo central que conduce un flujo: el mapeo de etiquetas (`mapeo`) y el motor de plantillas (`motor-plantillas`). |
 | `domain/builders/` | `.builder.ts` | Arma una estructura de salida con datos ya decididos: formulario, checklist, borrador, portal, índice del glosario y campo presentado. |
-| `domain/policies/` | `.policy.ts` | Decide o valida según una regla de negocio: soportes, vigencias, PII, identificador tributario, plantilla del caso, comparación de mapeos y textos de reglas. |
+| `domain/policies/` | `.policy.ts` | Decide o valida según una regla de negocio: soportes, vigencias, PII, identificador tributario, plantilla del caso, comparación de mapeos, textos de reglas y vigencia del paquete armado. |
 | `domain/selectors/` | `.selector.ts` | Lee o proyecta datos de una entrada sin decidir nada: maestro y solicitud. |
 | `domain/utils/` | `.util.ts` | Función genérica sin regla de negocio: fecha, normalización, resultado, formato de issues y nombre de error. |
 | `domain/types/` | `.type.ts` | Solo tipos, en una carpeta plana en la raíz de la capa. |
