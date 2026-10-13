@@ -203,7 +203,21 @@ Conventions not yet established. Will populate as patterns emerge during develop
 - TypeScript estricto sin `any`; `bun run check` (tsc + Biome) debe pasar.
 - Constantes y configuración centralizadas, tipadas y validadas con zod; nada de valores mágicos dispersos.
 - Dependencias hacia adentro: dominio puro → herramientas/casos de uso → infraestructura → HTTP. Las herramientas no importan el servidor.
-- Dominio en español (contrato del PRD), infraestructura en inglés; documentación en español.
+- Dominio, aplicación y herramientas en español (contrato del PRD); infraestructura y `config/env.ts` en inglés; documentación en español.
+- Tipos exportados solo en `types/<nombre>.type.ts` de su capa, con solo `type` e `import type`. Las uniones de códigos se derivan de su constante (`ValorDe<typeof X>`) y los esquemas zod se comprueban contra el tipo con `satisfies z.ZodType<T>`. Única excepción: `ToolEnv`, junto a su esquema en `config/env.ts`.
+- Códigos y estados son objetos `as const`, nunca `enum`. Toda comparación, asignación, `case` y `fallo(...)` usa el objeto (`ESTADO_CAMPO.FALTANTE`, no `"faltante"`), y los `z.enum` se construyen desde él.
+- Archivos en kebab-case, con el sufijo de rol que corresponde a su carpeta:
+  - `types/*.type.ts`, `config/constants/*.constants.ts`, `schemas/*.schema.ts`;
+  - `application/use-cases/*.use-case.ts` (una sola función exportada) y `application/services/*.service.ts`;
+  - `infra/**/*.adapter.ts` o `*.util.ts`; `tools/*.factory.ts`, `*.wiring.ts` o `*.util.ts`; `demo/*.runner.ts`;
+  - `tests/**/*.test.ts` y `tests/helpers/*.helper.ts`.
+
+  El dominio va sin sufijo. Los nombres que fija el PRD no cambian: `demo.ts`, `src/tools/proveedor.ts` y `src/knowledge/**`.
+- Constantes por ámbito en `src/config/constants/<ámbito>.constants.ts`. Las regex van solo en `patterns.constants.ts`; la excepción es el parser de `domain/motor-plantillas.ts`.
+- Todo texto para personas o para el modelo (mensajes, `description`, `.describe()`) vive en un único `src/config/strings.ts`. Un texto que repite un dato se deriva de su constante, y las herramientas se nombran siempre `proveedor_<export>`.
+- La config pura (`config/constants/**`, `config/types/**`, `config/strings.ts`) no lee el entorno ni importa `node:`, `Bun` o zod, y cualquier capa puede importarla. `config/env.ts` es el único módulo que lee `process.env`, y solo lo importan infra, tools y demo.
+- Los imports internos usan solo los alias `@/` (`src/`) y `@tests/` (`tests/`); nunca `../` ni `./`. Bun resuelve los alias desde `tsconfig.json`, así que el Dockerfile debe copiarlo. Un módulo distribuible futuro debe construirse con `bun build`, para que los alias queden resueltos.
+- Cada una de estas reglas tiene su guardián en `tests/architecture.test.ts` (G1–G12), con una prueba que demuestra que detecta la violación.
 - Nunca modificar `reto-01/` (PRD y fixtures entregados).
 - Commits con Conventional Commits bajo la identidad local `elianatorres5772 <elianatorres5772@gmail.com>`.
 
