@@ -259,9 +259,16 @@ function mapearValor(
   });
 }
 
+function fuenteDe(etiqueta: string, contexto: ContextoMapeo): Fuente | null {
+  if (contexto.genericas.has(normalizarEtiqueta(etiqueta))) {
+    return { ruta: contexto.entrada.reglas.identificador_tributario.ruta, regla: "etiqueta_generica" };
+  }
+  return rutaCandidata(etiqueta, contexto.entrada.indice);
+}
+
 function mapearEtiqueta(etiqueta: string, contexto: ContextoMapeo): Resultado<CampoMapeado> {
-  const { maestro, reglas, indice } = contexto.entrada;
-  const fuente = rutaCandidata(etiqueta, indice);
+  const { maestro, reglas } = contexto.entrada;
+  const fuente = fuenteDe(etiqueta, contexto);
   if (fuente === null) return exito(campoFaltante(etiqueta, reglas));
   const hoja = leerHoja(maestro, fuente.ruta);
   if (hoja.tipo === "ausente") return exito(campoFaltante(etiqueta, reglas));

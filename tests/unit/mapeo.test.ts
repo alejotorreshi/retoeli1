@@ -319,6 +319,20 @@ describe("reglas sobre etiquetas sintéticas", () => {
     expect(generica.nota).toContain("el equivalente en EC es RUC");
   });
 
+  test("una etiqueta genérica sin entrada en el glosario lee igual el identificador tributario", () => {
+    const sinGlosario = construirIndiceGlosario({});
+    if (!sinGlosario.ok) throw new Error(sinGlosario.error);
+    const campos = mapear(entrada(["Número de identificación fiscal"], "EC", { indice: sinGlosario.data }));
+    expect(campos[0]).toMatchObject({
+      ruta: "nit",
+      estado: "requiere_confirmacion",
+      regla: "etiqueta_generica",
+      confianza: 0.5,
+      valor: "900123456",
+      propuesta: "RUC",
+    });
+  });
+
   test("normalización, clave directa y etiquetas sin fuente", () => {
     const campos = mapear(entrada(sinteticas, "CO"));
     expect(campo(campos, "RAZON SOCIAL:")).toMatchObject({
