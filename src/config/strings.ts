@@ -2,6 +2,7 @@ import { CODIGO_AGENTE } from "@/config/constants/agent.constants.ts";
 import { CODIGO_ERROR } from "@/config/constants/errors.constants.ts";
 import { ARCHIVO_PROYECTO, ARCHIVOS_SALIDA, OUT_DIR } from "@/config/constants/files.constants.ts";
 import { LONGITUD_MAXIMA_CASO } from "@/config/constants/limits.constants.ts";
+import { ESQUEMA_LOOPBACK, ESQUEMA_SEGURO, HOSTS_LOOPBACK } from "@/config/constants/llm.constants.ts";
 import { ESTADO_CAMPO } from "@/config/constants/mapping.constants.ts";
 import { HERRAMIENTA, NOMBRE_VISIBLE } from "@/config/constants/tools.constants.ts";
 import type { ValorDe } from "@/config/types/valor-de.type.ts";
@@ -306,7 +307,7 @@ export const TEXTO_ENV = {
   fechaInexistente: "La fecha no existe en el calendario.",
   zonaHorariaInvalida: "La zona horaria no es válida.",
   urlInvalida: "La URL del proveedor no es válida.",
-  urlNoSegura: "La URL del proveedor debe usar https, salvo en localhost.",
+  urlNoSegura: `La URL del proveedor debe usar ${ESQUEMA_SEGURO}; solo estos hosts locales admiten también ${ESQUEMA_LOOPBACK}: ${[...HOSTS_LOOPBACK].join(", ")}.`,
   urlRequerida:
     "Falta la URL del proveedor: es obligatoria cuando el proveedor no tiene valores por defecto.",
   modeloRequerido: "Falta el modelo: es obligatorio cuando el proveedor no tiene valores por defecto.",

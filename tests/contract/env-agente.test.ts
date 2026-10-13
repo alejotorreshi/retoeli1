@@ -1,4 +1,5 @@
 import { describe, expect, test } from "bun:test";
+import { ESQUEMA_LOOPBACK, ESQUEMA_SEGURO, HOSTS_LOOPBACK } from "@/config/constants/llm.constants.ts";
 import { type EnvSource, parseAgentEnv } from "@/config/env.ts";
 import { TEXTO_ENV } from "@/config/strings.ts";
 
@@ -84,6 +85,12 @@ describe("entorno del agente: ranura principal (D-59)", () => {
     expect(valido({ LLM_BASE_URL: "https://api.deepseek.com///" }).primary.baseUrl).toBe(
       "https://api.deepseek.com",
     );
+  });
+
+  test("el mensaje de URL no segura nombra los dos protocolos y cada host local admitido (WR-13)", () => {
+    expect(TEXTO_ENV.urlNoSegura).toContain(ESQUEMA_SEGURO);
+    expect(TEXTO_ENV.urlNoSegura).toContain(ESQUEMA_LOOPBACK);
+    for (const host of HOSTS_LOOPBACK) expect(TEXTO_ENV.urlNoSegura).toContain(host);
   });
 
   test("un proveedor sin preset exige LLM_BASE_URL y LLM_MODEL con mensajes en español", () => {

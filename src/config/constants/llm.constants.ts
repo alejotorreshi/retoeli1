@@ -110,8 +110,10 @@ export const METODO_POST = "POST";
 
 export const VALOR_OMITIR = "omit";
 export const HOSTS_LOOPBACK: ReadonlySet<string> = new Set(["localhost", "127.0.0.1", "[::1]"]);
-export const PROTOCOLO_SEGURO = "https:";
-export const PROTOCOLO_LOOPBACK = "http:";
+export const ESQUEMA_SEGURO = "https";
+export const ESQUEMA_LOOPBACK = "http";
+export const PROTOCOLO_SEGURO = `${ESQUEMA_SEGURO}:`;
+export const PROTOCOLO_LOOPBACK = `${ESQUEMA_LOOPBACK}:`;
 export const MAX_TOKENS_SALIDA_TOPE = 65_536;
 export const TEMPERATURA_MAXIMA = 2;
 export const TIMEOUT_LLM_MS_POR_DEFECTO = 45_000;
