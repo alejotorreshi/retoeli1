@@ -1,5 +1,5 @@
 import { rm, stat } from "node:fs/promises";
-import { isAbsolute, join, relative, resolve } from "node:path";
+import { join, resolve } from "node:path";
 import { FECHA_DEMO, OUT_DIR, SESION_DEMO } from "../config/constantes.ts";
 import {
   armar_paquete,
@@ -87,12 +87,6 @@ async function raizDelProyecto(directorio: string): Promise<string | null> {
   const raiz = resolve(directorio);
   const paquete = await stat(join(raiz, "package.json")).catch(() => null);
   return paquete?.isFile() === true ? raiz : null;
-}
-
-function salidaLimpiable(raiz: string): string | null {
-  const salida = resolve(raiz, OUT_DIR);
-  const relativa = relative(raiz, salida);
-  return relativa === OUT_DIR && !isAbsolute(relativa) ? salida : null;
 }
 
 function casosDisponibles(listado: Registro): readonly string[] {
@@ -213,19 +207,13 @@ function crearSesion(opciones: OpcionesDemo, ctx: Contexto): Sesion {
   };
 }
 
-export async function ejecutarDemo(opciones: OpcionesDemo): Promise<ResultadoDemo> {
-  const raiz = await raizDelProyecto(opciones.directorio);
-  const salida = raiz === null ? null : salidaLimpiable(raiz);
-  if (raiz === null || salida === null) {
-    opciones.escribir(
-      "La demo debe correr en la raíz del proyecto, donde está package.json; no se borra nada.",
-    );
-    return { fallido: true };
-  }
-  await rm(salida, { recursive: true, force: true });
-  process.env.FECHA_EJECUCION = FECHA_DEMO;
-  opciones.escribir(`Fecha de ejecución efectiva: ${FECHA_DEMO}`);
+function restaurarFecha(previa: string | undefined): void {
+  if (previa === undefined) delete process.env.FECHA_EJECUCION;
+  else process.env.FECHA_EJECUCION = previa;
+}
 
+async function correrCasos(opciones: OpcionesDemo, raiz: string): Promise<ResultadoDemo> {
+  opciones.escribir(`Fecha de ejecución efectiva: ${FECHA_DEMO}`);
   const sesion = crearSesion(opciones, { directory: raiz, sessionId: SESION_DEMO });
   const listado = await sesion.invocar("leer_solicitud", leer_solicitud.execute({ caso: "" }, sesion.ctx));
   const casos = casosDisponibles(listado);
@@ -238,4 +226,22 @@ export async function ejecutarDemo(opciones: OpcionesDemo): Promise<ResultadoDem
   for (const caso of casos) filas.push(await procesarCaso(sesion, caso));
   escribirResumen(sesion.escribir, filas);
   return { fallido: filas.some((fila) => fila.fallida) };
+}
+
+export async function ejecutarDemo(opciones: OpcionesDemo): Promise<ResultadoDemo> {
+  const raiz = await raizDelProyecto(opciones.directorio);
+  if (raiz === null) {
+    opciones.escribir(
+      "La demo debe correr en la raíz del proyecto, donde está package.json; no se borra nada.",
+    );
+    return { fallido: true };
+  }
+  await rm(join(raiz, OUT_DIR), { recursive: true, force: true });
+  const fechaPrevia = process.env.FECHA_EJECUCION;
+  process.env.FECHA_EJECUCION = FECHA_DEMO;
+  try {
+    return await correrCasos(opciones, raiz);
+  } finally {
+    restaurarFecha(fechaPrevia);
+  }
 }

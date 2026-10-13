@@ -3,6 +3,7 @@ import { existsSync } from "node:fs";
 import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { ejecutarDemo } from "../../src/demo/ejecutar-demo.ts";
 import { type Corrida, correrDemo } from "../helpers/correr-demo.ts";
 import { listarSalida } from "../helpers/instantanea.ts";
 import { crearProyectoTemporal, type ProyectoTemporal } from "../helpers/proyecto-temporal.ts";
@@ -139,6 +140,23 @@ describe("robustez de la demo", () => {
     expect(fallido).toBe(true);
     expect(lineas.join("\n")).toContain("package.json");
     expect(existsSync(join(raiz, "out", "conservar.txt"))).toBe(true);
+  });
+
+  test("devuelve FECHA_EJECUCION a su valor previo al terminar (IN-04)", async () => {
+    const creado = await proyecto();
+    const previa = process.env.FECHA_EJECUCION;
+    process.env.FECHA_EJECUCION = "2026-01-15";
+    try {
+      const resultado = await ejecutarDemo({ directorio: creado.raiz, escribir: () => undefined });
+      expect(resultado.fallido).toBe(false);
+      expect(process.env.FECHA_EJECUCION).toBe("2026-01-15");
+      delete process.env.FECHA_EJECUCION;
+      await ejecutarDemo({ directorio: creado.raiz, escribir: () => undefined });
+      expect(process.env.FECHA_EJECUCION).toBeUndefined();
+    } finally {
+      if (previa === undefined) delete process.env.FECHA_EJECUCION;
+      else process.env.FECHA_EJECUCION = previa;
+    }
   });
 
   test("corre sin ninguna variable de entorno con API_KEY", async () => {

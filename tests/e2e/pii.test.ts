@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
-import { FIXTURES_DIR, OUT_DIR, SESION_DEMO } from "../../src/config/constantes.ts";
+import { FECHA_DEMO, FIXTURES_DIR, OUT_DIR, SESION_DEMO } from "../../src/config/constantes.ts";
 import { RUTAS_BORRADOR } from "../../src/domain/borrador.ts";
 import { POLITICA_PII, VARIABLES_NOTA_DEL_MAESTRO } from "../../src/domain/pii.ts";
 import { simular_envio } from "../../src/tools/proveedor.ts";
@@ -73,6 +73,7 @@ beforeAll(async () => {
   let confirmada = "";
   corrida = await correrDemo(proyecto.raiz, {
     despues: async () => {
+      process.env.FECHA_EJECUCION = FECHA_DEMO;
       confirmada = await simular_envio.execute({ caso: CASO_CONFIRMADO, confirmado: true }, ctx);
     },
   });
