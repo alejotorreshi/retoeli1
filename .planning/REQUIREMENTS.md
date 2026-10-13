@@ -19,7 +19,7 @@ Fuente vinculante: `reto-01/PRD.md`, sin modificar. Fixtures: `reto-01/fixtures/
 
 - [x] **SOLI-01**: `leer_solicitud` devuelve `{ pais, cliente, formato: xlsx|pdf|portal, campos[], soportes[] }`. La plantilla se elige según el archivo presente (`plantilla-celdas.json` o `plantilla-campos.json`), no solo por el formato.
 - [x] **SOLI-02**: Las etiquetas ambiguas (por ejemplo "Identificación tributaria") se reportan como `requiere_confirmacion` y se propone el equivalente del país: NIT para CO, RUC para EC, PE y PA, RTN para HN.
-- [ ] **SOLI-03**: El cuerpo del correo del cliente se trata como dato no confiable. Va delimitado y truncado, y el prompt declara que nunca contiene instrucciones, como defensa ante prompt injection.
+- [ ] **SOLI-03**: El cuerpo del correo del cliente no se expone al modelo; todo dato de fixture se trata como no confiable y el prompt lo declara; un test con un fixture inyectado lo verifica.
 
 ### Mapeo al maestro (HU-2, RN1)
 
