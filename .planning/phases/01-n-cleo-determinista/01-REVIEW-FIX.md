@@ -1,189 +1,109 @@
 ---
 phase: 01-n-cleo-determinista
-fixed_at: 2026-10-13T01:51:12Z
+fixed_at: 2026-10-13T05:12:04Z
 review_path: .planning/phases/01-n-cleo-determinista/01-REVIEW.md
 iteration: 1
-findings_in_scope: 7
-fixed: 7
-skipped: 0
-status: all_fixed
+findings_in_scope: 11
+fixed: 10
+skipped: 1
+status: partial
 ---
 
-# Phase 01: Code Review Fix Report
+# Fase 01: informe de corrección de la revisión de código
 
-**Fixed at:** 2026-10-13T01:51:12Z
-**Source review:** .planning/phases/01-n-cleo-determinista/01-REVIEW.md (layout: role folders for domain and tools, WR-21..WR-24, IN-20..IN-22)
-**Iteration:** 1
-**Scope:** all (warnings and info)
+**Corregido:** 2026-10-13T05:12:04Z
+**Revisión de origen:** .planning/phases/01-n-cleo-determinista/01-REVIEW.md (planes 01-12 a 01-15)
+**Iteración:** 1
 
-**Summary:**
-- Findings in scope: 7
-- Fixed: 7
-- Skipped: 0
-- Commits: 17, from `3689a2f` to `2b8148f`. They follow the review's 13-step migration order, and each one is an atomic Conventional Commit. Two steps have more than one commit:
-  - Step 10 has two commits (the pure `git mv`, then the describe extraction), as the review asks.
-  - Step 13 has three commits, one each for IN-20, IN-21 and IN-22, so each finding can be traced on its own.
+**Resumen:**
+- Hallazgos en alcance: 11 (1 crítico, 4 advertencias, 6 informativos; alcance `all`)
+- Corregidos: 10
+- Omitidos: 1 (WR-03, queda para la decisión humana pendiente)
 
-  `docs/estructura.md` was added in one more `docs(01)` commit, because WR-21 asks to "say so in `docs/`".
-- The guards are now G1–G14 in `tests/architecture.test.ts`:
-  - G5 is table-driven.
-  - G13 and G14 are new.
-  - Each guard has a test that shows it catches a violation.
-- `.claude/CLAUDE.md` changed in "Reglas de código del proyecto" only, with the user's authorization. The "El dominio va sin sufijo" bullet was replaced, the regex-exception path was updated, and G1–G12 became G1–G14.
+**Verificación:** se corrió `bun run check` (tsc, Biome y `bun audit`) y `bun test` después de cada commit en el worktree aislado `.claude/worktrees/rf-01-21141-1791867610`, que tenía su propio `bun install --frozen-lockfile`. Después del fast-forward de `main`, se repitieron en el checkout principal: 546 pruebas en verde en 39 archivos y `check` limpio. `bun run demo.ts` se corrió dos veces seguidas y dio salidas idénticas byte a byte. Su stdout no cambió frente a la corrida anterior, que fija `tests/e2e/demo.test.ts`. El contrato v1 de datos de herramienta no cambia: `data.bloqueos`, `resumen` y `log.jsonl` siguen con ids crudos, y `armar_paquete` devuelve el mismo `checklist`. La única adición al contrato es el código de error nuevo `PAQUETE_DESACTUALIZADO`.
 
-## Verification
+## Hallazgos corregidos
 
-**Where verification ran.** The per-commit gates ran in an isolated git worktree, `.claude/worktrees/rf-01-79452-*`, on the temp branch `gsd-reviewfix/01-79452`. It had no `node_modules` of its own and resolved the main checkout's through the parent directories. The final gates ran again in the **main checkout** after the fast-forward, so the numbers below can be reproduced from `main` at `2b8148f`. The worktree, its temp branch and the recovery sentinel were removed.
+### CR-01: El registro de envío omite en silencio los archivos que faltan en `paquete/` y declara "Sin bloqueos"
 
-Before every commit, these ran: `bunx biome check --write .`, `bun run check` (tsc, Biome, `bun audit`) and `bun test`. After steps 7, 9, 12 and 13 and at the end, these also ran:
-- two `bun run demo.ts` runs, compared byte for byte against each other and against the pre-fix baseline;
-- a diff of `out/` (xlsx compared by unzipped XML, `log.jsonl` excluded);
-- a snapshot of the tool contract (description plus `z.toJSONSchema` of every tool's args).
+**Archivos modificados:** `src/domain/policies/paquete-vigente.policy.ts` (nuevo), `src/application/use-cases/simular-envio.use-case.ts`, `src/config/constants/errors.constants.ts`, `src/config/strings.ts`, `tests/contract/simular-envio.test.ts`, `tests/unit/borrador.builder.test.ts`, `tests/unit/paquete-vigente.policy.test.ts` (nuevo), `docs/estructura.md`
+**Commits:** 6c5aa13, 99350f1
+**Corrección aplicada:** se eligió rechazar el envío por paquete desactualizado. Es la opción que encaja con el patrón existente de `PAQUETE_NO_ARMADO`, y además evita que el `borrador-correo.md` viejo siga diciendo "Adjuntamos…". La política nueva `archivosFaltantesEnPaquete` calcula los archivos que `armar_paquete` habría puesto en `paquete/` (el formulario y cada soporte evaluado con archivo) y los cruza con el listado real. Si falta alguno, `simular_envio` devuelve `PAQUETE_DESACTUALIZADO`, con `parcial.archivos_faltantes` y un mensaje que pide volver a correr `proveedor_armar_paquete`, y no escribe `ENVIO-SIMULADO.md`. Así quedan cubiertos los tres caminos de la revisión: un soporte borrado a mano, un soporte renovado entre armar y enviar, y un soporte que aparece en el repositorio. También el formulario ausente, incluido el caso del portal. Se invirtió la prueba de contrato que fijaba "un soporte borrado de paquete/ no aparece como enviado": ahora exige el error. Se añadieron la variante del formulario borrado y la del soporte renovado, que también comprueba que al volver a armar el envío registra el archivo nuevo. La prueba unitaria de `construirDatosEnvio` (~230) no fijaba "Sin bloqueos", solo que el archivo ausente no se declara enviado, así que se conservó como defensa y se renombró.
+**Estado:** fixed: requires human verification (cambia la respuesta de `simular_envio` cuando el paquete está desactualizado; conviene confirmar que el prompt del agente de la fase 2 trate `PAQUETE_DESACTUALIZADO` como "vuelve a armar").
 
-Final run in the main checkout:
-- `bun run check`: green. `bun audit` found no vulnerabilities.
-- `bun test`: 442 pass, 0 fail, 34 files. Before the fixes: 436 pass, 31 files.
-  - +4 from the G13 and G14 checks on real code and their bite tests.
-  - +3 from the identificador-tributario policy tests (5 per-country cases moved there, 1 null case and 1 etiquetasGenericas case added; detectarAmbiguos keeps 1 end-to-end case).
-  - -1 net from IN-22 (the two `aTexto` tests became one `leerHoja` test).
-- `bun run demo.ts` twice: byte-identical. stdout, `out/` and the tool contract are also byte-identical to the pre-fix baseline.
-- Truth table unchanged:
+### WR-01: El borrador mezcla datos faltantes del maestro con soportes pendientes, promete enviarlos y puede declararse "listo para la firma" a la vez
 
-  | Case | Llenos / Faltantes / Por confirmar | State |
-  |---|---|---|
-  | co | 17 / 0 / 0 | LISTO |
-  | ec | 13 / 1 / 1 | BLOQUEADO |
-  | hn | 9 / 1 / 1 | BLOQUEADO |
-  | pa | 8 / 0 / 1 | LISTO |
+**Archivos modificados:** `src/domain/builders/borrador.builder.ts`, `src/domain/types/borrador.type.ts`, `src/knowledge/plantillas/borrador-correo.md`, `tests/unit/borrador.builder.test.ts`, `tests/golden/borrador-envio.test.ts`, `tests/contract/maestro-incompleto.test.ts`, `docs/plantillas.md`
+**Commits:** 48b2a07, 0bb07e2
+**Corrección aplicada:** el contexto del borrador separa `campos_sin_dato` (etiquetas que no existen en el maestro) de `soportes_pendientes` (ausentes y vencidos). Solo a los soportes se les promete "Los enviaremos por separado". Los campos sin dato se le preguntan al cliente: "quedan en blanco porque no contamos con el dato; les agradecemos indicarnos si aplican". `firma_lista` exige que no haya campos por confirmar ni campos sin dato. Si los hay, sale `firma_tras_confirmar`. `firma_bloqueada` ahora dice "faltan los soportes pendientes indicados". Se respeta GC-1: el cierre depende del estado y nunca dice "firmado". Las pruebas unitarias cubren las 8 combinaciones con faltantes.
+**Estado:** fixed: requires human verification (redacción del correo al cliente y regla de las banderas de firma).
 
-- Public tool contract unchanged: the same five exports, descriptions and JSON Schemas.
-- No comments anywhere (the guard enforces this), no `any`, only `@/` and `@tests/` aliases, and every move used `git mv`. `reto-01/` and `.planning/` were not touched by any commit. All commits are authored by `elianatorres5772 <elianatorres5772@gmail.com>`.
-- Guard probes: a temporary `src/domain/zz.ts` plus `tests/unit/zz.policy.test.ts` turned G5, G13 and G14 red. Both files were then deleted.
+### WR-02: El correo al cliente copia literalmente las notas internas que son para la analista
 
-## Fixed Issues
+**Archivos modificados:** `src/domain/builders/borrador.builder.ts`, `src/domain/builders/checklist.builder.ts`, `src/domain/types/borrador.type.ts`, `src/domain/types/checklist.type.ts`, `src/config/constants/maestro.constants.ts`, `src/knowledge/plantillas/borrador-correo.md`, `tests/golden/borrador-envio.test.ts`, `tests/unit/borrador.builder.test.ts`, `tests/unit/checklist.builder.test.ts`, `tests/unit/paquete-vigente.policy.test.ts`
+**Commit:** 395eb57
+**Corrección aplicada:** el borrador ya no usa `nota`. La pregunta para el cliente va en el encabezado de la plantilla ("necesitamos que nos confirmen qué dato de nuestra empresa esperan en estos campos:") y cada línea lleva solo la etiqueta. `Checklist` incorpora `confirmaciones_al_cliente`, que deja fuera los campos con ruta `banco.*` (`PREFIJO_RUTA_BANCARIA`), así que el correo nunca pide confirmar datos bancarios de Periferia (RN2). Las notas internas siguen en `checklist.md` y en el formulario. `resumenChecklist` no expone el campo nuevo, así que el contrato de `armar_paquete` no cambia.
+**Estado:** fixed: requires human verification (redacción del correo al cliente).
 
-### WR-21: Domain, tools and demo logic sit loose at their layer root with no role folder (complete rename and split table)
+### WR-04: El guardián de nombres no vigila `rut` ni `parafiscales`
 
-**Files modified:**
-- every file in the review's domain, tools and demo tables, moved with `git mv`
-- new `src/domain/policies/soportes.policy.ts`, `src/domain/builders/campo-presentado.builder.ts`, `src/domain/policies/plantilla-caso.policy.ts`
-- every importer of the moved modules
-- `docs/plantillas.md`
-- new `docs/estructura.md`
+**Archivos modificados:** `tests/golden/nombres-soporte.test.ts`
+**Commit:** c65a3ca
+**Corrección aplicada:** además de la búsqueda libre de ids snake_case, el guardián comprueba cada id de `NOMBRE_SOPORTE` en las formas donde se renderiza un nombre: `ausente: X`, `vencido: X (`, `| X |`, `- X\n`, `- X (` y `soporte X`. Una prueba nueva demuestra que el detector reacciona a `rut` y `parafiscales` y deja pasar nombres de archivo como `rut-2026.txt`. Se comprobó con una mutación local, ya revertida, que poner ids crudos en los adjuntos del borrador hace fallar el guardián.
+**Estado:** fixed
 
-**Commits:** `910c7c9` (utils), `c72ad9d` (engines), `838e648` (builders, policies and selectors that need no split), `5b8b172` (soportes split), `ae7b19a` (campo-presentado split), `80af1f7` (plantilla-caso split), `de85246` (tools), `650512c` (demo runner), `2b8148f` (docs)
+### IN-01: `NOMBRE_SOPORTE` duplica y contradice la `descripcion` del índice de soportes
 
-**Applied fix:**
-- **Domain:** `src/domain/` now holds only `types/` and five role folders:
-  - `engines/`: `mapeo`, `motor-plantillas`, kept whole.
-  - `builders/`: `borrador`, `campo-presentado`, `checklist`, `formulario`, `glosario`, `portal`. `glosario` is a builder, as the review corrected.
-  - `policies/`: `comparar-mapeo`, `identificador-tributario`, `pii`, `plantilla-caso`, `soportes`, `validar-reglas`, `vigencias`.
-  - `selectors/`: `maestro`, `solicitud`.
-  - `utils/`: `fecha`, `formatear-issues`, `nombre-error`, `normalizar`, `resultado`.
-- **Splits:** for each split, the file was moved with `git mv` to the target the review named, and the extracted functions were moved verbatim into the new file:
-  - `evaluarSoportes` and its six helpers
-  - `presentarCampo` and `valorEnmascarado`
-  - `elegirPlantilla`
+**Archivos modificados:** `docs/plantillas.md`
+**Commit:** e1d3f3f
+**Corrección aplicada:** `SOLUCION.md` todavía no existe, así que la decisión se documentó en `docs/plantillas.md`, sección "Nombres de soporte en las salidas". Manda `NOMBRE_SOPORTE`. La `descripcion` del índice describe una versión concreta del archivo, con vigencia o año. Un tipo desconocido cae al id crudo, y un tipo nuevo necesita su nombre en la tabla. Al redactar `SOLUCION.md`, conviene trasladar este texto.
+**Estado:** fixed
 
-  The importers listed in the review were repointed: `estado-paquete.service.ts`, `mapear-campos.use-case.ts`, `mapeo-canonico.service.ts`, `contexto-caso.service.ts` and the unit tests.
-- **Tools:** `tools/factories/definir-herramienta.factory.ts`, `tools/factories/herramientas.factory.ts` and `tools/wiring/entorno.wiring.ts`. `tools/proveedor.ts` stays at the tools root, as PRD 6.2 requires.
-- **Demo:** `demo/runners/ejecutar-demo.runner.ts`.
-- **Config:** `config/env.ts` and `config/strings.ts` stay where they are and are allow-listed.
-- **Docs:** `docs/plantillas.md` points at `src/domain/engines/motor-plantillas.engine.ts`. The new `docs/estructura.md` documents the roles, why `motor-plantillas` stays whole, why `formatear-issues` and `nombre-error` live in `domain/utils`, and the three root exceptions.
+### IN-02: Respaldo mágico `?? ""` en el bloqueo por vencimiento
 
-### WR-22: The G5 suffix table, three exact-path guard keys and the CLAUDE.md rule encode "el dominio va sin sufijo"
+**Archivos modificados:** `src/domain/builders/checklist.builder.ts`, `tests/unit/checklist.builder.test.ts`
+**Commit:** 09aed87
+**Corrección aplicada:** el respaldo usa `TEXTO_CHECKLIST.sinVigencia` ("vencido: X (no aplica)") en lugar de `""`. Una prueba fija que nunca sale un paréntesis vacío. IN-03 completa el cambio con la unión discriminada `MotivoBloqueo`, en la que `vencido` siempre lleva `vigencia: string`.
+**Estado:** fixed
 
-**Files modified:** `tests/architecture.test.ts`, `.claude/CLAUDE.md`
+### IN-03: El registro de envío deriva los bloqueos por un camino paralelo al del checklist
 
-**Commits:** `3689a2f` (step 1, transitional G5); `c72ad9d` (CLAUDE.md regex-exception path); `de85246` and `650512c` (sample paths); `ef7d4b0` (step 11, final guards and the CLAUDE.md rule)
+**Archivos modificados:** `src/domain/builders/checklist.builder.ts`, `src/domain/builders/borrador.builder.ts`, `src/domain/types/checklist.type.ts`, `tests/unit/checklist.builder.test.ts`, `tests/unit/borrador.builder.test.ts`, `tests/unit/paquete-vigente.policy.test.ts`
+**Commit:** 75383e2
+**Corrección aplicada:** `Checklist` guarda `motivos_bloqueo` como unión discriminada (`ausente`, o `vencido` con su vigencia). `construirChecklist` arma desde ella los `bloqueos` con ids crudos del contrato y `listo_para_firma`. `motivosDeBloqueo(checklist)` renderiza los nombres para `checklist.md` y `ENVIO-SIMULADO.md` desde la misma lista, sin volver a recorrer los soportes.
+**Estado:** fixed
 
-**Applied fix:**
-- **G5:** built from `CARPETAS_DE_ROL`, the review's table of 10 role folders. It now:
-  - pins `types/` to the layer root;
-  - requires an area folder under `infra/`;
-  - accepts `tests/unit/<kebab>.<rol>.test.ts` and keeps every other test under `tests/(?!unit/)`.
-- **Transitional patterns:** the loose-file patterns (`src/domain/<kebab>.ts`, `src/tools/*.(factory|wiring|util).ts`, `src/demo/*.runner.ts`) and the dual paths stayed in place through step 10 and were removed in step 11.
-- **G5 bite test:** extended with the six rejected and three accepted paths the review lists.
-- **G13 (new):** `SUELTO_EN_CAPA` with `SUELTOS_PERMITIDOS` (`tools/proveedor.ts`, `config/env.ts`, `config/strings.ts`), plus its bite test.
-- **Exact-path keys:**
-  - `DUENOS_DE_REGEX` now holds only `src/domain/engines/motor-plantillas.engine.ts`.
-  - `capaDeRuta` treats only `src/tools/wiring/entorno.wiring` as `wiring`.
-  - `DESTINOS_DE_HERRAMIENTAS` was **not** widened, so tools still cannot import infra. A new expectation shows that another `src/tools/wiring/otro.wiring.ts` is still layer `tools` and is rejected when it imports `@/infra/**`.
-- **Sample paths retargeted:**
-  - `src/domain/engines/mapeo.engine.ts` and `@/domain/utils/normalizar.util`
-  - `src/tools/wiring/entorno.wiring.ts` and `src/tools/factories/definir-herramienta.factory.ts`
-  - `src/demo/runners/ejecutar-demo.runner.ts` and `@/tools/wiring/entorno.wiring`
-- **CLAUDE.md:** the kebab-case bullet, including "El dominio va sin sufijo", was replaced with the review's text. That text covers the domain role folders, `tools/factories`, `tools/wiring`, `demo/runners`, the three allowed loose files and the `tests/unit/<módulo>.<rol>.test.ts` rule. The regex exception and "(G1–G14)" were also updated.
+### IN-04: El aviso de emisor distinto no genera ninguna acción ni ninguna pregunta al cliente
 
-### WR-23: Unit test names do not mirror the modules they test, and G5 forbids the mirrored names
+**Archivos modificados:** `src/domain/builders/checklist.builder.ts`, `src/domain/builders/borrador.builder.ts`, `src/domain/types/checklist.type.ts`, `src/domain/types/borrador.type.ts`, `src/knowledge/plantillas/checklist.md`, `src/knowledge/plantillas/borrador-correo.md`, `tests/golden/borrador-envio.test.ts`, `tests/golden/paquete.test.ts`, `tests/unit/borrador.builder.test.ts`, `tests/unit/checklist.builder.test.ts`
+**Commit:** 0e189cb
+**Corrección aplicada:** `con_aviso_emisor` se expone en `DatosChecklist` y en `DatosBorradorCorreo`. El checklist añade una casilla por soporte con aviso ("Confirmar con el cliente si acepta el soporte X, emitido en CO"). El borrador le pregunta al cliente si acepta los soportes adjuntos emitidos en otro país, con la línea "X (país emisor: CO)". Esa pregunta cuenta como respuesta pendiente, así que el correo no declara el formulario listo para firma mientras siga abierta. CO no cambia. EC, HN y PA ganan la pregunta.
+**Estado:** fixed: requires human verification (texto nuevo dirigido al cliente).
 
-**Files modified:** the 14 files in `tests/unit/` (renamed with `git mv`); new `tests/unit/plantilla-caso.policy.test.ts` and `tests/unit/vigencias.policy.test.ts`; `tests/architecture.test.ts`
+### IN-05: El ancho del xlsx cuenta puntos de código y no tiene en cuenta saltos de línea ni glifos anchos
 
-**Commits:** `aeaa1a5` (pure renames), `deb85ae` (describe extraction), `ef7d4b0` (G14)
+**Archivos modificados:** `src/infra/output/xlsx-writer.adapter.ts`, `src/config/constants/patterns.constants.ts`, `tests/unit/xlsx-writer.adapter.test.ts`
+**Commit:** 28841fd
+**Corrección aplicada:** el writer parte el valor con `PATRON_SALTO_DE_LINEA`, en `patterns.constants.ts`, y mide la línea más larga. También activa `wrapText` cuando hay un salto de línea. Los glifos anchos (emoji y CJK) se siguen midiendo como un punto de código: así lo fija la prueba existente "el largo se mide en puntos de código", y la corrección propuesta en la revisión cubre solo los saltos de línea.
+**Estado:** fixed
 
-**Applied fix:**
-- All 14 files were renamed with `git mv` according to the review's table. `tests/unit/` stays flat, so the relative `new URL("../../…")` fixture paths are unchanged.
-- **Describes moved verbatim:**
-  - `supportIndexSchema` to `fixtures.schema.test.ts`
-  - `elegirPlantilla` and its matrix to `plantilla-caso.policy.test.ts`
-  - `evaluarVigencia` to `vigencias.policy.test.ts`, with its own `HOY` and `DIAS_AVISO`
+### IN-06: Los goldens de anchos reimplementan la fórmula de producción y el tipo de prueba no se deriva de una constante
 
-  The test count did not change at that commit (436).
-- **G14 (new):** `violacionesDeEspejo` with `PRUEBA_UNITARIA`. Its check on real code also asserts that at least one unit test exists, and it has its own bite test.
+**Archivos modificados:** `tests/golden/formulario-xlsx.test.ts`, `tests/helpers/types/xlsx-leer.type.ts`, `tests/helpers/xlsx-leer.helper.ts`, `tests/helpers/tipo-celda.helper.ts` (nuevo)
+**Commit:** 5442afa
+**Corrección aplicada:** el golden fija los anchos literales de cada columna de los fixtures CO y HN, y se eliminó `anchoEsperado`. `TIPO_CELDA` es un objeto `as const` en su propio helper, para que no haya ciclo entre el helper y el archivo de tipos, y `TipoCelda` es `ValorDe<typeof TIPO_CELDA>`.
+**Estado:** fixed
 
-### WR-24: The tax-identifier rule is computed twice, in `solicitud.ts` and in `mapeo.ts`
+## Hallazgos omitidos
 
-**Files modified:** new `src/domain/policies/identificador-tributario.policy.ts`, `src/domain/selectors/solicitud.selector.ts`, `src/domain/engines/mapeo.engine.ts`, new `tests/unit/identificador-tributario.policy.test.ts`, `tests/unit/solicitud.selector.test.ts`
+### WR-03: G-01-H4c no queda cerrado: la salida de `demo.ts` sigue mostrando ids crudos
 
-**Commit:** `9d43a5b`
-
-**Applied fix:**
-- `etiquetasGenericas(reglas)` and `identificadorDelPais(reglas, pais)` are now the single source of the rule.
-- `detectarAmbiguos` (used by `leer_solicitud`) and `contextoDeMapeo` (used by `mapear_campos`) both call them. The private `propia` was deleted.
-- **Tests:**
-  - The five per-country equivalence cases moved to the policy's mirror test.
-  - The policy test also covers the null cases (unknown country, prototype key) and the normalization of the generic labels.
-  - `detectarAmbiguos` keeps one end-to-end case (`HN` proposes `RTN`) next to its existing null and prototype-key cases.
-- Output is byte-identical.
-
-### IN-20: Three groups of domain types no longer sit next to their module's name
-
-**Files modified:** `src/domain/types/{maestro,mapeo,checklist}.type.ts`, new `src/domain/types/{glosario,soportes}.type.ts`, and every `import type` of the moved types (15 files)
-
-**Commit:** `a4dd1be`
-
-**Applied fix:**
-- `HojaMaestro` moved to `maestro.type.ts`.
-- `Glosario` and `IndiceGlosario` moved to `glosario.type.ts`. `mapeo.type.ts` imports `IndiceGlosario` for `EntradaMapeo`.
-- `SoporteIndice`, `EstadoSoporte`, `SoporteEvaluado` and `EntradaEvaluacionSoportes` moved to `soportes.type.ts`. `checklist.type.ts` imports `EstadoSoporte` and `SoporteEvaluado` with `import type`, because `FilaSoporteChecklist` also uses `EstadoSoporte`.
-- `types/` stays flat, as the tightened G5 requires.
-
-### IN-21: Exported names that no longer match their role
-
-**Files modified:** `src/domain/builders/formulario.builder.ts`, `src/domain/builders/campo-presentado.builder.ts`, `src/application/use-cases/generar-formulario.use-case.ts`, `src/application/use-cases/mapear-campos.use-case.ts`, `src/application/services/mapeo-canonico.service.ts`, `tests/unit/pii.policy.test.ts`
-
-**Commit:** `875cdf3`
-
-**Applied fix:**
-- `construirFilas` was renamed to `construirFormulario`.
-- `presentarCampo` was renamed to `construirCampoPresentado` (the optional rename, applied), so every builder export starts with `construir*`.
-- `contarEstados` stays in the mapping engine, as the review recommends.
-
-### IN-22: Test-only exports and a dead branch
-
-**Files modified:** `src/domain/selectors/maestro.selector.ts`, `src/domain/utils/normalizar.util.ts`, `src/domain/policies/vigencias.policy.ts`, `tests/unit/normalizar.util.test.ts`, `tests/unit/mapeo.engine.test.ts`, `tests/unit/vigencias.policy.test.ts`
-
-**Commit:** `d44d616`
-
-**Applied fix:**
-- `maestro.selector` now uses `String(valor)` for numeric leaves. `aTexto` and its describe were deleted.
-- The number and text cases (`98000000000`, `480`, `2025`, `"050021"`, `"+57 604 555 0100"`) are now `leerHoja` assertions in the existing `leerRuta` describe.
-- `textoVence` is no longer exported. The plural is asserted through `evaluarVigencia("2026-09-05", HOY, DIAS_AVISO).aviso === "vence en 2 días"`.
-- `POLITICA_PII` stays exported, as the review says.
-- This is the only change in behavior. It is equivalent for every input the caller can pass, and the demo output stayed byte-identical.
+**Archivo:** `src/config/strings.ts:72-79,186-191` (usado por `src/demo/runners/ejecutar-demo.runner.ts:99-109,142-149`), `tests/golden/nombres-soporte.test.ts:23`
+**Motivo:** se omitió a propósito, por estar pendiente una decisión humana. La corrección técnica del stdout de la demo es posible sin tocar el contrato: el runner podría nombrar los soportes desde `data.checklist.soportes` con `TEXTO_SOPORTE`. Pero los planes 01-14 y 01-15 fijaron como must-have que "el stdout de la demo y el `resumen` conservan los ids crudos, byte a byte (contrato v1, D-21)". Además, `01-UAT.md` (prueba 4) deja abierta para la persona la elección entre documentar la excepción o pedir un plan que muestre nombres en la demo. Cambiarlo aquí sería tomar esa decisión por ella. El `resumen` de herramienta no puede cambiar sin romper el contrato v1. `docs/plantillas.md` (IN-01) ya deja escrito el comportamiento actual.
+**Problema original:** la salida estándar de `demo.ts` arma "Soportes ausentes" y "Estado: BLOQUEADO (…)" con los ids crudos de `data.bloqueos`, y el `resumen` de herramienta también los lleva, así que el cierre de G-01-H4c no alcanza la salida de la demo.
 
 ---
 
-_Fixed: 2026-10-13T01:51:12Z_
-_Fixer: Claude (gsd-code-fixer)_
-_Iteration: 1_
+_Corregido: 2026-10-13T05:12:04Z_
+_Corrector: Claude (gsd-code-fixer)_
+_Iteración: 1_
