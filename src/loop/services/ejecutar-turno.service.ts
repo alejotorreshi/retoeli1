@@ -29,6 +29,7 @@ import type {
   EventoCompuerta,
 } from "@/domain/types/compuerta.type.ts";
 import type { DecisionConfirmacion } from "@/domain/types/confirmacion.type.ts";
+import { cuerpoDeFallo } from "@/domain/utils/respuesta-herramienta.util.ts";
 import type {
   ErrorLlm,
   LlamadaHerramienta,
@@ -194,7 +195,7 @@ function asistenteDelPaso(respuesta: RespuestaLlm): MensajeAsistente {
 
 function pasoTruncado(respuesta: RespuestaLlm): readonly Mensaje[] {
   const codigo = CODIGO_AGENTE.ARGUMENTOS_TRUNCADOS;
-  const contenido = JSON.stringify({ ok: false, codigo, error: MENSAJE_AGENTE[codigo] });
+  const contenido = JSON.stringify(cuerpoDeFallo({ codigo, error: MENSAJE_AGENTE[codigo] }, null));
   const llamadas = respuesta.llamadas.map((llamada) => ({ ...llamada, argumentos: ARGUMENTOS_VACIOS }));
   const respuestas: readonly Mensaje[] = llamadas.map((llamada) => ({
     rol: ROL_MENSAJE.HERRAMIENTA,

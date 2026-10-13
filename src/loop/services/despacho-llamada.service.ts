@@ -7,9 +7,10 @@ import { MENSAJE_ERROR, RESUMEN_HERRAMIENTA } from "@/config/strings.ts";
 import { evaluarEnvio, revocarAlArmar } from "@/domain/policies/compuerta.policy.ts";
 import type { MotivoBloqueo } from "@/domain/types/checklist.type.ts";
 import type { CasoPendiente } from "@/domain/types/compuerta.type.ts";
+import { cuerpoDeFallo } from "@/domain/utils/respuesta-herramienta.util.ts";
 import type { LlamadaHerramienta } from "@/llm/types/llm.type.ts";
 import { argumentosConCasoSchema, armarPaqueteSchema } from "@/loop/schemas/resultado-herramienta.schema.ts";
-import { argumentosDeLlamada } from "@/loop/services/registro-herramientas.service.ts";
+import { argumentosDeLlamada, resultadoDeFallo } from "@/loop/services/registro-herramientas.service.ts";
 import type { ContextoDespacho, ResultadoDespacho, ResultadoLlamada } from "@/loop/types/turno.type.ts";
 
 const SIMULAR_ENVIO = NOMBRE_VISIBLE[HERRAMIENTA.SIMULAR_ENVIO];
@@ -32,19 +33,8 @@ function ejecutar(llamada: LlamadaHerramienta, contexto: ContextoDespacho): Prom
 }
 
 function rechazoSinConfirmacion(): ResultadoLlamada {
-  const respuesta = {
-    ok: false,
-    error: MENSAJE_ERROR[SIN_CONFIRMACION],
-    codigo: SIN_CONFIRMACION,
-    resumen: RESUMEN_SIN_CONFIRMACION,
-  };
-  return {
-    contenido: JSON.stringify(respuesta),
-    ok: false,
-    codigo: SIN_CONFIRMACION,
-    resumen: RESUMEN_SIN_CONFIRMACION,
-    respuesta,
-  };
+  const fallo = { codigo: SIN_CONFIRMACION, error: MENSAJE_ERROR[SIN_CONFIRMACION] };
+  return resultadoDeFallo(cuerpoDeFallo(fallo, RESUMEN_SIN_CONFIRMACION));
 }
 
 function casosDeBitacora(caso: string | null, contexto: ContextoDespacho) {

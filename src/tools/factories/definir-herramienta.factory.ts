@@ -9,6 +9,7 @@ import { RESUMEN_HERRAMIENTA } from "@/config/strings.ts";
 import type { Fallo, Resultado } from "@/domain/types/resultado.type.ts";
 import { formatearIssues } from "@/domain/utils/formatear-issues.util.ts";
 import { nombreDeError } from "@/domain/utils/nombre-error.util.ts";
+import { cuerpoDeFallo } from "@/domain/utils/respuesta-herramienta.util.ts";
 import { exito, fallo } from "@/domain/utils/resultado.util.ts";
 import type { ContextoNormalizado, OpcionesEntorno } from "@/tools/types/entorno.type.ts";
 import type { ContextoHerramienta, EspecHerramienta, Herramienta } from "@/tools/types/herramienta.type.ts";
@@ -62,10 +63,7 @@ function esquemaDeArgs<A extends z.ZodRawShape>(args: A) {
 
 function responderFallo(nombre: string, resultado: Fallo): Respuesta {
   const resumen = RESUMEN_HERRAMIENTA.fallo(nombre, resultado.codigo);
-  const base = { ok: false, error: resultado.error, codigo: resultado.codigo };
-  const cuerpo =
-    resultado.parcial === undefined ? { ...base, resumen } : { ...base, parcial: resultado.parcial, resumen };
-  return { texto: JSON.stringify(cuerpo), resumen };
+  return { texto: JSON.stringify(cuerpoDeFallo(resultado, resumen)), resumen };
 }
 
 function responder<A extends z.ZodRawShape, D>(

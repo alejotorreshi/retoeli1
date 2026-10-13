@@ -3,6 +3,8 @@ import { CODIGO_AGENTE, ESQUEMA_PARAMETROS } from "@/config/constants/agent.cons
 import { HERRAMIENTA, NOMBRE_VISIBLE } from "@/config/constants/tools.constants.ts";
 import { MENSAJE_AGENTE } from "@/config/strings.ts";
 import type { ValorDe } from "@/config/types/valor-de.type.ts";
+import type { CuerpoFallo } from "@/domain/types/respuesta-herramienta.type.ts";
+import { cuerpoDeFallo } from "@/domain/utils/respuesta-herramienta.util.ts";
 import type { DefinicionHerramienta } from "@/llm/types/llm.type.ts";
 import { resultadoHerramientaSchema } from "@/loop/schemas/resultado-herramienta.schema.ts";
 import type { RegistroHerramientas, ResultadoLlamada } from "@/loop/types/turno.type.ts";
@@ -73,19 +75,19 @@ function resultadoDe(contenido: string): ResultadoLlamada {
   };
 }
 
-function herramientaDesconocida(): ResultadoLlamada {
-  const respuesta = {
-    ok: false,
-    codigo: CODIGO_AGENTE.HERRAMIENTA_DESCONOCIDA,
-    error: MENSAJE_AGENTE[CODIGO_AGENTE.HERRAMIENTA_DESCONOCIDA],
-  };
+export function resultadoDeFallo(cuerpo: CuerpoFallo): ResultadoLlamada {
   return {
-    contenido: JSON.stringify(respuesta),
+    contenido: JSON.stringify(cuerpo),
     ok: false,
-    codigo: CODIGO_AGENTE.HERRAMIENTA_DESCONOCIDA,
-    resumen: null,
-    respuesta,
+    codigo: cuerpo.codigo,
+    resumen: cuerpo.resumen ?? null,
+    respuesta: cuerpo,
   };
+}
+
+function herramientaDesconocida(): ResultadoLlamada {
+  const codigo = CODIGO_AGENTE.HERRAMIENTA_DESCONOCIDA;
+  return resultadoDeFallo(cuerpoDeFallo({ codigo, error: MENSAJE_AGENTE[codigo] }, null));
 }
 
 export function crearRegistroHerramientas(modulo: ModuloHerramientas): RegistroHerramientas {
