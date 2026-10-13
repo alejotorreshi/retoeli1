@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { esquemaPlantillaCeldas } from "@/infra/fixtures/schemas/fixtures.schema.ts";
+import { cellTemplateSchema } from "@/infra/fixtures/schemas/fixtures.schema.ts";
 
 type Entrada = { hoja: string; celda_etiqueta: string; etiqueta: string; celda_valor: string };
 
@@ -17,10 +17,10 @@ function entrada(cambios: Partial<Entrada> = {}): Entrada {
 }
 
 function valida(campos: readonly Entrada[]): boolean {
-  return esquemaPlantillaCeldas.safeParse(campos).success;
+  return cellTemplateSchema.safeParse(campos).success;
 }
 
-describe("esquemaPlantillaCeldas acepta solo lo que el xlsx puede escribir (WR-08)", () => {
+describe("cellTemplateSchema acepta solo lo que el xlsx puede escribir (WR-08)", () => {
   test("las plantillas de co y hn son válidas", async () => {
     for (const ruta of [CO, HN]) expect(valida(JSON.parse(await Bun.file(ruta).text()))).toBe(true);
   });

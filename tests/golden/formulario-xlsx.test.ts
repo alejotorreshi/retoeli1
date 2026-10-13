@@ -11,7 +11,7 @@ import { leerRuta } from "@/domain/mapeo.ts";
 import type { FilaCelda } from "@/domain/types/formulario.type.ts";
 import type { Maestro } from "@/domain/types/maestro.type.ts";
 import type { CampoCelda } from "@/domain/types/plantilla-caso.type.ts";
-import { escribirXlsx } from "@/infra/output/xlsx-writer.adapter.ts";
+import { writeXlsx } from "@/infra/output/xlsx-writer.adapter.ts";
 import { crearHerramientas } from "@/tools/herramientas.factory.ts";
 
 const RELLENO_FALTANTE = "FFFFC7CE";
@@ -167,7 +167,7 @@ describe("golden: proveedor_generar_formulario xlsx (FORM-01, D-01, D-02, D-04)"
   });
 });
 
-describe("escribirXlsx (D-33.5)", () => {
+describe("writeXlsx (D-33.5)", () => {
   test("una cadena con forma de fórmula queda como texto, sin fórmula ni apóstrofo", async () => {
     const proyecto = await nuevoProyecto();
     const filas: FilaCelda[] = [
@@ -183,7 +183,7 @@ describe("escribirXlsx (D-33.5)", () => {
       },
     ];
     const ruta = join(proyecto.raiz, "formula.xlsx");
-    await writeFile(ruta, await escribirXlsx(filas, "2026-09-03"));
+    await writeFile(ruta, await writeXlsx(filas, "2026-09-03"));
     const celda = celdaEn(await leerCeldasXlsx(ruta), "Hoja", "B1");
     expect(celda.tipo).toBe("texto");
     expect(celda.valor).toBe("=1+1");

@@ -38,7 +38,7 @@ function escribirFila(hoja: Worksheet, fila: FilaCelda): void {
   marcarValor(hoja.getCell(fila.celda_valor), fila);
 }
 
-export async function escribirXlsx(filas: readonly FilaCelda[], fecha: FechaISO): Promise<Uint8Array> {
+export async function writeXlsx(filas: readonly FilaCelda[], fecha: FechaISO): Promise<Uint8Array> {
   const libro = new Workbook();
   const instante = new Date(`${fecha}T00:00:00Z`);
   libro.creator = AUTOR_DOCUMENTOS;

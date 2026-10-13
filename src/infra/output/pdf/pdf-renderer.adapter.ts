@@ -7,8 +7,8 @@ import { AUTOR_DOCUMENTOS } from "@/config/constants/runtime.constants.ts";
 import { TEXTO_COMUN, TEXTO_PDF } from "@/config/strings.ts";
 import type { FechaISO } from "@/domain/types/fecha.type.ts";
 import type { FilaFormulario } from "@/domain/types/formulario.type.ts";
-import { componerPdf } from "@/infra/output/pdf/pdf-layout.util.ts";
-import type { LineaPdf, Medir } from "@/infra/types/pdf-layout.type.ts";
+import { layoutPdf } from "@/infra/output/pdf/pdf-layout.util.ts";
+import type { MeasureText, PdfLine } from "@/infra/types/pdf-layout.type.ts";
 
 type FuenteSaneada = { readonly fuente: PDFFont; readonly caracteres: ReadonlySet<number> };
 
@@ -22,7 +22,7 @@ function esRepresentable(caracter: string, caracteres: ReadonlySet<number>): boo
   return caracteres.has(caracter.codePointAt(0) ?? -1);
 }
 
-export function sanearWinAnsi(texto: string, caracteres: ReadonlySet<number>): string {
+export function sanitizeWinAnsi(texto: string, caracteres: ReadonlySet<number>): string {
   return caracteresVisibles(texto)
     .map((caracter) => (esRepresentable(caracter, caracteres) ? caracter : TEXTO_PDF.reemplazo))
     .join("");
@@ -42,7 +42,7 @@ function conMotivoNoRepresentable(fila: FilaFormulario): FilaFormulario {
   };
 }
 
-export function marcarNoRepresentables(
+export function markUnrepresentable(
   filas: readonly FilaFormulario[],
   caracteres: ReadonlySet<number>,
 ): readonly FilaFormulario[] {
@@ -58,16 +58,16 @@ function fuenteDe(fuentes: Fuentes, negrita: boolean): FuenteSaneada {
   return negrita ? fuentes.negrita : fuentes.normal;
 }
 
-function medidorCon(fuentes: Fuentes): Medir {
+function medidorCon(fuentes: Fuentes): MeasureText {
   return (texto, tamano, negrita) => {
     const { fuente, caracteres } = fuenteDe(fuentes, negrita);
-    return fuente.widthOfTextAtSize(sanearWinAnsi(texto, caracteres), tamano);
+    return fuente.widthOfTextAtSize(sanitizeWinAnsi(texto, caracteres), tamano);
   };
 }
 
-function dibujar(pagina: PDFPage, linea: LineaPdf, fuentes: Fuentes): void {
+function dibujar(pagina: PDFPage, linea: PdfLine, fuentes: Fuentes): void {
   const { fuente, caracteres } = fuenteDe(fuentes, linea.negrita);
-  const texto = sanearWinAnsi(linea.texto, caracteres);
+  const texto = sanitizeWinAnsi(linea.texto, caracteres);
   if (texto === "") return;
   const [rojo, verde, azul] = DISENO_PDF.colores[linea.color];
   pagina.drawText(texto, {
@@ -89,14 +89,14 @@ function fijarMetadatos(documento: PDFDocument, fecha: FechaISO): void {
   documento.setModificationDate(instante);
 }
 
-export async function renderizarPdf(entrada: EntradaFormularioPdf, fecha: FechaISO): Promise<Uint8Array> {
+export async function renderPdf(entrada: EntradaFormularioPdf, fecha: FechaISO): Promise<Uint8Array> {
   const documento = await PDFDocument.create();
   const fuentes: Fuentes = {
     normal: await incrustar(documento, StandardFonts.Helvetica),
     negrita: await incrustar(documento, StandardFonts.HelveticaBold),
   };
-  const filas = marcarNoRepresentables(entrada.filas, fuentes.normal.caracteres);
-  for (const { lineas } of componerPdf({ ...entrada, filas, fecha }, medidorCon(fuentes))) {
+  const filas = markUnrepresentable(entrada.filas, fuentes.normal.caracteres);
+  for (const { lineas } of layoutPdf({ ...entrada, filas, fecha }, medidorCon(fuentes))) {
     const pagina = documento.addPage([DISENO_PDF.ancho, DISENO_PDF.alto]);
     for (const linea of lineas) dibujar(pagina, linea, fuentes);
   }

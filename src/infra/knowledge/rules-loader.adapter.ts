@@ -10,11 +10,9 @@ import { fallo } from "@/domain/resultado.ts";
 import type { Reglas } from "@/domain/types/reglas.type.ts";
 import type { Resultado } from "@/domain/types/resultado.type.ts";
 import { validarTextosDeReglas } from "@/domain/validar-reglas.ts";
-import { esquemaReglas } from "@/infra/knowledge/schemas/rules.schema.ts";
+import { rulesSchema } from "@/infra/knowledge/schemas/rules.schema.ts";
 
-export const DIRECTORIO_CONOCIMIENTO_POR_DEFECTO = fileURLToPath(
-  new URL("../../knowledge/", import.meta.url),
-);
+export const DEFAULT_KNOWLEDGE_DIRECTORY = fileURLToPath(new URL("../../knowledge/", import.meta.url));
 
 function reglasInvalidas(detalle: string): Resultado<Reglas> {
   return fallo(CODIGO_ERROR.REGLAS_INVALIDAS, { detalle: `${ARCHIVO_REGLAS}: ${detalle}` });
@@ -27,7 +25,7 @@ function detalleDe(issues: readonly z.core.$ZodIssue[]): string {
   return `${ruta}: ${primero.message}`;
 }
 
-export async function leerTexto(ruta: string): Promise<string | null> {
+export async function readText(ruta: string): Promise<string | null> {
   try {
     const info = await stat(ruta);
     if (!info.isFile() || info.size > LIMITE_LECTURA_BYTES) return null;
@@ -47,12 +45,12 @@ function parsearJson(
   }
 }
 
-export async function cargarReglas(directorio: string): Promise<Resultado<Reglas>> {
-  const contenido = await leerTexto(join(directorio, ARCHIVO_REGLAS));
+export async function loadRules(directorio: string): Promise<Resultado<Reglas>> {
+  const contenido = await readText(join(directorio, ARCHIVO_REGLAS));
   if (contenido === null) return reglasInvalidas(TEXTO_CONOCIMIENTO.archivoNoLegible);
   const json = parsearJson(contenido);
   if (!json.ok) return reglasInvalidas(TEXTO_CONOCIMIENTO.jsonInvalido);
-  const validado = esquemaReglas.safeParse(json.valor, { error: z.locales.es().localeError });
+  const validado = rulesSchema.safeParse(json.valor, { error: z.locales.es().localeError });
   if (!validado.success) return reglasInvalidas(detalleDe(validado.error.issues));
   return validarTextosDeReglas(validado.data);
 }

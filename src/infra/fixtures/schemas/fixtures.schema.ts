@@ -69,7 +69,7 @@ function celdasSinRepetir(campos: readonly UbicacionCelda[]): boolean {
   return new Set(ocupadas).size === ocupadas.length;
 }
 
-export const esquemaSolicitud = z
+export const requestSchema = z
   .object({
     id: textoCorto,
     de: textoCorto,
@@ -84,7 +84,7 @@ export const esquemaSolicitud = z
   })
   .strict() satisfies z.ZodType<Solicitud>;
 
-export const esquemaPlantillaCeldas = z
+export const cellTemplateSchema = z
   .array(
     z
       .object({
@@ -100,12 +100,12 @@ export const esquemaPlantillaCeldas = z
   .refine(hojasConUnaSolaGrafia)
   .refine(celdasSinRepetir);
 
-export const esquemaPlantillaCampos = z
+export const fieldTemplateSchema = z
   .array(z.object({ etiqueta, obligatorio: z.boolean() }).strict())
   .min(1)
   .max(LIMITES_FIXTURES.camposPlantilla);
 
-export const esquemaSoportesExigidos = z
+export const requiredSupportsSchema = z
   .array(z.string().regex(PATRON_TIPO_SOPORTE))
   .max(LIMITES_FIXTURES.soportes);
 
@@ -115,7 +115,7 @@ const archivoSoporte = z
   .refine((nombre) => !nombre.includes(".."))
   .refine((nombre) => !NOMBRES_RESERVADOS_PAQUETE.has(nombre));
 
-export const esquemaIndiceSoportes = z
+export const supportIndexSchema = z
   .array(
     z
       .object({
@@ -140,9 +140,9 @@ const esquemaValorMaestro: z.ZodType<ValorMaestro> = z.lazy(() =>
   ]),
 );
 
-export const esquemaMaestro = z.record(z.string(), esquemaValorMaestro) satisfies z.ZodType<Maestro>;
+export const masterSchema = z.record(z.string(), esquemaValorMaestro) satisfies z.ZodType<Maestro>;
 
-export const esquemaGlosario = z.record(
+export const glossarySchema = z.record(
   etiqueta,
   z.string().regex(PATRON_RUTA_MAESTRO),
 ) satisfies z.ZodType<Glosario>;

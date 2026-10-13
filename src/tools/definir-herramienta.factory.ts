@@ -56,7 +56,7 @@ function serializarFallo(nombre: string, resultado: Fallo): string {
   );
 }
 
-export function defineTool<A extends z.ZodRawShape, D>(
+export function definirHerramienta<A extends z.ZodRawShape, D>(
   spec: EspecHerramienta<A, D>,
   opciones: OpcionesEntorno = {},
 ): Herramienta<A> {

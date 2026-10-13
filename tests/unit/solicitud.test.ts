@@ -3,7 +3,7 @@ import { detectarAmbiguos, elegirPlantilla } from "@/domain/solicitud.ts";
 import type { TipoPlantilla } from "@/domain/types/plantilla-caso.type.ts";
 import type { Reglas } from "@/domain/types/reglas.type.ts";
 import type { CampoSolicitado, Formato, PlantillasPresentes } from "@/domain/types/solicitud.type.ts";
-import { cargarReglas, DIRECTORIO_CONOCIMIENTO_POR_DEFECTO } from "@/infra/knowledge/rules-loader.adapter.ts";
+import { DEFAULT_KNOWLEDGE_DIRECTORY, loadRules } from "@/infra/knowledge/rules-loader.adapter.ts";
 
 const SOLO_CELDAS: PlantillasPresentes = { celdas: true, campos: false };
 const SOLO_CAMPOS: PlantillasPresentes = { celdas: false, campos: true };
@@ -62,7 +62,7 @@ describe("elegirPlantilla: matriz de selección de plantilla (SOLI-01)", () => {
 let reglas: Reglas;
 
 beforeAll(async () => {
-  const cargadas = await cargarReglas(DIRECTORIO_CONOCIMIENTO_POR_DEFECTO);
+  const cargadas = await loadRules(DEFAULT_KNOWLEDGE_DIRECTORY);
   if (!cargadas.ok) throw new Error("reglas.json del repositorio inválido");
   reglas = cargadas.data;
 });

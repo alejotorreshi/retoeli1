@@ -5,7 +5,7 @@ import { mapearCamposCaso } from "@/application/use-cases/mapear-campos.use-case
 import { simularEnvio } from "@/application/use-cases/simular-envio.use-case.ts";
 import { HERRAMIENTA } from "@/config/constants/tools.constants.ts";
 import { DESCRIPCION_HERRAMIENTA, RESUMEN_HERRAMIENTA } from "@/config/strings.ts";
-import { defineTool } from "@/tools/definir-herramienta.factory.ts";
+import { definirHerramienta } from "@/tools/definir-herramienta.factory.ts";
 import {
   argsArmarPaquete,
   argsGenerarFormulario,
@@ -16,7 +16,7 @@ import {
 import type { OpcionesEntorno } from "@/tools/types/entorno.type.ts";
 
 export function crearHerramientas(opciones: OpcionesEntorno = {}) {
-  const leer_solicitud = defineTool(
+  const leer_solicitud = definirHerramienta(
     {
       nombre: HERRAMIENTA.LEER_SOLICITUD,
       description: DESCRIPCION_HERRAMIENTA[HERRAMIENTA.LEER_SOLICITUD],
@@ -35,7 +35,7 @@ export function crearHerramientas(opciones: OpcionesEntorno = {}) {
     opciones,
   );
 
-  const mapear_campos = defineTool(
+  const mapear_campos = definirHerramienta(
     {
       nombre: HERRAMIENTA.MAPEAR_CAMPOS,
       description: DESCRIPCION_HERRAMIENTA[HERRAMIENTA.MAPEAR_CAMPOS],
@@ -47,7 +47,7 @@ export function crearHerramientas(opciones: OpcionesEntorno = {}) {
     opciones,
   );
 
-  const generar_formulario = defineTool(
+  const generar_formulario = definirHerramienta(
     {
       nombre: HERRAMIENTA.GENERAR_FORMULARIO,
       description: DESCRIPCION_HERRAMIENTA[HERRAMIENTA.GENERAR_FORMULARIO],
@@ -63,7 +63,7 @@ export function crearHerramientas(opciones: OpcionesEntorno = {}) {
     opciones,
   );
 
-  const armar_paquete = defineTool(
+  const armar_paquete = definirHerramienta(
     {
       nombre: HERRAMIENTA.ARMAR_PAQUETE,
       description: DESCRIPCION_HERRAMIENTA[HERRAMIENTA.ARMAR_PAQUETE],
@@ -84,7 +84,7 @@ export function crearHerramientas(opciones: OpcionesEntorno = {}) {
     opciones,
   );
 
-  const simular_envio = defineTool(
+  const simular_envio = definirHerramienta(
     {
       nombre: HERRAMIENTA.SIMULAR_ENVIO,
       description: DESCRIPCION_HERRAMIENTA[HERRAMIENTA.SIMULAR_ENVIO],

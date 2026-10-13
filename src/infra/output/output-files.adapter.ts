@@ -10,15 +10,15 @@ import {
 } from "@/config/constants/files.constants.ts";
 import { PATRON_CASO } from "@/config/constants/patterns.constants.ts";
 import { TEXTO_INFRA } from "@/config/strings.ts";
-import { directorioSalidaCaso, rutaRelativa } from "@/infra/fs/safe-paths.util.ts";
+import { caseOutputDirectory, relativePath } from "@/infra/fs/safe-paths.util.ts";
 
-export function rutaEnPaquete(nombre: string): string {
+export function packagePath(nombre: string): string {
   return `${DIRECTORIO_PAQUETE}/${nombre}`;
 }
 
 const NOMBRES_PERMITIDOS: ReadonlySet<string> = new Set([
   ...Object.values(ARCHIVOS_SALIDA),
-  ...Object.values(ARCHIVOS_PAQUETE).map(rutaEnPaquete),
+  ...Object.values(ARCHIVOS_PAQUETE).map(packagePath),
 ]);
 
 function dentroDe(base: string, destino: string): boolean {
@@ -26,7 +26,7 @@ function dentroDe(base: string, destino: string): boolean {
 }
 
 async function casoRealDentroDeSalida(raiz: string, caso: string): Promise<string> {
-  const directorioCaso = directorioSalidaCaso(raiz, caso);
+  const directorioCaso = caseOutputDirectory(raiz, caso);
   await mkdir(directorioCaso, { recursive: true });
   const salidaReal = await realpath(join(raiz, OUT_DIR));
   const casoReal = await realpath(directorioCaso);
@@ -44,14 +44,14 @@ async function escribirContenido(
 ): Promise<string> {
   if (!PATRON_CASO.test(caso)) throw new RangeError(TEXTO_INFRA.casoInvalidoParaEscribir);
   if (!NOMBRES_PERMITIDOS.has(nombre)) throw new RangeError(TEXTO_INFRA.archivoFueraDeListaBlanca);
-  const destino = join(directorioSalidaCaso(raiz, caso), nombre);
+  const destino = join(caseOutputDirectory(raiz, caso), nombre);
   await casoRealDentroDeSalida(raiz, caso);
   await mkdir(dirname(destino), { recursive: true });
   await writeFile(destino, contenido);
-  return rutaRelativa(raiz, destino);
+  return relativePath(raiz, destino);
 }
 
-export function escribirArchivoSalida(
+export function writeOutputFile(
   raiz: string,
   caso: string,
   nombre: string,
@@ -60,7 +60,7 @@ export function escribirArchivoSalida(
   return escribirContenido(raiz, caso, nombre, contenido);
 }
 
-export function escribirBinarioSalida(
+export function writeOutputBinary(
   raiz: string,
   caso: string,
   nombre: string,
@@ -82,16 +82,16 @@ async function realOAusente(ruta: string): Promise<string | null> {
   }
 }
 
-export async function reiniciarPaquete(raiz: string, caso: string): Promise<string> {
+export async function resetPackage(raiz: string, caso: string): Promise<string> {
   if (!PATRON_CASO.test(caso)) throw new RangeError(TEXTO_INFRA.casoInvalidoParaArmar);
   const casoReal = await casoRealDentroDeSalida(raiz, caso);
   const paquete = join(casoReal, DIRECTORIO_PAQUETE);
   await rm(paquete, { recursive: true, force: true });
   await mkdir(paquete);
-  return rutaRelativa(raiz, join(directorioSalidaCaso(raiz, caso), DIRECTORIO_PAQUETE));
+  return relativePath(raiz, join(caseOutputDirectory(raiz, caso), DIRECTORIO_PAQUETE));
 }
 
-export async function listarPaquete(raiz: string, caso: string): Promise<readonly string[]> {
+export async function listPackage(raiz: string, caso: string): Promise<readonly string[]> {
   if (!PATRON_CASO.test(caso)) throw new RangeError(TEXTO_INFRA.casoInvalidoParaListar);
   const casoReal = await casoRealDentroDeSalida(raiz, caso);
   const entradas = await readdir(join(casoReal, DIRECTORIO_PAQUETE), { withFileTypes: true });
@@ -101,9 +101,9 @@ export async function listarPaquete(raiz: string, caso: string): Promise<readonl
     .sort();
 }
 
-export async function limpiarArtefactosPrevios(raiz: string, caso: string): Promise<void> {
+export async function clearPreviousArtifacts(raiz: string, caso: string): Promise<void> {
   if (!PATRON_CASO.test(caso)) throw new RangeError(TEXTO_INFRA.casoInvalidoParaLimpiar);
-  const casoReal = await realOAusente(directorioSalidaCaso(raiz, caso));
+  const casoReal = await realOAusente(caseOutputDirectory(raiz, caso));
   if (casoReal === null) return;
   const salidaReal = await realpath(join(raiz, OUT_DIR));
   if (!dentroDe(salidaReal, casoReal)) {

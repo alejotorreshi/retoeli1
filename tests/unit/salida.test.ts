@@ -3,8 +3,8 @@ import { existsSync } from "node:fs";
 import { mkdir, mkdtemp, readFile, rm, symlink, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { conCandadoCaso } from "@/infra/output/case-lock.adapter.ts";
-import { escribirArchivoSalida, limpiarArtefactosPrevios } from "@/infra/output/output-files.adapter.ts";
+import { withCaseLock } from "@/infra/output/case-lock.adapter.ts";
+import { clearPreviousArtifacts, writeOutputFile } from "@/infra/output/output-files.adapter.ts";
 
 const temporales: string[] = [];
 
@@ -22,26 +22,24 @@ function esperar(milisegundos: number): Promise<void> {
   return new Promise((resolver) => setTimeout(resolver, milisegundos));
 }
 
-describe("escribirArchivoSalida (D-33.3)", () => {
+describe("writeOutputFile (D-33.3)", () => {
   test("escribe dentro de out/<caso>/ creando carpetas y devuelve la ruta relativa", async () => {
     const raiz = await raizTemporal();
-    const ruta = await escribirArchivoSalida(raiz, "co-industrias-delta", "mapeo.json", "{}\n");
+    const ruta = await writeOutputFile(raiz, "co-industrias-delta", "mapeo.json", "{}\n");
     expect(ruta).toBe("out/co-industrias-delta/mapeo.json");
     expect(await readFile(join(raiz, "out", "co-industrias-delta", "mapeo.json"), "utf8")).toBe("{}\n");
   });
 
   test("acepta nombres anidados de la lista blanca", async () => {
     const raiz = await raizTemporal();
-    const ruta = await escribirArchivoSalida(raiz, "ec-corp-andina", "paquete/checklist.md", "# x\n");
+    const ruta = await writeOutputFile(raiz, "ec-corp-andina", "paquete/checklist.md", "# x\n");
     expect(ruta).toBe("out/ec-corp-andina/paquete/checklist.md");
   });
 
   for (const nombre of ["otro.json", "../mapeo.json", "paquete/../../x.md", "", "paquete", "log.jsonl"]) {
     test(`rechaza el nombre "${nombre}" fuera de la lista blanca sin escribir`, async () => {
       const raiz = await raizTemporal();
-      await expect(escribirArchivoSalida(raiz, "co-industrias-delta", nombre, "x")).rejects.toThrow(
-        RangeError,
-      );
+      await expect(writeOutputFile(raiz, "co-industrias-delta", nombre, "x")).rejects.toThrow(RangeError);
       expect(existsSync(join(raiz, "out"))).toBe(false);
     });
   }
@@ -49,7 +47,7 @@ describe("escribirArchivoSalida (D-33.3)", () => {
   for (const caso of ["../x", "CO", "a/b", ""]) {
     test(`rechaza el caso "${caso}"`, async () => {
       const raiz = await raizTemporal();
-      await expect(escribirArchivoSalida(raiz, caso, "mapeo.json", "x")).rejects.toThrow(RangeError);
+      await expect(writeOutputFile(raiz, caso, "mapeo.json", "x")).rejects.toThrow(RangeError);
     });
   }
 
@@ -58,15 +56,15 @@ describe("escribirArchivoSalida (D-33.3)", () => {
     const afuera = await raizTemporal();
     await mkdir(join(raiz, "out"), { recursive: true });
     await symlink(afuera, join(raiz, "out", "escape"));
-    await expect(escribirArchivoSalida(raiz, "escape", "mapeo.json", "x")).rejects.toThrow(RangeError);
+    await expect(writeOutputFile(raiz, "escape", "mapeo.json", "x")).rejects.toThrow(RangeError);
     expect(existsSync(join(afuera, "mapeo.json"))).toBe(false);
   });
 });
 
-describe("limpiarArtefactosPrevios (D-12)", () => {
+describe("clearPreviousArtifacts (D-12)", () => {
   test("no falla cuando out/<caso> no existe", async () => {
     const raiz = await raizTemporal();
-    await limpiarArtefactosPrevios(raiz, "co-industrias-delta");
+    await clearPreviousArtifacts(raiz, "co-industrias-delta");
     expect(existsSync(join(raiz, "out"))).toBe(false);
   });
 
@@ -78,7 +76,7 @@ describe("limpiarArtefactosPrevios (D-12)", () => {
     for (const nombre of ["paquete/x.txt", "log.jsonl", "mapeo.json", ...borrados]) {
       await writeFile(join(caso, nombre), "x");
     }
-    await limpiarArtefactosPrevios(raiz, "co-industrias-delta");
+    await clearPreviousArtifacts(raiz, "co-industrias-delta");
     expect(existsSync(join(caso, "paquete"))).toBe(false);
     for (const nombre of borrados) expect(existsSync(join(caso, nombre))).toBe(false);
     for (const nombre of ["log.jsonl", "mapeo.json"]) expect(existsSync(join(caso, nombre))).toBe(true);
@@ -91,23 +89,23 @@ describe("limpiarArtefactosPrevios (D-12)", () => {
     await writeFile(join(afuera, "paquete", "x.txt"), "ajeno");
     await mkdir(join(raiz, "out"), { recursive: true });
     await symlink(afuera, join(raiz, "out", "escape"));
-    await expect(limpiarArtefactosPrevios(raiz, "escape")).rejects.toThrow(RangeError);
+    await expect(clearPreviousArtifacts(raiz, "escape")).rejects.toThrow(RangeError);
     expect(existsSync(join(afuera, "paquete", "x.txt"))).toBe(true);
   });
 
   for (const caso of ["../x", "a/b", ""]) {
     test(`rechaza el caso "${caso}"`, async () => {
       const raiz = await raizTemporal();
-      await expect(limpiarArtefactosPrevios(raiz, caso)).rejects.toThrow(RangeError);
+      await expect(clearPreviousArtifacts(raiz, caso)).rejects.toThrow(RangeError);
     });
   }
 });
 
-describe("conCandadoCaso", () => {
+describe("withCaseLock", () => {
   test("serializa las secciones críticas de una misma clave", async () => {
     const eventos: string[] = [];
     const tarea = (nombre: string, demora: number) =>
-      conCandadoCaso("caso-a", async () => {
+      withCaseLock("caso-a", async () => {
         eventos.push(`inicio ${nombre}`);
         await esperar(demora);
         eventos.push(`fin ${nombre}`);
@@ -119,20 +117,20 @@ describe("conCandadoCaso", () => {
   });
 
   test("libera el candado cuando la sección crítica falla", async () => {
-    const fallida = conCandadoCaso("caso-b", async () => {
+    const fallida = withCaseLock("caso-b", async () => {
       throw new Error("falla");
     });
     await expect(fallida).rejects.toThrow("falla");
-    expect(await conCandadoCaso("caso-b", async () => "siguiente")).toBe("siguiente");
+    expect(await withCaseLock("caso-b", async () => "siguiente")).toBe("siguiente");
   });
 
   test("claves distintas no se esperan entre sí", async () => {
     const eventos: string[] = [];
-    const lenta = conCandadoCaso("caso-c", async () => {
+    const lenta = withCaseLock("caso-c", async () => {
       await esperar(20);
       eventos.push("lenta");
     });
-    const rapida = conCandadoCaso("caso-d", async () => {
+    const rapida = withCaseLock("caso-d", async () => {
       eventos.push("rapida");
     });
     await Promise.all([lenta, rapida]);

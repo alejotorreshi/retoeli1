@@ -8,8 +8,8 @@ import type { ProyectoTemporal } from "@tests/helpers/types/proyecto-temporal.ty
 import { z } from "zod";
 import { LIMITE_LECTURA_BYTES, MAX_ISSUES_ARGS } from "@/config/constants/limits.constants.ts";
 import { exito } from "@/domain/resultado.ts";
-import { relojFijo, relojSistema } from "@/infra/clock/clock.adapter.ts";
-import { defineTool, normalizarContexto } from "@/tools/definir-herramienta.factory.ts";
+import { fixedClock, systemClock } from "@/infra/clock/clock.adapter.ts";
+import { definirHerramienta, normalizarContexto } from "@/tools/definir-herramienta.factory.ts";
 import { leer_solicitud } from "@/tools/proveedor.ts";
 import type { ContextoHerramienta } from "@/tools/types/herramienta.type.ts";
 
@@ -143,7 +143,7 @@ describe("trazador: argumentos basura", () => {
   });
 
   test("el detalle se limita a MAX_ISSUES_ARGS problemas", async () => {
-    const muchos = defineTool({
+    const muchos = definirHerramienta({
       nombre: "muchos",
       description: "Herramienta de prueba con muchos argumentos.",
       args: {
@@ -228,7 +228,7 @@ describe("trazador: contexto de ejecución", () => {
 describe("trazador: excepciones internas", () => {
   test("una herramienta que lanza da ERROR_INTERNO sin traza y solo el nombre del error a stderr", async () => {
     const espia = spyOn(console, "error").mockImplementation(() => undefined);
-    const rota = defineTool({
+    const rota = definirHerramienta({
       nombre: "rota",
       description: "Herramienta de prueba que siempre lanza.",
       args: {},
@@ -504,12 +504,12 @@ describe("trazador: configuración por ejecución", () => {
 });
 
 describe("reloj inyectable", () => {
-  test('relojFijo("2026-09-03").hoy() es 2026-09-03', () => {
-    expect(relojFijo("2026-09-03").hoy()).toBe("2026-09-03");
+  test('fixedClock("2026-09-03").hoy() es 2026-09-03', () => {
+    expect(fixedClock("2026-09-03").hoy()).toBe("2026-09-03");
   });
 
-  test("relojSistema en America/Bogota da una fecha YYYY-MM-DD e instanteReal() es ISO", () => {
-    const reloj = relojSistema("America/Bogota");
+  test("systemClock en America/Bogota da una fecha YYYY-MM-DD e instanteReal() es ISO", () => {
+    const reloj = systemClock("America/Bogota");
     expect(reloj.hoy()).toMatch(/^\d{4}-\d{2}-\d{2}$/);
     expect(Number.isNaN(Date.parse(reloj.instanteReal()))).toBe(false);
   });

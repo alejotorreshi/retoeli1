@@ -21,7 +21,7 @@ function parte(partes: readonly Intl.DateTimeFormatPart[], tipo: Intl.DateTimeFo
   return partes.find((candidata) => candidata.type === tipo)?.value ?? "";
 }
 
-export function relojSistema(zona: string): Reloj {
+export function systemClock(zona: string): Reloj {
   const formato = new Intl.DateTimeFormat(LOCALE_INTL, {
     timeZone: zona,
     year: "numeric",
@@ -35,7 +35,7 @@ export function relojSistema(zona: string): Reloj {
   return { hoy, instanteReal };
 }
 
-export function relojFijo(fecha: string): Reloj {
+export function fixedClock(fecha: string): Reloj {
   const hoy = comoFechaISO(fecha);
   return { hoy: () => hoy, instanteReal };
 }

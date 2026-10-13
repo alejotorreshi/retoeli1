@@ -32,7 +32,7 @@ const plantillaPorClave = {
   [CLAVE_PLANTILLA.VALORES_PORTAL]: plantilla,
 } satisfies Record<ClavePlantilla, typeof plantilla>;
 
-export const esquemaReglas = z
+export const rulesSchema = z
   .object({
     version: z.literal(VERSION_REGLAS),
     confianza: z.object({ umbral: z.number().gt(0).max(1), ...confianzaPorRegla }).strict(),

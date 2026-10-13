@@ -4,11 +4,11 @@ import { LOCALE_INTL, ZONA_HORARIA_POR_DEFECTO } from "@/config/constants/runtim
 import { TEXTO_ENV } from "@/config/strings.ts";
 import { esFechaReal } from "@/domain/fecha.ts";
 
-function vacioComoAusente(valor: unknown): unknown {
+function emptyAsUndefined(valor: unknown): unknown {
   return valor === "" ? undefined : valor;
 }
 
-function esZonaHoraria(zona: string): boolean {
+function isTimeZone(zona: string): boolean {
   try {
     return new Intl.DateTimeFormat(LOCALE_INTL, { timeZone: zona }).resolvedOptions().timeZone !== "";
   } catch {
@@ -18,7 +18,7 @@ function esZonaHoraria(zona: string): boolean {
 
 export const toolEnvSchema = z.object({
   FECHA_EJECUCION: z.preprocess(
-    vacioComoAusente,
+    emptyAsUndefined,
     z
       .string()
       .regex(PATRON_FECHA, TEXTO_ENV.formatoFecha)
@@ -26,16 +26,16 @@ export const toolEnvSchema = z.object({
       .optional(),
   ),
   TZ_NEGOCIO: z.preprocess(
-    vacioComoAusente,
-    z.string().refine(esZonaHoraria, TEXTO_ENV.zonaHorariaInvalida).default(ZONA_HORARIA_POR_DEFECTO),
+    emptyAsUndefined,
+    z.string().refine(isTimeZone, TEXTO_ENV.zonaHorariaInvalida).default(ZONA_HORARIA_POR_DEFECTO),
   ),
 });
 
 export type ToolEnv = z.output<typeof toolEnvSchema>;
 
-type FuenteEntorno = Readonly<Record<string, string | undefined>>;
+type EnvSource = Readonly<Record<string, string | undefined>>;
 
-export function parseToolEnv(source: FuenteEntorno) {
+export function parseToolEnv(source: EnvSource) {
   return toolEnvSchema.safeParse(source, { error: z.locales.es().localeError });
 }
 

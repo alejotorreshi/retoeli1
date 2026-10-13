@@ -4,7 +4,7 @@ function ignorar(): undefined {
   return undefined;
 }
 
-export async function conCandadoCaso<T>(clave: string, seccion: () => Promise<T>): Promise<T> {
+export async function withCaseLock<T>(clave: string, seccion: () => Promise<T>): Promise<T> {
   const previa = colas.get(clave) ?? Promise.resolve();
   const ejecucion = previa.then(seccion);
   const cola = ejecucion.then(ignorar, ignorar);

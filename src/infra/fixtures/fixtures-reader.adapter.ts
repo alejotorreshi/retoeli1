@@ -16,9 +16,9 @@ import type { SoporteIndice } from "@/domain/types/checklist.type.ts";
 import type { Maestro } from "@/domain/types/maestro.type.ts";
 import type { Glosario } from "@/domain/types/mapeo.type.ts";
 import {
-  esquemaGlosario,
-  esquemaIndiceSoportes,
-  esquemaMaestro,
+  glossarySchema,
+  masterSchema,
+  supportIndexSchema,
 } from "@/infra/fixtures/schemas/fixtures.schema.ts";
 
 const NO_ENCONTRADO = { estado: ESTADO_LECTURA.NO_ENCONTRADO } as const;
@@ -37,15 +37,15 @@ function parsearJson(texto: string): { readonly ok: true; readonly valor: unknow
   }
 }
 
-export function resolverRaiz(directorio: string): string {
+export function resolveRoot(directorio: string): string {
   return resolve(directorio);
 }
 
-export function rutaEnCaso(directorioCaso: string, archivo: string): string {
+export function pathInCase(directorioCaso: string, archivo: string): string {
   return join(directorioCaso, archivo);
 }
 
-export async function existeArchivo(rutaAbs: string): Promise<boolean> {
+export async function fileExists(rutaAbs: string): Promise<boolean> {
   try {
     return (await stat(rutaAbs)).isFile();
   } catch {
@@ -53,7 +53,7 @@ export async function existeArchivo(rutaAbs: string): Promise<boolean> {
   }
 }
 
-export async function leerJsonValidado<T>(rutaAbs: string, esquema: z.ZodType<T>): Promise<Lectura<T>> {
+export async function readValidatedJson<T>(rutaAbs: string, esquema: z.ZodType<T>): Promise<Lectura<T>> {
   try {
     const info = await stat(rutaAbs);
     if (!info.isFile() || info.size > LIMITE_LECTURA_BYTES) return INVALIDO;
@@ -66,25 +66,25 @@ export async function leerJsonValidado<T>(rutaAbs: string, esquema: z.ZodType<T>
   }
 }
 
-export function leerMaestro(raiz: string): Promise<Lectura<Maestro>> {
-  return leerJsonValidado(resolve(raiz, FIXTURES_DIR, ARCHIVOS_REPOSITORIO.maestro), esquemaMaestro);
+export function readMaster(raiz: string): Promise<Lectura<Maestro>> {
+  return readValidatedJson(resolve(raiz, FIXTURES_DIR, ARCHIVOS_REPOSITORIO.maestro), masterSchema);
 }
 
-export function leerGlosario(raiz: string): Promise<Lectura<Glosario>> {
-  return leerJsonValidado(resolve(raiz, FIXTURES_DIR, ARCHIVOS_REPOSITORIO.glosario), esquemaGlosario);
+export function readGlossary(raiz: string): Promise<Lectura<Glosario>> {
+  return readValidatedJson(resolve(raiz, FIXTURES_DIR, ARCHIVOS_REPOSITORIO.glosario), glossarySchema);
 }
 
-export function directorioSoportes(raiz: string): string {
+export function supportsDirectory(raiz: string): string {
   return resolve(raiz, FIXTURES_DIR, SOPORTES_DIR);
 }
 
-export function leerIndiceSoportes(raiz: string): Promise<Lectura<readonly SoporteIndice[]>> {
-  return leerJsonValidado(join(directorioSoportes(raiz), INDICE_SOPORTES), esquemaIndiceSoportes);
+export function readSupportIndex(raiz: string): Promise<Lectura<readonly SoporteIndice[]>> {
+  return readValidatedJson(join(supportsDirectory(raiz), INDICE_SOPORTES), supportIndexSchema);
 }
 
-export async function soportesPresentes(raiz: string): Promise<Lectura<ReadonlySet<string>>> {
+export async function presentSupports(raiz: string): Promise<Lectura<ReadonlySet<string>>> {
   try {
-    const entradas = await readdir(directorioSoportes(raiz), { withFileTypes: true });
+    const entradas = await readdir(supportsDirectory(raiz), { withFileTypes: true });
     const archivos = entradas
       .filter(
         (entrada) =>

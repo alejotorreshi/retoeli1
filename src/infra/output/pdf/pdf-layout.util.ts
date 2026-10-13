@@ -3,13 +3,19 @@ import { PATRON_ESPACIOS } from "@/config/constants/patterns.constants.ts";
 import { COLOR_TRAZO, DISENO_PDF } from "@/config/constants/pdf.constants.ts";
 import { TEXTO_COMUN, TEXTO_PDF } from "@/config/strings.ts";
 import type { FilaFormulario } from "@/domain/types/formulario.type.ts";
-import type { ColorTrazo, EntradaLayoutPdf, LineaPdf, Medir, Pagina } from "@/infra/types/pdf-layout.type.ts";
+import type {
+  MeasureText,
+  PdfLayoutInput,
+  PdfLine,
+  PdfPage,
+  StrokeColor,
+} from "@/infra/types/pdf-layout.type.ts";
 
-type Estilo = { readonly tamano: number; readonly negrita: boolean; readonly color: ColorTrazo };
+type Estilo = { readonly tamano: number; readonly negrita: boolean; readonly color: StrokeColor };
 
 type Trozo = { readonly texto: string; readonly estilo: Estilo };
 
-type Lienzo = { readonly paginas: LineaPdf[][]; y: number };
+type Lienzo = { readonly paginas: PdfLine[][]; y: number };
 
 const X_ETIQUETA = DISENO_PDF.margen;
 const X_VALOR = DISENO_PDF.margen + DISENO_PDF.anchoEtiqueta + DISENO_PDF.separacionColumnas;
@@ -24,7 +30,7 @@ const TEXTO: Estilo = { tamano: DISENO_PDF.tamanoTexto, negrita: false, color: C
 const FALTANTE: Estilo = { ...TEXTO, color: COLOR_TRAZO.FALTANTE };
 const POR_CONFIRMAR: Estilo = { ...TEXTO, color: COLOR_TRAZO.POR_CONFIRMAR };
 
-function partirPalabra(palabra: string, ancho: number, estilo: Estilo, medir: Medir): string[] {
+function partirPalabra(palabra: string, ancho: number, estilo: Estilo, medir: MeasureText): string[] {
   const trozos: string[] = [];
   let actual = "";
   for (const caracter of Array.from(palabra)) {
@@ -40,7 +46,7 @@ function partirPalabra(palabra: string, ancho: number, estilo: Estilo, medir: Me
   return trozos;
 }
 
-function envolver(texto: string, ancho: number, estilo: Estilo, medir: Medir): string[] {
+function envolver(texto: string, ancho: number, estilo: Estilo, medir: MeasureText): string[] {
   const lineas: string[] = [];
   let actual = "";
   for (const palabra of texto.normalize("NFC").split(PATRON_ESPACIOS)) {
@@ -63,7 +69,7 @@ function trozos(textos: readonly string[], estilo: Estilo): Trozo[] {
   return textos.map((texto) => ({ texto, estilo }));
 }
 
-function conMarca(valor: string, marca: string, medir: Medir): string[] {
+function conMarca(valor: string, marca: string, medir: MeasureText): string[] {
   const lineas = envolver(valor, ANCHO_VALOR, POR_CONFIRMAR, medir);
   const ultima = lineas.pop();
   if (ultima === undefined) return [marca];
@@ -72,7 +78,7 @@ function conMarca(valor: string, marca: string, medir: Medir): string[] {
   return cabe ? [...lineas, unida] : [...lineas, ultima, marca];
 }
 
-function trozosDeValor(fila: FilaFormulario, medir: Medir): Trozo[] {
+function trozosDeValor(fila: FilaFormulario, medir: MeasureText): Trozo[] {
   if (fila.estado === ESTADO_CAMPO.FALTANTE) return trozos([TEXTO_PDF.faltante], FALTANTE);
   const valor = fila.valor ?? "";
   if (fila.estado === ESTADO_CAMPO.REQUIERE_CONFIRMACION) {
@@ -128,11 +134,11 @@ function columnas(lienzo: Lienzo, izquierda: readonly Trozo[], derecha: readonly
   }
 }
 
-function parrafo(lienzo: Lienzo, texto: string, estilo: Estilo, medir: Medir): void {
+function parrafo(lienzo: Lienzo, texto: string, estilo: Estilo, medir: MeasureText): void {
   columnas(lienzo, trozos(envolver(texto, ANCHO_COMPLETO, estilo, medir), estilo), []);
 }
 
-function encabezado(lienzo: Lienzo, entrada: EntradaLayoutPdf, medir: Medir): void {
+function encabezado(lienzo: Lienzo, entrada: PdfLayoutInput, medir: MeasureText): void {
   parrafo(lienzo, TEXTO_PDF.titulo, TITULO, medir);
   parrafo(lienzo, `${TEXTO_PDF.caso}${entrada.caso}`, TEXTO, medir);
   parrafo(lienzo, `${TEXTO_PDF.cliente}${entrada.cliente}`, TEXTO, medir);
@@ -140,7 +146,7 @@ function encabezado(lienzo: Lienzo, entrada: EntradaLayoutPdf, medir: Medir): vo
   avanzar(lienzo, DISENO_PDF.interlineado);
 }
 
-function campos(lienzo: Lienzo, filas: readonly FilaFormulario[], medir: Medir): void {
+function campos(lienzo: Lienzo, filas: readonly FilaFormulario[], medir: MeasureText): void {
   for (const fila of filas) {
     const etiqueta = trozos(envolver(etiquetaDe(fila), DISENO_PDF.anchoEtiqueta, ETIQUETA, medir), ETIQUETA);
     columnas(lienzo, etiqueta, trozosDeValor(fila, medir));
@@ -148,7 +154,7 @@ function campos(lienzo: Lienzo, filas: readonly FilaFormulario[], medir: Medir):
   }
 }
 
-function notas(lienzo: Lienzo, filas: readonly FilaFormulario[], medir: Medir): void {
+function notas(lienzo: Lienzo, filas: readonly FilaFormulario[], medir: MeasureText): void {
   avanzar(lienzo, DISENO_PDF.interlineado);
   reservar(lienzo, 2);
   parrafo(lienzo, TEXTO_PDF.notas, TITULO, medir);
@@ -160,7 +166,7 @@ function notas(lienzo: Lienzo, filas: readonly FilaFormulario[], medir: Medir): 
   for (const linea of lineas) parrafo(lienzo, linea, TEXTO, medir);
 }
 
-export function componerPdf(entrada: EntradaLayoutPdf, medir: Medir): Pagina[] {
+export function layoutPdf(entrada: PdfLayoutInput, medir: MeasureText): PdfPage[] {
   const lienzo: Lienzo = { paginas: [[]], y: Y_INICIAL };
   encabezado(lienzo, entrada, medir);
   campos(lienzo, entrada.filas, medir);

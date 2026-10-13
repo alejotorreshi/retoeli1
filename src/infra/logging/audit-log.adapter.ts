@@ -4,7 +4,7 @@ import type { EntradaBitacora, Registrar, Reloj } from "@/application/types/puer
 import { ARCHIVO_BITACORA, OUT_DIR } from "@/config/constants/files.constants.ts";
 import { PATRON_CASO } from "@/config/constants/patterns.constants.ts";
 import { TEXTO_INFRA } from "@/config/strings.ts";
-import { directorioSalidaCaso } from "@/infra/fs/safe-paths.util.ts";
+import { caseOutputDirectory } from "@/infra/fs/safe-paths.util.ts";
 
 async function anexar(directorio: string, linea: Readonly<Record<string, unknown>>): Promise<void> {
   await mkdir(directorio, { recursive: true });
@@ -19,7 +19,7 @@ function nombreDeError(error: unknown): string {
   return error instanceof Error ? error.name : typeof error;
 }
 
-export function crearBitacora(raiz: string, reloj: Reloj): Registrar {
+export function createAuditLog(raiz: string, reloj: Reloj): Registrar {
   return async (entrada: EntradaBitacora) => {
     const comun = {
       ts: reloj.instanteReal(),
@@ -34,7 +34,7 @@ export function crearBitacora(raiz: string, reloj: Reloj): Registrar {
     try {
       await anexar(join(raiz, OUT_DIR), { ...comun, ...(caso === undefined ? {} : { caso }), ...codigo });
       if (casoResuelto !== undefined) {
-        await anexar(directorioSalidaCaso(raiz, casoResuelto), { ...comun, ...codigo });
+        await anexar(caseOutputDirectory(raiz, casoResuelto), { ...comun, ...codigo });
       }
     } catch (error) {
       console.error(TEXTO_INFRA.errorDeBitacora(nombreDeError(error)));

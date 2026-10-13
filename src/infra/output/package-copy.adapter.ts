@@ -8,8 +8,8 @@ import {
 } from "@/config/constants/files.constants.ts";
 import { PATRON_ARCHIVO_SOPORTE, PATRON_CASO } from "@/config/constants/patterns.constants.ts";
 import { TEXTO_INFRA } from "@/config/strings.ts";
-import { directorioSoportes } from "@/infra/fixtures/fixtures-reader.adapter.ts";
-import { directorioSalidaCaso, rutaRelativa } from "@/infra/fs/safe-paths.util.ts";
+import { supportsDirectory } from "@/infra/fixtures/fixtures-reader.adapter.ts";
+import { caseOutputDirectory, relativePath } from "@/infra/fs/safe-paths.util.ts";
 
 const COPIAS_DE_FORMULARIO: ReadonlySet<string> = new Set(Object.values(ARCHIVO_FORMULARIO));
 
@@ -32,11 +32,11 @@ async function directoriosReales(
   caso: string,
 ): Promise<{ readonly caso: string; readonly paquete: string; readonly soportes: string }> {
   const salidaReal = await realpath(join(raiz, OUT_DIR));
-  const casoReal = await realpath(directorioSalidaCaso(raiz, caso));
+  const casoReal = await realpath(caseOutputDirectory(raiz, caso));
   if (!dentroDe(salidaReal, casoReal)) throw new RangeError(TEXTO_INFRA.salidaFueraDeOut);
   const paqueteReal = await realpath(join(casoReal, DIRECTORIO_PAQUETE));
   if (!dentroDe(casoReal, paqueteReal)) throw new RangeError(TEXTO_INFRA.paqueteFueraDelCaso);
-  return { caso: casoReal, paquete: paqueteReal, soportes: await realpath(directorioSoportes(raiz)) };
+  return { caso: casoReal, paquete: paqueteReal, soportes: await realpath(supportsDirectory(raiz)) };
 }
 
 function origenPermitido(
@@ -47,7 +47,7 @@ function origenPermitido(
   return dentroDe(directorios.caso, origenReal) && !dentroDe(directorios.paquete, origenReal);
 }
 
-export async function copiarAlPaquete(
+export async function copyIntoPackage(
   raiz: string,
   caso: string,
   origenAbs: string,
@@ -63,5 +63,5 @@ export async function copiarAlPaquete(
     throw new RangeError(TEXTO_INFRA.origenNoPermitido);
   }
   await Bun.write(join(directorios.paquete, nombreDestino), Bun.file(origenReal));
-  return rutaRelativa(raiz, join(directorioSalidaCaso(raiz, caso), DIRECTORIO_PAQUETE, nombreDestino));
+  return relativePath(raiz, join(caseOutputDirectory(raiz, caso), DIRECTORIO_PAQUETE, nombreDestino));
 }

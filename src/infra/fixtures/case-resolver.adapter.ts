@@ -18,7 +18,7 @@ function directorioCasos(raiz: string): string {
   return resolve(raiz, FIXTURES_DIR, CASOS_DIR);
 }
 
-export async function resolverCaso(raiz: string, caso: string): Promise<ResolucionCaso> {
+export async function resolveCase(raiz: string, caso: string): Promise<ResolucionCaso> {
   if (!PATRON_CASO.test(caso)) return INVALIDO;
   try {
     const casosDir = await realpath(directorioCasos(raiz));
@@ -31,7 +31,7 @@ export async function resolverCaso(raiz: string, caso: string): Promise<Resoluci
   }
 }
 
-export async function listarCasos(raiz: string): Promise<readonly string[]> {
+export async function listCases(raiz: string): Promise<readonly string[]> {
   try {
     const entradas = await readdir(directorioCasos(raiz), { withFileTypes: true });
     return entradas
