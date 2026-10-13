@@ -3,16 +3,16 @@ gsd_state_version: "1.0"
 current_phase: 02
 current_phase_name: Agente y compuerta de confirmación
 status: executing
-stopped_at: Completed 02-09-PLAN.md
-last_updated: "2026-10-13T21:32:00.596Z"
+stopped_at: Completed 02-10-PLAN.md
+last_updated: "2026-10-13T21:55:56.595Z"
 last_activity: 2026-10-13
 last_activity_desc: Phase 02 execution started
-state_head: db84e60d952e86bb6e064a9e45824908b808d13f
+state_head: 519586aec4553a1137bf14e71a087a62a76f0697
 progress:
   total_phases: 4
   completed_phases: 1
   total_plans: 29
-  completed_plans: 24
+  completed_plans: 25
   percent: 25
 ---
 
@@ -27,8 +27,8 @@ See: .planning/PROJECT.md (updated 2026-10-13)
 
 ## Current Position
 
-Phase: 02 (Agente y compuerta de confirmación) — READY TO EXECUTE
-Plan: 9 of 9
+Phase: 02 (Agente y compuerta de confirmación) — EXECUTING
+Plan: 2 of 14
 Status: Ready to execute
 Last activity: 2026-10-13 — Phase 02 execution started
 
@@ -80,6 +80,7 @@ Progress: [███░░░░░░░] 25%
 | Phase 02 P07 | 4 min | 2 tasks | 10 files |
 | Phase 02 P08 | 13 min | 3 tasks | 32 files |
 | Phase 02 P09 | 6 min | 2 tasks | 8 files |
+| Phase 02 P10 | 4 min | 2 tasks | 8 files |
 
 ## Accumulated Context
 
@@ -168,6 +169,9 @@ Recent decisions affecting current work:
 - [Phase 02]: 02-09: el prompt nombra los soportes en palabras legibles derivadas del tipo; las herramientas conservan los ids crudos (contrato v1)
 - [Phase 02]: 02-09: la pregunta de cierre es la última oración y no hay secciones fuera del formato D-43; los avisos de soportes presentes van en Soportes por actualizar
 - [Phase 02]: 02-09: la prueba en vivo es opt-in solo por LLM_EN_VIVO; sin clave falla en la primera aserción y nunca se salta
+- [Phase 02]: 02-10: with a case pending, every turn ends with preguntaConfirmacion as its last paragraph; trailing model question lines are stripped first, even one naming the case (D-44 strict, CR-02 closed)
+- [Phase 02]: 02-10: sinPreguntaFinal cuts a trailing question line only at FINES_DE_ORACION before its first question mark, otherwise drops the whole line, so model text is never left mid-sentence
+- [Phase 02]: 02-10: T-02-41 accepted: non-question model lines above the server question remain; carried to SOLUCION.md risks (Phase 4) and the Phase 3 confirmation card
 
 ### Pending Todos
 
@@ -193,6 +197,6 @@ Items acknowledged and deferred at milestone close, most recent first:
 
 ## Session Continuity
 
-Last session: 2026-10-13T20:30:46.242Z
-Stopped at: Completed 02-09-PLAN.md
+Last session: 2026-10-13T21:55:56.541Z
+Stopped at: Completed 02-10-PLAN.md
 Resume file: None
