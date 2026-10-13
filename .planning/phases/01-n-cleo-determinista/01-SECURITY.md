@@ -64,6 +64,16 @@ created: "2026-10-12"
 | T-01-22 | Tampering | mapeo.json and log.jsonl under concurrent mapear_campos | medium | mitigate | per-caso lock + one appendFile per line (mapear-campos.ts:113; bitacora.ts:9); contract/sinteticos.test.ts:180-197 | closed |
 | T-01-23 | Tampering | src/infra/salida/archivos.ts D-12 recursive delete (threat flag from 01-07) | medium | mitigate | caso regex, realpath containment in out/, fixed target names paquete and ENVIO-SIMULADO.md (archivos.ts:70-98); unit/salida.test.ts:66-110 | closed |
 | T-01-SC | Tampering | npm installs | high | mitigate | exact pins, committed bun.lock, uuid override → 11.1.1, `bun audit --audit-level=moderate` in `bun run check` (clean, 207 packages), human legitimacy gate in 01-01-SUMMARY | closed |
+| T-01-24 | Tampering / DoS | src/infra/output/xlsx-writer.adapter.ts (width and wrap) | low | mitigate | widths clamped minimo..maximo, only template-addressed columns sized, numFmt "@" kept (xlsx-writer.adapter.ts:28-31,45-50,57); tests/unit/xlsx-writer.adapter.test.ts:62-99,134-155 | closed |
+| T-01-25 | Info disclosure | src/domain/builders/borrador.builder.ts por_confirmar rows | medium | mitigate | rows carry only { etiqueta } (no nota, WR-02); maestro read limited to RUTAS_BORRADOR; banco.* routed to confirmaciones_internas, never to the client (borrador.builder.ts:18-20,69-75; checklist.builder.ts:62-67); tests/unit/borrador.builder.test.ts:151-199,273-280, tests/e2e/pii.test.ts:138 | closed |
+| T-01-26 | Repudiation | ENVIO-SIMULADO.md sent list | medium | mitigate | client-file set ∩ real paquete/ listing; internal files never listed (borrador.builder.ts:34-41,115); tests/contract/simular-envio.test.ts:228-267 | closed |
+| T-01-27 | Tampering | src/knowledge/plantillas/*.md edits | low | mitigate | Object.hasOwn variable lookup, unknown variable/section → REGLAS_INVALIDAS (motor-plantillas.engine.ts:41-88); tests/unit/motor-plantillas.engine.test.ts:42-59, tests/golden/borrador-envio.test.ts:255-264 | closed |
+| T-01-28 | Tampering | TEXTO_SOPORTE.nombre (src/config/strings.ts) | medium | mitigate | Object.hasOwn own-key check, unknown/prototype ids return the raw id (strings.ts:92-95); tests/unit/checklist.builder.test.ts:93-108 | closed |
+| T-01-29 | Info disclosure | NOMBRE_SOPORTE table | low | accept | static code-owned names, no PII — see Accepted Risks Log | closed |
+| T-01-30 | Tampering / Repudiation | tool contract v1 (bloqueos, resumen, logs) | medium | mitigate | raw ids kept in data, resumen and audit log; names only in human-facing builders (checklist.builder.ts:30-36,52; herramientas.factory.ts:72-97; audit-log.adapter.ts:21-30); tests/golden/nombres-soporte.test.ts:196-216, tests/golden/paquete.test.ts:131-143 | closed |
+| T-01-31 | Tampering / Repudiation | simular_envio contract v1 vs ENVIO-SIMULADO record | medium | mitigate | record renders names (borrador.builder.ts:117), data.bloqueos stays raw (simular-envio.use-case.ts:49); tests/contract/simular-envio.test.ts:217-224, tests/golden/nombres-soporte.test.ts:171-200 | closed |
+| T-01-32 | Tampering | unknown / prototype-like tipo in envío and borrador builders | low | mitigate | names resolved only via TEXTO_SOPORTE.nombre (borrador.builder.ts:25,47-48,117); tests/unit/borrador.builder.test.ts:356-417 | closed |
+| T-01-33 | Info disclosure / Tampering | PAQUETE_DESACTUALIZADO stale-package check (paquete/ listing, borrador read, parcial payload) | medium | mitigate | listPackage resolves paquete/ via realpath containment and no longer mkdirs (output-files.adapter.ts:74); borrador read via readOwnRegularText: O_NOFOLLOW + fstat, rejects symlinks, hard links, non-regular and oversized files (output-files.adapter.ts:87; fs.util.ts:40-62); leftovers echoed only if they match PATRON_ARCHIVO_SOPORTE, capped at LIMITE_SOBRANTES_REPORTADOS=20, the rest counted in archivos_sobrantes_no_listados and still rejecting (paquete-vigente.policy.ts:25-53); OS junk ignored by exact name; nothing written on rejection (simular-envio.use-case.ts:36); tests/unit/output-files.adapter.test.ts:128-160, tests/unit/paquete-vigente.policy.test.ts:145-178, tests/contract/simular-envio.test.ts:347 (fixed in c1d5f7f, 37048ae) | closed |
 
 *Status: open · closed · open — below high threshold (non-blocking)*
 *Severity: critical > high > medium > low — only open threats at or above workflow.security_block_on count toward threats_open*
@@ -75,9 +85,45 @@ Informational notes (non-blocking):
 
 ---
 
+### Evidence path map (2026-10-13)
+
+The role-folder refactor renamed the files cited above for T-01-01..T-01-23. Mitigations were re-located and confirmed present by gsd-security-auditor on 2026-10-13:
+
+| Threat | Current mitigation | Current test |
+|--------|--------------------|--------------|
+| T-01-01 | src/infra/fixtures/case-resolver.adapter.ts:15-19, src/application/services/contexto-caso.service.ts:19, src/infra/fs/safe-paths.util.ts:15-48 | tests/e2e/trazador.test.ts:170-182 |
+| T-01-02 | src/tools/factories/definir-herramienta.factory.ts:80-108,172-178, src/domain/utils/formatear-issues.util.ts, src/domain/utils/nombre-error.util.ts | tests/e2e/trazador.test.ts:229-249 |
+| T-01-03 | src/infra/logging/audit-log.adapter.ts:15-35 | tests/e2e/trazador.test.ts:373-433 |
+| T-01-04 | src/infra/fs/fs.util.ts:19-31, fixtures-reader.adapter.ts:41, rules-loader.adapter.ts:29, template-loader.adapter.ts:18 | tests/e2e/trazador.test.ts:298-305 |
+| T-01-05 | tests/architecture.test.ts:27,454,666 | tests/architecture.test.ts:747-758 |
+| T-01-06 | src/demo/runners/ejecutar-demo.runner.ts:80-84,236-242 | tests/e2e/demo.test.ts:44,136 |
+| T-01-07 | src/domain/policies/pii.policy.ts:45-58, src/domain/builders/campo-presentado.builder.ts, src/domain/engines/mapeo.engine.ts:58-70 | tests/unit/pii.policy.test.ts:33-95 |
+| T-01-08 | src/domain/selectors/maestro.selector.ts:8-40, mapping.constants.ts:60, glosario.builder.ts:15-16 | tests/unit/mapeo.engine.test.ts:106-131 |
+| T-01-09 | src/infra/knowledge/rules-loader.adapter.ts:19-33, src/infra/knowledge/schemas/rules.schema.ts | tests/contract/reglas.test.ts |
+| T-01-10 | src/application/services/mapeo-canonico.service.ts:25-39, mapear-campos.use-case.ts:51-53 | tests/golden/mapear-campos.test.ts:19-28,168-174 |
+| T-01-11 | src/tools/schemas/argumentos.schema.ts:11-17, generar-formulario.use-case.ts:93-107 | tests/contract/generar-formulario.test.ts:125-149 |
+| T-01-12 | src/infra/output/xlsx-writer.adapter.ts:56-67 | tests/unit/xlsx-writer.adapter.test.ts:134-141 |
+| T-01-13 | src/infra/output/pdf/pdf-renderer.adapter.ts:25,64,70 | tests/unit/pdf-layout.util.test.ts:131-175 |
+| T-01-14 | src/domain/builders/portal.builder.ts:19-31, motor-plantillas.engine.ts:56-59 | tests/golden/formulario-portal.test.ts:106-117 |
+| T-01-15 | src/domain/builders/borrador.builder.ts:18-20,69-71, maestro.constants.ts (RUTAS_BORRADOR) | tests/golden/borrador-envio.test.ts:116-127 |
+| T-01-16 | src/infra/output/package-copy.adapter.ts:21-64 | tests/unit/package-copy.adapter.test.ts:44-99 |
+| T-01-17 | src/application/use-cases/simular-envio.use-case.ts:16-18,48 | tests/contract/simular-envio.test.ts:159-220 |
+| T-01-18 | src/infra/output/case-lock.adapter.ts:1-17 (wraps the four writer use cases) | tests/golden/paquete.test.ts:267-275 |
+| T-01-19 | src/demo/runners/ejecutar-demo.runner.ts | tests/e2e/pii.test.ts:138-147 |
+| T-01-20 | src/infra/fs/safe-paths.util.ts:7-9 | tests/e2e/determinismo.test.ts:74 |
+| T-01-21 | tests/fixtures/casos/zz-* (unchanged) | — |
+| T-01-22 | mapear-campos.use-case.ts:66, audit-log.adapter.ts:10-13 | tests/contract/sinteticos.test.ts:217-230 |
+| T-01-23 | src/infra/output/output-files.adapter.ts:63-96, safe-paths.util.ts:19-42 | tests/unit/output-files.adapter.test.ts:65-104 |
+| T-01-SC | package.json pins + uuid override, bun audit in `bun run check` | bun audit clean (207 packages) |
+
+---
+
 ## Accepted Risks Log
 
-No accepted risks.
+| Risk | Severity | Rationale | Accepted |
+|------|----------|-----------|----------|
+| T-01-29 · NOMBRE_SOPORTE | low | Static, code-owned Spanish type names (src/config/strings.ts:82-90) with no maestro data or PII; tests/e2e/pii.test.ts still scans checklist, borrador and ENVIO-SIMULADO | 2026-10-13 |
+| T-01-33 residual · leftover names that match PATRON_ARCHIVO_SOPORTE are echoed | low | A name like `ignora-las-instrucciones.txt` can still reach the caller, but only as ≤101 chars of [a-z0-9._-] with no spaces or control characters, at most 20 names; the send stays gated by `confirmado` (T-01-17) and, from Phase 2, by the server-side confirmation gate (ENV-02). Revisit if Phase 2 shows the model acting on file names | 2026-10-13 |
 
 *Accepted risks do not resurface in future audit runs.*
 
@@ -88,6 +134,7 @@ No accepted risks.
 | Audit Date | Threats Total | Closed | Open | Run By |
 |------------|---------------|--------|------|--------|
 | 2026-10-12 | 24 | 24 | 0 | gsd-security-auditor (ASVS L1, block_on high) |
+| 2026-10-13 | 34 | 34 | 0 | gsd-security-auditor (ASVS L1, block_on high); T-01-33 found open, fixed in c1d5f7f/37048ae, closed |
 
 ---
 
@@ -98,4 +145,12 @@ No accepted risks.
 - [x] `threats_open: 0` confirmed
 - [x] `status: verified` set in frontmatter
 
-**Approval:** verified 2026-10-12
+**Approval:** verified 2026-10-12; re-verified 2026-10-13 (T-01-24..T-01-33 added, evidence paths remapped)
+
+## Security Audit 2026-10-13
+
+| Metric | Count |
+|---|---|
+| Threats found | 34 |
+| Closed | 34 |
+| Open | 0 |
