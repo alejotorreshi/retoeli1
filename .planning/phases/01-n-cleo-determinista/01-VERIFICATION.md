@@ -1,252 +1,222 @@
 ---
 phase: 01-n-cleo-determinista
-verified: 2026-10-12T23:45:00Z
-status: gaps_found
-score: 90/91 must-haves verified
-covered_files: [".bun-version",".dockerignore",".gitignore",".planning/phases/01-n-cleo-determinista/01-01-PLAN.md",".planning/phases/01-n-cleo-determinista/01-01-SUMMARY.md",".planning/phases/01-n-cleo-determinista/01-02-PLAN.md",".planning/phases/01-n-cleo-determinista/01-02-SUMMARY.md",".planning/phases/01-n-cleo-determinista/01-03-PLAN.md",".planning/phases/01-n-cleo-determinista/01-03-SUMMARY.md",".planning/phases/01-n-cleo-determinista/01-04-PLAN.md",".planning/phases/01-n-cleo-determinista/01-04-SUMMARY.md",".planning/phases/01-n-cleo-determinista/01-05-PLAN.md",".planning/phases/01-n-cleo-determinista/01-05-SUMMARY.md",".planning/phases/01-n-cleo-determinista/01-06-PLAN.md",".planning/phases/01-n-cleo-determinista/01-06-SUMMARY.md",".planning/phases/01-n-cleo-determinista/01-07-PLAN.md",".planning/phases/01-n-cleo-determinista/01-07-SUMMARY.md",".planning/phases/01-n-cleo-determinista/01-08-PLAN.md",".planning/phases/01-n-cleo-determinista/01-08-SUMMARY.md",".planning/phases/01-n-cleo-determinista/01-09-PLAN.md",".planning/phases/01-n-cleo-determinista/01-09-SUMMARY.md",".planning/phases/01-n-cleo-determinista/01-10-PLAN.md",".planning/phases/01-n-cleo-determinista/01-10-SUMMARY.md",".planning/phases/01-n-cleo-determinista/01-11-PLAN.md",".planning/phases/01-n-cleo-determinista/01-11-SUMMARY.md","biome.json","bun.lock","demo.ts","package.json","src/application/armar-paquete.ts","src/application/contexto-caso.ts","src/application/generar-formulario.ts","src/application/leer-solicitud.ts","src/application/mapear-campos.ts","src/application/puertos.ts","src/application/simular-envio.ts","src/config/constantes.ts","src/config/env.ts","src/demo/ejecutar-demo.ts","src/domain/borrador.ts","src/domain/checklist.ts","src/domain/comparar-mapeo.ts","src/domain/errores.ts","src/domain/formulario.ts","src/domain/mapeo.ts","src/domain/normalizar.ts","src/domain/pii.ts","src/domain/plantillas.ts","src/domain/portal.ts","src/domain/reglas.ts","src/domain/resultado.ts","src/domain/solicitud.ts","src/domain/tipos.ts","src/domain/vigencias.ts","src/infra/bitacora.ts","src/infra/fixtures/esquemas.ts","src/infra/fixtures/lector.ts","src/infra/knowledge/plantillas.ts","src/infra/knowledge/reglas.ts","src/infra/reloj.ts","src/infra/salida/archivos.ts","src/infra/salida/copias.ts","src/infra/salida/mutex.ts","src/infra/salida/pdf/layout.ts","src/infra/salida/pdf/render.ts","src/infra/salida/rutas-seguras.ts","src/infra/salida/xlsx.ts","src/knowledge/plantillas/borrador-correo.md","src/knowledge/plantillas/checklist.md","src/knowledge/plantillas/envio-simulado.md","src/knowledge/plantillas/valores-portal.md","src/knowledge/reglas.json","src/tools/argumentos.ts","src/tools/define-tool.ts","src/tools/fabrica.ts","src/tools/issues.ts","src/tools/proveedor.ts","src/tools/wiring.ts","tests/architecture.test.ts","tests/contract/generar-formulario.test.ts","tests/contract/reglas.test.ts","tests/contract/simular-envio.test.ts","tests/contract/sinteticos.test.ts","tests/e2e/demo.test.ts","tests/e2e/determinismo.test.ts","tests/e2e/pii.test.ts","tests/e2e/trazador.test.ts","tests/fixtures/casos/zz-generica-co/plantilla-campos.json","tests/fixtures/casos/zz-generica-co/solicitud.json","tests/fixtures/casos/zz-generica-co/soportes-exigidos.json","tests/fixtures/casos/zz-generica-ec/plantilla-campos.json","tests/fixtures/casos/zz-generica-ec/solicitud.json","tests/fixtures/casos/zz-generica-ec/soportes-exigidos.json","tests/fixtures/casos/zz-plantilla-corrupta/plantilla-celdas.json","tests/fixtures/casos/zz-plantilla-corrupta/solicitud.json","tests/fixtures/casos/zz-plantilla-corrupta/soportes-exigidos.json","tests/golden/borrador-envio.test.ts","tests/golden/formulario-pdf.test.ts","tests/golden/formulario-portal.test.ts","tests/golden/formulario-xlsx.test.ts","tests/golden/mapear-campos.test.ts","tests/golden/paquete.test.ts","tests/helpers/correr-demo.ts","tests/helpers/flujo.ts","tests/helpers/instantanea.ts","tests/helpers/pdf-texto.ts","tests/helpers/proyecto-temporal.ts","tests/helpers/xlsx-leer.ts","tests/sin-comentarios.test.ts","tests/unit/comparar-mapeo.test.ts","tests/unit/copias.test.ts","tests/unit/mapeo.test.ts","tests/unit/normalizar.test.ts","tests/unit/pdf-layout.test.ts","tests/unit/pii.test.ts","tests/unit/plantillas.test.ts","tests/unit/salida.test.ts","tests/unit/solicitud.test.ts","tests/unit/vigencias.test.ts","tsconfig.json"]
-covered_digest: "v3:sha256:08cb90d9bf009d7dad48789fb9d60ea0a92d1272a83ce95b6c40f209fe804ef9"
+verified: 2026-10-13T04:40:00Z
+status: human_needed
+score: 111/111 must-haves verified
+covered_files: [".bun-version",".dockerignore",".gitignore",".planning/phases/01-n-cleo-determinista/01-01-PLAN.md",".planning/phases/01-n-cleo-determinista/01-01-SUMMARY.md",".planning/phases/01-n-cleo-determinista/01-02-PLAN.md",".planning/phases/01-n-cleo-determinista/01-02-SUMMARY.md",".planning/phases/01-n-cleo-determinista/01-03-PLAN.md",".planning/phases/01-n-cleo-determinista/01-03-SUMMARY.md",".planning/phases/01-n-cleo-determinista/01-04-PLAN.md",".planning/phases/01-n-cleo-determinista/01-04-SUMMARY.md",".planning/phases/01-n-cleo-determinista/01-05-PLAN.md",".planning/phases/01-n-cleo-determinista/01-05-SUMMARY.md",".planning/phases/01-n-cleo-determinista/01-06-PLAN.md",".planning/phases/01-n-cleo-determinista/01-06-SUMMARY.md",".planning/phases/01-n-cleo-determinista/01-07-PLAN.md",".planning/phases/01-n-cleo-determinista/01-07-SUMMARY.md",".planning/phases/01-n-cleo-determinista/01-08-PLAN.md",".planning/phases/01-n-cleo-determinista/01-08-SUMMARY.md",".planning/phases/01-n-cleo-determinista/01-09-PLAN.md",".planning/phases/01-n-cleo-determinista/01-09-SUMMARY.md",".planning/phases/01-n-cleo-determinista/01-10-PLAN.md",".planning/phases/01-n-cleo-determinista/01-10-SUMMARY.md",".planning/phases/01-n-cleo-determinista/01-11-PLAN.md",".planning/phases/01-n-cleo-determinista/01-11-SUMMARY.md",".planning/phases/01-n-cleo-determinista/01-12-PLAN.md",".planning/phases/01-n-cleo-determinista/01-12-SUMMARY.md",".planning/phases/01-n-cleo-determinista/01-13-PLAN.md",".planning/phases/01-n-cleo-determinista/01-13-SUMMARY.md",".planning/phases/01-n-cleo-determinista/01-14-PLAN.md",".planning/phases/01-n-cleo-determinista/01-14-SUMMARY.md",".planning/phases/01-n-cleo-determinista/01-15-PLAN.md",".planning/phases/01-n-cleo-determinista/01-15-SUMMARY.md","biome.json","bun.lock","demo.ts","package.json","src/application/services/contexto-caso.service.ts","src/application/services/estado-paquete.service.ts","src/application/services/mapeo-canonico.service.ts","src/application/types/armar-paquete.type.ts","src/application/types/contexto-caso.type.ts","src/application/types/generar-formulario.type.ts","src/application/types/leer-solicitud.type.ts","src/application/types/mapear-campos.type.ts","src/application/types/mapeo-canonico.type.ts","src/application/types/puertos.type.ts","src/application/types/simular-envio.type.ts","src/application/use-cases/armar-paquete.use-case.ts","src/application/use-cases/generar-formulario.use-case.ts","src/application/use-cases/leer-solicitud.use-case.ts","src/application/use-cases/mapear-campos.use-case.ts","src/application/use-cases/simular-envio.use-case.ts","src/config/constants/demo.constants.ts","src/config/constants/errors.constants.ts","src/config/constants/files.constants.ts","src/config/constants/forms.constants.ts","src/config/constants/io.constants.ts","src/config/constants/knowledge.constants.ts","src/config/constants/limits.constants.ts","src/config/constants/maestro.constants.ts","src/config/constants/mapping.constants.ts","src/config/constants/patterns.constants.ts","src/config/constants/pdf.constants.ts","src/config/constants/pii.constants.ts","src/config/constants/runtime.constants.ts","src/config/constants/supports.constants.ts","src/config/constants/tools.constants.ts","src/config/constants/xlsx.constants.ts","src/config/env.ts","src/config/strings.ts","src/config/types/valor-de.type.ts","src/demo/runners/ejecutar-demo.runner.ts","src/demo/types/demo.type.ts","src/domain/builders/borrador.builder.ts","src/domain/builders/campo-presentado.builder.ts","src/domain/builders/checklist.builder.ts","src/domain/builders/formulario.builder.ts","src/domain/builders/glosario.builder.ts","src/domain/builders/portal.builder.ts","src/domain/engines/mapeo.engine.ts","src/domain/engines/motor-plantillas.engine.ts","src/domain/policies/comparar-mapeo.policy.ts","src/domain/policies/identificador-tributario.policy.ts","src/domain/policies/pii.policy.ts","src/domain/policies/plantilla-caso.policy.ts","src/domain/policies/soportes.policy.ts","src/domain/policies/validar-reglas.policy.ts","src/domain/policies/vigencias.policy.ts","src/domain/selectors/maestro.selector.ts","src/domain/selectors/solicitud.selector.ts","src/domain/types/borrador.type.ts","src/domain/types/checklist.type.ts","src/domain/types/comparar-mapeo.type.ts","src/domain/types/errores.type.ts","src/domain/types/fecha.type.ts","src/domain/types/formulario.type.ts","src/domain/types/glosario.type.ts","src/domain/types/maestro.type.ts","src/domain/types/mapeo.type.ts","src/domain/types/motor-plantillas.type.ts","src/domain/types/pii.type.ts","src/domain/types/plantilla-caso.type.ts","src/domain/types/portal.type.ts","src/domain/types/reglas.type.ts","src/domain/types/resultado.type.ts","src/domain/types/solicitud.type.ts","src/domain/types/soportes.type.ts","src/domain/types/validacion.type.ts","src/domain/types/vigencias.type.ts","src/domain/utils/fecha.util.ts","src/domain/utils/formatear-issues.util.ts","src/domain/utils/nombre-error.util.ts","src/domain/utils/normalizar.util.ts","src/domain/utils/resultado.util.ts","src/infra/clock/clock.adapter.ts","src/infra/fixtures/case-resolver.adapter.ts","src/infra/fixtures/fixtures-reader.adapter.ts","src/infra/fixtures/schemas/fixtures.schema.ts","src/infra/fs/fs.util.ts","src/infra/fs/safe-paths.util.ts","src/infra/knowledge/rules-loader.adapter.ts","src/infra/knowledge/schemas/rules.schema.ts","src/infra/knowledge/template-loader.adapter.ts","src/infra/logging/audit-log.adapter.ts","src/infra/output/case-lock.adapter.ts","src/infra/output/output-files.adapter.ts","src/infra/output/package-copy.adapter.ts","src/infra/output/pdf/pdf-layout.util.ts","src/infra/output/pdf/pdf-renderer.adapter.ts","src/infra/output/xlsx-writer.adapter.ts","src/infra/types/fs.type.ts","src/infra/types/pdf-layout.type.ts","src/knowledge/plantillas/borrador-correo.md","src/knowledge/plantillas/checklist.md","src/knowledge/plantillas/envio-simulado.md","src/knowledge/plantillas/valores-portal.md","src/knowledge/reglas.json","src/tools/factories/definir-herramienta.factory.ts","src/tools/factories/herramientas.factory.ts","src/tools/proveedor.ts","src/tools/schemas/argumentos.schema.ts","src/tools/types/entorno.type.ts","src/tools/types/herramienta.type.ts","src/tools/wiring/entorno.wiring.ts","tests/architecture.test.ts","tests/contract/generar-formulario.test.ts","tests/contract/maestro-incompleto.test.ts","tests/contract/reglas.test.ts","tests/contract/simular-envio.test.ts","tests/contract/sinteticos.test.ts","tests/e2e/demo.test.ts","tests/e2e/determinismo.test.ts","tests/e2e/pii.test.ts","tests/e2e/trazador.test.ts","tests/fixtures/casos/zz-generica-co/plantilla-campos.json","tests/fixtures/casos/zz-generica-co/solicitud.json","tests/fixtures/casos/zz-generica-co/soportes-exigidos.json","tests/fixtures/casos/zz-generica-ec/plantilla-campos.json","tests/fixtures/casos/zz-generica-ec/solicitud.json","tests/fixtures/casos/zz-generica-ec/soportes-exigidos.json","tests/fixtures/casos/zz-plantilla-corrupta/plantilla-celdas.json","tests/fixtures/casos/zz-plantilla-corrupta/solicitud.json","tests/fixtures/casos/zz-plantilla-corrupta/soportes-exigidos.json","tests/golden/borrador-envio.test.ts","tests/golden/formulario-pdf.test.ts","tests/golden/formulario-portal.test.ts","tests/golden/formulario-xlsx.test.ts","tests/golden/mapear-campos.test.ts","tests/golden/nombres-soporte.test.ts","tests/golden/paquete.test.ts","tests/helpers/correr-demo.helper.ts","tests/helpers/flujo.helper.ts","tests/helpers/instantanea.helper.ts","tests/helpers/pdf-texto.helper.ts","tests/helpers/proyecto-temporal.helper.ts","tests/helpers/types/correr-demo.type.ts","tests/helpers/types/flujo.type.ts","tests/helpers/types/instantanea.type.ts","tests/helpers/types/pdf-texto.type.ts","tests/helpers/types/proyecto-temporal.type.ts","tests/helpers/types/xlsx-leer.type.ts","tests/helpers/xlsx-leer.helper.ts","tests/sin-comentarios.test.ts","tests/unit/borrador.builder.test.ts","tests/unit/checklist.builder.test.ts","tests/unit/clock.adapter.test.ts","tests/unit/comparar-mapeo.policy.test.ts","tests/unit/fixtures-reader.adapter.test.ts","tests/unit/fixtures.schema.test.ts","tests/unit/identificador-tributario.policy.test.ts","tests/unit/mapeo.engine.test.ts","tests/unit/motor-plantillas.engine.test.ts","tests/unit/normalizar.util.test.ts","tests/unit/output-files.adapter.test.ts","tests/unit/package-copy.adapter.test.ts","tests/unit/pdf-layout.util.test.ts","tests/unit/pii.policy.test.ts","tests/unit/plantilla-caso.policy.test.ts","tests/unit/solicitud.selector.test.ts","tests/unit/soportes.policy.test.ts","tests/unit/validar-reglas.policy.test.ts","tests/unit/vigencias.policy.test.ts","tests/unit/xlsx-writer.adapter.test.ts","tsconfig.json"]
+covered_digest: "v3:sha256:a6101c5f578c83788629393193cf92a51becdd13f18bdd69f0e92878ff910742"
 behavior_unverified: 0
 overrides_applied: 0
-gaps:
-  - truth: "Un campo cuyo dato no existe en el maestro termina como `faltante` y aparece en el reporte de faltantes del checklist (Core Value, MAP-01, PRD HU-2 y O2)"
-    status: partial
-    reason: "leerRuta devuelve cualquier string tal cual, incluidos \"\" y \"   \", y esquemaMaestro acepta strings vacíos. Una clave del maestro que existe pero está en blanco se mapea como `lleno` con confianza 1. El xlsx escribe una celda vacía sin relleno ni nota, el checklist dice \"Campos faltantes: Ninguno\" y el paquete queda LISTO. Lo reproduje en un proyecto temporal con maestro.ciudad = \"   \" y maestro.ciiu_principal = \"\": co-industrias-delta dio 17/0/0, LISTO, listo_para_firma=true, con C7 = \"   \" y C14 = \"\". Es el hallazgo CR-01 del code review, que sigue abierto. Los 4 fixtures entregados no tienen valores en blanco, por eso la tabla de verdad sigue correcta."
-    artifacts:
-      - path: "src/domain/mapeo.ts"
-        issue: "leerRuta (líneas 84-94) devuelve una hoja string vacía o solo con espacios en vez de null, así que mapearEtiqueta la reporta como `lleno`"
-      - path: "src/infra/fixtures/esquemas.ts"
-        issue: "esquemaMaestro acepta valores string vacíos sin marcarlos"
-      - path: "tests/unit/mapeo.test.ts"
-        issue: "Ningún test cubre una hoja del maestro vacía o solo con espacios; el caso límite no está especificado"
-    missing:
-      - "Hacer que leerRuta devuelva null cuando la hoja string, después de trim, queda vacía, para que el campo sea `faltante` con regla sin_fuente y valor null"
-      - "Test unitario: \"\" y \"   \" en una ruta existente del maestro dan `faltante` (confianza 0, valor_enmascarado null)"
-      - "Test de contrato en un proyecto temporal: un maestro con un valor en blanco hace que el campo aparezca en 'Campos faltantes' de checklist.md, en la celda xlsx con el relleno y la nota de faltante y en los pendientes del borrador"
+re_verification:
+  previous_status: gaps_found
+  previous_score: 90/91
+  gaps_closed:
+    - "Un campo cuyo dato no existe en el maestro termina como `faltante` y aparece en el reporte de faltantes del checklist (valor en blanco o solo espacios en el maestro)"
+    - "G-01-H1: las columnas del xlsx tienen ancho suficiente para leer cada etiqueta y valor"
+    - "G-01-H4a: ENVIO-SIMULADO lista solo los archivos que van al cliente"
+    - "G-01-H4b: el borrador nunca afirma que el formulario está firmado"
+    - "G-01-H4c: el borrador (y el checklist y los bloqueos de ENVIO-SIMULADO) muestran nombres legibles de soporte"
+  gaps_remaining: []
+  regressions: []
 deferred:
-  - truth: "SEG-02: una única función `redactar()` basada en una política de rutas sensibles se aplica a los logs, la API, el SSE y los resúmenes de tool calls"
+  - truth: "SEG-02: una única función `redactar()`, basada en una política de rutas sensibles, se aplica a los logs, la API, el SSE y los resúmenes de tool calls"
     addressed_in: "Phase 2 / Phase 3"
-    evidence: "Criterio 5 de la Fase 2: 'Los logs JSON llevan IDs de sesión, turno y tool call, sin clave ni PII'. Criterio 2 de la Fase 3: 'cada tool call como tarjeta colapsable (nombre, args redactados…)'. Criterio 3 de la Fase 3: 'el historial vuelve desde GET /api/sessions/:id con la PII redactada'. En la Fase 1 la política (POLITICA_PII, enmascarar, presentarCampo en src/domain/pii.ts) y el test de grep de PII existen. La API y el SSE todavía no existen; 01-11-SUMMARY lo dice explícitamente."
+    evidence: "Fase 2 SC5: 'Los logs JSON llevan IDs de sesión, turno y tool call, sin clave ni PII'. Fase 3 SC2: 'cada tool call como tarjeta colapsable (nombre, args redactados…)'. Fase 3 SC3: 'el historial vuelve desde GET /api/sessions/:id con la PII redactada'. En la Fase 1 existen la política por rutas (POLITICA_PII y enmascarar en src/domain/policies/pii.policy.ts) y el grep de PII amplio con control positivo (tests/e2e/pii.test.ts). No existe ninguna función `redactar()` en src/; la API y el SSE todavía no existen."
+human_verification:
+  - test: "Abrir out/co-industrias-delta/formulario.xlsx (hojas Datos Proveedor y Datos Bancarios) y out/hn-agroexport-sula/formulario.xlsx en Excel o LibreOffice después de `bun run demo.ts` (repetición de la prueba 17 de la UAT)"
+    expected: "Cada etiqueta y valor se lee completo, sin columnas recortadas. El valor largo de 'Actividad económica' (Datos Proveedor!C13) se ajusta en varias líneas dentro de una columna de ancho 60. Se mantienen las etiquetas en negrita y los rellenos y notas de faltante y por confirmar."
+    why_human: "Los anchos se verificaron por lectura (co B=32, C=60 con wrap en C13; Datos Bancarios B=22, C=27; hn A=25, B=32), pero el recorte visual depende del visor y fue la persona quien reportó G-01-H1."
+  - test: "Leer out/<caso>/paquete/borrador-correo.md de los 4 casos y un ENVIO-SIMULADO.md confirmado (repetición de la prueba 20 de la UAT), con atención a los hallazgos WR-01 y WR-02 de la revisión"
+    expected: "El tono es profesional para el cliente. Además hay que decidir explícitamente: (a) WR-01, en ec el correo dice 'Quedan pendientes: - Número de contribuyente especial … Los enviaremos por separado.', lo que promete al cliente un dato que no existe en el maestro; (b) WR-02, el correo copia la nota interna 'RUC: Identificador extranjero: confirmar si el cliente acepta el NIT colombiano', que se dirige al cliente en tercera persona. Ambos textos siguen la decisión vinculante GC-1 del plan 01-13, pero la persona debe confirmar si la redacción resultante es aceptable."
+    why_human: "Es una cuestión de redacción y producto. El código hace lo que especificaron los planes 01-10 y 01-13, y la persona fue quien reportó H4."
+  - test: "Decidir el hallazgo crítico CR-01 de la revisión: un registro de envío que dice 'Sin bloqueos' cuando un soporte exigido no está en paquete/"
+    expected: "Hay que elegir entre corregirlo (convertir un archivo para el cliente que falta en paquete/ en un bloqueo, o devolver un error del tipo PAQUETE_DESACTUALIZADO que pida volver a armar el paquete) y aceptarlo con un override documentado. El verificador lo reprodujo así: (A) en co, después de borrar paquete/rut-2026.txt, simular_envio confirmado devuelve bloqueos [] y escribe 'Sin bloqueos.' sin el RUT; (B) en hn, al renovar parafiscales en el repositorio entre armar_paquete y simular_envio, el registro dice 'Sin bloqueos.', no envía parafiscales y deja sin mencionar parafiscales-2026-07.txt, que sigue en paquete/."
+    why_human: "El comportamiento es intencional según el plan 01-13 ('only when they exist in paquete/'), y las pruebas tests/contract/simular-envio.test.ts:219 y tests/unit/borrador.builder.test.ts:230 lo fijan. ENV-01 se cumple literalmente, porque los bloqueos que define PAQ-03 sí quedan registrados. Aun así, el artefacto de auditoría de una acción confirmada puede quedar incompleto en un flujo realista de la Fase 2: la analista renueva un soporte durante el turno de confirmación. Es una decisión de producto que no se puede resolver con grep."
+  - test: "Decidir el hallazgo WR-03 de la revisión: la salida estándar de `bun run demo.ts` imprime ids crudos de soporte ('Soportes ausentes: certificado_cumplimiento_tributario', 'Estado: BLOQUEADO (ausente: certificado_cumplimiento_tributario)', 'Vencidos: parafiscales')"
+    expected: "La persona confirma que la salida de la demo y el `resumen` de herramienta conservan los ids crudos por el contrato v1, y que esto se documenta en SOLUCION.md, o pide un plan que use nombres en la demo."
+    why_human: "Los planes 01-14 y 01-15 exigen explícitamente que el stdout de la demo quede byte a byte igual, con ids crudos (contrato v1, D-21). La brecha G-01-H4c, tal como se registró, solo hablaba del borrador, así que está cerrada. Lo que queda abierto es si el stdout de la demo cuenta como salida 'para personas'."
 ---
 
-# Phase 1: Núcleo determinista Verification Report
+# Fase 1: Núcleo determinista. Informe de verificación
 
-**Phase Goal:** Cualquiera puede correr `bun run demo.ts` sin clave LLM y obtener, para los 4 casos, formularios, paquetes para firma y logs correctos y reproducibles. Cada valor sale de una herramienta tipada que lo lee del maestro, y ninguna inventa un dato.
-**Verified:** 2026-10-12T23:45:00Z
-**Status:** gaps_found
-**Re-verification:** No. This is the initial verification.
+**Objetivo de la fase:** Cualquiera puede correr `bun run demo.ts` sin clave LLM y obtener, para los 4 casos, formularios, paquetes para firma y logs correctos y reproducibles. Cada valor sale de una herramienta tipada que lo lee del maestro, y ninguna inventa un dato.
+**Verificado:** 2026-10-13T04:40:00Z
+**Estado:** human_needed
+**Re-verificación:** Sí. Viene después de cerrar la brecha CR-01 (valor en blanco) y de los planes de cierre de la UAT 01-12 a 01-15.
 
-## Goal Achievement
+## Logro del objetivo
 
-The verifier ran every check below in its own process. The 11 SUMMARY files were used only to locate code.
+El verificador ejecutó en su propio proceso todo lo que sigue. Los SUMMARY solo sirvieron para ubicar el código.
 
-- `bun run check` exited 0. That covers tsc strict with `noUncheckedIndexedAccess` and `exactOptionalPropertyTypes`, Biome over 90 files, and `bun audit`, which found 0 vulnerabilities in 207 packages.
-- `bun test` passed 345 tests with 0 failures in 26 files (2333 assertions).
-- `bun run demo.ts` ran twice with `DEEPSEEK_API_KEY` and `FECHA_EJECUCION` unset. Both runs exited 0 and produced byte-identical stdout.
-- An independent contract probe called all 5 exported tools in a temp project copy: 53 calls, 0 throws, 0 stack traces, 0 PII hits.
-- The CR-01 reproduction and the concurrency observation are described below.
+- `bun run check` terminó con código 0: tsc estricto, Biome sobre 167 archivos y `bun audit` sin vulnerabilidades en 207 paquetes.
+- `bun test` pasó una sola vez completo: 519 pruebas, 0 fallos, 38 archivos, 2875 aserciones. No hay `.skip`, `.todo` ni `.only` en tests/.
+- `bun run demo.ts` se ejecutó dos veces sin `DEEPSEEK_API_KEY` ni `FECHA_EJECUCION`. Las dos salieron con código 0 y un stdout idéntico byte a byte. Los 43 archivos de `out/` coinciden en nombre. Todos son idénticos byte a byte (incluidos los xlsx y el pdf), salvo los 5 `log.jsonl`, que solo difieren en `ts`.
+- Una sonda independiente (scratchpad/probe.ts) recorrió el flujo completo de los 4 casos, con `simular_envio` confirmado en un proyecto temporal, reprodujo los dos escenarios de CR-01 y volvió a probar la brecha anterior del valor en blanco.
+- Una sonda del contrato (scratchpad/sc4.ts) cubrió args inválidos, una llave extra, path traversal, un caso inexistente, una plantilla corrupta, un mapeo con `valor`, envíos sin confirmar o con `"true"` y un ctx nulo.
 
-The phase goal holds for the 4 delivered cases: correct forms, packages, logs and reproducible output, with no invented values. One general guarantee is still missing: a master key that exists but is blank is reported as `lleno` instead of `faltante` (CR-01).
+El objetivo de la fase se cumple. La brecha que quedaba de la verificación anterior está cerrada, y las 4 brechas de la UAT están cerradas en el código y en la salida real. Quedan decisiones humanas: repetir dos pruebas visuales y de tono de la UAT, y resolver los hallazgos abiertos CR-01 y WR-03 de la revisión. Ninguno de ellos rompe un must-have tal como está escrito.
 
-### Observable Truths
+### Verdades observables
 
-**Roadmap success criteria and the goal / Core Value truths**
+**Criterios de éxito del roadmap y verdades del objetivo y del Core Value**
 
-| # | Truth | Status | Evidence |
-|---|-------|--------|----------|
-| 1 | SC1: `bun run demo.ts` without an LLM key cleans `out/`, prints the date 2026-09-03 and the truth table (co 17/0/0 LISTO, ec 13/1/1 BLOQUEADO ausente, hn 9/1/1 BLOQUEADO vencido, pa 8/0/1 LISTO portal). Two runs give the same result apart from timestamps | ✓ VERIFIED | The demo ran twice with no key. A planted `out/zz-marker.txt` and `out/zz-stale-dir` were deleted. The exact table was printed. Stdout was byte-identical across runs. Every non-xlsx, non-log file was byte-identical, including the PDF. The 5 `log.jsonl` files were identical once `ts` was removed. The co and hn xlsx files were semantically identical cell by cell |
-| 2 | SC2: the co xlsx holds labels and values at the template cells on both sheets, with leading zeros. The ec PDF lists fields in template order with visible marks. pa `valores-portal.md` exists and the tool returns ok:true with the notice "formato no soportado" | ✓ VERIFIED | The exceljs readback of co has sheets ["Datos Proveedor","Datos Bancarios"]. All 17 label cells match the template, and every value is a text cell (numFmt `@`) equal to `maestro.json`. C8 is "050021" and Datos Bancarios!C5 is "03100012345". The ec PDF text extraction shows all 15 labels in template order, "[POR CONFIRMAR]" in amber after the RUC and "[FALTANTE]" in red, followed by a Notas section. The pa probe returned `data: {"ruta":"out/pa-logistica-istmo/valores-portal.md","formato":"portal","aviso":"formato no soportado"}` |
-| 3 | SC3: `paquete/` has the form, soporte copies, `checklist.md` and `borrador-correo.md` (to `solicitud.de`, "RE: <asunto>", no bank data). `mapeo.json` traces ruta, regla and confianza. The PII grep finds nothing | ✓ VERIFIED | `paquete/` holds the form, the soporte copies, the checklist and the borrador for all 4 cases. The ec checklist shows the date, LISTO/BLOQUEADO, presentes/ausentes/vencidos, "vence en 27 días", faltantes and por confirmar. The ec borrador goes `Para: proveedores@corpandina-ficticia.ec` with `Asunto: RE: Calificación de proveedores - Formulario PDF` and has no `banco.*` data. The `mapeo.json` files hold 17, 15, 11 and 9 entries with ruta, regla and confianza. `71555123\|03100012345\|COLOCOBM` gave 0 hits over the logs, mapeo, checklists, borradores, ENVIO-SIMULADO, stdout and all 20 tool responses. A broader scan (names, emails, phones, address, revenue, NIT) also gave 0 hits. The positive control `valores-portal.md` does contain COLOCOBM and 03100012345 |
-| 4 | SC4: the 5 tools import without a server or secrets and never throw. Invalid args, a mapeo carrying values, traversal, an unknown case and a corrupt template return `{ok:false,error}` with a stable code and Spanish text. `simular_envio` without confirmation returns "requiere confirmación explícita". Every call is logged in both log files | ✓ VERIFIED | Probe results: 8 bad-arg shapes gave ARGS_INVALIDOS with a Spanish zod detail. `../x`, `a/b`, `CO`, `../../etc` and a symlink escaping `casos/` gave CASO_INVALIDO. `no-existe` and `""` gave CASO_NO_ENCONTRADO plus `casos_disponibles`. The corrupt template gave PLANTILLA_INVALIDA plus `{pais,cliente,formato,soportes}` from both `leer_solicitud` and `mapear_campos`. A `valor` key gave ARGS_INVALIDOS. An upgraded estado, a changed ruta and a dropped item gave MAPEO_INCONSISTENTE. A missing or null ctx gave CONFIGURACION_INVALIDA. Unconfirmed or false `simular_envio` returned exactly `error: "requiere confirmación explícita"`. 0 throws. The global log had 51 lines for 51 calls that had a directory. Caveat IN-05: see warnings |
-| 5 | SC5: `bun run check` and `bun test` pass, including the golden, synthetic and architecture tests. No comments. Config is centralized and validated with zod | ✓ VERIFIED | Check exit 0. Tests 345/0. The architecture test enforces layer imports and bans shell APIs. The no-comment guard is green, and a grep for `//` and `/*` in src and demo.ts found nothing. The synthetic `zz-generica-ec` label "Número de identificación fiscal" gives `requiere_confirmacion`, `etiqueta_generica`, 0.5, `propuesta: "RUC"`. `src/config/constantes.ts`, the zod schema in `src/config/env.ts` and the zod-validated `reglas.json` are in place. No `.skip`, `.todo` or `.only` |
-| 6 | Goal: every form value comes from a typed tool that reads it from the master | ✓ VERIFIED | `generar_formulario` accepts only strict `{etiqueta,estado,ruta}` items (`argumentos.ts`). It recomputes the canonical mapping from `maestro.json` and calls `compararMapeo` before writing. Tampered mappings are rejected. Every co and hn cell matches `maestro.json` |
-| 7 | Goal: no tool invents a datum | ✓ VERIFIED | "Número de contribuyente especial" (ec) and "Referencias comerciales" (hn) are `faltante` with ruta null and value null. The xlsx B12 cell is empty with the red fill and the note "Faltante: no existe en el maestro". The PDF shows [FALTANTE]. No filler values were found anywhere |
-| 8 | Core Value / MAP-01: a field with no datum in the master ends as `faltante` and is listed in the checklist | ✗ FAILED (partial) | CR-01 reproduced. A blank or whitespace master value is mapped `lleno` with confianza 1, the xlsx gets a blank cell with no mark, the checklist says "Campos faltantes: Ninguno", and the case is LISTO. See Gaps |
-| 9 | Core Value: no external action happens without explicit confirmation (tool level) | ✓ VERIFIED | `confirmado` missing or false gives CONFIRMACION_REQUERIDA, and the string "true" gives ARGS_INVALIDOS. Only `confirmado: true` after `armar_paquete` writes `ENVIO-SIMULADO.md`, which records the current bloqueos. The demo writes no ENVIO file. The server-side gate is Phase 2 (ENV-02) |
+| # | Verdad | Estado | Evidencia |
+|---|--------|--------|-----------|
+| 1 | SC1: la demo sin clave LLM limpia `out/`, imprime 2026-09-03 y la tabla de verdad, con el mismo resultado en dos ejecuciones salvo timestamps | ✓ VERIFIED | Salida observada: co xlsx 17/0/0 LISTO, ec pdf 13/1/1 BLOQUEADO (ausente), hn xlsx 9/1/1 BLOQUEADO (vencido: parafiscales 2026-08-31), pa portal 8/0/1 LISTO "formato no soportado". El stdout es idéntico. Los archivos son idénticos salvo `ts` en los logs |
+| 2 | SC2: el xlsx de co tiene etiquetas y valores en las celdas de la plantilla (ambas hojas, con ceros a la izquierda), el PDF de ec sigue el orden de la plantilla con marcas, y pa tiene `valores-portal.md` con el aviso | ✓ VERIFIED | Lectura con exceljs: hojas Datos Proveedor y Datos Bancarios, valores con numFmt `@` y etiquetas en negrita. Los goldens de formulario-xlsx, formulario-pdf y formulario-portal pasan en la suite. `out/pa-logistica-istmo/valores-portal.md` existe y la tool respondió `aviso: "formato no soportado"` |
+| 3 | SC3: el paquete tiene formulario, copias, checklist y borrador (a `solicitud.de`, "RE: <asunto>", sin datos bancarios), `mapeo.json` traza ruta, regla y confianza, y el grep de PII da 0 | ✓ VERIFIED | Los 4 `paquete/` se inspeccionaron. Los borradores van a `solicitud.de` con "RE: …". `71555123\|03100012345\|COLOCOBM` dio 0 coincidencias en respuestas, logs, mapeo, checklist, borrador y ENVIO. Un escaneo amplio de todas las hojas del maestro de 5 o más caracteres solo encontró campos públicos D-05 (razón social, ciudad, sitio web, actividad, régimen) en `mapeo.json` y la firma aceptada en la UAT T15 |
+| 4 | SC4: las 5 tools se importan sin servidor y nunca lanzan, los errores son estables y en español, el envío sin confirmación da "requiere confirmación explícita" y todo queda registrado | ✓ VERIFIED | Sonda sc4: ARGS_INVALIDOS (tipo, llave extra, `valor`, `"true"`), CASO_INVALIDO, CASO_NO_ENCONTRADO, PLANTILLA_INVALIDA, CONFIRMACION_REQUERIDA con el texto exacto y CONFIGURACION_INVALIDA. Ninguna lanzó. Hubo 8 líneas de log para 8 llamadas con directorio |
+| 5 | SC5: check y test pasan con goldens, sintéticos y arquitectura, sin comentarios y con la config centralizada | ✓ VERIFIED | Check con código 0. 519/0. `architecture.test.ts` y `sin-comentarios.test.ts` están en verde. No hay marcadores de deuda ni comentarios en los 21 archivos que tocaron los planes 12 a 15 |
+| 6 | Objetivo: cada valor del formulario sale de una herramienta tipada que lo lee del maestro | ✓ VERIFIED | `generar-formulario.use-case.ts` recalcula `mapeoCanonico` y llama a `compararMapeo` antes de escribir. Un mapeo con `valor` se rechaza |
+| 7 | Objetivo: ninguna herramienta inventa un dato | ✓ VERIFIED | Los faltantes de ec y hn quedan vacíos y marcados. No se escribe ningún valor de relleno |
+| 8 | Core Value / MAP-01: un dato inexistente o en blanco termina `faltante` y aparece en el checklist (brecha anterior) | ✓ VERIFIED (cerrada) | Sonda con `maestro.ciudad = "   "` y `ciiu_principal = ""`: co da 15/2/0, Ciudad y Código CIIU quedan `faltante` con `valor_enmascarado: null` y se listan en "Campos faltantes". `tests/contract/maestro-incompleto.test.ts` la cubre |
+| 9 | Core Value: ninguna acción externa ocurre sin confirmación explícita (a nivel de herramienta) | ✓ VERIFIED | `confirmado` ausente o false da CONFIRMACION_REQUERIDA. La demo no escribe ENVIO-SIMULADO |
 
-**PLAN frontmatter must-haves (82 truths across 11 plans)**
+**Must-haves de los planes de cierre (01-12 a 01-15)**
 
-| Plan | Truths | Status | Key evidence |
-|------|--------|--------|--------------|
-| 01-01 | 5/5 | ✓ VERIFIED | The human gate is recorded verbatim in 01-01-SUMMARY ("approved with bun upgrade"). The pins in `package.json` match. `.bun-version` and runtime are 1.4.3. `git status -- reto-01` is clean, and only commit e13a7b5 touches `reto-01/`. `.DS_Store` is ignored. Check is green. The guards are non-vacuous (sample-source tests in the suite) |
-| 01-02 | 9/9 | ✓ VERIFIED | Contract shapes, never-throw behavior, CASO_INVALIDO before any fs access, `sessionId`/`sessionID`, size-limited zod fixture reads and a Spanish `.describe()` on every arg field were all observed through the probe |
-| 01-03 | 10/10 | ✓ VERIFIED | Realpath containment (symlink rejected). D-14 listing. No `out/` folder created for an unknown case (only `zz-corrupta` and the real cases got one). Env is parsed per execution: FECHA_EJECUCION "2026-02-30" gave CONFIGURACION_INVALIDA. With it unset the date is the America/Bogota date (2026-10-12 observed) |
-| 01-04 | 11/11 | ✓ VERIFIED | The truth-table counts, regla_pais 0.6 with the foreign-identifier note, sin_fuente faltantes, the D-07 masks (`•••••3456`, `R. A. S.`, `l•••@…`, `+57 ••• ••• 0100`, `[monto oculto]`) and the hn "COP, año 2025" note were all observed. The non-scalar leaf → faltante behavior matches the stated truth (see WR-02) |
-| 01-05 | 9/9 | ✓ VERIFIED | `mapeo.json` carries the full canonical mapping with no values. Per-call log lines were observed. `crearHerramientas({directorioConocimiento})` works (used in the WR-03 reproduction) |
-| 01-06 | 6/6 | ✓ VERIFIED | `ambiguos` with a country proposal. The 4 real cases give `ambiguos: []`. Synthetic and corrupt fixtures are present. The concurrency test is green |
-| 01-07 | 5/5 | ✓ VERIFIED | The co and hn xlsx readbacks match the stated cells, fills and notes. D-11 tampering was rejected. D-12 cleanup is covered by `unit/salida` and the golden tests |
-| 01-08 | 5/5 | ✓ VERIFIED | PDF order, marks and notes extracted. Two-run PDF output is byte-identical. The portal data object matches exactly |
-| 01-09 | 9/9 | ✓ VERIFIED | Bloqueos match exactly for all 4 cases, along with "vence en 27 días", the "Emitido en CO" warning and FORMULARIO_NO_GENERADO before generation |
-| 01-10 | 6/6 | ✓ VERIFIED | Exactly 5 exports with one-sentence descriptions. Borrador and simular_envio as above. The backstop truth (CAL-04 concurrency) was **directly observed**: 5 rounds of 4 concurrent tools (`armar` ×2, `mapear`, `simular`) on hn all returned ok, `paquete/` held the same 6 files each round, `mapeo.json` always parsed, and all 22 log lines parsed. The only module-level mutable state is the mutex map in `src/infra/salida/mutex.ts` |
-| 01-11 | 7/7 | ✓ VERIFIED | Demo blocks and table, the PRD tool order and a determinism check run by the verifier. The PII scan with a positive control was also re-run by the verifier |
+| Plan | Verdades | Estado | Evidencia clave |
+|------|----------|--------|-----------------|
+| 01-12 (G-01-H1) | 5/5 | ✓ VERIFIED | `aplicarAnchos` deriva los anchos de las celdas que se escriben de verdad (`celda.fullAddress.col`), sin letras fijas. Se aplica la fórmula clamp(largo+2, 10, 60) y wrap cuando largo+2 > 60. Salida real: co B=32, C=60 (C13 de 82 caracteres con wrap), Bancarios B=22, C=27; hn A=25, B=32. Las columnas no usadas no tienen ancho. El contenido, los rellenos y las notas no cambiaron (goldens). Las corridas dan xlsx idénticos byte a byte |
+| 01-13 (G-01-H4a/H4b) | 6/6 | ✓ VERIFIED | ENVIO confirmado en los 4 casos: "Archivos que se envían" solo lista el formulario y los soportes presentes, nunca `checklist.md` ni `borrador-correo.md`. hn deja `parafiscales-2026-07.txt` en "Soportes vencidos que no se envían". pa explica que `valores-portal.md` es la guía de la analista y no lo lista. Borradores: co dice "listo para la firma", pa "Con su confirmación pasaremos…", ec y hn "todavía no está listo". Ninguno contiene "firmad". Las preguntas por confirmar salen como `- <etiqueta>: <nota>`. Los datos de la herramienta no cambiaron (`s.bloqueos` crudos). La prohibición de nivel test está cableada: `borrador.builder.test.ts:156` ("el contexto tiene exactamente las claves permitidas y ningún dato bancario") |
+| 01-14 (G-01-H4c, borrador y checklist) | 4/4 | ✓ VERIFIED | El borrador y el checklist de los 4 casos usan los nombres de `NOMBRE_SOPORTE`. La sonda no encontró ids snake_case ni las formas `ausente: rut`, `\| rut \|` o `vencido: parafiscales`. `nombreDeSoporte` usa `Object.hasOwn`, así que un id desconocido o de prototipo queda crudo (pruebas unitarias). `motivosDeBloqueo` está exportado. Los datos de herramienta, los logs y el stdout de la demo conservan los ids crudos |
+| 01-15 (G-01-H4c, ENVIO y guardián) | 5/5 | ✓ VERIFIED | Los bloqueos de ENVIO están nombrados: "ausente: Certificado de cumplimiento tributario" y "vencido: Certificación de aportes parafiscales (2026-08-31)". `simular_envio.data.bloqueos` queda crudo. El guardián `nombres-soporte.test.ts` está en verde y cubre los tipos de los fixtures. Ver WR-04: el guardián no vigila `rut` ni `parafiscales`, pero la verdad dice "snake_case id" y esos dos no lo son |
 
-**Prohibitions.** All five are test-tier with wired enforcement:
+**Must-haves de los planes 01-01 a 01-11 (82 verdades, comprobación de regresión)**
 
-- 01-07 and 01-08: tampering and value-injection were rejected by the probe, and `contract/generar-formulario.test.ts` covers the same cases.
-- 01-10, bank data: the borrador and ENVIO files contain no `banco.*` data (scanned).
-- 01-10, knowledge edits: an unknown portal template variable gives REGLAS_INVALIDAS (tested), and the PII policy lives in code. WR-03 below concerns RN1 state, not PII.
-- 01-11: the PII scan was clean.
+| Plan | Verdades | Estado | Nota |
+|------|----------|--------|------|
+| 01-01 a 01-11 | 82/82 | ✓ VERIFIED (regresión) | Se verificaron completas en la ronda anterior. Ahora vuelven a quedar cubiertas por la suite en verde, la demo determinista y las sondas. `verify.artifacts` reporta archivos "no encontrados" en 01-02 a 01-11 porque el refactor de carpetas por rol (WR-12 y WR-21, registrado como corregido en 01-REVIEW-FIX.md) los renombró. El verificador comprobó a mano que existen los 33 sucesores, que son sustantivos y que están cableados: por ejemplo `domain/mapeo.ts` pasó a `domain/engines/mapeo.engine.ts`, `infra/salida/xlsx.ts` a `infra/output/xlsx-writer.adapter.ts` y `tools/wiring.ts` a `tools/wiring/entorno.wiring.ts`. El enlace "observar" de 01-11 existe en `demo.type.ts`, `ejecutar-demo.runner.ts:211` y `correr-demo.helper.ts:12` |
 
-None of them is flagged as unverified.
+**Puntuación:** 111/111 verdades verificadas (0 presentes con comportamiento sin verificar).
 
-**Score:** 90/91 truths verified (0 present-but-behavior-unverified).
+### Elementos diferidos
 
-### Deferred Items
+| # | Elemento | Se atiende en | Evidencia |
+|---|----------|---------------|-----------|
+| 1 | SEG-02: una función única `redactar()` aplicada a logs, API, SSE y resúmenes de tool calls | Fase 2 (SC5) y Fase 3 (SC2, SC3) | En `src/` no existe `redactar`. La parte de la Fase 1 sí está: la política por rutas `POLITICA_PII` y `enmascarar` sobre las respuestas, logs y resúmenes construidos sin valores, y el grep amplio con control positivo en `tests/e2e/pii.test.ts`. **Nota sobre el plan 01-13:** marcó SEG-02 como completo, pero solo añadió pruebas de que el borrador no lleva datos bancarios. Eso es RN2/PAQ-04, no SEG-02. REQUIREMENTS.md debería mostrar SEG-02 como parcial (Fase 1) en lugar de `[x] Complete` |
 
-| # | Item | Addressed In | Evidence |
-|---|------|-------------|----------|
-| 1 | SEG-02 asks for a single `redactar()` function applied to the API, the SSE stream and tool-call summaries. Phase 1 has the route-based policy `POLITICA_PII` and the grep test, but the API and SSE do not exist yet | Phase 2 (SC5) / Phase 3 (SC2, SC3) | "Los logs JSON llevan IDs … sin clave ni PII"; "args redactados"; "historial … con la PII redactada" |
+### Artefactos requeridos
 
-### Required Artifacts
+`verify.artifacts` da 4/4, 4/4, 3/3 y 2/2 para los planes 01-12 a 01-15, y 4/4 para 01-01. Para 01-02 a 01-11 hay deriva de rutas por el refactor, y los sucesores se verificaron a mano (tabla de arriba). Todos los artefactos son sustantivos (por ejemplo `xlsx-writer.adapter.ts` tiene 86 líneas, `borrador.builder.ts` 110 y `checklist.builder.ts` 92) y la demo y las sondas los ejecutan.
 
-`verify.artifacts` passed 55/55 artifacts across the 11 plans. Each one exists, is substantive and is imported or used. The key files are `src/tools/proveedor.ts`, `define-tool.ts`, `argumentos.ts`, `wiring.ts`, `fabrica.ts`, the 6 application use cases, the 16 domain modules, the infra adapters (`xlsx`, `pdf/render`, `pdf/layout`, `copias`, `rutas-seguras`, `bitacora`, `reloj`, `mutex`), `src/knowledge/reglas.json` with its 4 templates, `src/demo/ejecutar-demo.ts` and `demo.ts`.
+### Verificación de enlaces clave
 
-### Key Link Verification
+`verify.key-links` da 2/2 en cada plan de 01-12 a 01-15: `ANCHO_COLUMNA_XLSX`, `getColumn(`, `construirDatosEnvio(`, `requiere_confirmacion`, `TEXTO_SOPORTE.nombre` (×2), `motivosDeBloqueo(` y `NOMBRE_SOPORTE`. Los enlaces de los planes anteriores apuntan a rutas renombradas. Su cableado real está en `entorno.wiring.ts` (líneas 13 a 47) y en `generar-formulario.use-case.ts` (`mapeoCanonico`, `compararMapeo`, `construirDatosPortal`).
 
-`verify.key-links` verified 33/33 links. These include `demo.ts` → `ejecutarDemo` → the 5 tools' `execute`, `define-tool` → `crearEntorno` and `registrar`, `wiring` → `parseToolEnv`, `cargarReglas`, `resolverCaso`, `escribirXlsx`, `renderizarPdf`, `copiarAlPaquete` and `cargarPlantillaTexto`, and `generar-formulario` → `compararMapeo`, `mapearCampos` and `construirDatosPortal`. The links are also exercised at runtime by the demo and the probe.
+### Traza del flujo de datos (nivel 4)
 
-### Data-Flow Trace (Level 4)
+| Artefacto | Dato | Fuente | Datos reales | Estado |
+|-----------|------|--------|--------------|--------|
+| `formulario.xlsx` (anchos) | ancho por columna | largo del texto escrito en cada celda de la plantilla | Sí: co B=32 corresponde a la etiqueta más larga | ✓ FLOWING |
+| `borrador-correo.md` | nombres, banderas de firma, preguntas | `Checklist` (soportes evaluados, `listo_para_firma`, `requiere_confirmacion`) más `NOMBRE_SOPORTE` | Sí: varía según el caso | ✓ FLOWING |
+| `ENVIO-SIMULADO.md` | enviados, retenidos y bloqueos | reevaluación de soportes más listado de `paquete/` | Sí, con la salvedad de CR-01 cuando el paquete está desactualizado | ✓ FLOWING |
+| stdout de la demo | conteos y estados | respuestas de las herramientas | Sí | ✓ FLOWING |
 
-| Artifact | Data | Source | Real data | Status |
-|----------|------|--------|-----------|--------|
-| `formulario.xlsx` / `.pdf` / `valores-portal.md` | cell and row values | `maestro.json` via the canonical `mapearCampos` recompute | Yes: every cell equals the maestro leaf | ✓ FLOWING |
-| `checklist.md` / `listo_para_firma` | soporte states | `repositorio/soportes/index.json` plus the injected clock | Yes: ec ausente, hn vencido 2026-08-31 | ✓ FLOWING |
-| `borrador-correo.md` | recipient, subject, signature | `solicitud.de` / `asunto` plus `RUTAS_BORRADOR` | Yes | ✓ FLOWING |
-| demo stdout | counts and states | tool responses | Yes | ✓ FLOWING |
+### Comprobaciones de comportamiento
 
-### Behavioral Spot-Checks
+| Comportamiento | Comando | Resultado | Estado |
+|----------------|---------|-----------|--------|
+| Tipos, lint y auditoría | `bun run check` | código 0; 0 vulnerabilidades | ✓ PASS |
+| Suite completa (una sola vez) | `bun test` | 519 pasan, 0 fallan | ✓ PASS |
+| Demo sin clave y determinista | `bun run demo.ts` ×2 | stdout idéntico; archivos idénticos salvo `ts` | ✓ PASS |
+| Envío confirmado en los 4 casos | sonda probe.ts | sin archivos internos entre los enviados; bloqueos nombrados; sin "firmad" en los borradores | ✓ PASS |
+| Valor en blanco en el maestro | sonda probe.ts | 15/2/0 y ambos listados como faltantes | ✓ PASS |
+| Anchos y wrap del xlsx | sonda anchos.ts | co C13 con wrap a 60; columnas sin usar sin ancho | ✓ PASS |
+| Contrato de errores | sonda sc4.ts | 9/9 códigos esperados, 0 excepciones | ✓ PASS |
+| CR-01 escenario A y B | sonda probe.ts | "Sin bloqueos." con un soporte exigido ausente del envío | ⚠️ reproducido (decisión humana) |
 
-| Behavior | Command | Result | Status |
-|----------|---------|--------|--------|
-| Type check, lint, audit | `bun run check` | exit 0; 207 packages, 0 vulnerabilities | ✓ PASS |
-| Full suite (run once) | `bun test` | 345 pass, 0 fail | ✓ PASS |
-| Demo without a key, twice | `env -u DEEPSEEK_API_KEY -u FECHA_EJECUCION bun run demo.ts` | exit 0; identical stdout; truth table exact | ✓ PASS |
-| Never-throw contract plus error codes | scratch probe over the 5 tools (temp project) | 53 calls, 0 throws, 0 stacks, 0 PII | ✓ PASS |
-| D-11 tamper rejection | probe: valor key, upgraded estado, changed ruta, dropped item | ARGS_INVALIDOS / MAPEO_INCONSISTENTE ×3 | ✓ PASS |
-| Confirmation gate | probe: `simular_envio` with confirmado missing, false, "true" and true | CONFIRMACION_REQUERIDA ×2, ARGS_INVALIDOS, ok and only ENVIO-SIMULADO.md written | ✓ PASS |
-| CR-01 blank value | temp maestro with `ciudad: "   "` and `ciiu_principal: ""` | 17/0/0 LISTO; blank cells unmarked | ✗ FAIL |
+### Ejecución de sondas
 
-### Probe Execution
+La fase no declara sondas `scripts/*/tests/probe-*.sh`. Paso 7c: no aplica.
 
-Step 7c: no `scripts/*/tests/probe-*.sh` exist, and no plan declares one. N/A.
+### Cobertura de requisitos
 
-### Requirements Coverage
+| Requisito | Plan fuente | Estado | Evidencia |
+|-----------|-------------|--------|-----------|
+| HERR-01..05 | 01-02/03/05/10 | ✓ SATISFIED | 5 exports con una frase de descripción, zod con `.describe()`, nunca lanzan, CASO_INVALIDO, se importan sin entorno, `sessionID` aceptado |
+| SOLI-01, SOLI-02 | 01-02/06 | ✓ SATISFIED | Suite (sinteticos, plantilla-caso) |
+| MAP-01..07 | 01-04/05/06 | ✓ SATISFIED | MAP-01 se reabrió en la ronda anterior por el valor en blanco y queda cerrado (verdad 8) |
+| FORM-01 | 01-07/12 | ✓ SATISFIED | Celdas exactas y además anchos legibles (G-01-H1) |
+| FORM-02..04 | 01-07/08 | ✓ SATISFIED | Goldens de PDF y portal; rechazo del mapeo con `valor` |
+| PAQ-01, PAQ-03, PAQ-05 | 01-09 | ✓ SATISFIED | Tabla de verdad de los bloqueos; reloj inyectable |
+| PAQ-02 | 01-09/14 | ✓ SATISFIED | El checklist muestra fecha, estado, tabla con nombres, "vence en 27 días", faltantes y por confirmar |
+| PAQ-04 | 01-10/13/14 | ✓ SATISFIED | Va a `solicitud.de`, "RE: …", sin datos bancarios, con lista blanca. **Nota:** el texto del requisito ("lista el formulario firmado") queda reemplazado por la decisión GC-1 (el borrador nunca afirma una firma). Conviene actualizar la redacción en REQUIREMENTS.md |
+| ENV-01 | 01-10/13/15 | ✓ SATISFIED | Sin confirmación responde "requiere confirmación explícita". Con confirmación escribe solo ENVIO-SIMULADO.md con los bloqueos vigentes (definición de PAQ-03) y no exige `listo_para_firma`. Ver CR-01 (decisión humana) |
+| SEG-02 | 01-11/13 | ◐ PARCIAL, resto diferido | Ver "Elementos diferidos". La parte de la Fase 1 está satisfecha; la función única `redactar()` para API y SSE no existe |
+| SEG-04 | 01-03 | ✓ SATISFIED | Una línea por llamada en ambos logs, `{ts, herramienta, ok, resumen}`, sin PII |
+| DEMO-01, DEMO-02 | 01-03/11 | ✓ SATISFIED | Demo determinista y goldens |
+| DEMO-04 | 01-06 | ✓ SATISFIED | `zz-generica-co`, `zz-generica-ec`, `zz-plantilla-corrupta` y CASO_NO_ENCONTRADO |
+| CAL-01, CAL-02, CAL-04 | 01-01/11 | ✓ SATISFIED | Check en verde; guardianes de arquitectura y de ausencia de comentarios |
+| CAL-03 | 01-02..06/12/14/15 | ✓ SATISFIED | `ANCHO_COLUMNA_XLSX` en `xlsx.constants.ts`; `NOMBRE_SOPORTE` en `strings.ts` |
 
-| Requirement | Source Plan | Status | Evidence |
-|-------------|-------------|--------|----------|
-| HERR-01 | 01-10 | ✓ SATISFIED | Exactly 5 exports, `proveedor_` prefix, one-sentence descriptions |
-| HERR-02 | 01-02 | ✓ SATISFIED | Strict zod args, `.describe()` on every field, validated before execute |
-| HERR-03 | 01-02/03/05/06/07 | ✓ SATISFIED | Never throws, stable codes, Spanish messages, no raw stack |
-| HERR-04 | 01-01/02/03 | ✓ SATISFIED | Paths from `ctx.directory`, realpath containment, no shell API |
-| HERR-05 | 01-02/03 | ✓ SATISFIED | Imports with an empty env. `sessionId`/`sessionID` accepted. Reused by `demo.ts`; `modulo/` is Phase 4 |
-| SOLI-01 | 01-02/06 | ✓ SATISFIED | `{pais,cliente,formato,campos,soportes}`. Template chosen by the file present (6-row matrix) |
-| SOLI-02 | 01-06 | ✓ SATISFIED | Generic labels give `requiere_confirmacion` with NIT/RUC/RTN |
-| MAP-01 | 01-04/05 | ✗ BLOCKED (partial) | Three states are produced and correct for the 4 cases, but a blank or whitespace master value becomes `lleno` instead of `faltante` (CR-01) |
-| MAP-02 | 01-04/05/06 | ✓ SATISFIED | Glossary plus normalization only, no fuzzy matching. The two named labels are `faltante`. A blank value is not an invented value; the misclassification is tracked under MAP-01 |
-| MAP-03 | 01-04/05 | ✓ SATISFIED | CO NIT `lleno`. EC/PA/HN get the NIT plus `requiere_confirmacion` plus the note, with the shipped `reglas.json` (see WR-03) |
-| MAP-04 | 01-04/05 | ✓ SATISFIED | Nested rutas read. A missing ruta gives `faltante` |
-| MAP-05 | 01-04/05 | ✓ SATISFIED | `{etiqueta,ruta,estado,confianza,valor_enmascarado,…}`, never a `valor` key |
-| MAP-06 | 01-05 | ✓ SATISFIED | `mapeo.json` carries ruta, regla and confianza per field |
-| MAP-07 | 01-04/05/07/08 | ✓ SATISFIED | hn "Ingresos anuales" carries "COP, año 2025". "País" carries its note |
-| FORM-01 | 01-07 | ✓ SATISFIED | Multi-sheet xlsx with text cells and leading zeros |
-| FORM-02 | 01-08 | ✓ SATISFIED | PDF in template order with visible marks |
-| FORM-03 | 01-08 | ✓ SATISFIED | Portal ok:true, the notice and `valores-portal.md` |
-| FORM-04 | 01-07/08 | ✓ SATISFIED | Strict rutas-only mapping. Values are re-read from the master |
-| PAQ-01 | 01-09/10 | ✓ SATISFIED | `paquete/` contents and the `{ruta,listo_para_firma,checklist,…}` return (see WR-06) |
-| PAQ-02 | 01-09 | ✓ SATISFIED | Checklist sections, the effective date and "vence en N días" |
-| PAQ-03 | 01-09 | ✓ SATISFIED | Vencido or ausente blocks. A faltante does not block |
-| PAQ-04 | 01-10 | ✓ SATISFIED | Reply to `solicitud.de` with "RE: …", allowlisted fields, no bank data |
-| PAQ-05 | 01-03/09 | ✓ SATISFIED | Injected clock with America/Bogota as the default, overridden by FECHA_EJECUCION. ISO compare. null means no aplica |
-| ENV-01 | 01-10 | ✓ SATISFIED | Exact error without confirmation. Only ENVIO-SIMULADO.md is written, with the bloqueos. Does not require `listo_para_firma` |
-| SEG-02 | 01-05/11 | ✓ SATISFIED (Phase 1 scope); the API/SSE `redactar()` part is deferred | Code-owned `POLITICA_PII` with masking for tool outputs, `mapeo.json` and logs. Grep test with a positive control (see WR-09) |
-| SEG-04 | 01-03/09/10 | ✓ SATISFIED | `{ts,herramienta,ok,resumen}` plus sesion and codigo in both logs (see the IN-05 edge) |
-| DEMO-01 | 01-03/11 | ✓ SATISFIED | Verifier-run demo, deterministic |
-| DEMO-02 | 01-11 | ✓ SATISFIED | Golden tests and the demo show the exact truth table |
-| DEMO-04 | 01-06 | ✓ SATISFIED | `tests/fixtures/casos/zz-generica-co`, `zz-generica-ec`, `zz-plantilla-corrupta`. The unknown-case path is tested through `CASO_NO_ENCONTRADO` |
-| CAL-01 | 01-01/11 | ✓ SATISFIED | strict, `noUncheckedIndexedAccess`, Biome `noExplicitAny=error`, check green |
-| CAL-02 | 01-01 | ✓ SATISFIED | No-comment guard plus grep |
-| CAL-03 | 01-02/03/04/05/06 | ✓ SATISFIED | `constantes.ts` plus zod-validated env and `reglas.json` |
-| CAL-04 | 01-01/03/11 | ✓ SATISFIED | Architecture test on import direction; the Reloj port is the only port in Phase 1 |
+Los 33 IDs de la fase están reclamados por algún plan, así que no hay requisitos huérfanos. La tabla de trazabilidad de REQUIREMENTS.md todavía muestra "Gaps Found" en muchos IDs, y conviene actualizarla tras esta verificación (SEG-02 como parcial).
 
-All 33 phase IDs are claimed by at least one plan, so no requirement is orphaned. REQUIREMENTS.md marks all 33 as `[x]` Complete. MAP-01 should go back to pending until the gap is closed. SEG-02 should carry a note that its API and SSE part lands in Phases 2 and 3.
+### Hallazgos de la revisión (01-REVIEW.md), ponderados contra los must-haves
 
-### Decision Coverage
+| Hallazgo | Severidad en la revisión | Severidad para la verificación | Motivo |
+|----------|--------------------------|--------------------------------|--------|
+| CR-01: "Sin bloqueos" con un soporte exigido fuera de `paquete/` | critical | ⚠️ WARNING, decisión humana | Reproducido en los dos escenarios. No rompe ningún must-have tal como está escrito: el plan 01-13 especifica "only when they exist in paquete/", dos pruebas fijan el comportamiento, y ENV-01 registra los bloqueos de PAQ-03. Solo se llega a este estado si `paquete/` o el repositorio cambian entre dos llamadas, y no afecta a la demo ni a los 4 casos. Aun así, deja incompleto el registro de auditoría de una acción confirmada, en un flujo plausible de la Fase 2. **Recomendación:** corregirlo antes de planear la compuerta de confirmación de la Fase 2 |
+| WR-01: el borrador promete enviar "por separado" datos que no existen en el maestro | warning | ⚠️ WARNING, va a la repetición de UAT 20 | No inventa ningún valor (el formulario queda vacío y marcado). El plan 01-10 especificó que los faltantes van en los pendientes. Es una afirmación dudosa ante el cliente y merece una decisión de redacción |
+| WR-02: el correo copia la nota interna para la analista | warning | ⚠️ WARNING, va a la repetición de UAT 20 | Lo exige la decisión vinculante GC-1 ("each as '- <etiqueta>: <nota>'"). Las notas vienen de reglas.json, sin PII ni datos bancarios |
+| WR-03: el stdout de la demo imprime ids crudos | warning | ℹ️ INFO, decisión humana | Los planes 01-14 y 01-15 exigen que el stdout de la demo quede byte a byte igual. La brecha G-01-H4c, tal como se registró ("The borrador shows human-readable support names"), está cerrada |
+| WR-04: el guardián no vigila `rut` ni `parafiscales` | warning | ⚠️ WARNING (solo riesgo de regresión) | La sonda del verificador buscó `ausente: rut`, `\| rut \|`, `vencido: parafiscales`, `- rut` y `- parafiscales` en el borrador, el checklist y el ENVIO de los 4 casos: 0 coincidencias. La salida actual es correcta; el guardián es más débil de lo que describe |
+| IN-01..IN-06 | info | ℹ️ INFO | No afectan a los must-haves |
 
-The decision gate found all 36 trackable CONTEXT.md decisions honored by the shipped artifacts. It is non-blocking.
+### Antipatrones encontrados
 
-### Test Quality Audit
+| Archivo | Línea | Patrón | Severidad | Impacto |
+|---------|-------|--------|-----------|---------|
+| `src/domain/builders/borrador.builder.ts` | 106-108 | `listado.filter(alCliente.has)` omite en silencio los archivos para el cliente que faltan en `paquete/`, y los bloqueos solo salen del repositorio (CR-01) | ⚠️ Warning | Registro de envío "Sin bloqueos" con un paquete desactualizado (reproducido) |
+| `tests/contract/simular-envio.test.ts` / `tests/unit/borrador.builder.test.ts` | 219-225 / 230 | Las pruebas fijan el comportamiento de CR-01 | ⚠️ Warning | Habría que invertirlas si se decide corregirlo |
+| `src/domain/builders/borrador.builder.ts` | 43-51 | `pendientesDe` mezcla faltantes del maestro con soportes, bajo "Los enviaremos por separado" (WR-01) | ⚠️ Warning | Redacción ante el cliente |
+| `tests/golden/nombres-soporte.test.ts` | 30 | `IDS_SNAKE` excluye `rut` y `parafiscales` (WR-04) | ⚠️ Warning | Riesgo de regresión |
+| `src/demo/runners/ejecutar-demo.runner.ts` | 99-109 | stdout con ids crudos (WR-03) | ℹ️ Info | Intencional según el contrato v1 |
 
-| Test File | Linked Req | Skipped | Circular | Assertion Level | Verdict |
-|-----------|-----------|---------|----------|-----------------|---------|
-| `tests/golden/mapear-campos.test.ts` | MAP-01..07 | 0 | No (oracle is the PRD truth table plus hand-written masks) | Value | OK, but has no blank-value case (CR-01) |
-| `tests/golden/formulario-xlsx.test.ts` / `formulario-pdf.test.ts` / `formulario-portal.test.ts` | FORM-01..04 | 0 | No | Value | OK |
-| `tests/contract/generar-formulario.test.ts` | FORM-04, D-11 | 0 | No | Behavioral | OK |
-| `tests/golden/paquete.test.ts` / `borrador-envio.test.ts` | PAQ-01..05, ENV-01 | 0 | No | Value / Behavioral | OK |
-| `tests/e2e/pii.test.ts` | SEG-02 | 0 | No (has a positive control) | Value | Insufficient breadth: checks only 4 identifiers (WR-09). The verifier's broader manual scan was clean |
-| `tests/e2e/determinismo.test.ts` / `demo.test.ts` | DEMO-01/02 | 0 | No | Behavioral | OK |
-| `tests/architecture.test.ts` / `sin-comentarios.test.ts` | CAL-02/04, HERR-04 | 0 | No | Behavioral (with non-vacuity samples) | OK |
+No hay marcadores TBD, FIXME, XXX, TODO, HACK ni placeholder, ni comentarios, en los 21 archivos modificados por los planes 01-12 a 01-15. `reto-01/` no tiene cambios: solo lo toca el commit e13a7b5.
 
-There are no disabled tests and no circular patterns. One test is insufficient in breadth (WR-09); that is a warning.
+### Verificación humana requerida
 
-### Anti-Patterns Found
+#### 1. Aspecto del xlsx (repetición de la UAT 17)
 
-| File | Line | Pattern | Severity | Impact |
-|------|------|---------|----------|--------|
-| `src/domain/mapeo.ts` | 93 | A blank string leaf is returned as a value (CR-01) | 🛑 Blocker | Breaks the faltante guarantee (gap above) |
-| `src/domain/mapeo.ts` / `src/infra/knowledge/reglas.ts` | 195-200 / 31-41 | RN1 state depends only on the numeric confidence in editable data (WR-03) | ⚠️ Warning | Reproduced: setting `regla_pais` to 0.9 in a copied `reglas.json` makes the ec RUC `lleno`. Shipped data is correct |
-| `src/domain/mapeo.ts` | 93 | Boolean and array leaves become `faltante` "no existe en el maestro" (WR-02) | ⚠️ Warning | Conservative (never invents) but misreports existing data; plan 01-06 locks this as intended |
-| `src/application/armar-paquete.ts` | 95-99 | Expired soporte copied into `paquete/` and listed in ENVIO-SIMULADO while the borrador says it will follow (WR-06) | ⚠️ Warning | Observed in the hn demo output. Plan 01-09 intends it ("expired ones included and marked vencido"); the cross-artifact inconsistency needs a human call |
-| `src/tools/define-tool.ts` | 88-98 | ARGS_INVALIDOS with a valid `caso` is logged only globally (IN-05) | ⚠️ Warning | Observed: `confirmado: "true"` was missing from `out/<caso>/log.jsonl`. Weakens RN5 "toda ejecución" at the edge |
-| `src/infra/salida/pdf/render.ts` | 13-17 | Non-WinAnsi characters silently become `?` in `lleno` values (WR-01) | ⚠️ Warning | Not hit by the fixtures; a signed PDF value could differ from the master with no mark |
-| `src/application/generar-formulario.ts` / `src/infra/salida/archivos.ts` | 105-106 / 89-99 | A failed regeneration leaves a stale form (WR-07) | ⚠️ Warning | Edge path only |
-| `src/infra/fixtures/esquemas.ts` | 35-47 | Sheet names and cells can crash or overwrite in the xlsx writer (WR-08) | ⚠️ Warning | Edge path only; surfaces as ERROR_INTERNO |
-| `src/domain/checklist.ts` | 94-95 | First index entry per `tipo` wins (WR-05) | ⚠️ Warning | Edge path only |
-| `tests/e2e/pii.test.ts` | 11 | Narrow PII pattern (WR-09) | ⚠️ Warning | Regression risk only; currently clean |
+**Prueba:** Abrir `out/co-industrias-delta/formulario.xlsx` y `out/hn-agroexport-sula/formulario.xlsx` en Excel o LibreOffice.
+**Esperado:** Las etiquetas y los valores se leen completos. "Actividad económica" se ajusta en varias líneas dentro de la columna C (ancho 60). Se conservan la negrita, los rellenos y las notas.
+**Por qué humana:** El recorte depende del visor, y quien reportó G-01-H1 fue la persona.
 
-No TBD/FIXME/XXX debt markers, TODO/HACK/placeholder text, empty implementations or comments were found in src/, tests/ or demo.ts.
+#### 2. Tono del borrador y del registro de envío (repetición de la UAT 20, WR-01 y WR-02)
 
-### Human Verification Required
+**Prueba:** Leer `paquete/borrador-correo.md` de los 4 casos y un `ENVIO-SIMULADO.md` confirmado.
+**Esperado:** Tono profesional. Hay que decidir si es aceptable que el correo de ec prometa "Número de contribuyente especial… Los enviaremos por separado" y que las preguntas usen la nota interna ("confirmar si el cliente acepta el NIT colombiano").
+**Por qué humana:** Es redacción y producto. La persona reportó H4, y la redacción actual sigue la decisión GC-1.
 
-These items should be checked once the gap is closed. They do not change the status, because gaps_found takes precedence.
+#### 3. Decisión sobre CR-01
 
-#### 1. Visual look of the generated forms
+**Prueba:** Revisar la reproducción (escenarios A y B, en el frontmatter).
+**Esperado:** Corregirlo (convertir lo que falta en un bloqueo o devolver PAQUETE_DESACTUALIZADO) o aceptarlo con un override.
+**Por qué humana:** El plan especificó este comportamiento y las pruebas lo fijan. Que el registro de auditoría deba detectar un paquete desactualizado es una decisión de producto.
 
-**Test:** Open `out/co-industrias-delta/formulario.xlsx`, `out/hn-agroexport-sula/formulario.xlsx` and `out/ec-corp-andina/formulario.pdf` in Excel/Numbers and a PDF viewer.
-**Expected:** The labels are readable and the values sit next to them. In hn, the red fill and note on B12 and the yellow fill and note on B3 are visible. In the PDF, the [FALTANTE] and [POR CONFIRMAR] marks stand out and long values wrap without overlapping.
-**Why human:** A cell or text-stroke readback cannot judge visual quality.
+#### 4. Decisión sobre WR-03
 
-#### 2. Tone and correctness of `borrador-correo.md`, `checklist.md` and `ENVIO-SIMULADO.md`
+**Prueba:** Revisar el stdout de `bun run demo.ts` para ec y hn.
+**Esperado:** Confirmar que se conservan los ids crudos por el contrato v1 y documentarlo en SOLUCION.md, o pedir un plan para usar nombres.
+**Por qué humana:** Es el alcance de "salida para personas". Los planes lo dejaron fuera a propósito.
 
-**Test:** Read the 4 borradores and checklists in `out/*/paquete/` and an `ENVIO-SIMULADO.md` produced after `simular_envio` with `confirmado: true`.
-**Expected:** The Spanish reads as a professional reply from Periferia. The pending items read naturally. ENVIO-SIMULADO states clearly that nothing was sent.
-**Why human:** Wording quality is a judgment call.
+**Si alguna decisión resulta en "corregir":** basta con un plan pequeño de cierre de brechas (`/gsd-plan-phase 01 --gaps`). Ese plan invierte las dos pruebas que fijan CR-01, extiende el guardián a `rut` y `parafiscales` (WR-04) y, si se decide, separa "campos sin dato" de "soportes pendientes" en el borrador (WR-01).
 
-#### 3. Expired soporte inside the package (WR-06)
-
-**Test:** Compare `out/hn-agroexport-sula/paquete/` (which contains `parafiscales-2026-07.txt`) with its `borrador-correo.md` ("parafiscales (vencido, enviaremos la versión actualizada)").
-**Expected:** Decide whether expired soportes should stay in `paquete/` (current plan D-27/01-09) or be excluded so the package matches the email.
-**Why human:** This is a product decision where the plan intent and the email semantics conflict.
-
-### Gaps Summary
-
-One gap, from one root cause, blocks a clean pass. `leerRuta` in `src/domain/mapeo.ts` treats an empty or whitespace-only master string as a real value. A field whose master key exists but is blank is therefore reported as `lleno` with full confidence. It is not marked in the xlsx or PDF, it is not listed under "Campos faltantes" in the checklist, it is not mentioned as pending in the borrador, and the package can be LISTO.
-
-This is the review's CR-01, still open in `01-REVIEW-DISPOSITION.md`. The verifier reproduced it end to end through the exported tools. It contradicts the project's Core Value ("lo que no existe queda como `faltante`"), MAP-01 and PRD O2 ("Todo campo solicitado que no exista en el maestro queda listado en un reporte de faltantes").
-
-The 4 delivered fixtures have no blank values, so the demo, the truth table and SC1-SC5 all hold today. The fix is a small, local change in `leerRuta` plus tests.
-
-If you decide the guarantee only needs to hold for the delivered fixtures, you can accept the deviation explicitly. The verifier recommends fixing it instead:
+**Si se acepta CR-01 tal como está**, añadir al frontmatter:
 
 ```yaml
 overrides:
-  - must_have: "Un campo cuyo dato no existe en el maestro termina como faltante y aparece en el reporte de faltantes del checklist"
-    reason: "{why blank master values are out of scope}"
-    accepted_by: "{name}"
+  - must_have: "ENVIO-SIMULADO deja registrados los bloqueos vigentes al confirmar"
+    reason: "Los bloqueos son los de PAQ-03 (soporte ausente o vencido en el repositorio). Un paquete/ modificado o desactualizado entre armar y enviar queda fuera de alcance en la Fase 1."
+    accepted_by: "{nombre}"
     accepted_at: "{ISO timestamp}"
 ```
 
-The 9 review warnings do not by themselves break any must-have. WR-02, WR-03, WR-06 and IN-05 were reproduced and touch the edges of MAP-03, PAQ-01 and SEG-04. They are good candidates for the same gap-closure plan. The verifier did not modify any source file. Running `demo.ts` regenerated `out/`.
+### Resumen de brechas
+
+No hay brechas que bloqueen. La brecha anterior (valor en blanco del maestro tratado como `lleno`) está cerrada y cubierta por `tests/contract/maestro-incompleto.test.ts`. Las cuatro brechas de la UAT (H1, H4a, H4b y H4c) están cerradas en el código y en la salida que produce de verdad la herramienta. El estado es `human_needed` porque hay que repetir las dos pruebas que reportó la persona (UAT 17 y 20) y decidir sobre dos hallazgos abiertos de la revisión: CR-01, una cuestión de producto con un comportamiento fijado por el plan, y WR-03, una cuestión de alcance. SEG-02 sigue parcial en la Fase 1 y el resto queda diferido a las Fases 2 y 3, igual que en la ronda anterior. Su marca `[x] Complete` en REQUIREMENTS.md exagera lo que hay.
 
 ---
 
-_Verified: 2026-10-12T23:45:00Z_
-_Verifier: Claude (gsd-verifier)_
+_Verificado: 2026-10-13T04:40:00Z_
+_Verificador: Claude (gsd-verifier)_
