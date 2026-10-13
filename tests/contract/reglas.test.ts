@@ -7,7 +7,7 @@ import {
   crearProyectoTemporal,
   type ProyectoTemporal,
 } from "@tests/helpers/proyecto-temporal.ts";
-import { MENSAJES_ERROR } from "@/domain/errores.ts";
+import { MENSAJE_ERROR } from "@/config/strings.ts";
 import { crearHerramientas } from "@/tools/fabrica.ts";
 
 type Item = { etiqueta: string; estado: string; regla: string; confianza: number; nota: string | null };
@@ -88,7 +88,7 @@ function esperarReglasInvalidas(crudo: string): void {
   const respuesta: Respuesta = JSON.parse(crudo);
   expect(respuesta.ok).toBe(false);
   expect(respuesta.codigo).toBe("REGLAS_INVALIDAS");
-  expect(respuesta.error?.startsWith(MENSAJES_ERROR.REGLAS_INVALIDAS)).toBe(true);
+  expect(respuesta.error?.startsWith(MENSAJE_ERROR.REGLAS_INVALIDAS)).toBe(true);
   const lineas = [...crudo.split("\n"), ...(respuesta.error ?? "").split("\n")];
   expect(lineas.some((linea) => linea.startsWith("    at "))).toBe(false);
 }

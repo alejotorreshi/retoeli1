@@ -1,5 +1,6 @@
 import { CODIGOS_CON_DETALLE } from "@/config/constants/errors.constants.ts";
-import { type CodigoError, MENSAJES_ERROR } from "@/domain/errores.ts";
+import { MENSAJE_ERROR, TEXTO_ERROR } from "@/config/strings.ts";
+import type { CodigoError } from "@/domain/errores.ts";
 
 export type Parcial = Readonly<Record<string, unknown>>;
 
@@ -21,9 +22,9 @@ export function exito<D>(data: D): Exito<D> {
 }
 
 function mensajeDe(codigo: CodigoError, detalle: string | undefined): string {
-  const base = MENSAJES_ERROR[codigo];
+  const base = MENSAJE_ERROR[codigo];
   if (detalle === undefined || detalle === "" || !CODIGOS_CON_DETALLE.has(codigo)) return base;
-  return `${base} Detalle: ${detalle}`;
+  return TEXTO_ERROR.conDetalle(base, detalle);
 }
 
 export function fallo(codigo: CodigoError, opciones: OpcionesFallo = {}): Fallo {
