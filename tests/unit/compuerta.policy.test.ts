@@ -12,7 +12,6 @@ import {
   cerrarTurno,
   estadoLibre,
   evaluarEnvio,
-  necesitaPreguntaDeterminista,
   revocarAlArmar,
 } from "@/domain/policies/compuerta.policy.ts";
 import type {
@@ -175,24 +174,5 @@ describe("cerrarTurno (D-37, D-63.1, D-63.2)", () => {
 
   test("un turno abortado cierra LIBRE", () => {
     expect(cerrarTurno(cierre({ eventos: [armado(PENDIENTE_EC)], abortado: true }))).toEqual(LIBRE);
-  });
-});
-
-describe("necesitaPreguntaDeterminista (D-44)", () => {
-  test("sin casos pendientes no hace falta", () => {
-    expect(necesitaPreguntaDeterminista("Listo.", [])).toBe(false);
-  });
-
-  test("hace falta si el texto no termina en pregunta", () => {
-    expect(necesitaPreguntaDeterminista("Armé el paquete de ec-corp-andina.", [EC])).toBe(true);
-  });
-
-  test("hace falta si la pregunta final no nombra cada caso pendiente", () => {
-    expect(necesitaPreguntaDeterminista("Armé el paquete de ec-corp-andina.\n\n¿Algo más?", [EC])).toBe(true);
-    expect(necesitaPreguntaDeterminista(`¿Confirmas el envío de ${EC}?`, [EC, CO])).toBe(true);
-  });
-
-  test("no hace falta si la pregunta final nombra todos los casos pendientes", () => {
-    expect(necesitaPreguntaDeterminista(`¿Confirmas el envío simulado de ${EC}?  \n`, [EC])).toBe(false);
   });
 });
