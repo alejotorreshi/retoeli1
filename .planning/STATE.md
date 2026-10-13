@@ -3,16 +3,16 @@ gsd_state_version: "1.0"
 current_phase: 02
 current_phase_name: Agente y compuerta de confirmación
 status: executing
-stopped_at: Completed 02-14-PLAN.md
-last_updated: "2026-10-13T22:14:47.607Z"
+stopped_at: Completed 02-13-PLAN.md
+last_updated: "2026-10-13T22:21:10.901Z"
 last_activity: 2026-10-13
 last_activity_desc: Phase 02 execution started
-state_head: 9ae6763a52db2b8422a340848bd7ba1cf18b179c
+state_head: 90c1178743c318ec26dfed373f738d9b025d3688
 progress:
   total_phases: 4
   completed_phases: 1
   total_plans: 29
-  completed_plans: 28
+  completed_plans: 29
   percent: 25
 ---
 
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-10-13)
 ## Current Position
 
 Phase: 02 (Agente y compuerta de confirmación) — EXECUTING
-Plan: 5 of 14
+Plan: 6 of 14
 Status: Ready to execute
 Last activity: 2026-10-13 — Phase 02 execution started
 
@@ -84,6 +84,7 @@ Progress: [███░░░░░░░] 25%
 | Phase 02 P11 | 4 min | 2 tasks | 7 files |
 | Phase 02 P12 | 5 min | 2 tasks | 6 files |
 | Phase 02 P14 | 3 min | 2 tasks | 5 files |
+| Phase 02 P13 | 3 min | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -181,6 +182,9 @@ Recent decisions affecting current work:
 - [Phase 02]: 02-14: weak acknowledgements (ok, okay, vale, listo, claro, correcto) confirm only on their own; with any filler the decision is otro (D-39)
 - [Phase 02]: 02-14: VERBOS_ENVIO keeps only imperatives; the noun envío, envié and enviar never confirm
 - [Phase 02]: 02-14: the server question quotes EJEMPLOS_CONFIRMACION (envía, sí) and promises only that a reply that is not an explicit confirmation sends nothing
+- [Phase 02]: 02-13: a confirmation turn that ends in error, tope_tokens or tope_iteraciones before using its authorization returns that case to pending and ends with the server question (D-63.2); final and abortado recover nothing
+- [Phase 02]: 02-13: only the pending state is recovered, never the grant (D-38); revoked, used, unknown and inherited-key cases are never recovered
+- [Phase 02]: 02-13: live run after all gap fixes passed on the first run (VIVO PASS modelo=deepseek-flash llamadas=12 tokens=79292); agent/prompt.md unchanged
 
 ### Pending Todos
 
@@ -206,6 +210,6 @@ Items acknowledged and deferred at milestone close, most recent first:
 
 ## Session Continuity
 
-Last session: 2026-10-13T22:14:47.550Z
-Stopped at: Completed 02-14-PLAN.md
+Last session: 2026-10-13T22:21:10.846Z
+Stopped at: Completed 02-13-PLAN.md
 Resume file: None

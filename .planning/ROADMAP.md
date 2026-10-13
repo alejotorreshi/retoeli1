@@ -89,7 +89,7 @@ Plans:
   4. Al llegar al tope de iteraciones (25 por defecto) o al de tokens por sesión, el usuario recibe en lenguaje claro lo que se tiene y lo que falta, no un error. Una instrucción inyectada en el cuerpo del correo del cliente no cambia el comportamiento del agente.
   5. Un cambio en `src/knowledge/registro-proveedor.md` o en `agent/prompt.md` cambia el comportamiento del agente sin tocar código del servidor. Los logs JSON llevan IDs de sesión, turno y tool call, sin clave ni PII. `bun test` cubre el ciclo con un LLM falso (tope, compuerta con "No envíes…" y el guion §11, CA5 e inyección) sin gastar tokens.
 
-**Plans:** 13/14 plans executed
+**Plans:** 14/14 plans executed
 
 Plans:
 **Wave 1**
@@ -122,7 +122,7 @@ Plans:
 - [x] 02-14-PLAN.md — El clasificador deja de aceptar el sustantivo "envío" y los acuses con relleno, y la pregunta del servidor promete solo lo que el clasificador acepta (CR-01)
 
 **Cierre de brechas de la verificación, Wave 3** *(blocked on 02-10, 02-12 and 02-14)*
-- [ ] 02-13-PLAN.md — Un turno de confirmación que falla antes de enviar conserva el caso pendiente y termina con la pregunta del servidor; nueva corrida en vivo con línea VIVO PASS (WR-02)
+- [x] 02-13-PLAN.md — Un turno de confirmación que falla antes de enviar conserva el caso pendiente y termina con la pregunta del servidor; nueva corrida en vivo con línea VIVO PASS (WR-02)
 
 **Research flag**: Spike en vivo con DeepSeek antes de construir el ciclo: nombre de modelo vigente, thinking desactivado, `tool_choice`, forma de los tool calls y de los errores. La línea de modelos cambió 3 veces en 2026 y `deepseek-chat`/`deepseek-reasoner` se retiraron el 2026-07-24.
 
@@ -165,6 +165,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Núcleo determinista | 15/15 | Complete    | 2026-10-13 |
-| 2. Agente y compuerta de confirmación | 13/14 | In Progress | - |
+| 2. Agente y compuerta de confirmación | 14/14 | In Progress | - |
 | 3. Chat web, API SSE y despliegue | 0/TBD | Not started | - |
 | 4. Módulo, documentación y defensa | 0/TBD | Not started | - |
