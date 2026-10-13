@@ -31,7 +31,7 @@ Decimal phases appear between their surrounding integers in numeric order.
   4. Las 5 herramientas `proveedor_*` se importan sin servidor ni secretos y nunca lanzan. Con args inválidos, un `mapeo` que trae valores, un `caso` con path traversal, un caso inexistente o una plantilla corrupta devuelven `{ ok: false, error }` con código estable y mensaje en español, sin traza cruda. `simular_envio` sin confirmación devuelve "requiere confirmación explícita". Cada llamada queda registrada, con resumen redactado, en `out/log.jsonl` y en `out/<caso>/log.jsonl`.
   5. `bun run check` (tsc estricto sin `any` y con `noUncheckedIndexedAccess`, más Biome) y `bun test` pasan. Eso incluye los golden tests por caso, los fixtures sintéticos de `tests/fixtures/` (una etiqueta ambigua da `requiere_confirmacion` con el equivalente del país) y el test de arquitectura que verifica la dirección de los imports. El código no tiene comentarios, y las constantes y la configuración viven centralizadas y validadas con zod.
 
-**Plans:** 11/15 plans executed
+**Plans:** 12/15 plans executed
 
 Plans:
 **Wave 1**
@@ -68,7 +68,7 @@ Plans:
 - [x] 01-11-PLAN.md — `demo.ts` completo con la tabla de verdad, prueba de determinismo y grep de PII con control positivo
 
 **Cierre de brechas de la UAT, Wave 1** *(gap closure)*
-- [ ] 01-12-PLAN.md — Anchos de columna del xlsx calculados a partir del texto escrito en cada columna usada, con tope y wrapText (G-01-H1)
+- [x] 01-12-PLAN.md — Anchos de columna del xlsx calculados a partir del texto escrito en cada columna usada, con tope y wrapText (G-01-H1)
 - [ ] 01-13-PLAN.md — `ENVIO-SIMULADO.md` solo lista lo que va al cliente. El borrador depende del estado, nunca afirma una firma y pregunta por los campos por confirmar (G-01-H4a, G-01-H4b)
 
 **Cierre de brechas de la UAT, Wave 2** *(blocked on 01-13)*
@@ -130,7 +130,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Núcleo determinista | 11/14 | In Progress | - |
+| 1. Núcleo determinista | 12/15 | In Progress | - |
 | 2. Agente y compuerta de confirmación | 0/TBD | Not started | - |
 | 3. Chat web, API SSE y despliegue | 0/TBD | Not started | - |
 | 4. Módulo, documentación y defensa | 0/TBD | Not started | - |

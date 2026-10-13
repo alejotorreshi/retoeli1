@@ -2,17 +2,17 @@
 gsd_state_version: "1.0"
 current_phase: 01
 current_phase_name: Núcleo determinista
-status: verifying
-stopped_at: Completed 01-11-PLAN.md
-last_updated: "2026-10-12T23:13:56.304Z"
+status: executing
+stopped_at: Completed 01-12-PLAN.md
+last_updated: "2026-10-13T04:01:10.010Z"
 last_activity: 2026-10-12
 last_activity_desc: Phase 01 execution started
-state_head: 0ed43667e1ef3f5aea231c3e2354ba93fe294978
+state_head: 14fcdf26adffdaf4c52d4bc79325fe93887d3452
 progress:
   total_phases: 4
   completed_phases: 0
-  total_plans: 11
-  completed_plans: 11
+  total_plans: 15
+  completed_plans: 12
   percent: 0
 ---
 
@@ -28,8 +28,8 @@ See: .planning/PROJECT.md (updated 2026-10-12)
 ## Current Position
 
 Phase: 01 (Núcleo determinista) — EXECUTING
-Plan: 11 of 11
-Status: Phase complete — ready for verification
+Plan: 2 of 15
+Status: Ready to execute
 Last activity: 2026-10-12 — Phase 01 execution started
 
 Progress: [░░░░░░░░░░] 0%
@@ -67,6 +67,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 01 P09 | 8min | 2 tasks | 18 files |
 | Phase 01 P10 | 4min | 2 tasks | 16 files |
 | Phase 01 P11 | 5min | 2 tasks | 7 files |
+| Phase 01 P12 | 4min | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -112,6 +113,7 @@ Recent decisions affecting current work:
 - [Phase 01]: ejecutarDemo returns {fallido} and prints the reason instead of throwing outside a project root; nothing is deleted
 - [Phase 01]: A failed demo case still gets a Resumen row with ERROR (<codigo>) as estado
 - [Phase 01]: Determinism compares xlsx semantically, jsonl without ts and every other output by bytes; the PII scan has a minimum corpus size and a positive control in the formularios
+- [Phase 01]: xlsx: ANCHO_COLUMNA_XLSX {minimo 10, maximo 60, margen 2}; ancho por columna usada = clamp(largo en puntos de código + margen); wrapText solo si largo + margen > maximo (GC-4, G-01-H1)
 
 ### Pending Todos
 
@@ -134,6 +136,6 @@ Items acknowledged and deferred at milestone close, most recent first:
 
 ## Session Continuity
 
-Last session: 2026-10-12T23:13:56.280Z
-Stopped at: Completed 01-11-PLAN.md
+Last session: 2026-10-13T04:01:09.984Z
+Stopped at: Completed 01-12-PLAN.md
 Resume file: None

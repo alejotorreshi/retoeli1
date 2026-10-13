@@ -33,7 +33,7 @@ Fuente vinculante: `reto-01/PRD.md`, sin modificar. Fixtures: `reto-01/fixtures/
 
 ### Generación del formulario (HU-3)
 
-- [ ] **FORM-01**: Para P0 se genera `out/<caso>/formulario.xlsx`, con cada etiqueta en `celda_etiqueta` y su valor en `celda_valor`, en la hoja indicada (hay soporte para varias hojas). Los valores se escriben como texto para preservar los ceros a la izquierda.
+- [x] **FORM-01**: Para P0 se genera `out/<caso>/formulario.xlsx`, con cada etiqueta en `celda_etiqueta` y su valor en `celda_valor`, en la hoja indicada (hay soporte para varias hojas). Los valores se escriben como texto para preservar los ceros a la izquierda.
 - [ ] **FORM-02**: Para P1 se genera `out/<caso>/formulario.pdf` con todas las etiquetas y valores en el orden de `plantilla-campos.json`. Los campos `faltante` y `requiere_confirmacion` llevan una marca visible.
 - [ ] **FORM-03**: Para P2 (portal), la herramienta responde `ok: true` con `data: { ruta, formato: "portal", aviso: "formato no soportado" }` y escribe `out/<caso>/valores-portal.md` con los valores listos para copiar. El flujo sigue hasta el paquete.
 - [ ] **FORM-04**: `generar_formulario` recibe un `mapeo` que solo trae rutas: un `mapeo` con valores se rechaza con un esquema estricto. La herramienta lee los valores del maestro, de modo que CA2 se cumple por diseño.
@@ -190,7 +190,7 @@ Cada requisito v1 está asignado a exactamente una fase del roadmap (`.planning/
 | MAP-05 | Phase 1 | Gaps Found |
 | MAP-06 | Phase 1 | Gaps Found |
 | MAP-07 | Phase 1 | Gaps Found |
-| FORM-01 | Phase 1 | Gaps Found |
+| FORM-01 | Phase 1 | Complete |
 | FORM-02 | Phase 1 | Gaps Found |
 | FORM-03 | Phase 1 | Gaps Found |
 | FORM-04 | Phase 1 | Gaps Found |
