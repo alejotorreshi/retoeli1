@@ -3,7 +3,7 @@ import { evaluarEstadoPaquete } from "@/application/services/estado-paquete.serv
 import type { Entorno } from "@/application/types/puertos.type.ts";
 import type { ArgsSimularEnvio, DatosEnvio } from "@/application/types/simular-envio.type.ts";
 import { CODIGO_ERROR } from "@/config/constants/errors.constants.ts";
-import { ARCHIVOS_PAQUETE, ARCHIVOS_SALIDA } from "@/config/constants/files.constants.ts";
+import { ARCHIVO_FORMULARIO, ARCHIVOS_PAQUETE, ARCHIVOS_SALIDA } from "@/config/constants/files.constants.ts";
 import { CLAVE_PLANTILLA } from "@/config/constants/knowledge.constants.ts";
 import { construirDatosEnvio } from "@/domain/builders/borrador.builder.ts";
 import { renderizarPlantilla } from "@/domain/engines/motor-plantillas.engine.ts";
@@ -26,8 +26,10 @@ async function simularBajoCandado(args: ArgsSimularEnvio, entorno: Entorno): Pro
 
   const plantilla = await entorno.conocimiento.cargar(contexto.data.reglas, CLAVE_PLANTILLA.ENVIO_SIMULADO);
   if (!plantilla.ok) return plantilla;
-  const archivos = await entorno.salida.listarPaquete(caso);
-  const datos = construirDatosEnvio(caso, contexto.data.solicitud, checklist.data, archivos);
+  const { solicitud } = contexto.data;
+  const listado = await entorno.salida.listarPaquete(caso);
+  const formulario = ARCHIVO_FORMULARIO[solicitud.formato];
+  const datos = construirDatosEnvio(caso, solicitud, checklist.data, formulario, listado);
   const texto = renderizarPlantilla(
     plantilla.data,
     datos,

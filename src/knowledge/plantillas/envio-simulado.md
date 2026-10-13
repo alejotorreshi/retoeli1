@@ -9,7 +9,9 @@ No se envió ningún correo real: este archivo solo registra el envío simulado 
 
 ## Archivos que se envían
 
-{{#archivos}}- paquete/{{archivo}}
+{{#formulario_en_portal}}El formulario se diligencia en el portal del cliente: paquete/{{formulario}} queda como guía de valores para la analista y no se envía.
+
+{{/formulario_en_portal}}{{#archivos}}- paquete/{{archivo}}
 {{/archivos}}{{^archivos}}Ninguno.
 {{/archivos}}
 ## Soportes vencidos que no se envían

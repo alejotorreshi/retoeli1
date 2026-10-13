@@ -22,6 +22,8 @@ export type DatosEnvioSimulado = {
   readonly destinatario: string;
   readonly asunto: string;
   readonly fecha_ejecucion: string;
+  readonly formulario: string;
+  readonly formulario_en_portal: SeccionCondicional;
   readonly archivos: readonly { readonly archivo: string }[];
   readonly retenidos: readonly { readonly archivo: string }[];
   readonly bloqueos: readonly { readonly bloqueo: string }[];

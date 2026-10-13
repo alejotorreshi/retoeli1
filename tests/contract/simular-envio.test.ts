@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import { existsSync } from "node:fs";
-import { readdir, readFile } from "node:fs/promises";
+import { readdir, readFile, rm } from "node:fs/promises";
 import { join, relative } from "node:path";
 import { generarCaso } from "@tests/helpers/flujo.helper.ts";
 import { crearProyectoTemporal } from "@tests/helpers/proyecto-temporal.helper.ts";
@@ -9,6 +9,31 @@ import { crearHerramientas } from "@/tools/factories/herramientas.factory.ts";
 
 const CO = "co-industrias-delta";
 const EC = "ec-corp-andina";
+const HN = "hn-agroexport-sula";
+const PA = "pa-logistica-istmo";
+const INICIO_ENVIADOS = "## Archivos que se envían";
+const FIN_ENVIADOS = "## Soportes vencidos que no se envían";
+const INTERNOS = ["checklist.md", "borrador-correo.md"];
+const FRASE_PORTAL =
+  "El formulario se diligencia en el portal del cliente: paquete/valores-portal.md queda como guía de valores para la analista y no se envía.";
+const ENVIADOS_ESPERADOS: Readonly<Record<string, readonly string[]>> = {
+  [CO]: [
+    "camara-comercio-2026-08.txt",
+    "certificacion-bancaria-2026-08.txt",
+    "estados-financieros-2025.txt",
+    "formulario.xlsx",
+    "rut-2026.txt",
+  ],
+  [EC]: [
+    "camara-comercio-2026-08.txt",
+    "certificacion-bancaria-2026-08.txt",
+    "estados-financieros-2025.txt",
+    "formulario.pdf",
+    "rut-2026.txt",
+  ],
+  [HN]: ["camara-comercio-2026-08.txt", "formulario.xlsx", "rut-2026.txt"],
+  [PA]: ["camara-comercio-2026-08.txt", "rut-2026.txt"],
+};
 const LITERAL = "requiere confirmación explícita";
 const BLOQUEO_EC = "ausente: certificado_cumplimiento_tributario";
 
@@ -56,6 +81,22 @@ async function archivosBajo(directorio: string): Promise<string[]> {
     .filter((entrada) => entrada.isFile())
     .map((entrada) => relative(directorio, join(entrada.parentPath, entrada.name)))
     .sort();
+}
+
+function enviadosDe(registro: string): string[] {
+  const inicio = registro.indexOf(INICIO_ENVIADOS);
+  const fin = registro.indexOf(FIN_ENVIADOS);
+  return registro
+    .slice(inicio, fin)
+    .split("\n")
+    .filter((linea) => linea.startsWith("- paquete/"))
+    .map((linea) => linea.slice("- paquete/".length));
+}
+
+async function confirmarYLeer(proyecto: ProyectoTemporal, caso: string): Promise<string> {
+  const respuesta = await simular(proyecto.raiz, { caso, confirmado: true });
+  if (respuesta.ok !== true) throw new Error(`simular_envio falló para ${caso}`);
+  return readFile(envioSimulado(proyecto.raiz, caso), "utf8");
 }
 
 async function lineasDe(ruta: string): Promise<number> {
@@ -141,7 +182,49 @@ describe("contrato: proveedor_simular_envio (ENV-01, D-13, RN4)", () => {
     expect(registro).toContain("Fecha de ejecución: 2026-09-03");
     expect(registro).toContain("No se envió ningún correo real");
     expect(registro).toContain("Confirmado explícitamente por la usuaria");
-    expect(registro).toContain("- paquete/checklist.md");
+    expect(registro).not.toContain("- paquete/checklist.md");
+  });
+
+  for (const caso of [CO, EC, HN, PA]) {
+    test(`${caso} confirmado lista como enviados solo el formulario y los soportes presentes (GC-3)`, async () => {
+      const proyecto = await armado(caso);
+      const enviados = enviadosDe(await confirmarYLeer(proyecto, caso));
+      expect(enviados).toEqual([...(ENVIADOS_ESPERADOS[caso] ?? [])]);
+      for (const interno of INTERNOS) expect(enviados).not.toContain(interno);
+      const paquete = await readdir(join(proyecto.raiz, "out", caso, "paquete"));
+      for (const interno of INTERNOS) expect(paquete).toContain(interno);
+    });
+  }
+
+  test("pa confirmado explica que valores-portal.md es la guía de la analista y no lo lista como enviado", async () => {
+    const proyecto = await armado(PA);
+    const registro = await confirmarYLeer(proyecto, PA);
+    expect(registro).toContain(FRASE_PORTAL);
+    expect(registro).not.toContain("- paquete/valores-portal.md");
+    expect(enviadosDe(registro)).not.toContain("valores-portal.md");
+  });
+
+  test("xlsx y pdf no traen la frase del portal", async () => {
+    for (const caso of [CO, EC]) {
+      const proyecto = await armado(caso);
+      expect(await confirmarYLeer(proyecto, caso)).not.toContain("se diligencia en el portal");
+    }
+  });
+
+  test("un soporte borrado de paquete/ no aparece como enviado", async () => {
+    const proyecto = await armado(CO);
+    await rm(join(proyecto.raiz, "out", CO, "paquete", "rut-2026.txt"));
+    const enviados = enviadosDe(await confirmarYLeer(proyecto, CO));
+    expect(enviados).not.toContain("rut-2026.txt");
+    expect(enviados).toContain("formulario.xlsx");
+  });
+
+  test("hn deja el soporte vencido en su sección y en paquete/ (WR-06)", async () => {
+    const proyecto = await armado(HN);
+    const registro = await confirmarYLeer(proyecto, HN);
+    const [, retenidos = ""] = registro.split(FIN_ENVIADOS);
+    expect(retenidos).toContain("- paquete/parafiscales-2026-07.txt");
+    expect(existsSync(join(proyecto.raiz, "out", HN, "paquete", "parafiscales-2026-07.txt"))).toBe(true);
   });
 
   test("co confirmado no exige listo_para_firma y registra Sin bloqueos", async () => {

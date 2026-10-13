@@ -1,3 +1,4 @@
+import { FORMATO } from "@/config/constants/forms.constants.ts";
 import { RUTA_MAESTRO } from "@/config/constants/maestro.constants.ts";
 import { ESTADO_SOPORTE } from "@/config/constants/supports.constants.ts";
 import { TEXTO_BORRADOR, TEXTO_COMUN } from "@/config/strings.ts";
@@ -6,7 +7,7 @@ import { leerRuta } from "@/domain/selectors/maestro.selector.ts";
 import type { DatosBorradorCorreo, DatosEnvioSimulado, RutaBorrador } from "@/domain/types/borrador.type.ts";
 import type { Checklist } from "@/domain/types/checklist.type.ts";
 import type { Maestro } from "@/domain/types/maestro.type.ts";
-import type { Solicitud } from "@/domain/types/solicitud.type.ts";
+import type { Formato, Solicitud } from "@/domain/types/solicitud.type.ts";
 import type { SoporteEvaluado } from "@/domain/types/soportes.type.ts";
 
 function asuntoRespuesta(solicitud: Solicitud): string {
@@ -23,6 +24,19 @@ function adjuntos(soportes: readonly SoporteEvaluado[]): DatosBorradorCorreo["so
       ? [{ tipo: soporte.tipo, archivo: soporte.archivo }]
       : [],
   );
+}
+
+function adjuntaFormulario(formato: Formato): boolean {
+  return formato !== FORMATO.PORTAL;
+}
+
+function archivosAlCliente(
+  solicitud: Solicitud,
+  checklist: Checklist,
+  formulario: string,
+): ReadonlySet<string> {
+  const soportes = adjuntos(checklist.soportes).map((adjunto) => adjunto.archivo);
+  return new Set(adjuntaFormulario(solicitud.formato) ? [formulario, ...soportes] : soportes);
 }
 
 function pendientesDe(checklist: Checklist): readonly string[] {
@@ -68,8 +82,10 @@ export function construirDatosEnvio(
   caso: string,
   solicitud: Solicitud,
   checklist: Checklist,
-  archivos: readonly string[],
+  formulario: string,
+  listado: readonly string[],
 ): DatosEnvioSimulado {
+  const alCliente = archivosAlCliente(solicitud, checklist, formulario);
   const vencidos = archivosVencidos(checklist);
   return {
     caso,
@@ -77,8 +93,10 @@ export function construirDatosEnvio(
     destinatario: solicitud.de,
     asunto: asuntoRespuesta(solicitud),
     fecha_ejecucion: checklist.fecha_ejecucion,
-    archivos: archivos.filter((archivo) => !vencidos.has(archivo)).map((archivo) => ({ archivo })),
-    retenidos: archivos.filter((archivo) => vencidos.has(archivo)).map((archivo) => ({ archivo })),
+    formulario,
+    formulario_en_portal: seccionSi(!adjuntaFormulario(solicitud.formato)),
+    archivos: listado.filter((archivo) => alCliente.has(archivo)).map((archivo) => ({ archivo })),
+    retenidos: listado.filter((archivo) => vencidos.has(archivo)).map((archivo) => ({ archivo })),
     bloqueos: checklist.bloqueos.map((bloqueo) => ({ bloqueo })),
   };
 }
