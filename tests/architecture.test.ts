@@ -243,6 +243,18 @@ const NOMBRE_DE_HERRAMIENTA_SUELTO = new RegExp(`\\b(?:${Object.values(HERRAMIEN
 
 const CAPAS_FUTURAS = /^src\/(?:server[^/]*|http)(?:\/|$)/;
 
+const Z_ENUM_CON_ARREGLO = /\bz\s*\.\s*enum\(\s*\[([^\]]*)\]/g;
+
+const MIEMBRO_DE_CONSTANTE = /\b[A-Z][A-Z0-9_]*\s*\.\s*[A-Z][A-Z0-9_]*\b/;
+
+const ARCHIVO_DE_ESQUEMAS = /^src\/(?:[a-z0-9-]+\/)*schemas\/[a-z0-9-]+\.schema\.ts$/;
+
+const INICIO_DE_DECLARACION = /\n(?=[a-z])/;
+
+const EXPORTA_ESQUEMA = /^export\s+const\s+(\w+Schema)\b/;
+
+const COMPROBADO_CONTRA_TIPO = /\bsatisfies\s+z\.ZodType</;
+
 function sinExtension(ruta: string): string {
   return ruta.replace(/\.(?:ts|js)$/, "");
 }
@@ -492,6 +504,28 @@ function violacionesDeCasoDeUso(ruta: string, codigo: string): string[] {
     : [`${ruta}: un caso de uso exporta exactamente una función`];
 }
 
+function lineaDe(codigo: string, indice: number): number {
+  return codigo.slice(0, indice).split("\n").length;
+}
+
+function violacionesDeEnumAMano(ruta: string, codigo: string): string[] {
+  return [...codigo.matchAll(Z_ENUM_CON_ARREGLO)]
+    .filter((coincidencia) => MIEMBRO_DE_CONSTANTE.test(coincidencia[1] ?? ""))
+    .map(
+      (coincidencia) =>
+        `${ruta}:${lineaDe(codigo, coincidencia.index)}: z.enum enumera a mano los miembros de una constante`,
+    );
+}
+
+function violacionesDeEsquemaSinTipo(ruta: string, codigo: string): string[] {
+  if (!ARCHIVO_DE_ESQUEMAS.test(ruta)) return [];
+  return codigo.split(INICIO_DE_DECLARACION).flatMap((declaracion) => {
+    const nombre = EXPORTA_ESQUEMA.exec(declaracion)?.[1];
+    if (nombre === undefined || COMPROBADO_CONTRA_TIPO.test(declaracion)) return [];
+    return [`${ruta}: ${nombre} no se comprueba contra su tipo con satisfies z.ZodType<T>`];
+  });
+}
+
 function referenciasSinPrefijo(origen: string, texto: string): string[] {
   return NOMBRE_DE_HERRAMIENTA_SUELTO.test(texto) ? [`${origen}: nombra una herramienta sin proveedor_`] : [];
 }
@@ -716,6 +750,16 @@ describe("reglas de capas sobre el código real", () => {
     );
     expect([...fuente, ...valores]).toEqual([]);
     expect(STRINGS.MENSAJE_ERROR.FORMULARIO_NO_GENERADO).toContain("proveedor_generar_formulario");
+  });
+
+  test("G15: los z.enum se construyen desde su constante, no enumerando sus miembros", () => {
+    expect(listarFuentes().flatMap((ruta) => violacionesDeEnumAMano(ruta, leer(ruta)))).toEqual([]);
+  });
+
+  test("G16: cada esquema exportado de schemas/ se comprueba contra su tipo", () => {
+    const fuentes = listarFuentes();
+    expect(fuentes.filter((ruta) => ARCHIVO_DE_ESQUEMAS.test(ruta)).length).toBeGreaterThan(0);
+    expect(fuentes.flatMap((ruta) => violacionesDeEsquemaSinTipo(ruta, leer(ruta)))).toEqual([]);
   });
 
   test("src/ y demo.ts no usan APIs de shell", () => {
@@ -1176,6 +1220,42 @@ describe("el escáner muerde sobre fuentes de muestra", () => {
       "src/loop/services/x.service.ts:2: compara o asigna un código con un literal",
       "src/loop/services/x.service.ts:3: compara o asigna un código con un literal",
     ]);
+  });
+
+  test("G15: reporta un z.enum que enumera miembros a mano y deja pasar el construido desde la constante", () => {
+    const codigo = [
+      "const a = z.enum(MODO);",
+      "const b = z.enum([...Object.values(MODO), VALOR_OMITIR]);",
+      "const c = z.enum([MODO.HABILITADO, MODO.DESHABILITADO, VALOR_OMITIR]);",
+      "const d = z.enum([",
+      "  ESTADO.LIBRE,",
+      "]);",
+    ].join("\n");
+    expect(violacionesDeEnumAMano("src/config/env.ts", codigo)).toEqual([
+      "src/config/env.ts:3: z.enum enumera a mano los miembros de una constante",
+      "src/config/env.ts:4: z.enum enumera a mano los miembros de una constante",
+    ]);
+  });
+
+  test("G16: reporta un esquema exportado sin satisfies y deja pasar los comprobados y los privados", () => {
+    const codigo = [
+      'import { z } from "zod";',
+      "const privadoSchema = z.object({ a: z.string() });",
+      "export const tipadoSchema = z",
+      "  .object({ a: z.string() })",
+      "  .strict() satisfies z.ZodType<A>;",
+      "export const cerradoSchema = z.object({",
+      "  b: z.string(),",
+      "}) satisfies z.ZodType<B>;",
+      "export const sueltoSchema = z.object({",
+      "  c: z.string(),",
+      "});",
+      "export const argsHerramienta = { c: z.string() };",
+    ].join("\n");
+    expect(violacionesDeEsquemaSinTipo("src/loop/schemas/x.schema.ts", codigo)).toEqual([
+      "src/loop/schemas/x.schema.ts: sueltoSchema no se comprueba contra su tipo con satisfies z.ZodType<T>",
+    ]);
+    expect(violacionesDeEsquemaSinTipo("src/loop/services/x.service.ts", codigo)).toEqual([]);
   });
 
   test("reporta un archivo en una capa no declarada", () => {

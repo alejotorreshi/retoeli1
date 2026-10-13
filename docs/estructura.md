@@ -50,6 +50,10 @@ Direcciones permitidas:
 - pino solo se importa desde infra.
 - `config/env.ts` lo importan infra, tools, demo y `loop/wiring/agente.wiring.ts`.
 
+## Esquemas
+
+Cada `export const …Schema` de `schemas/*.schema.ts` se comprueba con `satisfies z.ZodType<T>` contra un tipo escrito a mano en `types/`, que es la fuente de verdad (G16). Los `args*` de `tools/schemas/argumentos.schema.ts` son formas crudas (`ZodRawShape`) del contrato de herramientas y no entran. Los `z.enum` se construyen desde su constante (`z.enum(X)` o `Object.values(X)`), nunca enumerando sus miembros (G15).
+
 ## Pruebas unitarias
 
 `tests/unit/` es plana y cada archivo se llama `<módulo>.<rol>.test.ts`, espejo de un `src/**/<módulo>.<rol>.ts`. La carpeta no se anida porque varias pruebas resuelven fixtures con `new URL("../../…", import.meta.url)`. Las pruebas de contrato, golden y e2e se nombran por escenario.

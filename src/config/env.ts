@@ -140,7 +140,7 @@ const flag = z.enum(BOOLEANO_ENV).transform((valor) => valor === BOOLEANO_ENV.VE
 
 const temperature = z.union([z.literal(VALOR_OMITIR), z.coerce.number().min(0).max(TEMPERATURA_MAXIMA)]);
 
-const thinking = z.enum([MODO_THINKING.HABILITADO, MODO_THINKING.DESHABILITADO, VALOR_OMITIR]);
+const thinking = z.enum([...Object.values(MODO_THINKING), VALOR_OMITIR]);
 
 function positiveInt(maximo?: number) {
   const base = z.coerce.number().int().positive();

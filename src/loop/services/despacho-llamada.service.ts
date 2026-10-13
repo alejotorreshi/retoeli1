@@ -1,4 +1,3 @@
-import type { z } from "zod";
 import { EVENTO_COMPUERTA } from "@/config/constants/confirmacion.constants.ts";
 import { CODIGO_ERROR } from "@/config/constants/errors.constants.ts";
 import { ESTADO_SOPORTE } from "@/config/constants/supports.constants.ts";
@@ -11,14 +10,13 @@ import { cuerpoDeFallo } from "@/domain/utils/respuesta-herramienta.util.ts";
 import type { LlamadaHerramienta } from "@/llm/types/llm.type.ts";
 import { argumentosConCasoSchema, armarPaqueteSchema } from "@/loop/schemas/resultado-herramienta.schema.ts";
 import { argumentosDeLlamada, resultadoDeFallo } from "@/loop/services/registro-herramientas.service.ts";
+import type { SoporteArmado } from "@/loop/types/resultado-herramienta.type.ts";
 import type { ContextoDespacho, ResultadoDespacho, ResultadoLlamada } from "@/loop/types/turno.type.ts";
 
 const SIMULAR_ENVIO = NOMBRE_VISIBLE[HERRAMIENTA.SIMULAR_ENVIO];
 const ARMAR_PAQUETE = NOMBRE_VISIBLE[HERRAMIENTA.ARMAR_PAQUETE];
 const SIN_CONFIRMACION = CODIGO_ERROR.CONFIRMACION_REQUERIDA;
 const RESUMEN_SIN_CONFIRMACION = RESUMEN_HERRAMIENTA.fallo(HERRAMIENTA.SIMULAR_ENVIO, SIN_CONFIRMACION);
-
-type SoporteArmado = z.output<typeof armarPaqueteSchema>["data"]["checklist"]["soportes"][number];
 
 export function casoDeLlamada(llamada: LlamadaHerramienta): string | null {
   const args = argumentosConCasoSchema.safeParse(argumentosDeLlamada(llamada.argumentos));

@@ -19,6 +19,7 @@ import {
 } from "@/config/constants/xlsx.constants.ts";
 import type { Glosario } from "@/domain/types/glosario.type.ts";
 import type { Maestro, ValorMaestro } from "@/domain/types/maestro.type.ts";
+import type { CampoCelda, CampoLista } from "@/domain/types/plantilla-caso.type.ts";
 import type { Solicitud } from "@/domain/types/solicitud.type.ts";
 import type { SoporteIndice } from "@/domain/types/soportes.type.ts";
 import { esFechaReal } from "@/domain/utils/fecha.util.ts";
@@ -98,16 +99,16 @@ export const cellTemplateSchema = z
   .min(1)
   .max(LIMITES_FIXTURES.camposPlantilla)
   .refine(hojasConUnaSolaGrafia)
-  .refine(celdasSinRepetir);
+  .refine(celdasSinRepetir) satisfies z.ZodType<readonly CampoCelda[]>;
 
 export const fieldTemplateSchema = z
   .array(z.object({ etiqueta, obligatorio: z.boolean() }).strict())
   .min(1)
-  .max(LIMITES_FIXTURES.camposPlantilla);
+  .max(LIMITES_FIXTURES.camposPlantilla) satisfies z.ZodType<readonly CampoLista[]>;
 
 export const requiredSupportsSchema = z
   .array(z.string().regex(PATRON_TIPO_SOPORTE))
-  .max(LIMITES_FIXTURES.soportes);
+  .max(LIMITES_FIXTURES.soportes) satisfies z.ZodType<readonly string[]>;
 
 const archivoSoporte = z
   .string()
