@@ -72,6 +72,18 @@ describe("writeXlsx: ancho de columna acotado (GC-4, G-01-H1)", () => {
     expect(celdaEn(celdas, HOJA, "B1").ajustada).toBe(false);
   });
 
+  test("un valor con saltos de línea mide su línea más larga y ajusta el texto (IN-05)", async () => {
+    const valor = `${texto(5)}\n${texto(20)}\r\n${texto(8)}`;
+    const { anchos, celdas } = await escribir([fila("A1", "B1", { valor })]);
+    expect(anchoDe(anchos, "B")).toBe(20 + margen);
+    expect(celdaEn(celdas, HOJA, "B1").ajustada).toBe(true);
+  });
+
+  test("un valor de una sola línea bajo el máximo no ajusta el texto", async () => {
+    const { celdas } = await escribir([fila("A1", "B1", { valor: texto(20) })]);
+    expect(celdaEn(celdas, HOJA, "B1").ajustada).toBe(false);
+  });
+
   test("el largo se mide en puntos de código, no en unidades UTF-16", async () => {
     const { anchos, celdas } = await escribir([fila("A1", "B1", { valor: texto(maximo - margen, "😀") })]);
     expect(anchoDe(anchos, "B")).toBe(maximo);

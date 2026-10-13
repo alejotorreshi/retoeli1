@@ -1,5 +1,6 @@
 import { type Cell, type Fill, Workbook, type Worksheet } from "exceljs";
 import { ESTADO_CAMPO } from "@/config/constants/mapping.constants.ts";
+import { PATRON_SALTO_DE_LINEA } from "@/config/constants/patterns.constants.ts";
 import { AUTOR_DOCUMENTOS } from "@/config/constants/runtime.constants.ts";
 import { ANCHO_COLUMNA_XLSX, FORMATO_CELDA_TEXTO, RELLENO_XLSX } from "@/config/constants/xlsx.constants.ts";
 import { TEXTO_XLSX } from "@/config/strings.ts";
@@ -12,8 +13,16 @@ function relleno(argb: string): Fill {
   return { type: "pattern", pattern: "solid", fgColor: { argb } };
 }
 
+function lineasDe(texto: string | null): readonly string[] {
+  return texto === null ? [] : texto.split(PATRON_SALTO_DE_LINEA);
+}
+
 function largoDeTexto(texto: string | null): number {
-  return texto === null ? 0 : [...texto].length;
+  return Math.max(0, ...lineasDe(texto).map((linea) => [...linea].length));
+}
+
+function tieneSaltoDeLinea(texto: string | null): boolean {
+  return lineasDe(texto).length > 1;
 }
 
 function anchoDeColumna(largo: number): number {
@@ -37,7 +46,7 @@ function registrarTexto(largos: Map<number, number>, celda: Cell, texto: string 
   const columna = celda.fullAddress.col;
   const largo = largoDeTexto(texto);
   largos.set(columna, Math.max(largos.get(columna) ?? 0, largo));
-  if (excedeElMaximo(largo)) celda.alignment = { wrapText: true };
+  if (excedeElMaximo(largo) || tieneSaltoDeLinea(texto)) celda.alignment = { wrapText: true };
 }
 
 function textoDelValor(fila: FilaCelda): string | null {
