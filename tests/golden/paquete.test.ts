@@ -193,33 +193,37 @@ describe("golden: proveedor_armar_paquete (PAQ-01, PAQ-02, PAQ-03, D-21)", () =>
   test("ec checklist.md muestra el bloqueo, el faltante, el RUC con su nota, el aviso de emisor y casillas", async () => {
     const checklist = await checklistDe(compartido.raiz, EC);
     expect(checklist).toContain("Estado: BLOQUEADO");
-    expect(checklist).toContain("- ausente: certificado_cumplimiento_tributario");
-    expect(checklist).toContain("certificado_cumplimiento_tributario");
+    expect(checklist).toContain("- ausente: Certificado de cumplimiento tributario");
+    expect(checklist).not.toContain("certificado_cumplimiento_tributario");
     expect(checklist).toContain("Número de contribuyente especial");
     expect(checklist).toContain(`- RUC: ${NOTA_RUC}`);
     expect(checklist).toContain(AVISO_CO);
     expect(checklist.split("\n").filter((linea) => linea.startsWith("- [ ]")).length).toBeGreaterThan(1);
     expect(checklist).toContain(
-      "| Tipo | Archivo | Vigencia | Estado | Aviso | País emisor | Aviso de emisor |",
+      "| Soporte | Archivo | Vigencia | Estado | Aviso | País emisor | Aviso de emisor |",
     );
   });
 
   test("la columna País emisor muestra el país y el aviso va en su propia columna (WR-17)", async () => {
     expect(await checklistDe(compartido.raiz, CO)).toContain(
-      "| rut | rut-2026.txt | no aplica | presente | — | CO | — |",
+      "| Registro Único Tributario | rut-2026.txt | no aplica | presente | — | CO | — |",
     );
     expect(await checklistDe(compartido.raiz, HN)).toContain(
-      `| parafiscales | parafiscales-2026-07.txt | 2026-08-31 | vencido | — | CO | ${AVISO_CO} |`,
+      `| Certificación de aportes parafiscales | parafiscales-2026-07.txt | 2026-08-31 | vencido | — | CO | ${AVISO_CO} |`,
     );
     expect(await checklistDe(compartido.raiz, EC)).toContain(
-      "| certificado_cumplimiento_tributario | — | — | ausente | — | — | — |",
+      "| Certificado de cumplimiento tributario | — | — | ausente | — | — | — |",
     );
   });
 
   test("hn checklist.md marca parafiscales vencido y pide renovarlo", async () => {
     const checklist = await checklistDe(compartido.raiz, HN);
-    expect(checklist).toContain("| parafiscales | parafiscales-2026-07.txt | 2026-08-31 | vencido |");
-    expect(checklist).toContain("- [ ] Renovar el soporte parafiscales, vencido desde 2026-08-31");
+    expect(checklist).toContain(
+      "| Certificación de aportes parafiscales | parafiscales-2026-07.txt | 2026-08-31 | vencido |",
+    );
+    expect(checklist).toContain(
+      "- [ ] Renovar el soporte Certificación de aportes parafiscales, vencido desde 2026-08-31",
+    );
   });
 
   test("armar_paquete sin formulario generado da FORMULARIO_NO_GENERADO y no crea paquete/ (D-10)", async () => {
