@@ -44,6 +44,17 @@ function modeloDe(resultado: ResultadoEnvio): string | null {
 }
 
 describe("withFallback", () => {
+  test("alCambiar recibe las mismas opciones del envío, para correlacionar el aviso del turno", async () => {
+    const opciones = opcionesCon();
+    const recibidas: unknown[] = [];
+    await withFallback(
+      crearAdaptadorGuion([falla(TIPO_ERROR_LLM.SERVIDOR)]),
+      respaldoExitoso(),
+      (_error, envio) => recibidas.push(envio),
+    ).enviar([], [], opciones);
+    expect(recibidas).toEqual([opciones]);
+  });
+
   test("un primario con servidor cambia una vez al respaldo y reporta su modelo", async () => {
     const errorPrimario = falla(TIPO_ERROR_LLM.SERVIDOR);
     const primario = crearAdaptadorGuion([errorPrimario]);
