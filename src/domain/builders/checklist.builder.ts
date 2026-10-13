@@ -71,6 +71,7 @@ export function construirChecklist(
     confirmaciones_internas: porConfirmar
       .filter((campo) => esRutaBancaria(campo.ruta))
       .map((campo) => campo.etiqueta),
+    avisos_emisor_al_cliente: avisosEmisorAlCliente(soportes),
   };
 }
 
@@ -91,11 +92,11 @@ function filaSoporte(soporte: SoporteEvaluado): FilaSoporteChecklist {
   };
 }
 
-export function soportesConAvisoEmisor(
-  soportes: readonly SoporteEvaluado[],
-): readonly SoporteConAvisoEmisor[] {
+function avisosEmisorAlCliente(soportes: readonly SoporteEvaluado[]): readonly SoporteConAvisoEmisor[] {
   return soportes.flatMap((soporte) =>
-    soporte.aviso_emisor !== null && soporte.pais_emisor !== null
+    soporte.estado === ESTADO_SOPORTE.PRESENTE &&
+    soporte.aviso_emisor !== null &&
+    soporte.pais_emisor !== null
       ? [{ nombre: TEXTO_SOPORTE.nombre(soporte.tipo), pais_emisor: soporte.pais_emisor }]
       : [],
   );
@@ -120,6 +121,6 @@ export function construirDatosChecklist(caso: CasoChecklist, checklist: Checklis
     vencidos: soportes
       .filter((soporte) => soporte.estado === ESTADO_SOPORTE.VENCIDO)
       .map((soporte) => ({ nombre: TEXTO_SOPORTE.nombre(soporte.tipo), vigencia: vigenciaVisible(soporte) })),
-    con_aviso_emisor: soportesConAvisoEmisor(soportes),
+    con_aviso_emisor: checklist.avisos_emisor_al_cliente,
   };
 }

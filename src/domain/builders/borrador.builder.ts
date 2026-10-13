@@ -2,7 +2,7 @@ import { FORMATO } from "@/config/constants/forms.constants.ts";
 import { RUTA_MAESTRO } from "@/config/constants/maestro.constants.ts";
 import { ESTADO_SOPORTE } from "@/config/constants/supports.constants.ts";
 import { TEXTO_BORRADOR, TEXTO_COMUN, TEXTO_SOPORTE } from "@/config/strings.ts";
-import { motivosDeBloqueo, soportesConAvisoEmisor } from "@/domain/builders/checklist.builder.ts";
+import { motivosDeBloqueo } from "@/domain/builders/checklist.builder.ts";
 import { seccionSi } from "@/domain/engines/motor-plantillas.engine.ts";
 import { leerRuta } from "@/domain/selectors/maestro.selector.ts";
 import type { DatosBorradorCorreo, DatosEnvioSimulado, RutaBorrador } from "@/domain/types/borrador.type.ts";
@@ -58,9 +58,7 @@ export function construirDatosBorrador(
   const soportesPendientes = soportesPendientesDe(checklist);
   const hayPorConfirmar = checklist.confirmaciones_al_cliente.length > 0;
   const hayCamposSinDato = checklist.faltantes.length > 0;
-  const conAvisoEmisor = soportesConAvisoEmisor(
-    checklist.soportes.filter((soporte) => soporte.estado === ESTADO_SOPORTE.PRESENTE),
-  );
+  const conAvisoEmisor = checklist.avisos_emisor_al_cliente;
   const hayPreguntas = hayPorConfirmar || hayCamposSinDato || conAvisoEmisor.length > 0;
   const hayValidacionInterna = checklist.confirmaciones_internas.length > 0;
   const listo = checklist.listo_para_firma;

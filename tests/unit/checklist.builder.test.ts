@@ -180,4 +180,15 @@ describe("construirDatosChecklist: acción por cada soporte con aviso de emisor 
     const datos = construirDatosChecklist(CASO, construirChecklist(soportes, [], HOY));
     expect(datos.con_aviso_emisor).toEqual([{ nombre: "Registro Único Tributario", pais_emisor: "CO" }]);
   });
+
+  test("no pide confirmar el emisor de un soporte vencido, igual que el borrador (WR-02)", () => {
+    const vencido = {
+      ...soporte("parafiscales", ESTADO_SOPORTE.VENCIDO, "parafiscales.txt", "2026-08-31"),
+      pais_emisor: "CO",
+      aviso_emisor: "Aviso",
+    };
+    const checklist = construirChecklist([vencido], [], HOY);
+    expect(checklist.avisos_emisor_al_cliente).toEqual([]);
+    expect(construirDatosChecklist(CASO, checklist).con_aviso_emisor).toEqual([]);
+  });
 });

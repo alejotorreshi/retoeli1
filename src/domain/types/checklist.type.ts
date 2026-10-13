@@ -18,6 +18,7 @@ export type Checklist = {
   readonly requiere_confirmacion: readonly CampoPorConfirmar[];
   readonly confirmaciones_al_cliente: readonly string[];
   readonly confirmaciones_internas: readonly string[];
+  readonly avisos_emisor_al_cliente: readonly SoporteConAvisoEmisor[];
 };
 
 export type FilaSoporteChecklist = {

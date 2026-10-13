@@ -228,6 +228,7 @@ describe("golden: proveedor_armar_paquete (PAQ-01, PAQ-02, PAQ-03, D-21)", () =>
     expect(checklist).toContain(
       "- [ ] Renovar el soporte Certificación de aportes parafiscales, vencido desde 2026-08-31",
     );
+    expect(checklist).not.toContain("si acepta el soporte Certificación de aportes parafiscales");
   });
 
   test("armar_paquete sin formulario generado da FORMULARIO_NO_GENERADO y no crea paquete/ (D-10)", async () => {

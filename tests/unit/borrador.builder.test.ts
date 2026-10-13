@@ -4,7 +4,7 @@ import { ESTADO_CAMPO, REGLA_MAPEO } from "@/config/constants/mapping.constants.
 import { ESTADO_SOPORTE } from "@/config/constants/supports.constants.ts";
 import { TEXTO_BORRADOR } from "@/config/strings.ts";
 import { construirDatosBorrador, construirDatosEnvio } from "@/domain/builders/borrador.builder.ts";
-import { construirChecklist } from "@/domain/builders/checklist.builder.ts";
+import { construirChecklist, construirDatosChecklist } from "@/domain/builders/checklist.builder.ts";
 import type { CampoPorConfirmar, Checklist } from "@/domain/types/checklist.type.ts";
 import type { Maestro } from "@/domain/types/maestro.type.ts";
 import type { CampoMapeado } from "@/domain/types/mapeo.type.ts";
@@ -103,6 +103,7 @@ function checklist(
     requiere_confirmacion: porConfirmar,
     confirmaciones_al_cliente: porConfirmar.map((campo) => campo.etiqueta),
     confirmaciones_internas: internas,
+    avisos_emisor_al_cliente: [],
   };
 }
 
@@ -457,13 +458,17 @@ describe("construirDatosBorrador: soportes emitidos en otro país (IN-04)", () =
       conEmisor("camara_comercio", ESTADO_SOPORTE.PRESENTE, "camara-ficticia.txt", null),
       conEmisor("parafiscales", ESTADO_SOPORTE.VENCIDO, "parafiscales-ficticio.txt", "Aviso ficticio"),
     ];
+    const deChecklist = construirChecklist(soportes, [], "2026-09-03");
     const datos = construirDatosBorrador(
       solicitud(FORMATO.XLSX),
       MAESTRO,
-      { ...checklist(true, []), soportes },
+      { ...deChecklist, listo_para_firma: true },
       FORMULARIO_XLSX,
     );
     expect(datos.con_aviso_emisor).toEqual([{ nombre: "Registro Único Tributario", pais_emisor: "CO" }]);
+    expect(
+      construirDatosChecklist({ caso: CASO, cliente: "Cliente Ficticio" }, deChecklist).con_aviso_emisor,
+    ).toEqual(datos.con_aviso_emisor);
     expect(datos.hay_aviso_emisor).toEqual([{}]);
     expect(datos.firma_lista).toEqual([]);
     expect(datos.firma_tras_confirmar).toEqual([{}]);

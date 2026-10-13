@@ -30,6 +30,7 @@ const CHECKLIST: Checklist = {
   requiere_confirmacion: [],
   confirmaciones_al_cliente: [],
   confirmaciones_internas: [],
+  avisos_emisor_al_cliente: [],
 };
 
 const COMPLETO = [
