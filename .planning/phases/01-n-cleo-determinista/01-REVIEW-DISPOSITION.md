@@ -5,31 +5,31 @@ titles: json
 findings:
   - id: WR-21
     severity: warning
-    disposition: open
+    disposition: fixed
     title: "Domain, tools and demo logic sit loose at their layer root with no role folder (complete rename and split table)"
   - id: WR-22
     severity: warning
-    disposition: open
+    disposition: fixed
     title: "The G5 suffix table, three exact-path guard keys and the CLAUDE.md rule encode \"el dominio va sin sufijo\""
   - id: WR-23
     severity: warning
-    disposition: open
+    disposition: fixed
     title: "Unit test names do not mirror the modules they test, and G5 forbids the mirrored names"
   - id: WR-24
     severity: warning
-    disposition: open
+    disposition: fixed
     title: "The tax-identifier rule is computed twice, in `solicitud.ts` and in `mapeo.ts`"
   - id: IN-20
     severity: info
-    disposition: open
+    disposition: fixed
     title: "Three groups of domain types no longer sit next to their module's name"
   - id: IN-21
     severity: info
-    disposition: open
+    disposition: fixed
     title: "Exported names that no longer match their role"
   - id: IN-22
     severity: info
-    disposition: open
+    disposition: fixed
     title: "Test-only exports and a dead branch"
   - id: WR-10
     severity: warning
@@ -191,22 +191,22 @@ findings:
     severity: info
     disposition: fixed
     title: "`sessionId` has no length bound before it is written to every log line"
-open: 7
+open: 0
 total: 47
-recorded: 2026-10-13T01:39:29.314Z
+recorded: 2026-10-13T01:53:23.379Z
 ---
 
 # Phase 01: Code Review Disposition
 
 | Finding | Severity | Disposition | Source |
 |---------|----------|-------------|--------|
-| WR-21 | warning | open | - |
-| WR-22 | warning | open | - |
-| WR-23 | warning | open | - |
-| WR-24 | warning | open | - |
-| IN-20 | info | open | - |
-| IN-21 | info | open | - |
-| IN-22 | info | open | - |
+| WR-21 | warning | fixed | 01-REVIEW-FIX.md |
+| WR-22 | warning | fixed | 01-REVIEW-FIX.md |
+| WR-23 | warning | fixed | 01-REVIEW-FIX.md |
+| WR-24 | warning | fixed | 01-REVIEW-FIX.md |
+| IN-20 | info | fixed | 01-REVIEW-FIX.md |
+| IN-21 | info | fixed | 01-REVIEW-FIX.md |
+| IN-22 | info | fixed | 01-REVIEW-FIX.md |
 | WR-10 | warning | fixed | 01-REVIEW-FIX.md (not in the current review) |
 | WR-11 | warning | fixed | 01-REVIEW-FIX.md (not in the current review) |
 | WR-12 | warning | fixed | 01-REVIEW-FIX.md (not in the current review) |
