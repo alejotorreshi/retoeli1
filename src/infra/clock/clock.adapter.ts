@@ -1,6 +1,7 @@
 import type { Reloj } from "@/application/types/puertos.type.ts";
 import { PATRON_FECHA } from "@/config/constants/patterns.constants.ts";
 import { LOCALE_INTL } from "@/config/constants/runtime.constants.ts";
+import type { ToolEnv } from "@/config/env.ts";
 import { TEXTO_INFRA } from "@/config/strings.ts";
 import type { FechaISO } from "@/domain/types/fecha.type.ts";
 
@@ -38,4 +39,10 @@ export function systemClock(zona: string): Reloj {
 export function fixedClock(fecha: string): Reloj {
   const hoy = comoFechaISO(fecha);
   return { hoy: () => hoy, instanteReal };
+}
+
+export function clockFromToolEnv(config: ToolEnv): Reloj {
+  return config.FECHA_EJECUCION === undefined
+    ? systemClock(config.TZ_NEGOCIO)
+    : fixedClock(config.FECHA_EJECUCION);
 }

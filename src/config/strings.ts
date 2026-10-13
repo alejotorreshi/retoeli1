@@ -266,6 +266,10 @@ export const TEXTO_SESION = {
   expirada: "La sesión anterior expiró; empezamos de cero.",
 } as const;
 
+export const TEXTO_AGENTE = {
+  conDetalle: (mensaje: string, detalle: string): string => `${mensaje} Detalle: ${detalle}.`,
+} as const;
+
 export const TEXTO_CONOCIMIENTO = {
   rutaNoPermitida: "no tiene una ruta permitida",
   archivoNoLegible: "no existe, no es un archivo o supera el tamaño permitido",

@@ -7,10 +7,10 @@ import {
   TIPO_EVENTO,
 } from "@/config/constants/agent.constants.ts";
 import { ROL_MENSAJE } from "@/config/constants/llm.constants.ts";
-import { MENSAJE_AGENTE } from "@/config/strings.ts";
+import { MENSAJE_AGENTE, TEXTO_CONTEXTO, TEXTO_SESION } from "@/config/strings.ts";
 import type { Mensaje, MensajeAsistente, RespuestaLlm } from "@/llm/types/llm.type.ts";
 import { argumentosDeLlamada } from "@/loop/services/registro-herramientas.service.ts";
-import type { CodigoAgente, EventoAgente, MotivoFin } from "@/loop/types/evento.type.ts";
+import type { CodigoAgente, EventoAgente, EventoInicioTurno, MotivoFin } from "@/loop/types/evento.type.ts";
 import type { DependenciasTurno, EntradaTurno, Sesion } from "@/loop/types/turno.type.ts";
 
 type Cierre = { readonly motivo: MotivoFin; readonly texto: string; readonly razonamiento: string | null };
@@ -31,11 +31,14 @@ export function sesionVacia(id: string): Sesion {
   return { id, historial: [], tokensUsados: 0 };
 }
 
-function mensajeSistema(instrucciones: Instrucciones): Mensaje {
-  return {
-    rol: ROL_MENSAJE.SISTEMA,
-    contenido: `${instrucciones.prompt}${SEPARADOR_PARRAFOS}${instrucciones.conocimiento}`,
-  };
+function mensajesSistema(instrucciones: Instrucciones, fecha: string): readonly Mensaje[] {
+  return [
+    {
+      rol: ROL_MENSAJE.SISTEMA,
+      contenido: `${instrucciones.prompt}${SEPARADOR_PARRAFOS}${instrucciones.conocimiento}`,
+    },
+    { rol: ROL_MENSAJE.SISTEMA, contenido: TEXTO_CONTEXTO.fecha(fecha) },
+  ];
 }
 
 function mensajeAsistente(cierre: Cierre): MensajeAsistente {
@@ -92,10 +95,10 @@ async function* ejecutarPaso(turno: Turno, respuesta: RespuestaLlm): Ejecucion<r
   return [asistente, ...respuestasHerramienta];
 }
 
-async function* conversar(turno: Turno, sistema: Mensaje): Ejecucion<Cierre> {
+async function* conversar(turno: Turno, sistema: readonly Mensaje[]): Ejecucion<Cierre> {
   const { deps } = turno;
   for (let iteracion = 0; iteracion < deps.maxIteraciones; iteracion += 1) {
-    const mensajes = [sistema, ...turno.sesion.historial, turno.usuario, ...turno.pasos];
+    const mensajes = [...sistema, ...turno.sesion.historial, turno.usuario, ...turno.pasos];
     const resultado = await deps.llm.enviar(mensajes, deps.herramientas.definiciones, {
       signal: turno.signal,
       herramientasDesactivadas: false,
@@ -124,7 +127,7 @@ async function* conversar(turno: Turno, sistema: Mensaje): Ejecucion<Cierre> {
 async function* resolverTurno(turno: Turno): Ejecucion<Cierre> {
   const lectura = await turno.deps.instrucciones();
   if (!lectura.ok) return yield* fallar(turno, CODIGO_AGENTE.INSTRUCCIONES_NO_DISPONIBLES);
-  return yield* conversar(turno, mensajeSistema(lectura.instrucciones));
+  return yield* conversar(turno, mensajesSistema(lectura.instrucciones, turno.deps.reloj.hoy()));
 }
 
 function guardarSesion(turno: Turno, cierre: Cierre): void {
@@ -135,9 +138,40 @@ function guardarSesion(turno: Turno, cierre: Cierre): void {
   });
 }
 
+async function* rechazarOcupada(inicio: EventoInicioTurno): Ejecucion<void> {
+  const codigo = CODIGO_AGENTE.SESION_OCUPADA;
+  yield inicio;
+  yield { tipo: TIPO_EVENTO.ERROR, turnoId: inicio.turnoId, codigo, mensaje: MENSAJE_AGENTE[codigo] };
+  yield {
+    tipo: TIPO_EVENTO.FIN_TURNO,
+    turnoId: inicio.turnoId,
+    motivo: MOTIVO_FIN.ERROR,
+    needsConfirmation: false,
+  };
+}
+
+async function* atender(turno: Turno, inicio: EventoInicioTurno): Ejecucion<Cierre> {
+  yield inicio;
+  if (inicio.sesionExpirada) {
+    yield { tipo: TIPO_EVENTO.TEXTO, turnoId: turno.turnoId, texto: TEXTO_SESION.expirada };
+  }
+  const cierre = yield* resolverTurno(turno);
+  guardarSesion(turno, cierre);
+  return cierre;
+}
+
 export async function* ejecutarTurno(entrada: EntradaTurno, deps: DependenciasTurno): Ejecucion<void> {
   const turnoId = deps.nuevoId();
   const abierta = deps.sesiones.abrir(entrada.sesionId);
+  const sesionId = abierta.sesion.id;
+  const inicio: EventoInicioTurno = {
+    tipo: TIPO_EVENTO.INICIO_TURNO,
+    sesionId,
+    turnoId,
+    sesionNueva: abierta.nueva,
+    sesionExpirada: abierta.expirada,
+  };
+  if (!deps.sesiones.ocupar(sesionId)) return yield* rechazarOcupada(inicio);
   const turno: Turno = {
     turnoId,
     sesion: abierta.sesion,
@@ -147,14 +181,11 @@ export async function* ejecutarTurno(entrada: EntradaTurno, deps: DependenciasTu
     deps,
     tokensUsados: abierta.sesion.tokensUsados,
   };
-  yield {
-    tipo: TIPO_EVENTO.INICIO_TURNO,
-    sesionId: abierta.sesion.id,
-    turnoId,
-    sesionNueva: abierta.nueva,
-    sesionExpirada: abierta.expirada,
-  };
-  const cierre = yield* resolverTurno(turno);
-  guardarSesion(turno, cierre);
+  let cierre: Cierre;
+  try {
+    cierre = yield* atender(turno, inicio);
+  } finally {
+    deps.sesiones.liberar(sesionId);
+  }
   yield { tipo: TIPO_EVENTO.FIN_TURNO, turnoId, motivo: cierre.motivo, needsConfirmation: false };
 }

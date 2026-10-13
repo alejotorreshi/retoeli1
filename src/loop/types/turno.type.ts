@@ -1,3 +1,4 @@
+import type { Reloj } from "@/application/types/puertos.type.ts";
 import type { AlmacenSesiones, CargarInstrucciones } from "@/application/types/puertos-agente.type.ts";
 import type {
   AdaptadorLlm,
@@ -37,6 +38,7 @@ export type DependenciasTurno = {
   readonly herramientas: RegistroHerramientas;
   readonly instrucciones: CargarInstrucciones;
   readonly sesiones: AlmacenSesiones<Sesion>;
+  readonly reloj: Reloj;
   readonly directorio: string;
   readonly maxIteraciones: number;
   nuevoId(): string;

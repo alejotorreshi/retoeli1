@@ -6,11 +6,11 @@ import { TIPO_PLANTILLA } from "@/config/constants/forms.constants.ts";
 import { ESTADO_LECTURA, ORIGEN_COPIA } from "@/config/constants/io.constants.ts";
 import { MAX_ISSUES_ARGS } from "@/config/constants/limits.constants.ts";
 import { ZONA_HORARIA_POR_DEFECTO } from "@/config/constants/runtime.constants.ts";
-import { readToolEnv, type ToolEnv } from "@/config/env.ts";
+import { readToolEnv } from "@/config/env.ts";
 import type { PlantillaCaso, TipoPlantilla } from "@/domain/types/plantilla-caso.type.ts";
 import { formatearIssues } from "@/domain/utils/formatear-issues.util.ts";
 import { exito, fallo } from "@/domain/utils/resultado.util.ts";
-import { fixedClock, systemClock } from "@/infra/clock/clock.adapter.ts";
+import { clockFromToolEnv, systemClock } from "@/infra/clock/clock.adapter.ts";
 import { listCases, resolveCase } from "@/infra/fixtures/case-resolver.adapter.ts";
 import {
   fileExists,
@@ -75,12 +75,6 @@ function copiar(raiz: string, caso: string, origen: OrigenCopia): Promise<string
   return copyIntoPackage(raiz, caso, pathInCase(caseOutputDirectory(raiz, caso), nombre), nombre);
 }
 
-function relojDe(config: ToolEnv): Reloj {
-  return config.FECHA_EJECUCION === undefined
-    ? systemClock(config.TZ_NEGOCIO)
-    : fixedClock(config.FECHA_EJECUCION);
-}
-
 function entornoDeFixtures(raiz: string, reloj: Reloj, directorioConocimiento: string): Entorno {
   return {
     reloj,
@@ -139,7 +133,7 @@ export function crearEntorno(
       }),
     };
   }
-  const reloj = relojDe(config.data);
+  const reloj = clockFromToolEnv(config.data);
   const directorioConocimiento = opciones.directorioConocimiento ?? DEFAULT_KNOWLEDGE_DIRECTORY;
   return {
     registrar: createAuditLog(raiz, reloj),
