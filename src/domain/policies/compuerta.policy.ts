@@ -1,4 +1,4 @@
-import { ACCION } from "@/config/constants/agent.constants.ts";
+import { ACCION, MOTIVO_FIN } from "@/config/constants/agent.constants.ts";
 import {
   DECISION_CONFIRMACION,
   ESTADO_COMPUERTA,
@@ -13,6 +13,7 @@ import type {
   EvaluacionEnvio,
   EventoCompuerta,
 } from "@/domain/types/compuerta.type.ts";
+import type { ValorDe } from "@/config/types/valor-de.type.ts";
 import type { DecisionConfirmacion } from "@/domain/types/confirmacion.type.ts";
 
 export function estadoLibre(): EstadoCompuerta {
@@ -87,4 +88,12 @@ export function cerrarTurno(entrada: EntradaCierreCompuerta): EstadoCompuerta {
   const pendientes = new Map(entrada.arrastrados.map((pendiente) => [pendiente.caso, pendiente] as const));
   for (const evento of entrada.eventos) aplicarEvento(pendientes, evento, entrada.conocidos);
   return estadoCon([...pendientes.values()]);
+}
+
+export function recuperarAutorizado(
+  _motivo: ValorDe<typeof MOTIVO_FIN>,
+  _autorizacion: AutorizacionTurno,
+  _conocidos: Readonly<Record<string, CasoPendiente>>,
+): readonly CasoPendiente[] {
+  return [];
 }

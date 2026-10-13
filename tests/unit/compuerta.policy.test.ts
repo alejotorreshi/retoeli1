@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { ACCION } from "@/config/constants/agent.constants.ts";
+import { ACCION, MOTIVO_FIN } from "@/config/constants/agent.constants.ts";
 import {
   DECISION_CONFIRMACION,
   ESTADO_COMPUERTA,
@@ -12,9 +12,11 @@ import {
   cerrarTurno,
   estadoLibre,
   evaluarEnvio,
+  recuperarAutorizado,
   revocarAlArmar,
 } from "@/domain/policies/compuerta.policy.ts";
 import type {
+  AutorizacionTurno,
   CasoPendiente,
   EntradaCierreCompuerta,
   EstadoCompuerta,
@@ -175,4 +177,67 @@ describe("cerrarTurno (D-37, D-63.1, D-63.2)", () => {
   test("un turno abortado cierra LIBRE", () => {
     expect(cerrarTurno(cierre({ eventos: [armado(PENDIENTE_EC)], abortado: true }))).toEqual(LIBRE);
   });
+});
+
+describe("recuperarAutorizado (WR-02, D-63.2, D-38)", () => {
+  const VIGENTE: AutorizacionTurno = { caso: EC, usada: false };
+  const CONOCIDOS = { [EC]: PENDIENTE_EC };
+  const filas: readonly (readonly [
+    string,
+    Parameters<typeof recuperarAutorizado>,
+    readonly CasoPendiente[],
+  ])[] = [
+    [
+      "un error del turno devuelve el caso autorizado a pendiente",
+      [MOTIVO_FIN.ERROR, VIGENTE, CONOCIDOS],
+      [PENDIENTE_EC],
+    ],
+    [
+      "el tope de tokens devuelve el caso autorizado a pendiente",
+      [MOTIVO_FIN.TOPE_TOKENS, VIGENTE, CONOCIDOS],
+      [PENDIENTE_EC],
+    ],
+    [
+      "el tope de iteraciones devuelve el caso autorizado a pendiente",
+      [MOTIVO_FIN.TOPE_ITERACIONES, VIGENTE, CONOCIDOS],
+      [PENDIENTE_EC],
+    ],
+    [
+      "con otros paquetes conocidos devuelve solo el autorizado",
+      [MOTIVO_FIN.ERROR, VIGENTE, { [CO]: PENDIENTE_CO, [EC]: PENDIENTE_EC }],
+      [PENDIENTE_EC],
+    ],
+    [
+      "un cierre final no recupera nada (el modelo eligió no enviar)",
+      [MOTIVO_FIN.FINAL, VIGENTE, CONOCIDOS],
+      [],
+    ],
+    ["un aborto del llamante no recupera nada", [MOTIVO_FIN.ABORTADO, VIGENTE, CONOCIDOS], []],
+    [
+      "una autorización revocada al re-armar no se recupera (D-42)",
+      [MOTIVO_FIN.ERROR, { caso: null, usada: false }, CONOCIDOS],
+      [],
+    ],
+    [
+      "una autorización ya usada no se recupera",
+      [MOTIVO_FIN.ERROR, { caso: EC, usada: true }, CONOCIDOS],
+      [],
+    ],
+    [
+      "un caso que no es un paquete conocido no se recupera",
+      [MOTIVO_FIN.ERROR, VIGENTE, { [CO]: PENDIENTE_CO }],
+      [],
+    ],
+    [
+      "una clave heredada como toString no se recupera",
+      [MOTIVO_FIN.ERROR, { caso: "toString", usada: false }, {}],
+      [],
+    ],
+  ];
+
+  for (const [nombre, argumentos, esperado] of filas) {
+    test(nombre, () => {
+      expect(recuperarAutorizado(...argumentos)).toEqual(esperado);
+    });
+  }
 });

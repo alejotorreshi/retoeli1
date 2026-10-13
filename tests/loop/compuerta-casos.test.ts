@@ -5,6 +5,7 @@ import { crearAgentePrueba } from "@tests/helpers/agente-prueba.helper.ts";
 import {
   casosConEnvioSimulado,
   confirmaciones,
+  errores,
   finDeTurno,
   finesDeHerramienta,
   lineasDeEnvio,
@@ -21,14 +22,26 @@ import { crearProyectoTemporal } from "@tests/helpers/proyecto-temporal.helper.t
 import type { AgentePrueba } from "@tests/helpers/types/agente-prueba.type.ts";
 import type { PasoLlmFalso } from "@tests/helpers/types/llm-falso.type.ts";
 import type { ProyectoTemporal } from "@tests/helpers/types/proyecto-temporal.type.ts";
-import { ACCION, CODIGO_AGENTE, MOTIVO_FIN, TIPO_EVENTO } from "@/config/constants/agent.constants.ts";
+import type { CargarInstrucciones } from "@/application/types/puertos-agente.type.ts";
+import {
+  ACCION,
+  CODIGO_AGENTE,
+  MOTIVO_FIN,
+  SEPARADOR_PARRAFOS,
+  TIPO_EVENTO,
+} from "@/config/constants/agent.constants.ts";
 import { FECHA_DEMO } from "@/config/constants/demo.constants.ts";
 import { CODIGO_ERROR } from "@/config/constants/errors.constants.ts";
-import { ARCHIVOS_SALIDA, OUT_DIR } from "@/config/constants/files.constants.ts";
+import { ARCHIVO_PROMPT, ARCHIVOS_SALIDA, OUT_DIR } from "@/config/constants/files.constants.ts";
 import { TIPO_ERROR_LLM } from "@/config/constants/llm.constants.ts";
+import { ESTADO_SOPORTE } from "@/config/constants/supports.constants.ts";
 import { HERRAMIENTA, PREFIJO_HERRAMIENTA } from "@/config/constants/tools.constants.ts";
 import { pinExecutionDate } from "@/config/env.ts";
-import type { ErrorLlm } from "@/llm/types/llm.type.ts";
+import { MENSAJE_AGENTE } from "@/config/strings.ts";
+import { preguntaConfirmacion } from "@/domain/builders/cierre-turno.builder.ts";
+import type { CasoPendiente } from "@/domain/types/compuerta.type.ts";
+import { createInstructionsLoader } from "@/infra/knowledge/instructions-loader.adapter.ts";
+import type { ErrorLlm, RespuestaLlm } from "@/llm/types/llm.type.ts";
 import { respuestaDeTurno } from "@/loop/services/respuesta-turno.service.ts";
 import type { EventoAgente } from "@/loop/types/evento.type.ts";
 
@@ -383,5 +396,144 @@ describe("PRD 6.4: respuestaDeTurno pliega los eventos en {reply, toolCalls, nee
     });
     expect(respuesta.toolCalls.slice(0, 4).every(({ ok }) => ok)).toBe(true);
     expect(respuesta.needsConfirmation).toBe(true);
+  });
+});
+
+const PENDIENTE_EC: CasoPendiente = {
+  caso: EC,
+  bloqueos: [BLOQUEO_EC],
+  motivos: [{ tipo: "certificado_cumplimiento_tributario", causa: ESTADO_SOPORTE.AUSENTE }],
+};
+const PREGUNTA_EC = preguntaConfirmacion([PENDIENTE_EC]);
+const PRESUPUESTO_PRUEBA = 1000;
+
+function gastando(respuesta: RespuestaLlm, entrada: number, salida: number): RespuestaLlm {
+  return { ...respuesta, uso: { entrada, salida, cacheHit: 0 } };
+}
+
+function instruccionesQueFallanEn(llamadaFallida: number): CargarInstrucciones {
+  const reales = createInstructionsLoader();
+  let llamadas = 0;
+  return async () => {
+    llamadas += 1;
+    return llamadas === llamadaFallida ? { ok: false, archivo: ARCHIVO_PROMPT } : reales();
+  };
+}
+
+function ultimoParrafo(texto: string): string {
+  return texto.trimEnd().split(SEPARADOR_PARRAFOS).at(-1) ?? "";
+}
+
+function vuelvePreguntandoPorEc(eventos: readonly EventoAgente[], motivo: string): void {
+  expect(finDeTurno(eventos)).toMatchObject({ motivo, needsConfirmation: true });
+  expect(confirmaciones(eventos)).toEqual([
+    expect.objectContaining({ caso: EC, accion: ACCION.ENVIO, bloqueos: [BLOQUEO_EC] }),
+  ]);
+  expect(PREGUNTA_EC).toContain("Certificado de cumplimiento tributario");
+  expect(ultimoParrafo(textoFinal(eventos))).toBe(PREGUNTA_EC);
+}
+
+async function enviaUnaVez(prueba: AgentePrueba): Promise<void> {
+  const turno3 = await prueba.turno("envía");
+  expect(finesDeHerramienta(turno3)).toEqual([exitosa()]);
+  expect(await casosConEnvioSimulado(proyecto.raiz)).toEqual([EC]);
+  expect(await enviosOk()).toBe(1);
+}
+
+async function sigueAgotadoYPreguntando(prueba: AgentePrueba, pedidos: number): Promise<void> {
+  const eventos = await prueba.turno("envía");
+  expect(prueba.llm.pedidos).toHaveLength(pedidos);
+  expect(errores(eventos)).toEqual([]);
+  vuelvePreguntandoPorEc(eventos, MOTIVO_FIN.TOPE_TOKENS);
+  expect(textoFinal(eventos)).toBe(
+    `${MENSAJE_AGENTE.PRESUPUESTO_AGOTADO}${SEPARADOR_PARRAFOS}${PREGUNTA_EC}`,
+  );
+  expect(await casosConEnvioSimulado(proyecto.raiz)).toEqual([]);
+}
+
+describe("WR-02 (D-63.2): un turno de confirmación cortado antes de enviar conserva el caso pendiente", () => {
+  test("un error del proveedor tras 'envía' vuelve a preguntar por ec y el siguiente 'envía' envía una vez", async () => {
+    const prueba = agente([...armarCaso(EC), ERROR_SERVIDOR, ...enviar("simular-1", EC)]);
+    await prueba.turno(`procesa ${EC}`);
+
+    const turno2 = await prueba.turno("envía");
+    expect(errores(turno2).map(({ codigo }) => codigo)).toEqual([CODIGO_AGENTE.PROVEEDOR_NO_DISPONIBLE]);
+    vuelvePreguntandoPorEc(turno2, MOTIVO_FIN.ERROR);
+    expect(await casosConEnvioSimulado(proyecto.raiz)).toEqual([]);
+
+    await enviaUnaVez(prueba);
+    historialSano(prueba);
+  });
+
+  test("sin instrucciones tras 'envía' no llama al proveedor, vuelve a preguntar y el siguiente 'envía' envía una vez", async () => {
+    const prueba = crearAgentePrueba({
+      raiz: proyecto.raiz,
+      guion: [...armarCaso(EC), ...enviar("simular-1", EC)],
+      instrucciones: instruccionesQueFallanEn(2),
+    });
+    await prueba.turno(`procesa ${EC}`);
+    const pedidosTurno1 = prueba.llm.pedidos.length;
+
+    const turno2 = await prueba.turno("envía");
+    expect(prueba.llm.pedidos).toHaveLength(pedidosTurno1);
+    expect(errores(turno2).map(({ codigo }) => codigo)).toEqual([CODIGO_AGENTE.INSTRUCCIONES_NO_DISPONIBLES]);
+    vuelvePreguntandoPorEc(turno2, MOTIVO_FIN.ERROR);
+    expect(await casosConEnvioSimulado(proyecto.raiz)).toEqual([]);
+
+    await enviaUnaVez(prueba);
+    historialSano(prueba);
+  });
+
+  test("con el presupuesto agotado 'envía' no llama al proveedor, sigue preguntando y nunca envía", async () => {
+    const prueba = crearAgentePrueba({
+      raiz: proyecto.raiz,
+      guion: [
+        ...prepararCaso(EC),
+        respuestaHerramientas(llamar(`armar-${EC}`, HERRAMIENTA.ARMAR_PAQUETE, { caso: EC })),
+        gastando(respuestaTexto(`Armé el paquete de ${EC}.`), 900, 200),
+        ...enviar("simular-1", EC),
+      ],
+      presupuestoTokens: PRESUPUESTO_PRUEBA,
+    });
+    const turno1 = await prueba.turno(`procesa ${EC}`);
+    expect(finDeTurno(turno1).needsConfirmation).toBe(true);
+    const pedidosTurno1 = prueba.llm.pedidos.length;
+
+    await sigueAgotadoYPreguntando(prueba, pedidosTurno1);
+    await sigueAgotadoYPreguntando(prueba, pedidosTurno1);
+    historialSano(prueba);
+  });
+
+  test("control: si el modelo solo responde texto tras 'envía', el turno cierra LIBRE sin preguntar", async () => {
+    const texto = "Entendido, todavía no envío nada.";
+    const prueba = agente([...armarCaso(EC), respuestaTexto(texto)]);
+    await prueba.turno(`procesa ${EC}`);
+
+    const turno2 = await prueba.turno("envía");
+    expect(confirmaciones(turno2)).toEqual([]);
+    expect(finDeTurno(turno2)).toMatchObject({ motivo: MOTIVO_FIN.FINAL, needsConfirmation: false });
+    expect(textoFinal(turno2)).toBe(texto);
+    historialSano(prueba);
+  });
+
+  test("control: un aborto del llamante tras 'envía' no recupera la autorización y el siguiente 'envía' queda bloqueado", async () => {
+    const prueba = agente([...armarCaso(EC), ...enviar("simular-1", EC)]);
+    await prueba.turno(`procesa ${EC}`);
+    const pedidosTurno1 = prueba.llm.pedidos.length;
+
+    const controlador = new AbortController();
+    const turno2: EventoAgente[] = [];
+    for await (const evento of prueba.iniciar("envía", { signal: controlador.signal })) {
+      turno2.push(evento);
+      if (evento.tipo === TIPO_EVENTO.INICIO_TURNO) controlador.abort();
+    }
+    expect(finDeTurno(turno2)).toMatchObject({ motivo: MOTIVO_FIN.ABORTADO, needsConfirmation: false });
+    expect(confirmaciones(turno2)).toEqual([]);
+    expect(prueba.llm.pedidos).toHaveLength(pedidosTurno1);
+
+    const turno3 = await prueba.turno("envía");
+    expect(finesDeHerramienta(turno3)).toEqual([bloqueada()]);
+    expect(await casosConEnvioSimulado(proyecto.raiz)).toEqual([]);
+    historialSano(prueba);
   });
 });
