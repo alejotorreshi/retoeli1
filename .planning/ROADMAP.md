@@ -89,7 +89,7 @@ Plans:
   4. Al llegar al tope de iteraciones (25 por defecto) o al de tokens por sesión, el usuario recibe en lenguaje claro lo que se tiene y lo que falta, no un error. Una instrucción inyectada en el cuerpo del correo del cliente no cambia el comportamiento del agente.
   5. Un cambio en `src/knowledge/registro-proveedor.md` o en `agent/prompt.md` cambia el comportamiento del agente sin tocar código del servidor. Los logs JSON llevan IDs de sesión, turno y tool call, sin clave ni PII. `bun test` cubre el ciclo con un LLM falso (tope, compuerta con "No envíes…" y el guion §11, CA5 e inyección) sin gastar tokens.
 
-**Plans:** 2/9 plans executed
+**Plans:** 3/9 plans executed
 
 Plans:
 **Wave 1**
@@ -97,7 +97,7 @@ Plans:
 
 **Wave 2** *(blocked on Wave 1 completion)*
 - [x] 02-02-PLAN.md — `crearAgente` como composition root, sesiones en memoria con TTL, LRU y candado, mensaje aparte con la fecha efectiva y aviso de sesión expirada
-- [ ] 02-03-PLAN.md — Compuerta en el dominio: clasificador determinista con negaciones (43 frases), máquina de estados de un solo paso y pregunta de cierre determinista
+- [x] 02-03-PLAN.md — Compuerta en el dominio: clasificador determinista con negaciones (43 frases), máquina de estados de un solo paso y pregunta de cierre determinista
 - [ ] 02-04-PLAN.md — Resiliencia del proveedor: taxonomía de errores sin eco de la clave, timeout, reintentos con backoff y fallback de modelo
 - [ ] 02-05-PLAN.md — `redactar()` única y logs JSON con pino 10.3.1 y correlación sesión/turno/tool call
 
@@ -154,6 +154,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Núcleo determinista | 15/15 | Complete    | 2026-10-13 |
-| 2. Agente y compuerta de confirmación | 2/9 | In Progress | - |
+| 2. Agente y compuerta de confirmación | 3/9 | In Progress | - |
 | 3. Chat web, API SSE y despliegue | 0/TBD | Not started | - |
 | 4. Módulo, documentación y defensa | 0/TBD | Not started | - |

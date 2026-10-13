@@ -3,16 +3,16 @@ gsd_state_version: "1.0"
 current_phase: 02
 current_phase_name: Agente y compuerta de confirmación
 status: executing
-stopped_at: Completed 02-02-PLAN.md
-last_updated: "2026-10-13T19:21:21.681Z"
+stopped_at: Completed 02-03-PLAN.md
+last_updated: "2026-10-13T19:28:37.756Z"
 last_activity: 2026-10-13
 last_activity_desc: Phase 02 execution started
-state_head: ebd61474f0cbebb57a41792b3662979d5ae66b7c
+state_head: d5ecf546ff2f21c63069fbc39cfcc5d2be20935f
 progress:
   total_phases: 4
   completed_phases: 1
   total_plans: 24
-  completed_plans: 17
+  completed_plans: 18
   percent: 25
 ---
 
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-10-13)
 ## Current Position
 
 Phase: 02 (Agente y compuerta de confirmación) — EXECUTING
-Plan: 3 of 9
+Plan: 4 of 9
 Status: Ready to execute
 Last activity: 2026-10-13 — Phase 02 execution started
 
@@ -73,6 +73,7 @@ Progress: [███░░░░░░░] 25%
 | Phase 01 P15 | 3 min | 2 tasks | 4 files |
 | Phase 02 P01 | 12 min | 2 tasks | 28 files |
 | Phase 02 P02 | 6 min | 2 tasks | 15 files |
+| Phase 02 P03 | 6 min | 2 tasks | 14 files |
 
 ## Accumulated Context
 
@@ -136,6 +137,10 @@ Recent decisions affecting current work:
 - [Phase 02]: 02-02: el almacén de sesiones registra la sesión nueva en abrir y nunca la desaloja por su propia creación; una sesión ocupada no expira ni se desaloja
 - [Phase 02]: 02-02: el turno libera la sesión tras guardar el historial y antes de emitir turn_end; un turno rechazado por SESION_OCUPADA nunca libera
 - [Phase 02]: 02-02: el reloj del agente relee el entorno de herramientas en cada llamada (clockFromToolEnv), así modelo y herramientas usan la misma fecha
+- [Phase 02]: 02-03: el clasificador de confirmación es una gramática de lista blanca; la negación se evalúa primero y cualquier duda da otro, que nunca autoriza
+- [Phase 02]: 02-03: abrirTurno con confirma de un caso no pendiente no autoriza y cancela a LIBRE; falta_caso conserva los casos
+- [Phase 02]: 02-03: cerrarTurno solo vuelve pendiente un bloqueado si su paquete está en conocidos; el bucle debe registrar cada paquete armado en conocidos
+- [Phase 02]: 02-03: necesitaPreguntaDeterminista exige que el último párrafo termine en ? y nombre cada caso pendiente
 
 ### Pending Todos
 
@@ -161,6 +166,6 @@ Items acknowledged and deferred at milestone close, most recent first:
 
 ## Session Continuity
 
-Last session: 2026-10-13T19:21:21.618Z
-Stopped at: Completed 02-02-PLAN.md
+Last session: 2026-10-13T19:28:37.704Z
+Stopped at: Completed 02-03-PLAN.md
 Resume file: None
