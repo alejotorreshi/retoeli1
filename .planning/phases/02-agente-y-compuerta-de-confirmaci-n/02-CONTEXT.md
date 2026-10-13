@@ -51,6 +51,9 @@ La numeración sigue la de la Fase 1 (D-01 a D-36).
 ### Sesión (AGT-04, CA5)
 - **D-58:** Las sesiones viven en un **store en memoria** detrás de un puerto, con **TTL de 2 h de inactividad** y un tope de sesiones (LRU), ambos configurables. Si llega un `sessionId` desconocido o expirado, se crea una sesión nueva y la respuesta avisa "La sesión anterior expiró; empezamos de cero". Una confirmación pendiente nunca sobrevive a una sesión perdida. No se persiste en archivo (Render free tiene disco efímero).
 
+### Proveedor LLM configurable (LLM-01, LLM-02, LLM-04)
+- **D-59:** DeepSeek es el proveedor **por defecto**, pero el adaptador es **genérico y compatible con OpenAI** (`/chat/completions` con tools), y DeepSeek es solo su preset. Hay dos ranuras, principal y respaldo, y cada una se configura **solo por variables de entorno**: `LLM_PROVIDER` (etiqueta), `LLM_BASE_URL`, `LLM_MODEL` y `LLM_API_KEY`, más sus equivalentes `LLM_FALLBACK_*`. `DEEPSEEK_API_KEY` se acepta como alias. Cambiar de proveedor o de modelo (OpenAI, OpenRouter, Groq, Mistral, Gemini u Ollama) no toca código: en Render basta editar las variables del panel, lo que reinicia el servicio sin push ni build, y en local basta editar `.env`. Lo específico de cada proveedor (por ejemplo `thinking` y `reasoning_content` de DeepSeek, o `max_tokens` frente a `max_completion_tokens`) son **flags de capacidad en config**, nunca ramas en el ciclo. `/api/health` reporta el proveedor y el modelo efectivos, sin claves. Cambiar el modelo desde la UI en vivo **no** entra (se descartó: el link es público). — **Reversibility:** costly — los nombres de las variables los documentan `.env.example`, el README, `render.yaml` y SOLUCION.md.
+
 ### Claude's Discretion
 - La estructura interna del ciclo (`runTurn` como generador de eventos tipados), los decoradores `withTimeout`, `withRetry` y `withFallback`, y la forma del modelo de mensajes neutral, siguiendo `.planning/research/ARCHITECTURE.md` y respetando las reglas de capas de CLAUDE.md. Las capas nuevas (`llm`, `loop`, sesiones) se declaran en `PERMITIDOS` de `tests/architecture.test.ts`.
 - Los valores por defecto de timeouts (`LLM_TIMEOUT_MS` ≈ 45 s, deadline de turno ≈ 120 s), los reintentos (máximo 2, con backoff exponencial y jitter), `max_tokens` por llamada y el tope de sesiones del LRU.
@@ -129,6 +132,7 @@ La numeración sigue la de la Fase 1 (D-01 a D-36).
 
 - **Revelar el valor real en la UI por un canal aparte del modelo:** es una capacidad nueva con implicaciones de PII en la API y el SSE. Se descartó por ahora (D-47).
 - **Persistir sesiones en archivo:** no sobrevive al disco efímero de Render free. Se reevalúa si cambia el hosting.
+- **Cambiar el proveedor o el modelo desde la UI en vivo** (selector sobre una lista blanca definida por env): se descartó por ahora porque el link es público (D-59).
 - **Exponer el cuerpo del correo al modelo** (delimitado y truncado): se descartó a favor de D-48. Se reevalúa si aparece una necesidad real de responder preguntas sobre el texto libre del correo.
 
 </deferred>
