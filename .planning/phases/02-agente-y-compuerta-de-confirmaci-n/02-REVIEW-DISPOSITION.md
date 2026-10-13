@@ -5,91 +5,91 @@ titles: json
 findings:
   - id: WR-07
     severity: warning
-    disposition: open
+    disposition: fixed
     title: "El nombre visible `proveedor_<export>` se deriva a mano en cuatro módulos de `src/` y en unas quince pruebas"
   - id: WR-08
     severity: warning
-    disposition: open
+    disposition: fixed
     title: "El bucle arma a mano tres sobres de fallo de herramienta, con formas distintas a la del factory"
   - id: WR-09
     severity: warning
-    disposition: open
+    disposition: fixed
     title: "La lectura del estado de la compuerta está duplicada entre la política y el servicio de cierre"
   - id: WR-10
     severity: warning
-    disposition: open
+    disposition: fixed
     title: "`ejecutar-turno.service.ts` creció a 472 líneas con cinco responsabilidades"
   - id: WR-11
     severity: warning
-    disposition: open
+    disposition: fixed
     title: "La capa `llm` mezcla español e inglés en nombres de archivos, funciones y tipos"
   - id: WR-12
     severity: warning
-    disposition: open
+    disposition: fixed
     title: "Las capacidades y el slot del proveedor están definidos dos veces, con nombres distintos"
   - id: WR-13
     severity: warning
-    disposition: open
+    disposition: fixed
     title: "`TEXTO_ENV.urlNoSegura` repite a mano el protocolo y los hosts permitidos, y ya no coincide con ellos"
   - id: WR-14
     severity: warning
-    disposition: open
+    disposition: fixed
     title: "Dos reglas de CLAUDE.md no tienen guardián, y por ese hueco ya pasaron violaciones"
   - id: IN-09
     severity: info
-    disposition: open
+    disposition: fixed
     title: "`strings.ts` duplica una constante y un formateador, y arma igual cosas que nombra distinto"
   - id: IN-10
     severity: info
-    disposition: open
+    disposition: fixed
     title: "Hay cinco `JSON.parse` envueltos en try/catch, dos de ellos en el mismo archivo"
   - id: IN-11
     severity: info
-    disposition: open
+    disposition: fixed
     title: "`timeout.decorator.ts` construye a mano un `ErrorLlm` que el mapper ya sabe construir"
   - id: IN-12
     severity: info
-    disposition: open
+    disposition: fixed
     title: "`confirmacion.policy.ts` reimplementa la normalización de `normalizar.util.ts`"
   - id: IN-13
     severity: info
-    disposition: open
+    disposition: fixed
     title: "`preguntaConfirmacion` se exporta solo para que las pruebas armen el valor esperado"
   - id: IN-14
     severity: info
-    disposition: open
+    disposition: fixed
     title: "Vuelve el nombre `Desenlace`, que la fase 1 había renombrado"
   - id: IN-15
     severity: info
-    disposition: open
+    disposition: fixed
     title: "`MENSAJE_AGENTE` se indexa por la clave literal en lugar de por el código"
   - id: IN-16
     severity: info
-    disposition: open
+    disposition: fixed
     title: "Los tipos de la compuerta se reescriben en lugar de componerse"
   - id: IN-17
     severity: info
-    disposition: open
+    disposition: fixed
     title: "El destino de logs `{ write(linea): void }` está escrito cuatro veces, y el tipo de infra se exporta sin uso"
   - id: IN-18
     severity: info
-    disposition: open
+    disposition: fixed
     title: "Hay constantes nuevas en el ámbito o el idioma equivocados"
   - id: IN-19
     severity: info
-    disposition: open
+    disposition: fixed
     title: "Hay dos listas de claves secretas mantenidas a mano"
   - id: IN-20
     severity: info
-    disposition: open
+    disposition: fixed
     title: "Hay funciones con cinco parámetros posicionales y booleanos posicionales"
   - id: IN-21
     severity: info
-    disposition: open
+    disposition: fixed
     title: "`docs/estructura.md` no refleja los módulos que agregó la fase 02"
   - id: IN-22
     severity: info
-    disposition: open
+    disposition: fixed
     title: "Las pruebas duplican helpers que ya existen y comparan con literales de familia"
   - id: WR-01
     severity: warning
@@ -159,8 +159,44 @@ findings:
     severity: info
     disposition: open
     title: "The agent clock re-parses the environment on every call and silently diverges from the tools when `FECHA_EJECUCION` is invalid"
-open: 36
-total: 39
+  - id: R1-WR-01
+    severity: warning
+    disposition: open
+    title: "An abort or deadline in the middle of a step drops the results of tools that already ran (including `simular_envio`) from history, while their gate events still apply"
+  - id: R1-WR-02
+    severity: warning
+    disposition: fixed
+    title: "A confirmation turn that fails before sending silently drops the pending case"
+  - id: R1-WR-03
+    severity: warning
+    disposition: fixed
+    title: "Session locks have no lease, so a consumer that stops iterating without `return()` locks the session forever"
+  - id: R1-WR-04
+    severity: warning
+    disposition: open
+    title: "The cost cap can be bypassed: the token budget is per session, sessions are free to create, and invalid responses are retried without counting their tokens"
+  - id: R1-IN-01
+    severity: info
+    disposition: open
+    title: "`LONGITUD_MAXIMA_NOMBRE_HERRAMIENTA` is dead, and model-controlled tool names are unbounded"
+  - id: R1-IN-02
+    severity: info
+    disposition: open
+    title: "The gate re-parses the `armar_paquete` output with a local schema and duplicates the checklist blocking-reason logic"
+  - id: R1-IN-03
+    severity: info
+    disposition: open
+    title: "Agent-creation errors say the session is still open when no session exists"
+  - id: R1-IN-04
+    severity: info
+    disposition: open
+    title: "An unknown or malformed session id is reported as \"expired\""
+  - id: R1-IN-05
+    severity: info
+    disposition: open
+    title: "The agent clock re-parses the environment on every call and silently diverges from the tools when `FECHA_EJECUCION` is invalid"
+open: 21
+total: 48
 recorded: 2026-10-13T23:25:48.205Z
 ---
 
@@ -168,28 +204,28 @@ recorded: 2026-10-13T23:25:48.205Z
 
 | Finding | Severity | Disposition | Source |
 |---------|----------|-------------|--------|
-| WR-07 | warning | open | - |
-| WR-08 | warning | open | - |
-| WR-09 | warning | open | - |
-| WR-10 | warning | open | - |
-| WR-11 | warning | open | - |
-| WR-12 | warning | open | - |
-| WR-13 | warning | open | - |
-| WR-14 | warning | open | - |
-| IN-09 | info | open | - |
-| IN-10 | info | open | - |
-| IN-11 | info | open | - |
-| IN-12 | info | open | - |
-| IN-13 | info | open | - |
-| IN-14 | info | open | - |
-| IN-15 | info | open | - |
-| IN-16 | info | open | - |
-| IN-17 | info | open | - |
-| IN-18 | info | open | - |
-| IN-19 | info | open | - |
-| IN-20 | info | open | - |
-| IN-21 | info | open | - |
-| IN-22 | info | open | - |
+| WR-07 | warning | fixed | fixed in f2e7d7c (02-REVIEW-FIX.md) |
+| WR-08 | warning | fixed | fixed in f4c6f14 (02-REVIEW-FIX.md) |
+| WR-09 | warning | fixed | fixed in 3187ddd (02-REVIEW-FIX.md) |
+| WR-10 | warning | fixed | fixed in 4469cc9 (02-REVIEW-FIX.md) |
+| WR-11 | warning | fixed | fixed in e3ce4de (02-REVIEW-FIX.md) |
+| WR-12 | warning | fixed | fixed in a5c299f (02-REVIEW-FIX.md) |
+| WR-13 | warning | fixed | fixed in f0f952d (02-REVIEW-FIX.md) |
+| WR-14 | warning | fixed | fixed in 30c33cd (02-REVIEW-FIX.md) |
+| IN-09 | info | fixed | fixed in bcfe78a (02-REVIEW-FIX.md) |
+| IN-10 | info | fixed | fixed in 802c2f5 (02-REVIEW-FIX.md) |
+| IN-11 | info | fixed | fixed in 9359adb (02-REVIEW-FIX.md) |
+| IN-12 | info | fixed | fixed in b9595a0 (02-REVIEW-FIX.md) |
+| IN-13 | info | fixed | fixed in 78a212d (02-REVIEW-FIX.md) |
+| IN-14 | info | fixed | fixed in 33f83f5 (02-REVIEW-FIX.md) |
+| IN-15 | info | fixed | fixed in 987ecec (02-REVIEW-FIX.md) |
+| IN-16 | info | fixed | fixed in e8f8792 (02-REVIEW-FIX.md) |
+| IN-17 | info | fixed | fixed in 0825cd5 (02-REVIEW-FIX.md) |
+| IN-18 | info | fixed | fixed in 5f9dd44 (02-REVIEW-FIX.md) |
+| IN-19 | info | fixed | fixed in 24ffdf5 (02-REVIEW-FIX.md) |
+| IN-20 | info | fixed | fixed in e942a25 (02-REVIEW-FIX.md) |
+| IN-21 | info | fixed | fixed in 84b7c5c (02-REVIEW-FIX.md) |
+| IN-22 | info | fixed | fixed in 10455ff (02-REVIEW-FIX.md) |
 | WR-01 | warning | open | - (not in the current review) |
 | WR-02 | warning | open | - (not in the current review) |
 | WR-03 | warning | open | - (not in the current review) |
@@ -207,6 +243,15 @@ recorded: 2026-10-13T23:25:48.205Z
 | IN-06 | info | open | - (not in the current review) |
 | IN-07 | info | open | - (not in the current review) |
 | IN-08 | info | open | - (not in the current review) |
+| R1-WR-01 | warning | open | prior round (id reused by re-review); not in gap-closure scope |
+| R1-WR-02 | warning | fixed | prior round; fixed by 02-13 (verified in re-review 4c30e81) |
+| R1-WR-03 | warning | fixed | prior round; fixed by 02-12 (verified in re-review 4c30e81) |
+| R1-WR-04 | warning | open | prior round (id reused by re-review); not in gap-closure scope |
+| R1-IN-01 | info | open | prior round (id reused by re-review) |
+| R1-IN-02 | info | open | prior round (id reused by re-review) |
+| R1-IN-03 | info | open | prior round (id reused by re-review) |
+| R1-IN-04 | info | open | prior round (id reused by re-review) |
+| R1-IN-05 | info | open | prior round (id reused by re-review) |
 
 Dispositions: `open` (recorded, not yet triaged), `fixed`, `skipped`, `deferred`.
 Set `deferred` by hand and put the reason in the Source cell; both are preserved. A `|` in the reason is kept as prose and escaped on the next run.
