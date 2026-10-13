@@ -89,11 +89,11 @@ Plans:
   4. Al llegar al tope de iteraciones (25 por defecto) o al de tokens por sesión, el usuario recibe en lenguaje claro lo que se tiene y lo que falta, no un error. Una instrucción inyectada en el cuerpo del correo del cliente no cambia el comportamiento del agente.
   5. Un cambio en `src/knowledge/registro-proveedor.md` o en `agent/prompt.md` cambia el comportamiento del agente sin tocar código del servidor. Los logs JSON llevan IDs de sesión, turno y tool call, sin clave ni PII. `bun test` cubre el ciclo con un LLM falso (tope, compuerta con "No envíes…" y el guion §11, CA5 e inyección) sin gastar tokens.
 
-**Plans:** 9 plans
+**Plans:** 1/9 plans executed
 
 Plans:
 **Wave 1**
-- [ ] 02-01-PLAN.md — Trazador: "procesa el caso" de punta a punta por el ciclo propio, el adaptador genérico compatible con OpenAI y la herramienta real; capas `llm`/`loop` con sus guardianes (D-62) y contrato de entorno D-59 completo
+- [x] 02-01-PLAN.md — Trazador: "procesa el caso" de punta a punta por el ciclo propio, el adaptador genérico compatible con OpenAI y la herramienta real; capas `llm`/`loop` con sus guardianes (D-62) y contrato de entorno D-59 completo
 
 **Wave 2** *(blocked on Wave 1 completion)*
 - [ ] 02-02-PLAN.md — `crearAgente` como composition root, sesiones en memoria con TTL, LRU y candado, mensaje aparte con la fecha efectiva y aviso de sesión expirada
@@ -112,6 +112,7 @@ Plans:
 
 **Wave 6** *(blocked on Wave 5 completion)*
 - [ ] 02-09-PLAN.md — `agent/prompt.md` y `registro-proveedor.md` finales, edición en caliente, PII hacia el modelo, redacción de requisitos D-59 y corrida en vivo obligatoria (criterio 1 y guion §11) con línea de evidencia VIVO PASS
+
 **Research flag**: Spike en vivo con DeepSeek antes de construir el ciclo: nombre de modelo vigente, thinking desactivado, `tool_choice`, forma de los tool calls y de los errores. La línea de modelos cambió 3 veces en 2026 y `deepseek-chat`/`deepseek-reasoner` se retiraron el 2026-07-24.
 
 ### Phase 3: Chat web, API SSE y despliegue
@@ -153,6 +154,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Núcleo determinista | 15/15 | Complete    | 2026-10-13 |
-| 2. Agente y compuerta de confirmación | 0/8 | Planned | - |
+| 2. Agente y compuerta de confirmación | 1/9 | In Progress | - |
 | 3. Chat web, API SSE y despliegue | 0/TBD | Not started | - |
 | 4. Módulo, documentación y defensa | 0/TBD | Not started | - |

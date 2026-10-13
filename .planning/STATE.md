@@ -1,18 +1,18 @@
 ---
 gsd_state_version: "1.0"
-current_phase: 2
+current_phase: 02
 current_phase_name: Agente y compuerta de confirmación
 status: executing
-stopped_at: Phase 2 context gathered
-last_updated: "2026-10-13T18:37:32.768Z"
+stopped_at: Completed 02-01-PLAN.md
+last_updated: "2026-10-13T19:12:49.330Z"
 last_activity: 2026-10-13
-last_activity_desc: Phase 01 complete, transitioned to Phase 2
-state_head: bf762eb31ee2ad564b919a981df11d70c95ca845
+last_activity_desc: Phase 02 execution started
+state_head: adceb345819c553c21012b377b02969a561fa156
 progress:
   total_phases: 4
   completed_phases: 1
   total_plans: 24
-  completed_plans: 15
+  completed_plans: 16
   percent: 25
 ---
 
@@ -23,14 +23,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-10-13)
 
 **Core value:** El agente nunca inventa un dato: cada valor sale de una herramienta tipada que lo lee del maestro, y ninguna acción externa ocurre sin confirmación humana explícita.
-**Current focus:** Phase 2 — Agente y compuerta de confirmación
+**Current focus:** Phase 02 — Agente y compuerta de confirmación
 
 ## Current Position
 
-Phase: 2 (Agente y compuerta de confirmación) — READY TO EXECUTE
-Plan: Not started
+Phase: 02 (Agente y compuerta de confirmación) — EXECUTING
+Plan: 2 of 9
 Status: Ready to execute
-Last activity: 2026-10-13 — Phase 01 complete, transitioned to Phase 2
+Last activity: 2026-10-13 — Phase 02 execution started
 
 Progress: [███░░░░░░░] 25%
 
@@ -71,6 +71,7 @@ Progress: [███░░░░░░░] 25%
 | Phase 01 P13 | 4min | 2 tasks | 8 files |
 | Phase 01 P14 | 3min | 2 tasks | 10 files |
 | Phase 01 P15 | 3 min | 2 tasks | 4 files |
+| Phase 02 P01 | 12 min | 2 tasks | 28 files |
 
 ## Accumulated Context
 
@@ -127,6 +128,10 @@ Recent decisions affecting current work:
 - [Phase 01]: 01-15: la guarda transversal (tests/golden/nombres-soporte.test.ts) prohíbe las claves de NOMBRE_SOPORTE con guion bajo en borrador, checklist y ENVIO-SIMULADO; junto con 01-14 cierra G-01-H4c
 - [Phase 01]: Revisión de código (2 ciclos): simular_envio re-deriva el paquete esperado (archivos + borrador) desde el repositorio y rechaza con PAQUETE_DESACTUALIZADO si hay faltantes, sobrantes o borrador distinto; no compara checklist.md (lleva fecha); ignora .DS_Store/Thumbs.db/desktop.ini
 - [Phase 01]: UAT (eli-qa run 2, 20/20): la consola de demo.ts conserva ids crudos de soporte (PRD §6.6); frase aprobada para validación bancaria interna: "Validaremos internamente algunos datos del formulario antes de pasarlo a la firma de nuestro representante legal."
+- [Phase 02]: 02-01: el adaptador devuelve abortado antes de llamar a fetch si la señal ya está abortada
+- [Phase 02]: 02-01: una respuesta con tool_calls cuenta como paso de herramientas aunque finish_reason no sea tool_calls (length gana como limite)
+- [Phase 02]: 02-01: un respaldo sobre la URL de DeepSeek puede usar el alias DEEPSEEK_API_KEY; cualquier otra herencia de clave exige URL base idéntica
+- [Phase 02]: 02-01: NIVELES_LOG es un objeto as const y, como BOOLEANO_ENV, está registrado en FAMILIAS_DE_CODIGOS
 
 ### Pending Todos
 
@@ -152,6 +157,6 @@ Items acknowledged and deferred at milestone close, most recent first:
 
 ## Session Continuity
 
-Last session: 2026-10-13T17:08:11.920Z
-Stopped at: Phase 2 context gathered
-Resume file: .planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-CONTEXT.md
+Last session: 2026-10-13T19:12:49.277Z
+Stopped at: Completed 02-01-PLAN.md
+Resume file: None
