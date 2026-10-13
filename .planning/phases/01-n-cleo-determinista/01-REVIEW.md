@@ -1,164 +1,181 @@
 ---
 phase: 01-n-cleo-determinista
-reviewed: 2026-10-13T04:22:47Z
+reviewed: 2026-10-13T15:16:31Z
 depth: standard
-files_reviewed: 21
+files_reviewed: 28
 files_reviewed_list:
+  - docs/estructura.md
+  - docs/plantillas.md
   - src/application/use-cases/simular-envio.use-case.ts
-  - src/config/constants/xlsx.constants.ts
+  - src/config/constants/errors.constants.ts
+  - src/config/constants/maestro.constants.ts
+  - src/config/constants/patterns.constants.ts
   - src/config/strings.ts
   - src/domain/builders/borrador.builder.ts
   - src/domain/builders/checklist.builder.ts
+  - src/domain/policies/paquete-vigente.policy.ts
   - src/domain/types/borrador.type.ts
   - src/domain/types/checklist.type.ts
   - src/infra/output/xlsx-writer.adapter.ts
   - src/knowledge/plantillas/borrador-correo.md
   - src/knowledge/plantillas/checklist.md
-  - src/knowledge/plantillas/envio-simulado.md
+  - tests/contract/maestro-incompleto.test.ts
   - tests/contract/simular-envio.test.ts
   - tests/golden/borrador-envio.test.ts
   - tests/golden/formulario-xlsx.test.ts
   - tests/golden/nombres-soporte.test.ts
   - tests/golden/paquete.test.ts
+  - tests/helpers/tipo-celda.helper.ts
   - tests/helpers/types/xlsx-leer.type.ts
   - tests/helpers/xlsx-leer.helper.ts
   - tests/unit/borrador.builder.test.ts
   - tests/unit/checklist.builder.test.ts
+  - tests/unit/paquete-vigente.policy.test.ts
   - tests/unit/xlsx-writer.adapter.test.ts
 findings:
   critical: 1
-  warning: 4
-  info: 6
-  total: 11
+  warning: 3
+  info: 4
+  total: 8
 status: issues_found
 ---
 
-# Fase 01: informe de revisión de código (planes 01-12 a 01-15)
+# Fase 01: informe de revisión de código
 
-**Revisado:** 2026-10-13T04:22:47Z
+**Revisado:** 2026-10-13T15:16:31Z
 **Profundidad:** standard
-**Archivos revisados:** 21
+**Archivos revisados:** 28
 **Estado:** issues_found
 
 ## Resumen
 
-Esta revisión cubre los cambios de los planes de cierre de brechas 01-12 a 01-15 desde `bd3642d`: el ancho de columna y el ajuste de texto del xlsx, el borrador de correo y el registro de envío que ya no dicen "firmado" con el paquete BLOQUEADO, y los nombres de soporte en español en las salidas para personas. Los datos de herramienta siguen con los ids crudos. Para revisar leí el código de cada archivo y lo crucé con `estado-paquete.service.ts`, `soportes.policy.ts`, `motor-plantillas.engine.ts`, `armar-paquete.use-case.ts` y `ejecutar-demo.runner.ts`. Además inspeccioné las salidas reales de `out/` para los cuatro casos y corrí las 8 suites del alcance (118 pruebas en verde).
+Revisé solo los cambios desde `2fb3986`, es decir, los 12 commits `fix(01): …` que respondieron a la revisión anterior (CR-01, WR-01, WR-02, WR-04 e IN-01 a IN-06). Leí el diff y los archivos completos, y seguí las llamadas a `evaluarEstadoPaquete`, `armar-paquete.use-case.ts`, `listPackage`, `soportes.policy.ts` y `mapeo.engine.ts`. Tres hallazgos los comprobé ejecutando código: dos sondas de contrato y una unitaria, corridas desde el scratchpad sin tocar el repositorio, más la suite completa.
 
-El cálculo de anchos del xlsx es correcto, determinista y está bien probado. Los problemas aparecen en la veracidad de las salidas para personas, que era justo el objetivo de estos planes:
+Cómo quedó cada corrección:
 
-1. `ENVIO-SIMULADO.md` registra "Sin bloqueos" aunque un soporte exigido o el formulario no esté en `paquete/`, y hay una prueba que fija ese comportamiento (CR-01).
-2. El borrador para el cliente mezcla datos faltantes del maestro con soportes pendientes. Promete enviarlos "por separado" y puede declarar el formulario "listo para la firma" en el mismo correo (WR-01).
-3. El borrador copia al cliente las notas internas que son para la analista (WR-02).
-4. El cierre de G-01-H4c ("toda salida para personas usa nombres") no se cumple en la salida de `demo.ts` (WR-03), y el guardián deja sin vigilar 2 de los 7 ids (WR-04).
+- **IN-03, IN-05 e IN-06** quedaron bien. `motivos_bloqueo` es ahora la única fuente de los bloqueos. El writer xlsx mide la línea más larga y ajusta el texto cuando hay saltos. Los anchos del golden quedaron como literales.
+- **CR-01** quedó a medias. La política nueva solo detecta archivos *faltantes* en `paquete/`. No detecta un paquete cuyo estado cambió con los mismos nombres de archivo: un soporte que vence entre armar y enviar, o uno que sale del repositorio. En esos dos casos el envío se acepta mientras `paquete/borrador-correo.md` sigue diciendo "Adjuntamos…" y "listo para la firma". Además, en el segundo caso el archivo queda en `paquete/` sin aparecer en el registro de envío. Las dos cosas las comprobé ejecutando el código.
+- **WR-02** introdujo una regresión. Cuando los únicos campos por confirmar son bancarios, el borrador vuelve a declarar el formulario "listo para la firma", mientras el checklist interno manda confirmar ese campo con el cliente.
+- **IN-04** filtra de forma distinta en el checklist y en el borrador.
+- **Suite de pruebas:** `bun run check` pasa, pero `bun test` da 545/546 en esta máquina. La prueba de cobertura de `nombres-soporte.test.ts` recorre `casos/` sin filtrar directorios y falla con el `.DS_Store` que creó Finder.
 
-## Narrative Findings (AI reviewer)
+No repito WR-03 (ids crudos en la demo), porque quedó como decisión humana, ni la redacción del correo ya aprobada en UAT.
 
-## Critical Issues
+## Problemas críticos
 
-### CR-01: El registro de envío omite en silencio los archivos que faltan en `paquete/` y declara "Sin bloqueos"
+### CR-01: `PAQUETE_DESACTUALIZADO` solo detecta archivos faltantes; un paquete con el estado cambiado pasa el envío y el borrador viejo promete adjuntos que no salen
 
-**Archivo:** `src/domain/builders/borrador.builder.ts:89-110`, `src/application/use-cases/simular-envio.use-case.ts:24-32`, `tests/contract/simular-envio.test.ts:219-225`
-**Problema:** `simular_envio` vuelve a evaluar los soportes contra el repositorio en el momento del envío (`evaluarEstadoPaquete`). Después cruza ese resultado con el listado real de `paquete/` (`listado.filter((archivo) => alCliente.has(archivo))`). Si un archivo que debía ir al cliente no está en el listado, desaparece del registro sin generar ningún bloqueo. Los bloqueos salen solo de `motivosDeBloqueo(checklist.soportes)`, que mira el repositorio y no el paquete. Hay tres formas de llegar a este estado:
-- Alguien borra o mueve un soporte o el formulario de `paquete/` (la carpeta es para manejo humano). La prueba `un soporte borrado de paquete/ no aparece como enviado` fija exactamente ese caso: en CO, sin `rut-2026.txt`, el registro dice `Sin bloqueos.` aunque el RUT exigido no salga al cliente.
-- Se renueva un soporte en el repositorio entre `armar_paquete` y `simular_envio`. La evaluación elige el archivo nuevo (presente), que no está en `paquete/`. El archivo viejo ya no figura como vencido, así que no sale en "Archivos que se envían" ni en "Soportes vencidos que no se envían", y el registro dice "Sin bloqueos".
-- Aparece en el repositorio un soporte que estaba ausente. Pasa lo mismo: sin bloqueo y sin el archivo.
+**Archivo:** `src/domain/policies/paquete-vigente.policy.ts:3-17`, `src/application/use-cases/simular-envio.use-case.ts:29-33`
 
-Además, `paquete/borrador-correo.md` se generó al armar el paquete y sigue diciendo "Adjuntamos … (archivo)". El registro que confirma la acción externa contradice entonces el correo que la acompaña. El texto de `formulario_en_portal` (`envio-simulado.md:12`) también cita `paquete/{{formulario}}` sin comprobar que el archivo exista en el listado.
+**Problema:** `archivosFaltantesEnPaquete` arma el conjunto esperado con el formulario más cada `soporte.archivo` no nulo y lo cruza con el listado. Por eso no ve dos cambios de estado que también vuelven obsoleto el paquete. El mensaje del error mismo promete detectarlos ("ya no coincide con los soportes vigentes"). Lo comprobé con el flujo real de herramientas en un proyecto temporal:
 
-Es el artefacto de auditoría de una acción confirmada por la persona, y en este estado afirma algo falso: que no hay bloqueos cuando un soporte exigido no se envía.
-**Corrección:** Hay que calcular lo que falta en el paquete y tratarlo como bloqueo, o bien rechazar el envío por paquete desactualizado. Por ejemplo, en el builder:
+1. **Un soporte vence entre armar y enviar.** Se arma CO con `FECHA_EJECUCION=2026-09-03`. Después se envía con `2026-10-05`, cuando `camara_comercio` ya venció el 2026-09-30. `simular_envio` responde `ok: true`, y `ENVIO-SIMULADO.md` pone la cámara en "Soportes vencidos que no se envían" con el bloqueo. Pero `paquete/borrador-correo.md`, que es el correo que la persona revisó para confirmar, sigue diciendo `- Certificado de existencia y representación legal (camara-comercio-2026-08.txt)` como adjunto y "El formulario queda listo para la firma de nuestro representante legal." El archivo sigue en `paquete/` con el mismo nombre, así que nada falta en el listado. Pasa también en producción: la cámara de comercio vale 30 días, y basta armar un día y enviar al siguiente.
+2. **Un soporte sale del repositorio después de armar.** Se arma CO y luego se quita `rut` del índice. `simular_envio` responde `ok: true` con `bloqueos: ["ausente: rut"]`. `paquete/rut-2026.txt` sigue en el paquete, pero no aparece ni en "Archivos que se envían" ni en "Soportes vencidos que no se envían". Es exactamente la omisión silenciosa que atacaba el CR-01 original. El borrador sigue anunciando "Registro Único Tributario (rut-2026.txt)" y "listo para la firma".
+
+Tampoco se exige `borrador-correo.md`. Si se borra a mano, el envío se registra igual, aunque el correo que supuestamente se envía ya no existe. `archivosEsperados` no incluye `ARCHIVOS_PAQUETE.BORRADOR_CORREO`.
+
+En los dos casos la confirmación humana explícita se dio sobre un borrador que contradice lo que el registro declara enviado. Esto va contra el valor central del proyecto, y el informe de corrección asegura justamente lo contrario ("evita que el `borrador-correo.md` viejo siga diciendo 'Adjuntamos…'").
+
+**Corrección:** comparar el *contenido* que `armar_paquete` produciría hoy, no solo los nombres de archivo. La salida más directa es volver a renderizar el borrador con el checklist actual y compararlo con el que está en `paquete/`. El borrador no lleva la fecha, así que el resultado es estable mientras el estado no cambie. A eso se suman los archivos sobrantes:
+
 ```ts
-function faltanEnPaquete(alCliente: ReadonlySet<string>, listado: readonly string[]): readonly string[] {
-  const presentes = new Set(listado);
-  return [...alCliente].filter((archivo) => !presentes.has(archivo));
+export function paqueteDesactualizado(
+  esperado: { readonly archivos: readonly string[]; readonly borrador: string },
+  real: { readonly listado: readonly string[]; readonly borrador: string | null },
+): readonly string[] {
+  const presentes = new Set(real.listado);
+  const permitidos = new Set([...esperado.archivos, ...Object.values(ARCHIVOS_PAQUETE)]);
+  const faltantes = esperado.archivos.filter((archivo) => !presentes.has(archivo));
+  const sobrantes = real.listado.filter((archivo) => !permitidos.has(archivo));
+  const borradorDistinto = real.borrador !== esperado.borrador ? [ARCHIVOS_PAQUETE.BORRADOR_CORREO] : [];
+  return [...faltantes, ...sobrantes, ...borradorDistinto];
 }
-// en construirDatosEnvio
-const noEnPaquete = faltanEnPaquete(alCliente, listado);
-bloqueos: [
-  ...motivosDeBloqueo(checklist.soportes),
-  ...noEnPaquete.map(TEXTO_ENVIO.noEstaEnPaquete),
-].map((bloqueo) => ({ bloqueo })),
 ```
-La otra opción es que `simularBajoCandado` devuelva `fallo(CODIGO_ERROR.PAQUETE_DESACTUALIZADO)` cuando `noEnPaquete.length > 0`, con un mensaje que pida volver a correr `proveedor_armar_paquete`. En los dos casos hay que invertir la prueba de `simular-envio.test.ts:219` para que exija un bloqueo o el error, y añadir la variante del soporte renovado entre armar y enviar.
 
-## Warnings
+Para eso hace falta un puerto `salida.leerDePaquete(caso, nombre)` y reutilizar `renderizarBorrador` desde `simular-envio.use-case.ts`. Conviene moverlo a un servicio de aplicación compartido con `armar-paquete.use-case.ts`. Hay que añadir pruebas de contrato para los dos escenarios de arriba: cambiar `FECHA_EJECUCION` entre armar y enviar, y quitar un tipo del índice.
 
-### WR-01: El borrador mezcla datos faltantes del maestro con soportes pendientes, promete enviarlos y puede declararse "listo para la firma" a la vez
+## Advertencias
 
-**Archivo:** `src/domain/builders/borrador.builder.ts:43-51,59,74-77`, `src/knowledge/plantillas/borrador-correo.md:15-23`, `tests/unit/borrador.builder.test.ts:79-88`
-**Problema:** `pendientesDe` pone `checklist.faltantes` (etiquetas que no existen en el maestro) en la misma lista que los soportes ausentes y vencidos. La plantilla cierra esa lista con "Los enviaremos por separado." En `out/ec-corp-andina/paquete/borrador-correo.md` el correo le promete al cliente un "Número de contribuyente especial" que Periferia no tiene en el maestro. Eso choca con el valor central del proyecto ("nunca inventa un dato"). Además, RN3 dice que un `faltante` no bloquea `listo_para_firma`. Con `listo_para_firma = true`, faltantes y ningún campo por confirmar, el correo sale así:
+### WR-01: Regresión de WR-02: si los únicos campos por confirmar son bancarios, el borrador declara el formulario "listo para la firma" y el checklist pide confirmarlos con el cliente
 
-> Quedan pendientes: - X. Los enviaremos por separado. El formulario queda listo para la firma de nuestro representante legal.
+**Archivo:** `src/domain/builders/borrador.builder.ts:59,64,83-84`, `src/domain/builders/checklist.builder.ts:68-70`, `src/knowledge/plantillas/checklist.md:29`
 
-Es decir, un formulario con celdas vacías anunciado como listo. A la inversa, `firma_bloqueada` dice "falta completar los pendientes indicados" y atribuye el bloqueo también a los campos faltantes, que no bloquean. Las pruebas unitarias no cubren nada de esto, porque `checklist()` fija `faltantes: []` en todas las combinaciones.
-**Corrección:** Separar los dos conceptos en el contexto: `soportes_pendientes` (ausentes y vencidos, que sí se envían después) y `campos_sin_dato` (faltantes), con un texto propio que no prometa un envío, como "No contamos con estos datos; les confirmaremos si aplican". Activar `firma_lista` solo si `checklist.faltantes.length === 0`, o añadir una cuarta variante "listo para firma con campos sin dato". Que el texto de `firma_bloqueada` nombre solo los soportes. Por último, agregar a `borrador.builder.test.ts` las combinaciones con `faltantes` no vacío.
+**Problema:** antes del commit 395eb57, `firma_lista` exigía `requiere_confirmacion.length === 0`. Ahora `hayPorConfirmar` sale de `confirmaciones_al_cliente`, que excluye las rutas `banco.*`. Un caso listo cuyo único campo por confirmar es bancario da `firma_lista: [{}]` y `firma_tras_confirmar: []`, y el correo dice "El formulario queda listo para la firma de nuestro representante legal." con un valor bancario sin confirmar en el formulario. Lo comprobé con una sonda sobre `construirChecklist` y `construirDatosBorrador` usando `banco.numero_cuenta` en `requiere_confirmacion`.
 
-### WR-02: El correo al cliente copia literalmente las notas internas que son para la analista
+Al mismo tiempo, `checklist.md` sigue renderizando todo `por_confirmar` como "Confirmar con el cliente el campo "Número de cuenta"". La analista recibe la instrucción de preguntarle al cliente justo lo que el correo omite a propósito. Con los fixtures actuales no ocurre, porque todos los campos bancarios salen `lleno`. Basta que el maestro traiga un campo bancario no textual (por ejemplo, `numero_cuenta` como número, lo que dispara `campoNoTextual`) o que se suba `confianza.umbral` por encima de 0.85. Ninguna prueba fija la bandera de firma en ese caso: la prueba unitaria de WR-02 usa un caso con otro campo no bancario por confirmar.
 
-**Archivo:** `src/domain/builders/borrador.builder.ts:71`, `src/knowledge/plantillas/borrador-correo.md:12-14`, `src/domain/builders/checklist.builder.ts:53`
-**Problema:** `por_confirmar` lleva `nota` tal cual al correo. Esas notas están redactadas para la analista y hablan del cliente en tercera persona. La salida real de EC, HN y PA dice:
+**Corrección:** separar "hay algo sin confirmar" de "qué se le pregunta al cliente".
 
-> Antes de la firma necesitamos que nos confirmen estos campos: - RUC: Identificador extranjero: confirmar si el cliente acepta el NIT colombiano
-
-Otras notas posibles son peores. El fallback `TEXTO_COMUN.porConfirmar` sale como "confirmar con el cliente", dirigido al propio cliente. `TEXTO_MAPEO.datoNoTextual` sale como "El maestro tiene este dato, pero no como texto: confirmar qué valor escribir", que le pide al cliente resolver un problema de calidad del maestro interno de Periferia y además lo expone. Si el campo es bancario, el correo termina pidiendo al cliente que confirme el dato bancario de Periferia, cosa que RN2 excluye del borrador.
-**Corrección:** En el borrador no usar `nota`. Usar una pregunta para el cliente que se derive de la etiqueta y viva en `strings.ts`, por ejemplo `TEXTO_BORRADOR.preguntaCampo(etiqueta)`, o un texto por regla en `reglas.json`, como `identificador_tributario.pregunta_cliente`. Las notas internas deben quedar solo en `checklist.md` y en el formulario. Conviene también excluir del borrador los campos cuya ruta empieza por `banco.`.
-
-### WR-03: G-01-H4c no queda cerrado: la salida de `demo.ts` sigue mostrando ids crudos
-
-**Archivo:** `src/config/strings.ts:72-79,186-191` (usado por `src/demo/runners/ejecutar-demo.runner.ts:99-109,142-149`, fuera del alcance listado), `tests/golden/nombres-soporte.test.ts:23`
-**Problema:** El plan 01-15 declara que "every human-facing output uses display names from strings.ts". Pero la salida estándar de `demo.ts`, que es un entregable que el evaluador ejecuta (PRD §6.6), arma `Soportes ausentes: …` con `textoDe(soporte, "tipo")` y `Estado: BLOQUEADO (…)` con `TEXTO_CHECKLIST.bloqueadoPor(bloqueos)` a partir de `data.bloqueos`, que trae ids crudos. Para EC imprime `certificado_cumplimiento_tributario` y `ausente: certificado_cumplimiento_tributario`. El `resumen` de herramienta que el front muestra como "resultado resumido" (PRD §6.1) también sale con ids crudos (`RESUMEN_HERRAMIENTA.paqueteBloqueado` y `envioConBloqueos`). `SALIDAS_LEGIBLES` en el guardián no incluye la salida de la demo, así que la brecha pasa sin detectarse.
-**Corrección:** En el runner de la demo, resolver los nombres con `TEXTO_SOPORTE.nombre(tipo)` y armar el estado a partir de `data.checklist.soportes` con `motivosDeBloqueo`, no a partir de `data.bloqueos`. Agregar al guardián una prueba que capture la salida de `ejecutarDemo` (con el `escribir` inyectado) y compruebe que no contiene ids. Si el `resumen` debe conservar los ids por el contrato v1, documentarlo de forma explícita en `SOLUCION.md` como excepción.
-
-### WR-04: El guardián de nombres no vigila `rut` ni `parafiscales`
-
-**Archivo:** `tests/golden/nombres-soporte.test.ts:30,127-131`
-**Problema:** `IDS_SNAKE` filtra `Object.keys(NOMBRE_SOPORTE)` por `tipo.includes("_")`, así que excluye `rut` y `parafiscales`, 2 de los 7 ids. Seguramente se hizo porque los nombres de archivo (`rut-2026.txt`, `parafiscales-2026-07.txt`) contienen esas cadenas. El efecto es que una regresión que vuelva a escribir `- ausente: rut`, `- vencido: parafiscales (…)` o `| rut |` en el borrador, el checklist o el registro de envío pasa el guardián. Lo que la prueba describe ("ningún id snake_case de soporte") no coincide con lo que de verdad comprueba.
-**Corrección:** Buscar los ids en los contextos donde se renderizan nombres, no como subcadena libre. Por ejemplo, para cada `tipo` de `Object.keys(NOMBRE_SOPORTE)`:
 ```ts
-const formas = [`ausente: ${tipo}`, `vencido: ${tipo} (`, `| ${tipo} |`, `- ${tipo}\n`, `- ${tipo} (`, `soporte ${tipo}`];
-expect(formas.filter((forma) => texto.includes(forma))).toEqual([]);
+const hayConfirmacionInterna = checklist.requiere_confirmacion.length > checklist.confirmaciones_al_cliente.length;
+const hayPreguntas = hayPorConfirmar || hayCamposSinDato || conAvisoEmisor.length > 0;
+firma_lista: seccionSi(checklist.listo_para_firma && !hayPreguntas && !hayConfirmacionInterna),
+firma_tras_confirmar: seccionSi(checklist.listo_para_firma && (hayPreguntas || hayConfirmacionInterna)),
 ```
 
-## Info
+En `checklist.md`, la casilla de los campos bancarios debería decir "Confirmar internamente el campo …" y no "con el cliente". Por ejemplo, se puede exponer `por_confirmar_internos` desde `construirDatosChecklist`. Hay que añadir una prueba unitaria con solo un campo `banco.*` por confirmar.
 
-### IN-01: `NOMBRE_SOPORTE` duplica y contradice la `descripcion` del índice de soportes
+### WR-02: El checklist pide confirmar con el cliente el emisor de un soporte vencido que el borrador no pregunta
 
-**Archivo:** `src/config/strings.ts:81-94`
-**Problema:** `repositorio/soportes/index.json` ya trae una `descripcion` legible por soporte, y la tabla nueva no coincide con ella: "Certificación bancaria" frente a "Certificación de cuenta bancaria", y "Certificación de aportes parafiscales" frente a "Certificación de pago de aportes parafiscales y seguridad social (revisor fiscal)". Las claves son literales de los fixtures sin constante de origen. Un tipo nuevo en un repositorio real cae al id crudo, que termina en el correo al cliente, y la prueba de cobertura solo mira los fixtures.
-**Corrección:** Documentar en `SOLUCION.md` qué fuente manda, o usar `descripcion` del índice como nombre cuando exista y dejar la tabla solo para tipos ausentes.
+**Archivo:** `src/domain/builders/checklist.builder.ts:118`, `src/domain/builders/borrador.builder.ts:61-63`
 
-### IN-02: Respaldo mágico `?? ""` en el bloqueo por vencimiento
+**Problema:** `construirDatosChecklist` calcula `con_aviso_emisor` sobre *todos* los soportes, mientras `construirDatosBorrador` filtra primero los `PRESENTE`. En HN, el `checklist.md` generado tiene la casilla "Confirmar con el cliente si acepta el soporte Certificación de aportes parafiscales, emitido en CO", pero el borrador que la analista va a enviar solo pregunta por la cámara de comercio y el RUT. La casilla no tiene a dónde ir, y la analista puede creer que el correo ya hace la pregunta. Las dos salidas aplican la misma regla de IN-04 con filtros distintos, y ninguna prueba compara las dos listas.
 
-**Archivo:** `src/domain/builders/checklist.builder.ts:18`
-**Problema:** `soporte.vigencia_hasta ?? ""` produciría `vencido: X ()`. Ese estado no puede ocurrir (un soporte vencido siempre tiene fecha), pero el respaldo lo esconde en lugar de hacerlo imposible.
-**Corrección:** Modelar `SoporteEvaluado` como una unión discriminada en la que `estado: VENCIDO` implique `vigencia_hasta: string`, o usar `TEXTO_CHECKLIST.sinVigencia`.
+**Corrección:** decidir una sola regla y calcularla una vez en `construirChecklist`, por ejemplo `checklist.avisos_emisor_al_cliente`, para que las dos salidas la lean de ahí. Si el vencido se renueva, la pregunta se hace con la versión nueva, así que lo coherente es filtrar `PRESENTE` en ambos lados:
 
-### IN-03: El registro de envío deriva los bloqueos por un camino paralelo al del checklist
+```ts
+con_aviso_emisor: soportesConAvisoEmisor(soportes.filter((s) => s.estado === ESTADO_SOPORTE.PRESENTE)),
+```
 
-**Archivo:** `src/domain/builders/borrador.builder.ts:108`, `src/domain/builders/checklist.builder.ts:33-45`
-**Problema:** `construirDatosEnvio` vuelve a calcular `motivosDeBloqueo(checklist.soportes)` en lugar de traducir `checklist.bloqueos`. Si `construirChecklist` llega a añadir un bloqueo que no venga de un soporte, los datos de herramienta y `listo_para_firma` lo reflejarían, pero `ENVIO-SIMULADO.md` y `checklist.md` no.
-**Corrección:** Guardar en `Checklist` los bloqueos como estructura (`{ tipo, causa, vigencia }`) y renderizar ids o nombres desde esa misma fuente.
+### WR-03: La prueba de cobertura de nombres falla con cualquier archivo suelto en `casos/` (hoy, `.DS_Store`)
 
-### IN-04: El aviso de emisor distinto no genera ninguna acción ni ninguna pregunta al cliente
+**Archivo:** `tests/golden/nombres-soporte.test.ts:92-96`
 
-**Archivo:** `src/knowledge/plantillas/checklist.md:24-30`, `src/knowledge/plantillas/borrador-correo.md:12-14`
-**Problema:** En HN, PA y EC el checklist muestra "Emitido en CO: confirmar si el cliente lo acepta" en cada soporte, pero la sección "Acciones" no trae una casilla para eso y el borrador no le pregunta nada al cliente. La confirmación queda sin dueño.
-**Corrección:** Exponer `con_aviso_emisor` en `DatosChecklist` y `DatosBorradorCorreo` y añadir la acción o la pregunta correspondiente.
+**Problema:** `tiposDeFixtures` hace `readdir(join(fixtures, CASOS_DIR))` y trata cada entrada como un directorio de caso. En esta máquina, Finder creó `reto-01/fixtures/reto-01/casos/.DS_Store`, que `.gitignore` ignora pero `crearProyectoTemporal` copia igual, y la prueba falla con `ENOTDIR`. `bun test` da **545 pass / 1 fail**, así que el "546 en verde" del informe de corrección no se reproduce en macOS. Los adaptadores de producción (`case-resolver.adapter.ts`) usan `withFileTypes`. La prueba no.
 
-### IN-05: El ancho del xlsx cuenta puntos de código y no tiene en cuenta saltos de línea ni glifos anchos
+**Corrección:** filtrar solo directorios, sin tocar `reto-01/`.
 
-**Archivo:** `src/infra/output/xlsx-writer.adapter.ts:15-17,40`
-**Problema:** `largoDeTexto` mide la cadena entera. Un valor con `\n` de menos de 58 caracteres no recibe `wrapText`, así que Excel lo muestra en una sola línea, y su ancho se calcula con la longitud total. Los emoji y los caracteres CJK ocupan dos columnas. Hoy el maestro no tiene saltos de línea, así que no hay impacto actual.
-**Corrección:** Medir la línea más larga (`texto.split(SALTO_DE_LINEA)`, con la regex en `patterns.constants.ts`) y activar `wrapText` también cuando haya un salto de línea.
+```ts
+const entradas = await readdir(join(fixtures, CASOS_DIR), { withFileTypes: true });
+for (const caso of entradas.filter((entrada) => entrada.isDirectory()).map((entrada) => entrada.name)) {
+```
 
-### IN-06: Los goldens de anchos reimplementan la fórmula de producción y el tipo de prueba no se deriva de una constante
+## Informativos
 
-**Archivo:** `tests/golden/formulario-xlsx.test.ts:185-188`, `tests/helpers/types/xlsx-leer.type.ts:1`
-**Problema:** `anchoEsperado` copia `anchoDeColumna`, así que un error en la fórmula se replica en la expectativa (es tautológico). Solo las pruebas unitarias de límites fijan valores concretos. Además, `TipoCelda` es una unión de literales y no `ValorDe<typeof TIPO_CELDA>`, lo que contradice la regla de uniones derivadas de su constante.
-**Corrección:** En el golden, fijar anchos esperados literales para las columnas de los fixtures. Declarar `TIPO_CELDA` como `as const` y derivar el tipo de ahí.
+### IN-01: `archivosEsperados` duplica la regla de qué copia `armar_paquete` a `paquete/`
+
+**Archivo:** `src/domain/policies/paquete-vigente.policy.ts:3-8` y `src/application/use-cases/armar-paquete.use-case.ts:52-64`
+
+**Problema:** el conjunto "formulario más cada `soporte.archivo` no nulo" está escrito dos veces, en `copiarContenido` y en la política. Si mañana `armar_paquete` deja de copiar los vencidos, o empieza a copiar otro archivo, la política queda desalineada. En ese caso o rechaza todos los envíos o deja pasar paquetes incompletos, y ninguna prueba une las dos definiciones.
+
+**Corrección:** exportar una sola función de dominio, por ejemplo `archivosDelPaquete(checklist, formulario)`, y usarla tanto en `copiarContenido` como en la política.
+
+### IN-02: El respaldo `sinVigencia` produce un texto que se contradice y está en un camino inalcanzable
+
+**Archivo:** `src/domain/builders/checklist.builder.ts:24`, `tests/unit/checklist.builder.test.ts:48-53`
+
+**Problema:** `soportes.policy.ts` solo marca `VENCIDO` cuando hay `vigencia_hasta`, porque `null` se trata como sin vencimiento. Aun así, el builder conserva un respaldo que daría "vencido: parafiscales (no aplica)", y la prueba de IN-02 fija ese texto como contrato del campo `bloqueos`. El texto dice que el soporte está vencido y a la vez que la vigencia no aplica.
+
+**Corrección:** que el tipo lo haga imposible. Se puede convertir `SoporteEvaluado` en una unión discriminada en la que `VENCIDO` lleva `vigencia_hasta: FechaISO`, y así desaparece el `??`. También se puede devolver `ERROR_INTERNO` si llega un vencido sin fecha.
+
+### IN-03: `docs/plantillas.md` cita un archivo que no existe
+
+**Archivo:** `docs/plantillas.md:15`
+
+**Problema:** la sección editada en WR-01 dice "`seccionSi(condicion)` de `motor-plantillas.ts`", pero el archivo es `src/domain/engines/motor-plantillas.engine.ts`, como dice el párrafo de arriba en el mismo documento.
+
+**Corrección:** cambiar la cita a `motor-plantillas.engine.ts`.
+
+### IN-04: El fixture de la prueba unitaria de la política se contradice a sí mismo
+
+**Archivo:** `tests/unit/paquete-vigente.policy.test.ts:13-26`
+
+**Problema:** `CHECKLIST` tiene `listo_para_firma: false` con `motivos_bloqueo: []` y `bloqueos: []`, aunque trae un soporte vencido y uno ausente. Hoy la política no lee esos campos. Pero si se adopta la corrección de CR-01, que compara estado, o si se reutiliza el fixture, las aserciones partirían de un `Checklist` que `construirChecklist` nunca produciría.
+
+**Corrección:** construir el fixture con `construirChecklist(soportes, [], HOY)` en lugar de escribirlo a mano.
 
 ---
 
-_Revisado: 2026-10-13T04:22:47Z_
+_Revisado: 2026-10-13T15:16:31Z_
 _Revisor: Claude (gsd-code-reviewer)_
 _Profundidad: standard_
