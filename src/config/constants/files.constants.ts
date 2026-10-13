@@ -40,6 +40,12 @@ export const ARCHIVOS_PAQUETE = {
   BORRADOR_CORREO: "borrador-correo.md",
 } as const;
 
+export const ARCHIVOS_SISTEMA_IGNORADOS: ReadonlySet<string> = new Set([
+  ".DS_Store",
+  "Thumbs.db",
+  "desktop.ini",
+]);
+
 export const ARCHIVO_FORMULARIO = {
   [FORMATO.XLSX]: ARCHIVOS_SALIDA.FORMULARIO_XLSX,
   [FORMATO.PDF]: ARCHIVOS_SALIDA.FORMULARIO_PDF,

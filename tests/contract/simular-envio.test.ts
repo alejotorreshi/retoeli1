@@ -337,6 +337,13 @@ describe("contrato: proveedor_simular_envio (ENV-01, D-13, RN4)", () => {
     expect(respuesta.parcial).toEqual(diferencias({ archivos_sobrantes: ["notas.txt"] }));
   });
 
+  test("un .DS_Store que deja Finder en paquete/ no bloquea el envío", async () => {
+    const proyecto = await armado(CO);
+    await writeFile(join(proyecto.raiz, "out", CO, "paquete", ".DS_Store"), "");
+    const respuesta = await simular(proyecto.raiz, { caso: CO, confirmado: true });
+    expect(respuesta.ok).toBe(true);
+  });
+
   test("borrador-correo.md borrado de paquete/ rechaza el envío como faltante (CR-01)", async () => {
     const proyecto = await armado(EC);
     await rm(join(proyecto.raiz, "out", EC, "paquete", "borrador-correo.md"));

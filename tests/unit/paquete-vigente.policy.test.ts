@@ -78,6 +78,13 @@ describe("diferenciasDelPaquete (CR-01)", () => {
     expect(paqueteAlDia(diferencias)).toBe(true);
   });
 
+  test("los archivos que deja el sistema operativo no cuentan como sobrantes", () => {
+    const listado = [...COMPLETO, ".DS_Store", "Thumbs.db", "desktop.ini"];
+    const diferencias = diferenciasDelPaquete(esperadoDe(CHECKLIST), { listado, borrador: BORRADOR });
+    expect(diferencias.archivos_sobrantes).toEqual([]);
+    expect(paqueteAlDia(diferencias)).toBe(true);
+  });
+
   test("reporta el soporte presente que falta en el listado", () => {
     const listado = COMPLETO.filter((archivo) => archivo !== "rut-ficticio.txt");
     const diferencias = diferenciasDelPaquete(esperadoDe(CHECKLIST), { listado, borrador: BORRADOR });

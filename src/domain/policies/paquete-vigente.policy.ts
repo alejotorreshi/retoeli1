@@ -1,4 +1,4 @@
-import { ARCHIVOS_PAQUETE } from "@/config/constants/files.constants.ts";
+import { ARCHIVOS_PAQUETE, ARCHIVOS_SISTEMA_IGNORADOS } from "@/config/constants/files.constants.ts";
 import type { Checklist } from "@/domain/types/checklist.type.ts";
 import type { DiferenciasPaquete, PaqueteEsperado, PaqueteReal } from "@/domain/types/paquete.type.ts";
 import type { SoporteEvaluado } from "@/domain/types/soportes.type.ts";
@@ -27,7 +27,9 @@ export function diferenciasDelPaquete(esperado: PaqueteEsperado, real: PaqueteRe
   const permitidos = new Set(esperado.archivos);
   return {
     archivos_faltantes: esperado.archivos.filter((archivo) => !presentes.has(archivo)),
-    archivos_sobrantes: real.listado.filter((archivo) => !permitidos.has(archivo)),
+    archivos_sobrantes: real.listado.filter(
+      (archivo) => !permitidos.has(archivo) && !ARCHIVOS_SISTEMA_IGNORADOS.has(archivo),
+    ),
     archivos_desactualizados: borradorDesactualizado(esperado, real),
   };
 }
