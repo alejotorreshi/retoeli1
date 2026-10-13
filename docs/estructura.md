@@ -7,10 +7,10 @@ Cada archivo vive en la carpeta de su rol y lleva el sufijo de ese rol. `tests/a
 | Carpeta | Sufijo | Rol |
 |---|---|---|
 | `domain/engines/` | `.engine.ts` | Algoritmo central que conduce un flujo: el mapeo de etiquetas (`mapeo`) y el motor de plantillas (`motor-plantillas`). |
-| `domain/builders/` | `.builder.ts` | Arma una estructura de salida con datos ya decididos: formulario, checklist, borrador, portal, índice del glosario y campo presentado. |
-| `domain/policies/` | `.policy.ts` | Decide o valida según una regla de negocio: soportes, vigencias, PII, identificador tributario, plantilla del caso, comparación de mapeos, textos de reglas y vigencia del paquete armado. |
+| `domain/builders/` | `.builder.ts` | Arma una estructura de salida con datos ya decididos: formulario (`formulario`), checklist (`checklist`), borrador (`borrador`), portal (`portal`), índice del glosario (`glosario`), campo presentado (`campo-presentado`) y texto de cierre del turno con la pregunta de confirmación (`cierre-turno`). |
+| `domain/policies/` | `.policy.ts` | Decide o valida según una regla de negocio: soportes (`soportes`), vigencias (`vigencias`), PII (`pii`), identificador tributario (`identificador-tributario`), plantilla del caso (`plantilla-caso`), comparación de mapeos (`comparar-mapeo`), textos de reglas (`validar-reglas`), vigencia del paquete armado (`paquete-vigente`), compuerta de confirmación (`compuerta`), clasificación de la respuesta de la analista (`confirmacion`) y redacción de secretos y claves sensibles (`redaccion`). |
 | `domain/selectors/` | `.selector.ts` | Lee o proyecta datos de una entrada sin decidir nada: maestro y solicitud. |
-| `domain/utils/` | `.util.ts` | Función genérica sin regla de negocio: fecha, normalización, resultado, formato de issues y nombre de error. |
+| `domain/utils/` | `.util.ts` | Función genérica sin regla de negocio: fecha (`fecha`), normalización (`normalizar`), resultado (`resultado`), formato de issues (`formatear-issues`), nombre de error (`nombre-error`), texto plano sin markdown (`texto-plano`), lectura de JSON (`json`) y sobre de fallo de una herramienta (`respuesta-herramienta`). |
 | `domain/types/` | `.type.ts` | Solo tipos, en una carpeta plana en la raíz de la capa. |
 
 `motor-plantillas.engine.ts` se mantiene entero: `plantillaInvalida` es el `Fallo` que emite el motor y `seccionSi` codifica el protocolo de secciones `[{}]`/`[]` que solo este motor interpreta.
@@ -33,11 +33,11 @@ El agente agrega dos capas. El guardián de capas de `tests/architecture.test.ts
 | `llm/types/` | `.type.ts` | El puerto neutral `AdaptadorLlm` (`enviar(mensajes, herramientas, opciones)`) y los tipos del protocolo compatible con OpenAI. |
 | `llm/schemas/` | `.schema.ts` | Validación zod tolerante de la respuesta del proveedor. |
 | `llm/adapters/` | `.adapter.ts` | El adaptador genérico compatible con OpenAI. Lo propio de cada proveedor llega como flags de capacidad, nunca como ramas por nombre. |
-| `llm/decorators/` | `.decorator.ts` | Envoltorios de resiliencia sobre un `AdaptadorLlm` (timeout, reintentos y respaldo). |
+| `llm/decorators/` | `.decorator.ts` | Envoltorios sobre un `AdaptadorLlm`: resiliencia (`timeout`, reintentos en `retry` y respaldo en `fallback`) y aviso de cada fallo al observador del turno (`observation`). |
 | `llm/mappers/` | `.mapper.ts` | Traducción entre el modelo neutral y el formato del proveedor, y de estados HTTP a errores tipados. |
-| `loop/types/` | `.type.ts` | Eventos del turno, sesión, dependencias del turno y registro de herramientas. |
+| `loop/types/` | `.type.ts` | Eventos del turno, sesión, estado y dependencias del turno, registro de herramientas y lectura tolerante del resultado de una herramienta. |
 | `loop/schemas/` | `.schema.ts` | Lectura tolerante del resultado JSON de una herramienta. |
-| `loop/services/` | `.service.ts` | El bucle del agente (`ejecutarTurno`, un generador de eventos tipados) y el registro de herramientas `proveedor_<export>`. |
+| `loop/services/` | `.service.ts` | El bucle del agente, un generador de eventos tipados: orquestación del turno (`ejecutar-turno`), conversación con el modelo (`conversacion-turno`), pasos de herramientas (`paso-herramientas`), despacho con la compuerta (`despacho-llamada`), cierres por error o aborto (`cierre-error`), cierre con la compuerta (`cierre-turno`), guardado de la sesión (`guardado-turno`), bitácora (`bitacora-turno`), presupuesto de tokens (`presupuesto`), tope de iteraciones (`tope-iteraciones`), respuesta no streaming (`respuesta-turno`) y registro de herramientas `proveedor_<export>` (`registro-herramientas`). |
 | `loop/wiring/` | `.wiring.ts` | `agente.wiring.ts`, el composition root del agente: lee el entorno y arma adaptadores, sesiones e instrucciones. |
 
 Idioma: `loop` va en español. En `llm`, el puerto neutral (`llm.type.ts`) va en español porque lo consume el bucle; el protocolo del proveedor (`provider.type.ts`, `adapters/`, `mappers/`, `schemas/`) y los decoradores (`decorators/` y `resilience.type.ts`) van en inglés, como infra. Un archivo en inglés sigue usando los miembros en español del puerto (`enviar`, `proveedor`, `rol`).

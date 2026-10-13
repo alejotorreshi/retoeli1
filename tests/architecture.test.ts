@@ -255,6 +255,17 @@ const EXPORTA_ESQUEMA = /^export\s+const\s+(\w+Schema)\b/;
 
 const COMPROBADO_CONTRA_TIPO = /\bsatisfies\s+z\.ZodType</;
 
+const CARPETAS_ENUMERADAS_EN_DOCS = [
+  "domain/engines",
+  "domain/builders",
+  "domain/policies",
+  "domain/utils",
+  "llm/decorators",
+  "loop/services",
+];
+
+const DOC_DE_ESTRUCTURA = "docs/estructura.md";
+
 function sinExtension(ruta: string): string {
   return ruta.replace(/\.(?:ts|js)$/, "");
 }
@@ -526,6 +537,16 @@ function violacionesDeEsquemaSinTipo(ruta: string, codigo: string): string[] {
   });
 }
 
+function modulosSinDocumentar(fuentes: readonly string[], documento: string): string[] {
+  return CARPETAS_ENUMERADAS_EN_DOCS.flatMap((carpeta) =>
+    fuentes
+      .filter((ruta) => posix.dirname(ruta) === `src/${carpeta}`)
+      .map((ruta) => posix.basename(ruta).split(".")[0] ?? ruta)
+      .filter((modulo) => !documento.includes(`\`${modulo}\``))
+      .map((modulo) => `${carpeta}/${modulo}: no aparece en ${DOC_DE_ESTRUCTURA}`),
+  );
+}
+
 function referenciasSinPrefijo(origen: string, texto: string): string[] {
   return NOMBRE_DE_HERRAMIENTA_SUELTO.test(texto) ? [`${origen}: nombra una herramienta sin proveedor_`] : [];
 }
@@ -760,6 +781,10 @@ describe("reglas de capas sobre el código real", () => {
     const fuentes = listarFuentes();
     expect(fuentes.filter((ruta) => ARCHIVO_DE_ESQUEMAS.test(ruta)).length).toBeGreaterThan(0);
     expect(fuentes.flatMap((ruta) => violacionesDeEsquemaSinTipo(ruta, leer(ruta)))).toEqual([]);
+  });
+
+  test("docs/estructura.md nombra cada módulo de las carpetas que enumera (IN-21)", () => {
+    expect(modulosSinDocumentar(listarFuentes(), leer(DOC_DE_ESTRUCTURA))).toEqual([]);
   });
 
   test("src/ y demo.ts no usan APIs de shell", () => {
@@ -1256,6 +1281,13 @@ describe("el escáner muerde sobre fuentes de muestra", () => {
       "src/loop/schemas/x.schema.ts: sueltoSchema no se comprueba contra su tipo con satisfies z.ZodType<T>",
     ]);
     expect(violacionesDeEsquemaSinTipo("src/loop/services/x.service.ts", codigo)).toEqual([]);
+  });
+
+  test("reporta un módulo que docs/estructura.md no nombra", () => {
+    const fuentes = ["src/loop/services/nuevo-paso.service.ts", "src/loop/services/presupuesto.service.ts"];
+    expect(modulosSinDocumentar(fuentes, "presupuesto de tokens (`presupuesto`)")).toEqual([
+      "loop/services/nuevo-paso: no aparece en docs/estructura.md",
+    ]);
   });
 
   test("reporta un archivo en una capa no declarada", () => {
