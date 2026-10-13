@@ -1,4 +1,4 @@
-import type { crearHerramientas } from "@/tools/fabrica.ts";
+import type { crearHerramientas } from "@/tools/herramientas.factory.ts";
 
 export type Herramientas = Pick<ReturnType<typeof crearHerramientas>, "mapear_campos" | "generar_formulario">;
 

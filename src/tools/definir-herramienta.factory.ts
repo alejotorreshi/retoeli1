@@ -6,10 +6,10 @@ import { PATRON_CASO, PATRON_SESION } from "@/config/constants/patterns.constant
 import { PREFIJO_HERRAMIENTA, SESION_POR_DEFECTO } from "@/config/constants/tools.constants.ts";
 import { exito, fallo } from "@/domain/resultado.ts";
 import type { Fallo, Resultado } from "@/domain/types/resultado.type.ts";
-import { formatearIssues } from "@/tools/issues.ts";
+import { crearEntorno } from "@/tools/entorno.wiring.ts";
+import { formatearIssues } from "@/tools/formatear-issues.util.ts";
 import type { ContextoNormalizado, OpcionesEntorno } from "@/tools/types/entorno.type.ts";
 import type { ContextoHerramienta, EspecHerramienta, Herramienta } from "@/tools/types/herramienta.type.ts";
-import { crearEntorno } from "@/tools/wiring.ts";
 
 type Desenlace<D> = {
   readonly resultado: Resultado<D>;

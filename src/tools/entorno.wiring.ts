@@ -42,7 +42,7 @@ import {
 import { copiarAlPaquete } from "@/infra/output/package-copy.adapter.ts";
 import { renderizarPdf } from "@/infra/output/pdf/pdf-renderer.adapter.ts";
 import { escribirXlsx } from "@/infra/output/xlsx-writer.adapter.ts";
-import { formatearIssues } from "@/tools/issues.ts";
+import { formatearIssues } from "@/tools/formatear-issues.util.ts";
 import type { ContextoNormalizado, EntornoEjecucion, OpcionesEntorno } from "@/tools/types/entorno.type.ts";
 
 async function leerPlantilla(directorioCaso: string, tipo: TipoPlantilla): Promise<Lectura<Plantilla>> {

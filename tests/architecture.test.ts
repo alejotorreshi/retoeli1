@@ -145,7 +145,7 @@ function sinExtension(ruta: string): string {
 function capaDeRuta(ruta: string): string {
   const base = sinExtension(ruta);
   if (base === "demo") return "raiz-demo";
-  if (base === "src/tools/wiring") return "wiring";
+  if (base === "src/tools/entorno.wiring") return "wiring";
   if (base === "src/tools/proveedor") return "proveedor";
   if (base.startsWith("tests/")) return "tests";
   if (CONFIG_PURA.test(base)) return "config-pure";
@@ -641,21 +641,21 @@ describe("el escáner muerde sobre fuentes de muestra", () => {
     expect(violacionesDeCapas("src/domain/mapeo.ts", codigo)).toEqual([]);
   });
 
-  test("solo wiring.ts puede importar infra desde tools", () => {
-    const codigo = 'import { crearLector } from "@/infra/fixtures/lector";\n';
-    expect(violacionesDeCapas("src/tools/wiring.ts", codigo)).toEqual([]);
-    expect(violacionesDeCapas("src/tools/define-tool.ts", codigo)).toEqual([
-      "src/tools/define-tool.ts: la capa tools no puede importar @/infra/fixtures/lector",
+  test("solo entorno.wiring.ts puede importar infra desde tools", () => {
+    const codigo = 'import { readValidatedJson } from "@/infra/fixtures/fixtures-reader.adapter.ts";\n';
+    expect(violacionesDeCapas("src/tools/entorno.wiring.ts", codigo)).toEqual([]);
+    expect(violacionesDeCapas("src/tools/definir-herramienta.factory.ts", codigo)).toEqual([
+      "src/tools/definir-herramienta.factory.ts: la capa tools no puede importar @/infra/fixtures/fixtures-reader.adapter.ts",
     ]);
   });
 
   test("src/demo solo llega a la herramienta exportada, config y node:", () => {
     const permitido =
       'import { leer_solicitud } from "@/tools/proveedor.ts";\nimport { join } from "node:path";\n';
-    const prohibido = 'import { crearEntorno } from "@/tools/wiring";\n';
+    const prohibido = 'import { crearEntorno } from "@/tools/entorno.wiring";\n';
     expect(violacionesDeCapas("src/demo/ejecutar-demo.ts", permitido)).toEqual([]);
     expect(violacionesDeCapas("src/demo/ejecutar-demo.ts", prohibido)).toEqual([
-      "src/demo/ejecutar-demo.ts: la capa demo no puede importar @/tools/wiring",
+      "src/demo/ejecutar-demo.ts: la capa demo no puede importar @/tools/entorno.wiring",
     ]);
   });
 

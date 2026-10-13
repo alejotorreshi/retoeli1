@@ -6,7 +6,7 @@ import { crearProyectoTemporal } from "@tests/helpers/proyecto-temporal.ts";
 import type { ProyectoTemporal } from "@tests/helpers/types/proyecto-temporal.type.ts";
 import { celdaEn, leerCeldasXlsx } from "@tests/helpers/xlsx-leer.ts";
 import { FIXTURES_DIR } from "@/config/constants/files.constants.ts";
-import { crearHerramientas } from "@/tools/fabrica.ts";
+import { crearHerramientas } from "@/tools/herramientas.factory.ts";
 
 const CO = "co-industrias-delta";
 const HOJA = "Datos Proveedor";

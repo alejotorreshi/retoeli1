@@ -10,7 +10,7 @@ import { FIXTURES_DIR } from "@/config/constants/files.constants.ts";
 import { leerRuta } from "@/domain/mapeo.ts";
 import type { Maestro } from "@/domain/types/maestro.type.ts";
 import type { CampoLista } from "@/domain/types/plantilla-caso.type.ts";
-import { crearHerramientas } from "@/tools/fabrica.ts";
+import { crearHerramientas } from "@/tools/herramientas.factory.ts";
 
 const PA = "pa-logistica-istmo";
 const AVISO_ORIGINAL = 'hace clic en "Enviar"';

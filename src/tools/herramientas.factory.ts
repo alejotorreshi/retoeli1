@@ -5,14 +5,14 @@ import { mapearCamposCaso } from "@/application/use-cases/mapear-campos.use-case
 import { simularEnvio } from "@/application/use-cases/simular-envio.use-case.ts";
 import { HERRAMIENTA } from "@/config/constants/tools.constants.ts";
 import { DESCRIPCION_HERRAMIENTA, RESUMEN_HERRAMIENTA } from "@/config/strings.ts";
+import { defineTool } from "@/tools/definir-herramienta.factory.ts";
 import {
   argsArmarPaquete,
   argsGenerarFormulario,
   argsLeerSolicitud,
   argsMapearCampos,
   argsSimularEnvio,
-} from "@/tools/argumentos.ts";
-import { defineTool } from "@/tools/define-tool.ts";
+} from "@/tools/schemas/argumentos.schema.ts";
 import type { OpcionesEntorno } from "@/tools/types/entorno.type.ts";
 
 export function crearHerramientas(opciones: OpcionesEntorno = {}) {
