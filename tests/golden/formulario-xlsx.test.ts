@@ -250,6 +250,24 @@ describe("golden: anchos de columna del xlsx según el texto escrito (H1, GC-4)"
     const { anchos } = await anchosDelCaso("co-industrias-delta");
     expect(anchoDe(anchos, "Datos Proveedor", "C")).toBe(ANCHO_COLUMNA_XLSX.maximo);
   });
+
+  test("solo las celdas cuyo texto más el margen supera el máximo ajustan el texto", async () => {
+    for (const caso of ["co-industrias-delta", "hn-agroexport-sula"]) {
+      const { celdas } = await anchosDelCaso(caso);
+      for (const celda of celdas) {
+        const excede = largoDe(celda.valor) + ANCHO_COLUMNA_XLSX.margen > ANCHO_COLUMNA_XLSX.maximo;
+        expect({ celda: `${celda.hoja}!${celda.celda}`, ajustada: celda.ajustada }).toEqual({
+          celda: `${celda.hoja}!${celda.celda}`,
+          ajustada: excede,
+        });
+      }
+    }
+    const { celdas } = await anchosDelCaso("co-industrias-delta");
+    const ajustadas = celdas.filter((celda) => celda.ajustada);
+    expect(ajustadas).toHaveLength(1);
+    expect(ajustadas[0]?.hoja).toBe("Datos Proveedor");
+    expect(largoDe(ajustadas[0]?.valor)).toBe(82);
+  });
 });
 
 describe("writeXlsx (D-33.5)", () => {

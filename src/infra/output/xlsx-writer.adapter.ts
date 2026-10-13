@@ -29,9 +29,15 @@ function hojaPara(libro: Workbook, hojas: Map<string, HojaEscrita>, nombre: stri
   return nueva;
 }
 
+function excedeElMaximo(largo: number): boolean {
+  return largo + ANCHO_COLUMNA_XLSX.margen > ANCHO_COLUMNA_XLSX.maximo;
+}
+
 function registrarTexto(largos: Map<number, number>, celda: Cell, texto: string | null): void {
   const columna = celda.fullAddress.col;
-  largos.set(columna, Math.max(largos.get(columna) ?? 0, largoDeTexto(texto)));
+  const largo = largoDeTexto(texto);
+  largos.set(columna, Math.max(largos.get(columna) ?? 0, largo));
+  if (excedeElMaximo(largo)) celda.alignment = { wrapText: true };
 }
 
 function textoDelValor(fila: FilaCelda): string | null {
