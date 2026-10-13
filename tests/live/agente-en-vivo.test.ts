@@ -13,13 +13,17 @@ import {
 import { sensiblesDelProyecto } from "@tests/helpers/pii.helper.ts";
 import { crearProyectoTemporal } from "@tests/helpers/proyecto-temporal.helper.ts";
 import type { CuerpoPedido } from "@tests/helpers/types/fetch-falso.type.ts";
-import { TIPO_EVENTO } from "@/config/constants/agent.constants.ts";
+import { SEPARADOR_PARRAFOS, TIPO_EVENTO } from "@/config/constants/agent.constants.ts";
 import { FECHA_DEMO } from "@/config/constants/demo.constants.ts";
 import { ARCHIVOS_CASO, ARCHIVOS_SALIDA, OUT_DIR } from "@/config/constants/files.constants.ts";
 import { MODO_THINKING, PROVEEDOR_DEEPSEEK } from "@/config/constants/llm.constants.ts";
 import { NIVELES_LOG } from "@/config/constants/logging.constants.ts";
+import { ESTADO_SOPORTE } from "@/config/constants/supports.constants.ts";
 import { HERRAMIENTA, PREFIJO_HERRAMIENTA } from "@/config/constants/tools.constants.ts";
 import { type ProviderSettings, parseAgentEnv, pinExecutionDate } from "@/config/env.ts";
+import { TEXTO_SOPORTE } from "@/config/strings.ts";
+import { preguntaConfirmacion } from "@/domain/builders/cierre-turno.builder.ts";
+import type { CasoPendiente } from "@/domain/types/compuerta.type.ts";
 import type { FetchLike } from "@/llm/types/provider.type.ts";
 import { respuestaDeTurno } from "@/loop/services/respuesta-turno.service.ts";
 import type { Agente } from "@/loop/types/agente.type.ts";
@@ -33,7 +37,14 @@ const MENSAJE_CRITERIO_1 = "Procesa el caso co-industrias-delta.";
 const MENSAJE_PRD_11 =
   'Procesa el caso "ec-corp-andina". Dime qué campos quedaron llenos, cuáles faltan, si el paquete está listo para firma y qué soportes debo actualizar. No envíes nada todavía.';
 const MENSAJE_CONFIRMACION = "envía";
-const BLOQUEO_EC = "ausente: certificado_cumplimiento_tributario";
+const TIPO_BLOQUEO_EC = "certificado_cumplimiento_tributario";
+const BLOQUEO_EC = `ausente: ${TIPO_BLOQUEO_EC}`;
+const PENDIENTE_EC: CasoPendiente = {
+  caso: EC,
+  bloqueos: [BLOQUEO_EC],
+  motivos: [{ tipo: TIPO_BLOQUEO_EC, causa: ESTADO_SOPORTE.AUSENTE }],
+};
+const PENDIENTE_CO: CasoPendiente = { caso: CO, bloqueos: [], motivos: [] };
 const PRESUPUESTO_SESION = "120000";
 const MAX_TOKENS_SALIDA = "1500";
 const TIMEOUT_MS = 300_000;
@@ -99,6 +110,10 @@ function fragmentosDeCuerpo(cuerpo: string): string[] {
   ];
 }
 
+function ultimoParrafo(texto: string): string | undefined {
+  return texto.trimEnd().split(SEPARADOR_PARRAFOS).at(-1);
+}
+
 function totalFinal(eventos: readonly EventoAgente[]): number {
   return usos(eventos).at(-1)?.totalSesion ?? 0;
 }
@@ -148,6 +163,7 @@ describe.skipIf(process.env.LLM_EN_VIVO !== "1")(
           expect(enOrden(primerosOkDelFlujo(respuestaA.toolCalls, CO))).toBe(true);
           expect(respuestaA.reply.trim().length).toBeGreaterThan(0);
           expect(respuestaA.reply).not.toContain(NEGRITA);
+          expect(ultimoParrafo(respuestaA.reply)).toBe(preguntaConfirmacion([PENDIENTE_CO]));
           expect(existsSync(join(proyecto.raiz, OUT_DIR, CO, ARCHIVOS_SALIDA.ENVIO_SIMULADO))).toBe(false);
 
           const agenteB = nuevoAgente();
@@ -162,7 +178,8 @@ describe.skipIf(process.env.LLM_EN_VIVO !== "1")(
               .filter((confirmacion) => confirmacion.caso === EC)
               .at(-1),
           ).toEqual(expect.objectContaining({ caso: EC, bloqueos: [BLOQUEO_EC] }));
-          expect(respuestaB1.reply.trimEnd().endsWith("?")).toBe(true);
+          expect(ultimoParrafo(respuestaB1.reply)).toBe(preguntaConfirmacion([PENDIENTE_EC]));
+          expect(respuestaB1.reply).toContain(TEXTO_SOPORTE.nombre(TIPO_BLOQUEO_EC));
           expect(respuestaB1.reply).toContain(`${OUT_DIR}/${EC}`);
           expect(respuestaB1.reply).not.toContain(NEGRITA);
 

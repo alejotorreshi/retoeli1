@@ -1,4 +1,6 @@
-import { SEPARADOR_PARRAFOS } from "@/config/constants/agent.constants.ts";
+import { SALTO_DE_LINEA, SEPARADOR_PARRAFOS } from "@/config/constants/agent.constants.ts";
+import { FINES_DE_ORACION } from "@/config/constants/confirmacion.constants.ts";
+import { PATRON_PREGUNTA } from "@/config/constants/patterns.constants.ts";
 import { ORDEN_FLUJO_HERRAMIENTAS } from "@/config/constants/tools.constants.ts";
 import { TEXTO_CIERRE, TEXTO_CONFIRMACION } from "@/config/strings.ts";
 import { motivosDeBloqueo } from "@/domain/builders/checklist.builder.ts";
@@ -15,6 +17,39 @@ export function preguntaConfirmacion(pendientes: readonly CasoPendiente[]): stri
     return TEXTO_CONFIRMACION.unCaso(unico.caso, unico.bloqueos);
   }
   return TEXTO_CONFIRMACION.variosCasos(legibles);
+}
+
+function corteEnFinDeOracion(linea: string, pregunta: number): number | null {
+  const cortes = FINES_DE_ORACION.flatMap((fin) => {
+    const inicio = linea.lastIndexOf(fin, pregunta - fin.length);
+    return inicio < 0 ? [] : [inicio + fin.trimEnd().length];
+  });
+  return cortes.length === 0 ? null : Math.max(...cortes);
+}
+
+function sinPreguntaFinal(texto: string): string {
+  const lineas = texto.trimEnd().split(SALTO_DE_LINEA);
+  for (let ultima = lineas.pop(); ultima !== undefined; ultima = lineas.pop()) {
+    if (ultima.trim() === "") continue;
+    const pregunta = ultima.search(PATRON_PREGUNTA);
+    if (pregunta < 0) {
+      lineas.push(ultima);
+      break;
+    }
+    const corte = corteEnFinDeOracion(ultima, pregunta);
+    if (corte !== null) {
+      lineas.push(ultima.slice(0, corte).trim());
+      break;
+    }
+  }
+  return lineas.join(SALTO_DE_LINEA).trimEnd();
+}
+
+export function cierreConPregunta(texto: string, pendientes: readonly CasoPendiente[]): string {
+  if (pendientes.length === 0) return texto;
+  const pregunta = preguntaConfirmacion(pendientes);
+  const previo = sinPreguntaFinal(texto);
+  return previo === "" ? pregunta : `${previo}${SEPARADOR_PARRAFOS}${pregunta}`;
 }
 
 function exitosas(llamadas: readonly LlamadaResumida[]): readonly LlamadaResumida[] {

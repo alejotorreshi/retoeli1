@@ -7,6 +7,7 @@ export const DECISION_CONFIRMACION = {
 
 export const MAX_PALABRAS_CONFIRMACION = 12;
 export const SIGNO_PREGUNTA = "?";
+export const FINES_DE_ORACION = [". ", "! "] as const;
 
 export const AFIRMACIONES: ReadonlySet<string> = new Set([
   "si",
