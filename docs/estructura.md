@@ -24,6 +24,30 @@ Cada archivo vive en la carpeta de su rol y lleva el sufijo de ese rol. `tests/a
 - `demo/runners/ejecutar-demo.runner.ts` ejecuta la demo que lanza `demo.ts`.
 - `config/env.ts` y `config/strings.ts` son las otras dos excepciones permitidas en la raíz de una capa. `env.ts` es la única frontera con el entorno (esquema, lector y `pinExecutionDate`), así que ningún sufijo de rol lo describe. La usuaria fijó `strings.ts` como fuente única de textos.
 
+## Capas del agente
+
+El agente agrega dos capas. El guardián de capas de `tests/architecture.test.ts` las declara con sus importaciones permitidas, y cada regla tiene su prueba de violación.
+
+| Carpeta | Sufijo | Rol |
+|---|---|---|
+| `llm/types/` | `.type.ts` | El puerto neutral `AdaptadorLlm` (`enviar(mensajes, herramientas, opciones)`) y los tipos del protocolo compatible con OpenAI. |
+| `llm/schemas/` | `.schema.ts` | Validación zod tolerante de la respuesta del proveedor. |
+| `llm/adapters/` | `.adapter.ts` | El adaptador genérico compatible con OpenAI. Lo propio de cada proveedor llega como flags de capacidad, nunca como ramas por nombre. |
+| `llm/decorators/` | `.decorator.ts` | Envoltorios de resiliencia sobre un `AdaptadorLlm` (timeout, reintentos y respaldo). |
+| `llm/mappers/` | `.mapper.ts` | Traducción entre el modelo neutral y el formato del proveedor, y de estados HTTP a errores tipados. |
+| `loop/types/` | `.type.ts` | Eventos del turno, sesión, dependencias del turno y registro de herramientas. |
+| `loop/schemas/` | `.schema.ts` | Lectura tolerante del resultado JSON de una herramienta. |
+| `loop/services/` | `.service.ts` | El bucle del agente (`ejecutarTurno`, un generador de eventos tipados) y el registro de herramientas `proveedor_<export>`. |
+| `loop/wiring/` | `.wiring.ts` | `agente.wiring.ts`, el composition root del agente: lee el entorno y arma adaptadores, sesiones e instrucciones. |
+
+Direcciones permitidas:
+
+- `llm` solo importa `llm`, la config pura y zod. No conoce el dominio, el bucle, infra ni `node:`.
+- `loop` importa `loop`, `llm`, dominio, aplicación, los tipos de las herramientas, la config pura y zod. Nunca importa infra, `config/env.ts` ni `tools/proveedor.ts`: el módulo de herramientas le llega inyectado.
+- `loop/wiring/agente.wiring.ts` es el segundo composition root. Además de lo anterior puede importar infra, `config/env.ts` y `tools/proveedor.ts`. Cualquier otro archivo de `loop/wiring/` sigue las reglas de `loop`.
+- pino solo se importa desde infra.
+- `config/env.ts` lo importan infra, tools, demo y `loop/wiring/agente.wiring.ts`.
+
 ## Pruebas unitarias
 
 `tests/unit/` es plana y cada archivo se llama `<módulo>.<rol>.test.ts`, espejo de un `src/**/<módulo>.<rol>.ts`. La carpeta no se anida porque varias pruebas resuelven fixtures con `new URL("../../…", import.meta.url)`. Las pruebas de contrato, golden y e2e se nombran por escenario.

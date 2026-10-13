@@ -202,18 +202,23 @@ Conventions not yet established. Will populate as patterns emerge during develop
 - Sin comentarios en el código: se entiende por nombres, tipos y funciones pequeñas. Las explicaciones van en `docs/`, `README.md` o `SOLUCION.md`. Las `description` de herramientas y los `.describe()` de zod son contrato, no comentarios.
 - TypeScript estricto sin `any`; `bun run check` (tsc + Biome) debe pasar.
 - Constantes y configuración centralizadas, tipadas y validadas con zod; nada de valores mágicos dispersos.
-- Dependencias hacia adentro: dominio puro → herramientas/casos de uso → infraestructura → HTTP. Las herramientas no importan el servidor.
+- Dependencias hacia adentro: dominio puro → herramientas/casos de uso → infraestructura → HTTP. Las herramientas no importan el servidor ni el bucle.
+- Capas del agente: `llm` (puerto neutral, adaptador genérico compatible con OpenAI y decoradores) solo conoce la config pura y zod. `loop` (el bucle del agente) importa `llm`, dominio, aplicación, los tipos de las herramientas, la config pura y zod, nunca infra ni `config/env.ts`.
+- Hay dos composition roots, los únicos que importan infra: `tools/wiring/entorno.wiring.ts` (herramientas) y `loop/wiring/agente.wiring.ts` (agente). El guardián los reconoce por su ruta exacta.
+- pino solo se importa desde infra.
 - Dominio, aplicación y herramientas en español (contrato del PRD); infraestructura y `config/env.ts` en inglés; documentación en español.
-- Tipos exportados solo en `types/<nombre>.type.ts` de su capa, con solo `type` e `import type`. Las uniones de códigos se derivan de su constante (`ValorDe<typeof X>`) y los esquemas zod se comprueban contra el tipo con `satisfies z.ZodType<T>`. Única excepción: `ToolEnv`, junto a su esquema en `config/env.ts`.
+- Tipos exportados solo en `types/<nombre>.type.ts` de su capa, con solo `type` e `import type`. Las uniones de códigos se derivan de su constante (`ValorDe<typeof X>`) y los esquemas zod se comprueban contra el tipo con `satisfies z.ZodType<T>`. Única excepción: los tipos del entorno (`ToolEnv`, `AgentEnv`, `ProviderSettings` y `EnvSource`), junto a sus esquemas en `config/env.ts`.
 - Códigos y estados son objetos `as const`, nunca `enum`. Toda comparación, asignación, `case` y `fallo(...)` usa el objeto (`ESTADO_CAMPO.FALTANTE`, no `"faltante"`), y los `z.enum` se construyen desde él.
 - Archivos en kebab-case, cada uno en la carpeta de su rol y con el sufijo de ese rol:
-  - `src/<capa>/types/*.type.ts` y `tests/helpers/types/*.type.ts`; `config/constants/*.constants.ts`; `schemas/*.schema.ts`;
+  - `src/<capa>/types/*.type.ts` (también `src/llm/types` y `src/loop/types`) y `tests/helpers/types/*.type.ts`; `config/constants/*.constants.ts`; `schemas/*.schema.ts` en infra, tools, llm y loop;
   - `domain/engines/*.engine.ts` (algoritmo central), `domain/builders/*.builder.ts` (arma una estructura de salida),
     `domain/policies/*.policy.ts` (decide o valida según una regla de negocio), `domain/selectors/*.selector.ts`
     (lee o proyecta sin decidir) y `domain/utils/*.util.ts` (función genérica sin regla de negocio);
   - `application/use-cases/*.use-case.ts` (una sola función exportada) y `application/services/*.service.ts`;
   - `infra/<área>/**/*.adapter.ts` o `*.util.ts`;
-  - `tools/factories/*.factory.ts`, `tools/wiring/*.wiring.ts` (único composition root que importa infra) y `demo/runners/*.runner.ts`;
+  - `tools/factories/*.factory.ts`, `tools/wiring/*.wiring.ts` (composition root de las herramientas) y `demo/runners/*.runner.ts`;
+  - `llm/adapters/*.adapter.ts`, `llm/decorators/*.decorator.ts` y `llm/mappers/*.mapper.ts`;
+  - `loop/services/*.service.ts` y `loop/wiring/*.wiring.ts` (composition root del agente: solo `agente.wiring.ts` importa infra);
   - `tests/unit/<módulo>.<rol>.test.ts`, espejo de un `src/**/<módulo>.<rol>.ts`; el resto `tests/**/*.test.ts`; `tests/helpers/*.helper.ts`.
 
   Ningún `.ts` va suelto en `src/` ni en la raíz de `src/<capa>/`; las únicas excepciones son `src/tools/proveedor.ts`,
@@ -221,7 +226,7 @@ Conventions not yet established. Will populate as patterns emerge during develop
   `src/tools/proveedor.ts` y `src/knowledge/**`.
 - Constantes por ámbito en `src/config/constants/<ámbito>.constants.ts`. Las regex van solo en `patterns.constants.ts`; la excepción es el parser de `domain/engines/motor-plantillas.engine.ts`.
 - Todo texto para personas o para el modelo (mensajes, `description`, `.describe()`) vive en un único `src/config/strings.ts`. Un texto que repite un dato se deriva de su constante, y las herramientas se nombran siempre `proveedor_<export>`.
-- La config pura (`config/constants/**`, `config/types/**`, `config/strings.ts`) no lee el entorno ni importa `node:`, `Bun` o zod, y cualquier capa puede importarla. `config/env.ts` es el único módulo que lee `process.env`, y solo lo importan infra, tools y demo.
+- La config pura (`config/constants/**`, `config/types/**`, `config/strings.ts`) no lee el entorno ni importa `node:`, `Bun` o zod, y cualquier capa puede importarla. `config/env.ts` es el único módulo que lee `process.env`, y solo lo importan infra, tools, demo y `loop/wiring/agente.wiring.ts`.
 - Los imports internos usan solo los alias `@/` (`src/`) y `@tests/` (`tests/`); nunca `../` ni `./`. Bun resuelve los alias desde `tsconfig.json`, así que el Dockerfile debe copiarlo. Un módulo distribuible futuro debe construirse con `bun build`, para que los alias queden resueltos.
 - Cada una de estas reglas tiene su guardián en `tests/architecture.test.ts` (G1–G14), con una prueba que demuestra que detecta la violación.
 - Nunca modificar `reto-01/` (PRD y fixtures entregados).

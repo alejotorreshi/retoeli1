@@ -1,3 +1,4 @@
+import { CODIGO_AGENTE } from "@/config/constants/agent.constants.ts";
 import { CODIGO_ERROR } from "@/config/constants/errors.constants.ts";
 import { ARCHIVO_PROYECTO, ARCHIVOS_SALIDA, OUT_DIR } from "@/config/constants/files.constants.ts";
 import { LONGITUD_MAXIMA_CASO } from "@/config/constants/limits.constants.ts";
@@ -191,6 +192,60 @@ export const RESUMEN_HERRAMIENTA = {
   envioConBloqueos: (caso: string, bloqueos: readonly string[]): string =>
     `${caso}: envío simulado registrado con bloqueos (${listaDeBloqueos(bloqueos)})`,
 } as const;
+
+const SESION_SIGUE_ABIERTA = "La sesión sigue abierta; puedes volver a intentarlo.";
+
+function conSesionAbierta(mensaje: string): string {
+  return `${mensaje} ${SESION_SIGUE_ABIERTA}`;
+}
+
+const HERRAMIENTAS_DISPONIBLES = Object.values(HERRAMIENTA).map(nombreVisible).join(", ");
+
+export const MENSAJE_AGENTE = {
+  [CODIGO_AGENTE.INSTRUCCIONES_NO_DISPONIBLES]: conSesionAbierta(
+    "No pude cargar las instrucciones del agente, así que no procesé el mensaje.",
+  ),
+  [CODIGO_AGENTE.HERRAMIENTA_DESCONOCIDA]: `La herramienta pedida no existe. Las herramientas disponibles son ${HERRAMIENTAS_DISPONIBLES}.`,
+  [CODIGO_AGENTE.ARGUMENTOS_TRUNCADOS]:
+    "La respuesta del modelo se cortó antes de completar los argumentos de la herramienta, así que no se ejecutó; vuelve a pedirla.",
+  [CODIGO_AGENTE.SESION_OCUPADA]:
+    "Esta sesión todavía está procesando el mensaje anterior. Espera la respuesta y vuelve a escribir.",
+  [CODIGO_AGENTE.PRESUPUESTO_AGOTADO]:
+    "Esta sesión agotó su presupuesto de tokens. Abre una sesión nueva para continuar.",
+  [CODIGO_AGENTE.TOPE_ITERACIONES]:
+    "Llegué al tope de pasos para este mensaje sin terminar. Escríbeme de nuevo para continuar desde aquí.",
+  [CODIGO_AGENTE.TURNO_INTERRUMPIDO]: "El turno se interrumpió antes de terminar.",
+  [CODIGO_AGENTE.TIEMPO_TURNO_AGOTADO]: conSesionAbierta("El turno tardó más de lo permitido y se detuvo."),
+  [CODIGO_AGENTE.PROVEEDOR_SIN_CLAVE]: conSesionAbierta(
+    "El proveedor del modelo no tiene una clave configurada en el servidor.",
+  ),
+  [CODIGO_AGENTE.CONFIGURACION_LLM_INVALIDA]: conSesionAbierta(
+    "La configuración del proveedor del modelo no es válida.",
+  ),
+  [CODIGO_AGENTE.PROVEEDOR_PETICION_INVALIDA]: conSesionAbierta(
+    "El proveedor del modelo rechazó la solicitud.",
+  ),
+  [CODIGO_AGENTE.PROVEEDOR_AUTENTICACION]: conSesionAbierta(
+    "La clave del proveedor del modelo no es válida o no tiene permiso.",
+  ),
+  [CODIGO_AGENTE.PROVEEDOR_SALDO_AGOTADO]: conSesionAbierta(
+    "Saldo agotado en el proveedor del modelo: hay que recargar la cuenta antes de seguir.",
+  ),
+  [CODIGO_AGENTE.PROVEEDOR_LIMITE_TASA]: conSesionAbierta(
+    "El proveedor del modelo está limitando las solicitudes por exceso de uso.",
+  ),
+  [CODIGO_AGENTE.PROVEEDOR_NO_DISPONIBLE]: conSesionAbierta(
+    "El proveedor del modelo no está disponible en este momento.",
+  ),
+  [CODIGO_AGENTE.PROVEEDOR_SIN_CONEXION]: conSesionAbierta("No hay conexión con el proveedor del modelo."),
+  [CODIGO_AGENTE.PROVEEDOR_TIMEOUT]: conSesionAbierta("El modelo tardó demasiado en responder."),
+  [CODIGO_AGENTE.PROVEEDOR_RESPUESTA_INVALIDA]: conSesionAbierta(
+    "El proveedor del modelo devolvió una respuesta que no se pudo leer.",
+  ),
+  [CODIGO_AGENTE.PROVEEDOR_FILTRO_CONTENIDO]: conSesionAbierta(
+    "El proveedor del modelo filtró la respuesta por su política de contenido.",
+  ),
+} as const satisfies Record<ValorDe<typeof CODIGO_AGENTE>, string>;
 
 export const TEXTO_ENV = {
   formatoFecha: "Debe tener el formato YYYY-MM-DD.",

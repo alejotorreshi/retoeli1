@@ -1,11 +1,21 @@
 import { describe, expect, test } from "bun:test";
 import { existsSync, readFileSync } from "node:fs";
 import { join, posix } from "node:path";
+import { ACCION, CODIGO_AGENTE, MOTIVO_FIN, TIPO_EVENTO } from "@/config/constants/agent.constants.ts";
 import { CODIGO_ERROR, CODIGO_FS } from "@/config/constants/errors.constants.ts";
 import { ARCHIVOS_PAQUETE, ARCHIVOS_SALIDA } from "@/config/constants/files.constants.ts";
 import { FORMATO, TIPO_PLANTILLA } from "@/config/constants/forms.constants.ts";
 import { ESTADO_LECTURA, ORIGEN_COPIA } from "@/config/constants/io.constants.ts";
 import { CLAVE_PLANTILLA } from "@/config/constants/knowledge.constants.ts";
+import {
+  FIN_LLM,
+  FINISH_REASON,
+  MODO_THINKING,
+  PARAMETRO_MAX_TOKENS,
+  ROL_MENSAJE,
+  TIPO_ERROR_LLM,
+  TOOL_CHOICE,
+} from "@/config/constants/llm.constants.ts";
 import {
   APLICA_NOTA,
   ESTADO_CAMPO,
@@ -26,7 +36,7 @@ const IMPORTACION =
 
 const API_SHELL = /child_process|\bBun\s*\.\s*(?:spawn|\$)|\bBun\s*\[\s*["'`](?:spawn|\$)/;
 
-const PAQUETES_CON_CAPA = new Set(["zod", "exceljs", "pdf-lib"]);
+const PAQUETES_CON_CAPA = new Set(["zod", "exceljs", "pdf-lib", "pino"]);
 
 const DESTINOS_DE_HERRAMIENTAS = [
   "domain",
@@ -41,17 +51,33 @@ const DESTINOS_DE_HERRAMIENTAS = [
 
 const DESTINOS_DE_DEMO = ["demo", "proveedor", "config-pure", "config-env", "node"];
 
+const DESTINOS_DEL_BUCLE = ["loop", "llm", "domain", "application", "config-pure", "tools", "zod"];
+
 const PERMITIDOS: Readonly<Record<string, readonly string[]>> = {
   domain: ["domain", "config-pure"],
   application: ["domain", "application", "config-pure"],
   "config-pure": ["config-pure"],
   "config-env": ["config-env", "config-pure", "domain", "zod"],
-  infra: ["domain", "application", "config-pure", "config-env", "infra", "node", "zod", "exceljs", "pdf-lib"],
+  infra: [
+    "domain",
+    "application",
+    "config-pure",
+    "config-env",
+    "infra",
+    "node",
+    "zod",
+    "exceljs",
+    "pdf-lib",
+    "pino",
+  ],
   tools: DESTINOS_DE_HERRAMIENTAS,
   proveedor: DESTINOS_DE_HERRAMIENTAS,
   wiring: [...DESTINOS_DE_HERRAMIENTAS, "infra"],
   demo: DESTINOS_DE_DEMO,
   "raiz-demo": DESTINOS_DE_DEMO,
+  llm: ["llm", "config-pure", "zod"],
+  loop: DESTINOS_DEL_BUCLE,
+  "wiring-agente": [...DESTINOS_DEL_BUCLE, "config-env", "infra", "proveedor"],
 };
 
 const CONFIG_PURA = /^src\/config\/(?:constants\/.+|types\/.+|strings)$/;
@@ -90,6 +116,17 @@ const FAMILIAS_DE_CODIGOS: readonly Readonly<Record<string, string>>[] = [
   TIPO_MASCARA,
   COLOR_TRAZO,
   HERRAMIENTA,
+  ROL_MENSAJE,
+  FIN_LLM,
+  FINISH_REASON,
+  TIPO_ERROR_LLM,
+  MODO_THINKING,
+  PARAMETRO_MAX_TOKENS,
+  TOOL_CHOICE,
+  TIPO_EVENTO,
+  MOTIVO_FIN,
+  CODIGO_AGENTE,
+  ACCION,
 ];
 
 function escaparRegex(texto: string): string {
@@ -150,6 +187,11 @@ const CARPETAS_DE_ROL: Readonly<Record<string, string>> = {
   "tools/factories": "factory",
   "tools/wiring": "wiring",
   "demo/runners": "runner",
+  "llm/adapters": "adapter",
+  "llm/decorators": "decorator",
+  "llm/mappers": "mapper",
+  "loop/services": "service",
+  "loop/wiring": "wiring",
 };
 
 const ROLES_DE_PRUEBA = [...new Set([...Object.values(CARPETAS_DE_ROL), "adapter", "schema"])].join("|");
@@ -159,9 +201,9 @@ const NOMBRES_CON_ROL: readonly RegExp[] = [
   /^src\/tools\/proveedor\.ts$/,
   /^src\/config\/(?:strings|env)\.ts$/,
   new RegExp(`^src/config/constants/${KEBAB}\\.constants\\.ts$`),
-  new RegExp(`^src/(?:config|domain|application|infra|tools|demo)/types/${KEBAB}\\.type\\.ts$`),
+  new RegExp(`^src/(?:config|domain|application|infra|tools|demo|llm|loop)/types/${KEBAB}\\.type\\.ts$`),
   new RegExp(`^tests/helpers/types/${KEBAB}\\.type\\.ts$`),
-  new RegExp(`^src/(?:infra|tools)/(?:${KEBAB}/)*schemas/${KEBAB}\\.schema\\.ts$`),
+  new RegExp(`^src/(?:infra|tools|llm|loop)/(?:${KEBAB}/)*schemas/${KEBAB}\\.schema\\.ts$`),
   ...Object.entries(CARPETAS_DE_ROL).map(
     ([carpeta, rol]) => new RegExp(`^src/${carpeta}/${KEBAB}\\.${rol}\\.ts$`),
   ),
@@ -187,7 +229,7 @@ const EXPORTA_FUNCION = /^export\s+(?:async\s+)?function\s/;
 
 const NOMBRE_DE_HERRAMIENTA_SUELTO = new RegExp(`\\b(?:${Object.values(HERRAMIENTA).join("|")})\\b`);
 
-const CAPAS_FUTURAS = /^src\/(?:server[^/]*|http|loop|llm)(?:\/|$)/;
+const CAPAS_FUTURAS = /^src\/(?:server[^/]*|http)(?:\/|$)/;
 
 function sinExtension(ruta: string): string {
   return ruta.replace(/\.(?:ts|js)$/, "");
@@ -197,12 +239,13 @@ function capaDeRuta(ruta: string): string {
   const base = sinExtension(ruta);
   if (base === "demo") return "raiz-demo";
   if (base === "src/tools/wiring/entorno.wiring") return "wiring";
+  if (base === "src/loop/wiring/agente.wiring") return "wiring-agente";
   if (base === "src/tools/proveedor") return "proveedor";
   if (base.startsWith("tests/")) return "tests";
   if (CONFIG_PURA.test(base)) return "config-pure";
   if (base === "src/config/env") return "config-env";
   if (CAPAS_FUTURAS.test(base)) return "prohibida";
-  const capa = /^src\/(domain|application|infra|tools|demo)\//.exec(base)?.[1];
+  const capa = /^src\/(domain|application|infra|tools|demo|llm|loop)\//.exec(base)?.[1];
   return capa ?? "desconocida";
 }
 
@@ -1018,6 +1061,108 @@ describe("el escáner muerde sobre fuentes de muestra", () => {
     expect(referenciasSinPrefijo("x", "Pasa el resultado completo de proveedor_mapear_campos.")).toEqual([]);
     expect(textosDe({ a: { b: "con armar_paquete." }, c: () => "" }, "s")).toEqual([
       ["s.a.b", "con armar_paquete."],
+    ]);
+  });
+
+  test("solo loop/wiring/agente.wiring.ts puede importar infra y env.ts desde loop", () => {
+    const codigo =
+      'import { createInstructionsLoader } from "@/infra/knowledge/instructions-loader.adapter.ts";\nimport { readAgentEnv } from "@/config/env.ts";\n';
+    expect(violacionesDeCapas("src/loop/wiring/agente.wiring.ts", codigo)).toEqual([]);
+    expect(violacionesDeCapas("src/loop/services/ejecutar-turno.service.ts", codigo)).toEqual([
+      "src/loop/services/ejecutar-turno.service.ts: la capa loop no puede importar @/infra/knowledge/instructions-loader.adapter.ts",
+      "src/loop/services/ejecutar-turno.service.ts: la capa loop no puede importar @/config/env.ts",
+    ]);
+    expect(violacionesDeCapas("src/loop/wiring/otro.wiring.ts", codigo)).toEqual([
+      "src/loop/wiring/otro.wiring.ts: la capa loop no puede importar @/infra/knowledge/instructions-loader.adapter.ts",
+      "src/loop/wiring/otro.wiring.ts: la capa loop no puede importar @/config/env.ts",
+    ]);
+  });
+
+  test("agente.wiring.ts llega a las herramientas exportadas, al bucle y al llm", () => {
+    const codigo = [
+      'import * as proveedor from "@/tools/proveedor.ts";',
+      'import { ejecutarTurno } from "@/loop/services/ejecutar-turno.service.ts";',
+      'import { createOpenAICompatibleAdapter } from "@/llm/adapters/openai-compatible.adapter.ts";',
+    ].join("\n");
+    expect(violacionesDeCapas("src/loop/wiring/agente.wiring.ts", codigo)).toEqual([]);
+    expect(violacionesDeCapas("src/loop/services/x.service.ts", codigo)).toEqual([
+      "src/loop/services/x.service.ts: la capa loop no puede importar @/tools/proveedor.ts",
+    ]);
+  });
+
+  test("la capa llm solo conoce config pura y zod", () => {
+    const codigo =
+      'import { readFile } from "node:fs";\nimport type { Sesion } from "@/loop/types/turno.type.ts";\n';
+    expect(violacionesDeCapas("src/llm/adapters/openai-compatible.adapter.ts", codigo)).toEqual([
+      "src/llm/adapters/openai-compatible.adapter.ts: la capa llm no puede importar node:fs",
+      "src/llm/adapters/openai-compatible.adapter.ts: la capa llm no puede importar @/loop/types/turno.type.ts",
+    ]);
+    const permitido =
+      'import { z } from "zod";\nimport { ROL_MENSAJE } from "@/config/constants/llm.constants.ts";\n';
+    expect(violacionesDeCapas("src/llm/mappers/x.mapper.ts", permitido)).toEqual([]);
+  });
+
+  test("pino solo entra por infra", () => {
+    const codigo = 'import pino from "pino";\n';
+    expect(violacionesDeCapas("src/infra/logging/logger.adapter.ts", codigo)).toEqual([]);
+    expect(violacionesDeCapas("src/domain/utils/x.util.ts", codigo)).toEqual([
+      "src/domain/utils/x.util.ts: la capa domain no puede importar pino",
+    ]);
+    expect(violacionesDeCapas("src/loop/services/x.service.ts", codigo)).toEqual([
+      "src/loop/services/x.service.ts: la capa loop no puede importar pino",
+    ]);
+  });
+
+  test("las herramientas no importan el bucle", () => {
+    const codigo = 'import { ejecutarTurno } from "@/loop/services/ejecutar-turno.service.ts";\n';
+    expect(violacionesDeCapas("src/tools/factories/x.factory.ts", codigo)).toEqual([
+      "src/tools/factories/x.factory.ts: la capa tools no puede importar @/loop/services/ejecutar-turno.service.ts",
+    ]);
+  });
+
+  test("G5 y G13: roles y sufijos de las capas llm y loop", () => {
+    const rutas = [
+      "src/llm/decorators/retry.ts",
+      "src/llm/adapters/x.service.ts",
+      "src/loop/services/x.adapter.ts",
+      "src/loop/x.ts",
+      "src/llm/decorators/retry.decorator.ts",
+      "src/llm/mappers/x.mapper.ts",
+      "src/llm/adapters/x.adapter.ts",
+      "src/llm/schemas/x.schema.ts",
+      "src/llm/types/x.type.ts",
+      "src/loop/services/x.service.ts",
+      "src/loop/schemas/x.schema.ts",
+      "src/loop/types/x.type.ts",
+      "src/loop/wiring/agente.wiring.ts",
+      "tests/unit/retry.decorator.test.ts",
+      "tests/unit/wire-messages.mapper.test.ts",
+    ];
+    expect(rutas.flatMap(violacionesDeNombre)).toEqual([
+      "src/llm/decorators/retry.ts: el nombre no sigue la tabla de sufijos por carpeta",
+      "src/llm/adapters/x.service.ts: el nombre no sigue la tabla de sufijos por carpeta",
+      "src/loop/services/x.adapter.ts: el nombre no sigue la tabla de sufijos por carpeta",
+      "src/loop/x.ts: el nombre no sigue la tabla de sufijos por carpeta",
+    ]);
+    expect(
+      ["src/loop/x.ts", "src/llm/x.ts", "src/loop/services/x.service.ts"].flatMap(violacionesDeArchivoSuelto),
+    ).toEqual([
+      "src/loop/x.ts: archivo suelto en la raíz de su capa; va en una carpeta de rol",
+      "src/llm/x.ts: archivo suelto en la raíz de su capa; va en una carpeta de rol",
+    ]);
+  });
+
+  test("G6: reporta literales de las familias del agente", () => {
+    const codigo = [
+      'if (evento.tipo === "turn_end") return;',
+      'const fin = { motivo: MOTIVO_FIN.FINAL, tipo: "tool_start" };',
+      'if (mensaje.rol === "assistant") return;',
+      "if (evento.tipo === TIPO_EVENTO.FIN_TURNO) return;",
+    ].join("\n");
+    expect(violacionesDeLiteralesDeFamilia("src/loop/services/x.service.ts", codigo)).toEqual([
+      "src/loop/services/x.service.ts:1: compara o asigna un código con un literal",
+      "src/loop/services/x.service.ts:2: compara o asigna un código con un literal",
+      "src/loop/services/x.service.ts:3: compara o asigna un código con un literal",
     ]);
   });
 

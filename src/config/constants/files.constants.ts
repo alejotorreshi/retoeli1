@@ -21,6 +21,10 @@ export const INDICE_SOPORTES = "index.json";
 
 export const ARCHIVO_REGLAS = "reglas.json";
 
+export const DIRECTORIO_AGENTE = "agent";
+export const ARCHIVO_PROMPT = "prompt.md";
+export const ARCHIVO_CONOCIMIENTO_PROCESO = "registro-proveedor.md";
+
 export const ARCHIVO_PROYECTO = "package.json";
 
 export const ARCHIVO_BITACORA = "log.jsonl";
