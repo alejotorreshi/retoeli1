@@ -734,19 +734,19 @@ describe("el escáner muerde sobre fuentes de muestra", () => {
 
   test("solo entorno.wiring.ts puede importar infra desde tools", () => {
     const codigo = 'import { readValidatedJson } from "@/infra/fixtures/fixtures-reader.adapter.ts";\n';
-    expect(violacionesDeCapas("src/tools/entorno.wiring.ts", codigo)).toEqual([]);
-    expect(violacionesDeCapas("src/tools/definir-herramienta.factory.ts", codigo)).toEqual([
-      "src/tools/definir-herramienta.factory.ts: la capa tools no puede importar @/infra/fixtures/fixtures-reader.adapter.ts",
+    expect(violacionesDeCapas("src/tools/wiring/entorno.wiring.ts", codigo)).toEqual([]);
+    expect(violacionesDeCapas("src/tools/factories/definir-herramienta.factory.ts", codigo)).toEqual([
+      "src/tools/factories/definir-herramienta.factory.ts: la capa tools no puede importar @/infra/fixtures/fixtures-reader.adapter.ts",
     ]);
   });
 
   test("src/demo solo llega a la herramienta exportada, config y node:", () => {
     const permitido =
       'import { leer_solicitud } from "@/tools/proveedor.ts";\nimport { join } from "node:path";\n';
-    const prohibido = 'import { crearEntorno } from "@/tools/entorno.wiring";\n';
+    const prohibido = 'import { crearEntorno } from "@/tools/wiring/entorno.wiring";\n';
     expect(violacionesDeCapas("src/demo/ejecutar-demo.runner.ts", permitido)).toEqual([]);
     expect(violacionesDeCapas("src/demo/ejecutar-demo.runner.ts", prohibido)).toEqual([
-      "src/demo/ejecutar-demo.runner.ts: la capa demo no puede importar @/tools/entorno.wiring",
+      "src/demo/ejecutar-demo.runner.ts: la capa demo no puede importar @/tools/wiring/entorno.wiring",
     ]);
   });
 

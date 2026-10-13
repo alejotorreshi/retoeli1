@@ -12,7 +12,7 @@ import type { FilaCelda } from "@/domain/types/formulario.type.ts";
 import type { Maestro } from "@/domain/types/maestro.type.ts";
 import type { CampoCelda } from "@/domain/types/plantilla-caso.type.ts";
 import { writeXlsx } from "@/infra/output/xlsx-writer.adapter.ts";
-import { crearHerramientas } from "@/tools/herramientas.factory.ts";
+import { crearHerramientas } from "@/tools/factories/herramientas.factory.ts";
 
 const RELLENO_FALTANTE = "FFFFC7CE";
 const RELLENO_POR_CONFIRMAR = "FFFFEB9C";

@@ -5,7 +5,7 @@ import { join, relative } from "node:path";
 import { generarCaso } from "@tests/helpers/flujo.helper.ts";
 import { crearProyectoTemporal } from "@tests/helpers/proyecto-temporal.helper.ts";
 import type { ProyectoTemporal } from "@tests/helpers/types/proyecto-temporal.type.ts";
-import { crearHerramientas } from "@/tools/herramientas.factory.ts";
+import { crearHerramientas } from "@/tools/factories/herramientas.factory.ts";
 
 const CO = "co-industrias-delta";
 const EC = "ec-corp-andina";

@@ -4,7 +4,7 @@ import { readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { copiarConocimiento, crearProyectoTemporal } from "@tests/helpers/proyecto-temporal.helper.ts";
 import type { ConocimientoTemporal, ProyectoTemporal } from "@tests/helpers/types/proyecto-temporal.type.ts";
-import { crearHerramientas } from "@/tools/herramientas.factory.ts";
+import { crearHerramientas } from "@/tools/factories/herramientas.factory.ts";
 import { mapear_campos } from "@/tools/proveedor.ts";
 
 const NOTA_EXTRANJERO = "Identificador extranjero: confirmar si el cliente acepta el NIT colombiano";

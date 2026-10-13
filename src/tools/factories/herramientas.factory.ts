@@ -5,7 +5,7 @@ import { mapearCampos } from "@/application/use-cases/mapear-campos.use-case.ts"
 import { simularEnvio } from "@/application/use-cases/simular-envio.use-case.ts";
 import { HERRAMIENTA } from "@/config/constants/tools.constants.ts";
 import { DESCRIPCION_HERRAMIENTA, RESUMEN_HERRAMIENTA } from "@/config/strings.ts";
-import { definirHerramienta } from "@/tools/definir-herramienta.factory.ts";
+import { definirHerramienta } from "@/tools/factories/definir-herramienta.factory.ts";
 import {
   argsArmarPaquete,
   argsGenerarFormulario,

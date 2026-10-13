@@ -9,7 +9,7 @@ import { z } from "zod";
 import { LIMITE_LECTURA_BYTES, MAX_ISSUES_ARGS } from "@/config/constants/limits.constants.ts";
 import { exito } from "@/domain/utils/resultado.util.ts";
 import { fixedClock, systemClock } from "@/infra/clock/clock.adapter.ts";
-import { definirHerramienta, normalizarContexto } from "@/tools/definir-herramienta.factory.ts";
+import { definirHerramienta, normalizarContexto } from "@/tools/factories/definir-herramienta.factory.ts";
 import { leer_solicitud } from "@/tools/proveedor.ts";
 import type { ContextoHerramienta } from "@/tools/types/herramienta.type.ts";
 

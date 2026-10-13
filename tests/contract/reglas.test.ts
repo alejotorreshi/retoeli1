@@ -4,7 +4,7 @@ import { join } from "node:path";
 import { copiarConocimiento, crearProyectoTemporal } from "@tests/helpers/proyecto-temporal.helper.ts";
 import type { ConocimientoTemporal, ProyectoTemporal } from "@tests/helpers/types/proyecto-temporal.type.ts";
 import { MENSAJE_ERROR } from "@/config/strings.ts";
-import { crearHerramientas } from "@/tools/herramientas.factory.ts";
+import { crearHerramientas } from "@/tools/factories/herramientas.factory.ts";
 
 type Item = { etiqueta: string; estado: string; regla: string; confianza: number; nota: string | null };
 

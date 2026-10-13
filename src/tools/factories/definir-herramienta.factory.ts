@@ -10,9 +10,9 @@ import type { Fallo, Resultado } from "@/domain/types/resultado.type.ts";
 import { formatearIssues } from "@/domain/utils/formatear-issues.util.ts";
 import { nombreDeError } from "@/domain/utils/nombre-error.util.ts";
 import { exito, fallo } from "@/domain/utils/resultado.util.ts";
-import { crearEntorno } from "@/tools/entorno.wiring.ts";
 import type { ContextoNormalizado, OpcionesEntorno } from "@/tools/types/entorno.type.ts";
 import type { ContextoHerramienta, EspecHerramienta, Herramienta } from "@/tools/types/herramienta.type.ts";
+import { crearEntorno } from "@/tools/wiring/entorno.wiring.ts";
 
 type ResultadoEjecucion<D> = {
   readonly resultado: Resultado<D>;
