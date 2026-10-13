@@ -1,22 +1,9 @@
 import { cargarSolicitudCaso } from "@/application/contexto-caso.ts";
-import type { Entorno } from "@/application/puertos.ts";
+import type { ArgsLeerSolicitud, DatosSolicitud } from "@/application/types/leer-solicitud.type.ts";
+import type { Entorno } from "@/application/types/puertos.type.ts";
 import { exito } from "@/domain/resultado.ts";
 import { camposSolicitados, detectarAmbiguos } from "@/domain/solicitud.ts";
 import type { Resultado } from "@/domain/types/resultado.type.ts";
-import type { CampoAmbiguo, CampoSolicitado, Formato } from "@/domain/types/solicitud.type.ts";
-
-export type ArgsLeerSolicitud = { readonly caso: string };
-
-export type DatosSolicitud = {
-  readonly caso: string;
-  readonly pais: string;
-  readonly cliente: string;
-  readonly formato: Formato;
-  readonly plantilla: string;
-  readonly campos: readonly CampoSolicitado[];
-  readonly ambiguos: readonly CampoAmbiguo[];
-  readonly soportes: readonly string[];
-};
 
 export async function leerSolicitud(
   args: ArgsLeerSolicitud,

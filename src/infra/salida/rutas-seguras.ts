@@ -1,6 +1,6 @@
 import { readdir, realpath, stat } from "node:fs/promises";
 import { join, relative, resolve, sep } from "node:path";
-import type { ResolucionCaso } from "@/application/puertos.ts";
+import type { ResolucionCaso } from "@/application/types/puertos.type.ts";
 import { CODIGOS_FS_NO_ENCONTRADO } from "@/config/constants/errors.constants.ts";
 import { CASOS_DIR, FIXTURES_DIR, OUT_DIR } from "@/config/constants/files.constants.ts";
 import { ESTADO_LECTURA } from "@/config/constants/io.constants.ts";

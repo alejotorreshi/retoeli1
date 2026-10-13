@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { Entorno, EntradaBitacora } from "@/application/puertos.ts";
+import type { Entorno, EntradaBitacora } from "@/application/types/puertos.type.ts";
 import { CODIGO_ERROR } from "@/config/constants/errors.constants.ts";
 import { ESTADO_LECTURA } from "@/config/constants/io.constants.ts";
 import { PATRON_CASO, PATRON_SESION } from "@/config/constants/patterns.constants.ts";

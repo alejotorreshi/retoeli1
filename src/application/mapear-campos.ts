@@ -1,5 +1,7 @@
-import { type ContextoCaso, cargarContextoCaso } from "@/application/contexto-caso.ts";
-import type { Entorno } from "@/application/puertos.ts";
+import { cargarContextoCaso } from "@/application/contexto-caso.ts";
+import type { ContextoCaso } from "@/application/types/contexto-caso.type.ts";
+import type { ArgsMapearCampos, DatosMapeo, DocumentoMapeo } from "@/application/types/mapear-campos.type.ts";
+import type { Entorno } from "@/application/types/puertos.type.ts";
 import { CODIGO_ERROR } from "@/config/constants/errors.constants.ts";
 import { ARCHIVOS_SALIDA } from "@/config/constants/files.constants.ts";
 import { SANGRIA_JSON } from "@/config/constants/limits.constants.ts";
@@ -8,29 +10,10 @@ import { contarEstados, mapearCampos } from "@/domain/mapeo.ts";
 import { normalizarEtiqueta } from "@/domain/normalizar.ts";
 import { presentarCampo } from "@/domain/pii.ts";
 import { exito, fallo } from "@/domain/resultado.ts";
-import type { CampoMapeado, ConteoEstados } from "@/domain/types/mapeo.type.ts";
+import type { CampoMapeado } from "@/domain/types/mapeo.type.ts";
 import type { CampoPresentado } from "@/domain/types/pii.type.ts";
 import type { EstadoCampo } from "@/domain/types/reglas.type.ts";
 import type { Resultado } from "@/domain/types/resultado.type.ts";
-
-export type ArgsMapearCampos = { readonly caso: string; readonly campos: readonly string[] };
-
-export type DatosMapeo = {
-  readonly caso: string;
-  readonly pais: string;
-  readonly conteo: ConteoEstados;
-  readonly llenos: readonly CampoPresentado[];
-  readonly faltantes: readonly CampoPresentado[];
-  readonly requiere_confirmacion: readonly CampoPresentado[];
-  readonly mapeo: string;
-};
-
-export type DocumentoMapeo = {
-  readonly caso: string;
-  readonly pais: string;
-  readonly fecha_ejecucion: string;
-  readonly campos: readonly CampoPresentado[];
-};
 
 function conEstado(campos: readonly CampoPresentado[], estado: EstadoCampo): readonly CampoPresentado[] {
   return campos.filter((campo) => campo.estado === estado);

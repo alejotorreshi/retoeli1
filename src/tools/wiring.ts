@@ -1,4 +1,4 @@
-import type { Entorno, Lectura, OrigenCopia, Registrar, Reloj } from "@/application/puertos.ts";
+import type { Entorno, Lectura, OrigenCopia, Registrar, Reloj } from "@/application/types/puertos.type.ts";
 import { CODIGO_ERROR } from "@/config/constants/errors.constants.ts";
 import { ARCHIVO_PLANTILLA, ARCHIVOS_CASO } from "@/config/constants/files.constants.ts";
 import { TIPO_PLANTILLA } from "@/config/constants/forms.constants.ts";

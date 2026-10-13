@@ -1,5 +1,5 @@
 import { PDFDocument, type PDFFont, type PDFPage, rgb, StandardFonts } from "pdf-lib";
-import type { EntradaFormularioPdf } from "@/application/puertos.ts";
+import type { EntradaFormularioPdf } from "@/application/types/puertos.type.ts";
 import { ESTADO_CAMPO } from "@/config/constants/mapping.constants.ts";
 import { PATRON_SEPARADORES_DE_LINEA } from "@/config/constants/patterns.constants.ts";
 import { DISENO_PDF } from "@/config/constants/pdf.constants.ts";

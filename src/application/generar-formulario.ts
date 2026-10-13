@@ -1,6 +1,8 @@
-import { type ContextoCaso, cargarContextoCaso } from "@/application/contexto-caso.ts";
+import { cargarContextoCaso } from "@/application/contexto-caso.ts";
 import { escribirMapeo, mapeoCanonico } from "@/application/mapear-campos.ts";
-import type { Entorno } from "@/application/puertos.ts";
+import type { ContextoCaso } from "@/application/types/contexto-caso.type.ts";
+import type { ArgsGenerarFormulario, DatosFormulario } from "@/application/types/generar-formulario.type.ts";
+import type { Entorno } from "@/application/types/puertos.type.ts";
 import { CODIGO_ERROR } from "@/config/constants/errors.constants.ts";
 import { ARCHIVOS_SALIDA } from "@/config/constants/files.constants.ts";
 import { FORMATO, TIPO_PLANTILLA } from "@/config/constants/forms.constants.ts";
@@ -12,23 +14,9 @@ import { contarEstados } from "@/domain/mapeo.ts";
 import { renderizarPlantilla } from "@/domain/plantillas.ts";
 import { construirDatosPortal } from "@/domain/portal.ts";
 import { exito, fallo } from "@/domain/resultado.ts";
-import type { ItemMapeo } from "@/domain/types/comparar-mapeo.type.ts";
-import type { CampoMapeado, ConteoEstados } from "@/domain/types/mapeo.type.ts";
+import type { CampoMapeado } from "@/domain/types/mapeo.type.ts";
 import type { Resultado } from "@/domain/types/resultado.type.ts";
 import type { Formato } from "@/domain/types/solicitud.type.ts";
-
-export type ArgsGenerarFormulario = {
-  readonly caso: string;
-  readonly mapeo: readonly ItemMapeo[];
-};
-
-export type DatosFormulario = {
-  readonly caso: string;
-  readonly ruta: string;
-  readonly formato: Formato;
-  readonly conteo: ConteoEstados;
-  readonly aviso: string | null;
-};
 
 async function cerrar(
   contexto: ContextoCaso,

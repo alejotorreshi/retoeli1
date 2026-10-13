@@ -1,6 +1,7 @@
 import { evaluarEstadoPaquete } from "@/application/armar-paquete.ts";
 import { cargarSolicitudCaso, completarContextoCaso } from "@/application/contexto-caso.ts";
-import type { Entorno } from "@/application/puertos.ts";
+import type { Entorno } from "@/application/types/puertos.type.ts";
+import type { ArgsSimularEnvio, DatosEnvio } from "@/application/types/simular-envio.type.ts";
 import { CODIGO_ERROR } from "@/config/constants/errors.constants.ts";
 import { ARCHIVOS_PAQUETE, ARCHIVOS_SALIDA } from "@/config/constants/files.constants.ts";
 import { CLAVE_PLANTILLA } from "@/config/constants/knowledge.constants.ts";
@@ -8,14 +9,6 @@ import { construirDatosEnvio } from "@/domain/borrador.ts";
 import { renderizarPlantilla } from "@/domain/plantillas.ts";
 import { exito, fallo } from "@/domain/resultado.ts";
 import type { Resultado } from "@/domain/types/resultado.type.ts";
-
-export type ArgsSimularEnvio = { readonly caso: string; readonly confirmado: boolean };
-
-export type DatosEnvio = {
-  readonly caso: string;
-  readonly ruta: string;
-  readonly bloqueos: readonly string[];
-};
 
 async function simularBajoCandado(args: ArgsSimularEnvio, entorno: Entorno): Promise<Resultado<DatosEnvio>> {
   const cargada = await cargarSolicitudCaso(args.caso, entorno);

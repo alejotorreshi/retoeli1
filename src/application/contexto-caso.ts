@@ -1,4 +1,5 @@
-import type { Entorno } from "@/application/puertos.ts";
+import type { ContextoCaso, SolicitudCaso } from "@/application/types/contexto-caso.type.ts";
+import type { Entorno } from "@/application/types/puertos.type.ts";
 import { CODIGO_ERROR } from "@/config/constants/errors.constants.ts";
 import { TIPO_PLANTILLA } from "@/config/constants/forms.constants.ts";
 import { ESTADO_LECTURA } from "@/config/constants/io.constants.ts";
@@ -6,25 +7,7 @@ import { PATRON_CASO } from "@/config/constants/patterns.constants.ts";
 import { construirIndiceGlosario } from "@/domain/mapeo.ts";
 import { exito, fallo } from "@/domain/resultado.ts";
 import { elegirPlantilla } from "@/domain/solicitud.ts";
-import type { Maestro } from "@/domain/types/maestro.type.ts";
-import type { IndiceGlosario } from "@/domain/types/mapeo.type.ts";
-import type { Plantilla } from "@/domain/types/plantilla-caso.type.ts";
-import type { Reglas } from "@/domain/types/reglas.type.ts";
 import type { Fallo, Resultado } from "@/domain/types/resultado.type.ts";
-import type { Solicitud } from "@/domain/types/solicitud.type.ts";
-
-export type SolicitudCaso = {
-  readonly caso: string;
-  readonly solicitud: Solicitud;
-  readonly soportesExigidos: readonly string[];
-  readonly plantilla: Plantilla;
-};
-
-export type ContextoCaso = SolicitudCaso & {
-  readonly maestro: Maestro;
-  readonly indice: IndiceGlosario;
-  readonly reglas: Reglas;
-};
 
 async function casoNoEncontrado(entorno: Entorno): Promise<Fallo> {
   const casosDisponibles = await entorno.casos.disponibles();

@@ -1,4 +1,4 @@
-import type { EntradaFormularioPdf } from "@/application/puertos.ts";
+import type { EntradaFormularioPdf } from "@/application/types/puertos.type.ts";
 import { ESTADO_CAMPO } from "@/config/constants/mapping.constants.ts";
 import { PATRON_ESPACIOS } from "@/config/constants/patterns.constants.ts";
 import { COLOR_TRAZO, DISENO_PDF } from "@/config/constants/pdf.constants.ts";

@@ -1,4 +1,4 @@
-import type { Reloj } from "@/application/puertos.ts";
+import type { Reloj } from "@/application/types/puertos.type.ts";
 import { PATRON_FECHA } from "@/config/constants/patterns.constants.ts";
 import { LOCALE_INTL } from "@/config/constants/runtime.constants.ts";
 import { TEXTO_INFRA } from "@/config/strings.ts";

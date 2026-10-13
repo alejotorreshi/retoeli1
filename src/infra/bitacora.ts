@@ -1,6 +1,6 @@
 import { appendFile, mkdir } from "node:fs/promises";
 import { join } from "node:path";
-import type { EntradaBitacora, Registrar, Reloj } from "@/application/puertos.ts";
+import type { EntradaBitacora, Registrar, Reloj } from "@/application/types/puertos.type.ts";
 import { ARCHIVO_BITACORA, OUT_DIR } from "@/config/constants/files.constants.ts";
 import { PATRON_CASO } from "@/config/constants/patterns.constants.ts";
 import { TEXTO_INFRA } from "@/config/strings.ts";

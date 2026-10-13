@@ -1,6 +1,12 @@
-import { type ContextoCaso, cargarContextoCaso } from "@/application/contexto-caso.ts";
+import { cargarContextoCaso } from "@/application/contexto-caso.ts";
 import { mapeoCanonico } from "@/application/mapear-campos.ts";
-import type { ArchivoFormulario, Entorno } from "@/application/puertos.ts";
+import type {
+  ArgsArmarPaquete,
+  DatosPaquete,
+  ResumenChecklist,
+} from "@/application/types/armar-paquete.type.ts";
+import type { ContextoCaso } from "@/application/types/contexto-caso.type.ts";
+import type { ArchivoFormulario, Entorno } from "@/application/types/puertos.type.ts";
 import { CODIGO_ERROR } from "@/config/constants/errors.constants.ts";
 import { ARCHIVO_FORMULARIO, ARCHIVOS_PAQUETE } from "@/config/constants/files.constants.ts";
 import { ESTADO_LECTURA, ORIGEN_COPIA } from "@/config/constants/io.constants.ts";
@@ -9,26 +15,8 @@ import { construirDatosBorrador } from "@/domain/borrador.ts";
 import { construirChecklist, construirDatosChecklist, evaluarSoportes } from "@/domain/checklist.ts";
 import { renderizarPlantilla, renderizarTextoPlano } from "@/domain/plantillas.ts";
 import { exito, fallo } from "@/domain/resultado.ts";
-import type { CampoPorConfirmar, Checklist, SoporteEvaluado } from "@/domain/types/checklist.type.ts";
+import type { Checklist, SoporteEvaluado } from "@/domain/types/checklist.type.ts";
 import type { Resultado } from "@/domain/types/resultado.type.ts";
-
-export type ArgsArmarPaquete = { readonly caso: string };
-
-export type ResumenChecklist = {
-  readonly fecha_ejecucion: string;
-  readonly soportes: readonly SoporteEvaluado[];
-  readonly faltantes: readonly string[];
-  readonly requiere_confirmacion: readonly CampoPorConfirmar[];
-};
-
-export type DatosPaquete = {
-  readonly caso: string;
-  readonly ruta: string;
-  readonly listo_para_firma: boolean;
-  readonly bloqueos: readonly string[];
-  readonly checklist: ResumenChecklist;
-  readonly archivos: readonly string[];
-};
 
 export async function evaluarEstadoPaquete(
   contexto: ContextoCaso,

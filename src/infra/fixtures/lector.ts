@@ -1,7 +1,7 @@
 import { readdir, readFile, stat } from "node:fs/promises";
 import { join, resolve } from "node:path";
 import type { z } from "zod";
-import type { Lectura } from "@/application/puertos.ts";
+import type { Lectura } from "@/application/types/puertos.type.ts";
 import { CODIGOS_FS_NO_ENCONTRADO } from "@/config/constants/errors.constants.ts";
 import {
   ARCHIVOS_REPOSITORIO,
