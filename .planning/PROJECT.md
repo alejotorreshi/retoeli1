@@ -19,23 +19,22 @@ El agente **nunca inventa un dato**. Cada valor de un formulario sale de una her
 
 ### Validated
 
-(None yet — ship to validate)
+- ✓ Herramientas tipadas con zod en `src/tools/proveedor.ts`, con el contrato exacto del PRD: `proveedor_leer_solicitud`, `proveedor_mapear_campos`, `proveedor_generar_formulario`, `proveedor_armar_paquete` y `proveedor_simular_envio`. Devuelven string JSON `{ ok, data }` o `{ ok: false, error }` y nunca lanzan. — Phase 1
+- ✓ HU-1: leer la solicitud (país, cliente, formato, campos y soportes) y reportar campos ambiguos como `requiere_confirmacion` con el equivalente tributario del país. — Phase 1
+- ✓ HU-2: mapear campos al maestro con tres estados (`lleno` con ruta, `faltante`, `requiere_confirmacion` si confianza < 0.8 o aplica una regla de país). Los sinónimos del glosario se resuelven automáticamente. — Phase 1
+- ✓ HU-3: generar el formulario. P0 xlsx en la hoja y celda exactas de `plantilla-celdas.json`. P1 PDF generado con etiqueta y valor en orden. P2 portal: `formato no soportado` más `valores-portal.md`. — Phase 1
+- ✓ HU-4: armar el paquete en `out/<caso>/paquete/` con el formulario, copias de los soportes, `checklist.md` (presentes, ausentes y vencidos) y `borrador-correo.md`. Los soportes vencidos o ausentes bloquean `listo_para_firma`. — Phase 1
+- ✓ HU-5: manejo de errores claro sin trazas crudas. Un caso malo no impide los demás y la sesión no muere. — Phase 1 (herramientas; la sesión del agente, Fase 2)
+- ✓ Reglas de negocio RN1 a RN5 del PRD: identificador tributario por país, datos bancarios nunca en el correo, bloqueo por soportes, confirmación antes de acciones externas y `out/<caso>/log.jsonl`. — Phase 1 (en herramientas; RN4 también en la compuerta del agente, Fase 2)
+- ✓ `demo.ts` ejecuta los 4 casos llamando directamente a las herramientas, sin clave LLM y de forma determinista. Limpia `out/` al inicio. — Phase 1
 
 ### Active
 
-- [ ] Herramientas tipadas con zod en `src/tools/proveedor.ts`, con el contrato exacto del PRD: `proveedor_leer_solicitud`, `proveedor_mapear_campos`, `proveedor_generar_formulario`, `proveedor_armar_paquete` y `proveedor_simular_envio`. Devuelven string JSON `{ ok, data }` o `{ ok: false, error }` y nunca lanzan.
-- [ ] HU-1: leer la solicitud (país, cliente, formato, campos y soportes) y reportar campos ambiguos como `requiere_confirmacion` con el equivalente tributario del país.
-- [ ] HU-2: mapear campos al maestro con tres estados (`lleno` con ruta, `faltante`, `requiere_confirmacion` si confianza < 0.8 o aplica una regla de país). Los sinónimos del glosario se resuelven automáticamente.
-- [ ] HU-3: generar el formulario. P0 xlsx en la hoja y celda exactas de `plantilla-celdas.json`. P1 PDF generado con etiqueta y valor en orden. P2 portal: `formato no soportado` más `valores-portal.md`.
-- [ ] HU-4: armar el paquete en `out/<caso>/paquete/` con el formulario, copias de los soportes, `checklist.md` (presentes, ausentes y vencidos) y `borrador-correo.md`. Los soportes vencidos o ausentes bloquean `listo_para_firma`.
-- [ ] HU-5: manejo de errores claro sin trazas crudas. Un caso malo no impide los demás y la sesión no muere.
-- [ ] Reglas de negocio RN1 a RN5 del PRD: identificador tributario por país, datos bancarios nunca en el correo, bloqueo por soportes, confirmación antes de acciones externas y `out/<caso>/log.jsonl`.
 - [ ] Ciclo del agente con reglas CA1 a CA5: tope de iteraciones (25), sin valores fuera de herramientas, confirmación humana, tool calls visibles y registradas en `out/log.jsonl`, y errores mostrados en lenguaje claro.
 - [ ] Adaptador LLM propio `enviar(mensajes, herramientas) → respuesta`, con implementación DeepSeek. Cambiar de proveedor no toca el ciclo.
 - [ ] Front de chat en React + Vite: historial, indicador de "pensando", cada tool call visible (nombre, args y resultado resumido) y resaltado del estado de confirmación. Usa streaming SSE.
 - [ ] API documentada: `POST /api/chat` (stream SSE), `GET /api/sessions/:id` y `GET /api/health` (`{ ok, provider, model }` sin claves).
 - [ ] System prompt en `agent/prompt.md` y conocimiento del proceso en `src/knowledge/registro-proveedor.md`, separados de la ejecución en `src/tools/`.
-- [ ] `demo.ts` ejecuta los 4 casos llamando directamente a las herramientas, sin clave LLM y de forma determinista. Limpia `out/` al inicio.
 - [ ] Protección de PII: redacción en logs, API y resúmenes de tool calls, más minimización hacia el LLM (el modelo ve rutas y valores enmascarados; las herramientas escriben el valor real solo en los archivos de salida).
 - [ ] Seguridad y costo: la clave de DeepSeek solo vive en una env var del backend, el link público lleva código de acceso, y hay rate limit, tope de tokens por sesión y timeout al proveedor.
 - [ ] Observabilidad y resiliencia: logs estructurados JSON con correlación sesión/turno/tool, timeouts, reintentos con backoff ante errores transitorios del LLM y degradación elegante.
@@ -86,15 +85,18 @@ El agente **nunca inventa un dato**. Cada valor de un formulario sale de una her
 | Decision | Rationale | Outcome |
 |----------|-----------|---------|
 | DeepSeek como proveedor LLM detrás de un adaptador propio | Elección de la usuaria. Es compatible con OpenAI y económico, y el adaptador permite cambiarlo sin tocar el ciclo | — Pending |
-| Bun como runtime | El PRD usa `bun run demo.ts`. Trae TS nativo y test runner incluido | — Pending |
+| Bun como runtime | El PRD usa `bun run demo.ts`. Trae TS nativo y test runner incluido | ✓ Good — Fase 1 sobre Bun 1.4.3, `bun run check` y `bun test` verdes |
 | React + Vite con SSE streaming | Hace visible en vivo cada tool call, el texto y el estado de confirmación. Mejor UX y observabilidad | — Pending |
 | Minimizar la PII hacia el LLM (rutas y valores enmascarados; las herramientas escriben los valores reales) | Máxima protección de datos. Refuerza CA2: el modelo no puede afirmar valores que no vio | — Pending |
 | Render free con código de acceso, más Dockerfile portable como plan B | Opción gratuita con secrets en el panel. Docker permite migrar a Koyeb, HF o Fly | — Pending |
 | Bonus `modulo/` diseñado desde el inicio como fuente única | +10 puntos. Obliga a separar bien prompt, conocimiento y herramientas | — Pending |
-| Código en la raíz del repo y `reto-01/` intacto | Decisión de la usuaria. Los fixtures no se modifican | — Pending |
-| Identificadores de dominio en español y de infraestructura en inglés; docs en español | Respeta el contrato del PRD y mantiene un vocabulario técnico estándar | — Pending |
-| Reloj inyectable para las vigencias | Determinismo de `demo.ts` y de los tests | — Pending |
+| Código en la raíz del repo y `reto-01/` intacto | Decisión de la usuaria. Los fixtures no se modifican | ✓ Good — los fixtures se leen desde una constante; las pruebas sintéticas usan copias |
+| Identificadores de dominio en español y de infraestructura en inglés; docs en español | Respeta el contrato del PRD y mantiene un vocabulario técnico estándar | ✓ Good — vigilado por los guardianes G1–G14 de `tests/architecture.test.ts` |
+| Reloj inyectable para las vigencias | Determinismo de `demo.ts` y de los tests | ✓ Good — la demo es idéntica byte a byte entre corridas salvo `ts` |
 | Tests: unitarios + contrato + ciclo con LLM falso + demo e2e | Calidad verificable sin gastar tokens | — Pending |
+| El borrador nunca afirma que el formulario esté firmado; el cierre depende del estado del paquete (GC-1) | La UAT detectó un borrador que decía "firmado" con el paquete BLOQUEADO | ✓ Good — Fase 1 (01-13), aprobado en UAT |
+| `simular_envio` rechaza con `PAQUETE_DESACTUALIZADO` si `paquete/` no coincide con lo que se armaría hoy (faltantes, sobrantes, borrador distinto); ignora archivos basura del SO | El registro de una acción confirmada no puede quedar incompleto | ✓ Good — Fase 1 (revisión CR-01); la Fase 2 debe responder re-armando el paquete y pidiendo confirmación de nuevo |
+| Ids canónicos de soporte en datos de herramientas y en la consola de la demo; nombres en español solo en checklist, borrador y ENVIO | Contrato v1 estable; el PRD §6.6 solo pide "un resumen por caso" | ✓ Good — decisión humana en UAT (WR-03); documentar en SOLUCION.md |
 
 ## Evolution
 
@@ -114,4 +116,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-10-12 after initialization*
+*Last updated: 2026-10-13 after Phase 1*

@@ -1,43 +1,43 @@
 ---
 gsd_state_version: "1.0"
-current_phase: 01
-current_phase_name: Núcleo determinista
-status: executing
-stopped_at: Completed 01-15-PLAN.md
-last_updated: "2026-10-13T04:17:31.568Z"
-last_activity: 2026-10-12
-last_activity_desc: Phase 01 execution started
-state_head: 619cd7502d7f28517ca99f3bc953de0ce299f08c
+current_phase: 2
+current_phase_name: Agente y compuerta de confirmación
+status: planning
+stopped_at: Phase 01 complete, ready to plan Phase 2
+last_updated: "2026-10-13T16:04:59.042Z"
+last_activity: 2026-10-13
+last_activity_desc: Phase 01 complete, transitioned to Phase 2
+state_head: fe4bb2e15b988648e44d36a1dba283f45eba620b
 progress:
   total_phases: 4
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 15
   completed_plans: 15
-  percent: 0
+  percent: 25
 ---
 
 # Project State
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-10-12)
+See: .planning/PROJECT.md (updated 2026-10-13)
 
 **Core value:** El agente nunca inventa un dato: cada valor sale de una herramienta tipada que lo lee del maestro, y ninguna acción externa ocurre sin confirmación humana explícita.
-**Current focus:** Phase 01 — Núcleo determinista
+**Current focus:** Phase 2 — Agente y compuerta de confirmación
 
 ## Current Position
 
-Phase: 01 (Núcleo determinista) — EXECUTING
-Plan: 15 of 15
-Status: Ready to execute
-Last activity: 2026-10-12 — Phase 01 execution started
+Phase: 2 — Agente y compuerta de confirmación
+Plan: Not started
+Status: Ready to plan
+Last activity: 2026-10-13 — Phase 01 complete, transitioned to Phase 2
 
-Progress: [░░░░░░░░░░] 0%
+Progress: [███░░░░░░░] 25%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 0
+- Total plans completed: 15
 - Average duration: -
 - Total execution time: 0.0 hours
 
@@ -45,7 +45,7 @@ Progress: [░░░░░░░░░░] 0%
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| - | - | - | - |
+| 01 | 15 | - | - |
 
 **Recent Trend:**
 - Last 5 plans: -
@@ -125,6 +125,8 @@ Recent decisions affecting current work:
 - [Phase 01]: 01-14: motivosDeBloqueo(soportes) exportado de checklist.builder.ts con los mismos bloqueos y orden que Checklist.bloqueos pero con nombres; lo reutiliza 01-15 para ENVIO-SIMULADO.md
 - [Phase 01]: 01-15: los bloqueos de ENVIO-SIMULADO.md usan el nombre legible vía motivosDeBloqueo; data.bloqueos, resumen y log.jsonl de simular_envio conservan los ids crudos (contrato v1)
 - [Phase 01]: 01-15: la guarda transversal (tests/golden/nombres-soporte.test.ts) prohíbe las claves de NOMBRE_SOPORTE con guion bajo en borrador, checklist y ENVIO-SIMULADO; junto con 01-14 cierra G-01-H4c
+- [Phase 01]: Revisión de código (2 ciclos): simular_envio re-deriva el paquete esperado (archivos + borrador) desde el repositorio y rechaza con PAQUETE_DESACTUALIZADO si hay faltantes, sobrantes o borrador distinto; no compara checklist.md (lleva fecha); ignora .DS_Store/Thumbs.db/desktop.ini
+- [Phase 01]: UAT (eli-qa run 2, 20/20): la consola de demo.ts conserva ids crudos de soporte (PRD §6.6); frase aprobada para validación bancaria interna: "Validaremos internamente algunos datos del formulario antes de pasarlo a la firma de nuestro representante legal."
 
 ### Pending Todos
 
@@ -132,9 +134,12 @@ None yet.
 
 ### Blockers/Concerns
 
+- [Phase 2]: El prompt del agente debe responder a `PAQUETE_DESACTUALIZADO` re-ejecutando `proveedor_armar_paquete`, mostrando el nuevo estado y pidiendo confirmación de nuevo (CR-01).
+- [Phase 2]: Al enviar no se compara el contenido del formulario en `paquete/`; si el maestro cambia tras armar, el agente debe regenerar el formulario y re-armar antes de enviar.
 - [Phase 2]: Hacer un spike en vivo con DeepSeek antes del ciclo (modelo vigente, thinking desactivado, `tool_choice`, forma de los errores).
 - [Phase 3]: Hay que verificar con `curl -N` que el proxy de Render no bufferice el SSE apenas exista el endpoint.
 - [Phase 3]: El servicio en Render free duerme por inactividad y su disco es efímero; hay que calentarlo antes de la defensa.
+- [Phase 4]: SOLUCION.md debe explicar los ids canónicos en la consola de la demo y el `resumen` (WR-03), mover desde docs/plantillas.md la nota de NOMBRE_SOPORTE (IN-01) y registrar SEG-02 como parcial hasta que exista `redactar()`.
 - [General]: PRD §10 no trae la tabla de puntos de la rúbrica; cada "debe/obligatorio/evaluamos" se trata como ítem y el supuesto va en SOLUCION.md §7.
 
 ## Deferred Items
@@ -147,6 +152,6 @@ Items acknowledged and deferred at milestone close, most recent first:
 
 ## Session Continuity
 
-Last session: 2026-10-13T04:17:31.539Z
-Stopped at: Completed 01-15-PLAN.md
+Last session: 2026-10-13T16:05:57Z
+Stopped at: Phase 01 complete, ready to plan Phase 2
 Resume file: None
