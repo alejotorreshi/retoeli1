@@ -1,21 +1,22 @@
 import { realpath } from "node:fs/promises";
-import { join, sep } from "node:path";
+import { join } from "node:path";
 import {
   ARCHIVO_FORMULARIO,
   DIRECTORIO_PAQUETE,
   NOMBRES_RESERVADOS_PAQUETE,
-  OUT_DIR,
 } from "@/config/constants/files.constants.ts";
 import { PATRON_ARCHIVO_SOPORTE, PATRON_CASO } from "@/config/constants/patterns.constants.ts";
 import { TEXTO_INFRA } from "@/config/strings.ts";
 import { supportsDirectory } from "@/infra/fixtures/fixtures-reader.adapter.ts";
-import { caseOutputDirectory, relativePath } from "@/infra/fs/safe-paths.util.ts";
+import {
+  caseOutputDirectory,
+  isInside,
+  realCaseDirectory,
+  realPackageDirectory,
+  relativePath,
+} from "@/infra/fs/safe-paths.util.ts";
 
 const COPIAS_DE_FORMULARIO: ReadonlySet<string> = new Set(Object.values(ARCHIVO_FORMULARIO));
-
-function dentroDe(base: string, ruta: string): boolean {
-  return ruta.startsWith(base + sep);
-}
 
 function esCopiaDeFormulario(nombre: string): boolean {
   return COPIAS_DE_FORMULARIO.has(nombre);
@@ -31,11 +32,8 @@ async function directoriosReales(
   raiz: string,
   caso: string,
 ): Promise<{ readonly caso: string; readonly paquete: string; readonly soportes: string }> {
-  const salidaReal = await realpath(join(raiz, OUT_DIR));
-  const casoReal = await realpath(caseOutputDirectory(raiz, caso));
-  if (!dentroDe(salidaReal, casoReal)) throw new RangeError(TEXTO_INFRA.salidaFueraDeOut);
-  const paqueteReal = await realpath(join(casoReal, DIRECTORIO_PAQUETE));
-  if (!dentroDe(casoReal, paqueteReal)) throw new RangeError(TEXTO_INFRA.paqueteFueraDelCaso);
+  const casoReal = await realCaseDirectory(raiz, caso);
+  const paqueteReal = await realPackageDirectory(casoReal);
   return { caso: casoReal, paquete: paqueteReal, soportes: await realpath(supportsDirectory(raiz)) };
 }
 
@@ -43,8 +41,8 @@ function origenPermitido(
   origenReal: string,
   directorios: { readonly caso: string; readonly paquete: string; readonly soportes: string },
 ): boolean {
-  if (dentroDe(directorios.soportes, origenReal)) return true;
-  return dentroDe(directorios.caso, origenReal) && !dentroDe(directorios.paquete, origenReal);
+  if (isInside(directorios.soportes, origenReal)) return true;
+  return isInside(directorios.caso, origenReal) && !isInside(directorios.paquete, origenReal);
 }
 
 export async function copyIntoPackage(

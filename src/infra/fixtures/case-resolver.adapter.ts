@@ -1,33 +1,26 @@
 import { readdir, realpath, stat } from "node:fs/promises";
-import { join, resolve, sep } from "node:path";
+import { join, resolve } from "node:path";
 import type { ResolucionCaso } from "@/application/types/puertos.type.ts";
-import { CODIGOS_FS_NO_ENCONTRADO } from "@/config/constants/errors.constants.ts";
 import { CASOS_DIR, FIXTURES_DIR } from "@/config/constants/files.constants.ts";
-import { ESTADO_LECTURA } from "@/config/constants/io.constants.ts";
+import { ESTADO_LECTURA, LECTURA_INVALIDA, LECTURA_NO_ENCONTRADA } from "@/config/constants/io.constants.ts";
 import { PATRON_CASO } from "@/config/constants/patterns.constants.ts";
-
-const NO_ENCONTRADO = { estado: ESTADO_LECTURA.NO_ENCONTRADO } as const;
-const INVALIDO = { estado: ESTADO_LECTURA.INVALIDO } as const;
-
-function esNoEncontrado(error: unknown): boolean {
-  if (typeof error !== "object" || error === null || !("code" in error)) return false;
-  return typeof error.code === "string" && CODIGOS_FS_NO_ENCONTRADO.has(error.code);
-}
+import { isNotFound } from "@/infra/fs/fs.util.ts";
+import { isInside } from "@/infra/fs/safe-paths.util.ts";
 
 function directorioCasos(raiz: string): string {
   return resolve(raiz, FIXTURES_DIR, CASOS_DIR);
 }
 
 export async function resolveCase(raiz: string, caso: string): Promise<ResolucionCaso> {
-  if (!PATRON_CASO.test(caso)) return INVALIDO;
+  if (!PATRON_CASO.test(caso)) return LECTURA_INVALIDA;
   try {
     const casosDir = await realpath(directorioCasos(raiz));
     const destino = await realpath(join(casosDir, caso));
-    if (!destino.startsWith(casosDir + sep)) return INVALIDO;
-    if (!(await stat(destino)).isDirectory()) return NO_ENCONTRADO;
+    if (!isInside(casosDir, destino)) return LECTURA_INVALIDA;
+    if (!(await stat(destino)).isDirectory()) return LECTURA_NO_ENCONTRADA;
     return { estado: ESTADO_LECTURA.OK, directorio: destino };
   } catch (error) {
-    return esNoEncontrado(error) ? NO_ENCONTRADO : INVALIDO;
+    return isNotFound(error) ? LECTURA_NO_ENCONTRADA : LECTURA_INVALIDA;
   }
 }
 

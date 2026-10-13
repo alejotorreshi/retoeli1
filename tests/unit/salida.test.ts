@@ -3,6 +3,7 @@ import { existsSync } from "node:fs";
 import { mkdir, mkdtemp, readFile, rm, symlink, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { isNotFound } from "@/infra/fs/fs.util.ts";
 import { withCaseLock } from "@/infra/output/case-lock.adapter.ts";
 import { clearPreviousArtifacts, writeOutputFile } from "@/infra/output/output-files.adapter.ts";
 
@@ -135,5 +136,15 @@ describe("withCaseLock", () => {
     });
     await Promise.all([lenta, rapida]);
     expect(eventos).toEqual(["rapida", "lenta"]);
+  });
+});
+
+describe("isNotFound (WR-19)", () => {
+  test("trata ENOENT y ENOTDIR como no encontrado y nada más", () => {
+    const conCodigo = (code: string) => Object.assign(new Error("x"), { code });
+    expect(isNotFound(conCodigo("ENOENT"))).toBe(true);
+    expect(isNotFound(conCodigo("ENOTDIR"))).toBe(true);
+    expect(isNotFound(conCodigo("EACCES"))).toBe(false);
+    expect(isNotFound("ENOENT")).toBe(false);
   });
 });
