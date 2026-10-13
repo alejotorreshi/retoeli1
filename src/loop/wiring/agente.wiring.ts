@@ -103,6 +103,7 @@ function dependencias(opciones: OpcionesAgente, config: AgentEnv, apiKey: string
     directorio: opciones.directorio,
     maxIteraciones: config.maxIterations,
     presupuestoTokens: config.sessionTokenBudget,
+    deadlineMs: config.turnDeadlineMs,
     nuevoId,
   };
 }

@@ -7,6 +7,7 @@ import type { MensajeWire, PedidoRegistrado, RespuestaGuion } from "@tests/helpe
 import type { ProyectoTemporal } from "@tests/helpers/types/proyecto-temporal.type.ts";
 import {
   CODIGO_AGENTE,
+  DEADLINE_TURNO_MS_POR_DEFECTO,
   MAX_ITERACIONES_POR_DEFECTO,
   MOTIVO_FIN,
   PRESUPUESTO_TOKENS_SESION_POR_DEFECTO,
@@ -112,6 +113,7 @@ function crearDependencias(fetch: FetchLike): DependenciasTurno {
     directorio: proyecto.raiz,
     maxIteraciones: MAX_ITERACIONES_POR_DEFECTO,
     presupuestoTokens: PRESUPUESTO_TOKENS_SESION_POR_DEFECTO,
+    deadlineMs: DEADLINE_TURNO_MS_POR_DEFECTO,
     nuevoId,
   };
 }

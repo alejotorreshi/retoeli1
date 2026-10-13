@@ -7,7 +7,7 @@ import {
   TIPO_EVENTO,
 } from "@/config/constants/agent.constants.ts";
 import { DECISION_CONFIRMACION, ESTADO_COMPUERTA } from "@/config/constants/confirmacion.constants.ts";
-import { ROL_MENSAJE } from "@/config/constants/llm.constants.ts";
+import { FIN_LLM, ROL_MENSAJE } from "@/config/constants/llm.constants.ts";
 import { HERRAMIENTA, PREFIJO_HERRAMIENTA } from "@/config/constants/tools.constants.ts";
 import { MENSAJE_AGENTE, TEXTO_CONTEXTO, TEXTO_SESION } from "@/config/strings.ts";
 import type { ValorDe } from "@/config/types/valor-de.type.ts";
@@ -22,7 +22,13 @@ import type {
   EventoCompuerta,
 } from "@/domain/types/compuerta.type.ts";
 import type { DecisionConfirmacion } from "@/domain/types/confirmacion.type.ts";
-import type { LlamadaHerramienta, Mensaje, MensajeAsistente, RespuestaLlm } from "@/llm/types/llm.type.ts";
+import type {
+  ErrorLlm,
+  LlamadaHerramienta,
+  Mensaje,
+  MensajeAsistente,
+  RespuestaLlm,
+} from "@/llm/types/llm.type.ts";
 import { cerrarTurnoConCompuerta } from "@/loop/services/cierre-turno.service.ts";
 import { casoDeLlamada, despacharLlamada } from "@/loop/services/despacho-llamada.service.ts";
 import {
@@ -55,12 +61,14 @@ type Turno = {
   readonly usuario: Mensaje;
   readonly pasos: Mensaje[];
   readonly signal: AbortSignal;
+  readonly llamante: AbortSignal | null;
   readonly deps: DependenciasTurno;
   readonly arrastrados: readonly CasoPendiente[];
   readonly eventosCompuerta: EventoCompuerta[];
   readonly llamadas: LlamadaResumida[];
   autorizacion: AutorizacionTurno;
   conocidos: PaquetesConocidos;
+  guardado: boolean;
 };
 
 type Ejecucion<R> = AsyncGenerator<EventoAgente, R>;
@@ -113,6 +121,29 @@ function cerrarSinError(motivo: MotivoFin, texto: string, razonamiento: string |
   return { motivo, texto, razonamiento, porError: false };
 }
 
+function interrumpido(): Cierre {
+  return {
+    motivo: MOTIVO_FIN.ABORTADO,
+    texto: MENSAJE_AGENTE[CODIGO_AGENTE.TURNO_INTERRUMPIDO],
+    razonamiento: null,
+    porError: true,
+  };
+}
+
+function abortadoPorLlamante(turno: Turno): boolean {
+  return turno.llamante?.aborted ?? false;
+}
+
+async function* cortar(turno: Turno): Ejecucion<Cierre> {
+  if (abortadoPorLlamante(turno)) return interrumpido();
+  return yield* fallar(turno, CODIGO_AGENTE.TIEMPO_TURNO_AGOTADO);
+}
+
+async function* fallarEnvio(turno: Turno, error: ErrorLlm): Ejecucion<Cierre> {
+  if (turno.signal.aborted) return yield* cortar(turno);
+  return yield* fallar(turno, CODIGO_AGENTE_POR_ERROR_LLM[error.tipo]);
+}
+
 function herramientaDe(nombre: string): ValorDe<typeof HERRAMIENTA> | undefined {
   return Object.values(HERRAMIENTA).find((herramienta) => `${PREFIJO_HERRAMIENTA}${herramienta}` === nombre);
 }
@@ -135,7 +166,27 @@ async function* contarUso(turno: Turno, respuesta: RespuestaLlm): Ejecucion<void
   };
 }
 
-async function* ejecutarPaso(turno: Turno, respuesta: RespuestaLlm): Ejecucion<readonly Mensaje[]> {
+function asistenteDelPaso(respuesta: RespuestaLlm): MensajeAsistente {
+  return {
+    rol: ROL_MENSAJE.ASISTENTE,
+    contenido: respuesta.texto,
+    llamadas: respuesta.llamadas,
+    razonamiento: respuesta.razonamiento,
+  };
+}
+
+function pasoTruncado(respuesta: RespuestaLlm): readonly Mensaje[] {
+  const codigo = CODIGO_AGENTE.ARGUMENTOS_TRUNCADOS;
+  const contenido = JSON.stringify({ ok: false, codigo, error: MENSAJE_AGENTE[codigo] });
+  const respuestas: readonly Mensaje[] = respuesta.llamadas.map((llamada) => ({
+    rol: ROL_MENSAJE.HERRAMIENTA,
+    llamadaId: llamada.id,
+    contenido,
+  }));
+  return [asistenteDelPaso(respuesta), ...respuestas];
+}
+
+async function* ejecutarPaso(turno: Turno, respuesta: RespuestaLlm): Ejecucion<readonly Mensaje[] | null> {
   const respuestasHerramienta: Mensaje[] = [];
   for (const llamada of respuesta.llamadas) {
     const base = { turnoId: turno.turnoId, llamadaId: llamada.id, herramienta: llamada.nombre };
@@ -144,6 +195,7 @@ async function* ejecutarPaso(turno: Turno, respuesta: RespuestaLlm): Ejecucion<r
       ...base,
       argumentos: argumentosDeLlamada(llamada.argumentos),
     };
+    if (turno.signal.aborted) return null;
     const despacho = await despacharLlamada(llamada, {
       registro: turno.deps.herramientas,
       registrar: turno.deps.registrar,
@@ -170,13 +222,12 @@ async function* ejecutarPaso(turno: Turno, respuesta: RespuestaLlm): Ejecucion<r
       contenido: resultado.contenido,
     });
   }
-  const asistente: MensajeAsistente = {
-    rol: ROL_MENSAJE.ASISTENTE,
-    contenido: respuesta.texto,
-    llamadas: respuesta.llamadas,
-    razonamiento: respuesta.razonamiento,
-  };
-  return [asistente, ...respuestasHerramienta];
+  return [asistenteDelPaso(respuesta), ...respuestasHerramienta];
+}
+
+async function* darPaso(turno: Turno, respuesta: RespuestaLlm): Ejecucion<readonly Mensaje[] | null> {
+  if (respuesta.fin === FIN_LLM.LIMITE) return pasoTruncado(respuesta);
+  return yield* ejecutarPaso(turno, respuesta);
 }
 
 function mensajesDelTurno(turno: Turno, sistema: readonly Mensaje[]): readonly Mensaje[] {
@@ -185,6 +236,7 @@ function mensajesDelTurno(turno: Turno, sistema: readonly Mensaje[]): readonly M
 
 async function* cerrarAlTope(turno: Turno, sistema: readonly Mensaje[]): Ejecucion<Cierre> {
   const { deps } = turno;
+  if (turno.signal.aborted) return yield* cortar(turno);
   const tope = await cerrarPorTope(deps.llm, {
     mensajes: mensajesDelTurno(turno, sistema),
     definiciones: deps.herramientas.definiciones,
@@ -193,12 +245,14 @@ async function* cerrarAlTope(turno: Turno, sistema: readonly Mensaje[]): Ejecuci
     cabePresupuesto: !presupuestoAgotado(turno.sesion, deps.presupuestoTokens),
   });
   if (tope.respuesta !== null) yield* contarUso(turno, tope.respuesta);
+  if (abortadoPorLlamante(turno)) return interrumpido();
   return cerrarSinError(MOTIVO_FIN.TOPE_ITERACIONES, tope.texto);
 }
 
 async function* conversar(turno: Turno, sistema: readonly Mensaje[]): Ejecucion<Cierre> {
   const { deps } = turno;
   for (let iteracion = 0; iteracion < deps.maxIteraciones; iteracion += 1) {
+    if (turno.signal.aborted) return yield* cortar(turno);
     if (presupuestoAgotado(turno.sesion, deps.presupuestoTokens)) {
       return cerrarSinError(MOTIVO_FIN.TOPE_TOKENS, cierrePorPresupuesto(turno.llamadas));
     }
@@ -210,13 +264,15 @@ async function* conversar(turno: Turno, sistema: readonly Mensaje[]): Ejecucion<
         herramientasDesactivadas: false,
       },
     );
-    if (!resultado.ok) return yield* fallar(turno, CODIGO_AGENTE_POR_ERROR_LLM[resultado.error.tipo]);
+    if (!resultado.ok) return yield* fallarEnvio(turno, resultado.error);
     const { respuesta } = resultado;
     yield* contarUso(turno, respuesta);
     if (respuesta.llamadas.length === 0) {
       return cerrarSinError(MOTIVO_FIN.FINAL, respuesta.texto ?? "", respuesta.razonamiento);
     }
-    turno.pasos.push(...(yield* ejecutarPaso(turno, respuesta)));
+    const paso = yield* darPaso(turno, respuesta);
+    if (paso === null) return yield* cortar(turno);
+    turno.pasos.push(...paso);
   }
   return yield* cerrarAlTope(turno, sistema);
 }
@@ -247,6 +303,7 @@ function textoGuardado(cierre: Cierre, compuerta: CierreTurnoCompuerta): string 
 }
 
 function guardarSesion(turno: Turno, cierre: Cierre, compuerta: CierreTurnoCompuerta): void {
+  turno.guardado = true;
   const asistente = mensajeAsistente({ ...cierre, texto: textoGuardado(cierre, compuerta) });
   turno.deps.sesiones.guardar({
     ...turno.sesion,
@@ -254,6 +311,11 @@ function guardarSesion(turno: Turno, cierre: Cierre, compuerta: CierreTurnoCompu
     compuerta: compuerta.estado,
     paquetesConocidos: turno.conocidos,
   });
+}
+
+function guardarInterrumpido(turno: Turno): void {
+  const cierre = interrumpido();
+  guardarSesion(turno, cierre, cerrarCompuerta(turno, cierre));
 }
 
 async function* emitirCierre(turno: Turno, cierre: Cierre, compuerta: CierreTurnoCompuerta): Ejecucion<void> {
@@ -302,24 +364,29 @@ export async function* ejecutarTurno(entrada: EntradaTurno, deps: DependenciasTu
   };
   if (!deps.sesiones.ocupar(sesionId)) return yield* rechazarOcupada(inicio);
   const { sesion } = abierta;
+  const plazo = AbortSignal.timeout(deps.deadlineMs);
+  const llamante = entrada.signal ?? null;
   const apertura = abrirTurno(sesion.compuerta, decisionDe(entrada, sesion.compuerta));
   const turno: Turno = {
     turnoId,
     sesion,
     usuario: { rol: ROL_MENSAJE.USUARIO, contenido: entrada.mensaje },
     pasos: [],
-    signal: entrada.signal ?? new AbortController().signal,
+    signal: AbortSignal.any(llamante === null ? [plazo] : [llamante, plazo]),
+    llamante,
     deps,
     arrastrados: arrastradosDe(apertura),
     eventosCompuerta: [],
     llamadas: [],
     autorizacion: { caso: apertura.autorizado, usada: false },
     conocidos: sesion.paquetesConocidos,
+    guardado: false,
   };
   let desenlace: Desenlace;
   try {
     desenlace = yield* atender(turno, inicio);
   } finally {
+    if (!turno.guardado) guardarInterrumpido(turno);
     deps.sesiones.liberar(sesionId);
   }
   yield { tipo: TIPO_EVENTO.FIN_TURNO, turnoId, ...desenlace };

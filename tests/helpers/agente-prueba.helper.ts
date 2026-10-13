@@ -5,6 +5,7 @@ import type {
   OpcionesAgentePrueba,
 } from "@tests/helpers/types/agente-prueba.type.ts";
 import {
+  DEADLINE_TURNO_MS_POR_DEFECTO,
   MAX_ITERACIONES_POR_DEFECTO,
   PRESUPUESTO_TOKENS_SESION_POR_DEFECTO,
   TIPO_EVENTO,
@@ -55,6 +56,7 @@ export function crearAgentePrueba(opciones: OpcionesAgentePrueba): AgentePrueba 
     directorio: raiz,
     maxIteraciones: MAX_ITERACIONES_POR_DEFECTO,
     presupuestoTokens: PRESUPUESTO_TOKENS_SESION_POR_DEFECTO,
+    deadlineMs: DEADLINE_TURNO_MS_POR_DEFECTO,
     nuevoId,
     registrar: createAuditLog(raiz, reloj),
     ...sobrescritas,
