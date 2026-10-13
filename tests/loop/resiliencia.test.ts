@@ -29,6 +29,7 @@ import type { ProyectoTemporal } from "@tests/helpers/types/proyecto-temporal.ty
 import { CODIGO_AGENTE, MOTIVO_FIN, TIPO_EVENTO } from "@/config/constants/agent.constants.ts";
 import { ESTADO_COMPUERTA } from "@/config/constants/confirmacion.constants.ts";
 import { FECHA_DEMO } from "@/config/constants/demo.constants.ts";
+import { CODIGO_ERROR } from "@/config/constants/errors.constants.ts";
 import {
   ARGUMENTOS_VACIOS,
   FIN_LLM,
@@ -431,6 +432,41 @@ describe("las interrupciones nunca corrompen la sesión (AGT-04, CA5)", () => {
           id: "call_cortado",
           function: { name: GENERAR, arguments: ARGUMENTOS_VACIOS },
         }),
+      ]);
+    }
+    historialesSanos(pedidos);
+  });
+  test("unos argumentos mal formados con finish_reason tool_calls se reenvían como ARGUMENTOS_VACIOS en cada pedido siguiente", async () => {
+    const MALFORMADO = "{caso: co-industrias-delta";
+    expect(() => JSON.parse(MALFORMADO)).toThrow();
+    const { fetch, pedidos } = crearFetchFalso([
+      {
+        cuerpo: cuerpoConArgumentosCrudos(FINISH_REASON.TOOL_CALLS, {
+          id: "call_malo",
+          nombre: LEER,
+          argumentos: MALFORMADO,
+        }),
+      },
+      { cuerpo: cuerpoConTexto(VUELVO) },
+      { cuerpo: cuerpoConTexto(SIGO) },
+    ]);
+    const prueba = crearAgenteFetch({ raiz: proyecto.raiz, fetch, entorno: SIN_RESPALDO });
+
+    const turno1 = await prueba.turno(`procesa el caso ${CASO}`);
+    expect(
+      turno1.filter(
+        (evento) => evento.tipo === TIPO_EVENTO.FIN_HERRAMIENTA && evento.llamadaId === "call_malo",
+      ),
+    ).toEqual([expect.objectContaining({ ok: false, codigo: CODIGO_ERROR.ARGS_INVALIDOS })]);
+    expect(textoFinal(turno1)).toBe(VUELVO);
+    const turno2 = await prueba.turno("¿sigues?");
+    expect(finDeTurno(turno2).motivo).toBe(MOTIVO_FIN.FINAL);
+    expect(textoFinal(turno2)).toBe(SIGO);
+
+    expect(pedidos).toHaveLength(3);
+    for (const registrado of pedidos.slice(1)) {
+      expect(llamadasWire([registrado], "call_malo")).toEqual([
+        expect.objectContaining({ id: "call_malo", function: { name: LEER, arguments: ARGUMENTOS_VACIOS } }),
       ]);
     }
     historialesSanos(pedidos);
