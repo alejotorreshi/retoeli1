@@ -15,6 +15,8 @@ export type AlmacenSesiones<S extends { readonly id: string }> = {
   guardar(sesion: S, candado: string): boolean;
 };
 
+export type DestinoBitacora = { write(linea: string): void };
+
 export type CamposBitacora = Readonly<Record<string, unknown>>;
 
 export type BitacoraEstructurada = {
