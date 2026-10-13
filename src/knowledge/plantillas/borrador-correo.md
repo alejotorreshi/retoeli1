@@ -9,8 +9,8 @@ Buenos días, equipo de {{cliente}}:
 {{#soportes_adjuntos}}- {{nombre}} ({{archivo}})
 {{/soportes_adjuntos}}{{^soportes_adjuntos}}- Ninguno por ahora.
 {{/soportes_adjuntos}}
-{{#hay_por_confirmar}}Antes de la firma necesitamos que nos confirmen estos campos:
-{{/hay_por_confirmar}}{{#por_confirmar}}- {{etiqueta}}: {{nota}}
+{{#hay_por_confirmar}}Antes de la firma necesitamos que nos confirmen qué dato de nuestra empresa esperan en estos campos:
+{{/hay_por_confirmar}}{{#por_confirmar}}- {{etiqueta}}
 {{/por_confirmar}}{{#hay_por_confirmar}}
 {{/hay_por_confirmar}}{{#hay_campos_sin_dato}}Estos campos del formulario quedan en blanco porque no contamos con el dato; les agradecemos indicarnos si aplican para su registro:
 {{/hay_campos_sin_dato}}{{#campos_sin_dato}}- {{etiqueta}}

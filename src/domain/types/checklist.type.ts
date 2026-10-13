@@ -10,6 +10,7 @@ export type Checklist = {
   readonly soportes: readonly SoporteEvaluado[];
   readonly faltantes: readonly string[];
   readonly requiere_confirmacion: readonly CampoPorConfirmar[];
+  readonly confirmaciones_al_cliente: readonly string[];
 };
 
 export type FilaSoporteChecklist = {

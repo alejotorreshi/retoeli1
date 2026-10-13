@@ -1,3 +1,4 @@
+import { PREFIJO_RUTA_BANCARIA } from "@/config/constants/maestro.constants.ts";
 import { ESTADO_CAMPO } from "@/config/constants/mapping.constants.ts";
 import { ESTADO_SOPORTE } from "@/config/constants/supports.constants.ts";
 import { TEXTO_CHECKLIST, TEXTO_COMUN, TEXTO_SOPORTE } from "@/config/strings.ts";
@@ -34,12 +35,17 @@ export function motivosDeBloqueo(soportes: readonly SoporteEvaluado[]): readonly
   return bloqueosDe(soportes, TEXTO_SOPORTE.nombre);
 }
 
+function esRutaBancaria(ruta: string | null): boolean {
+  return ruta?.startsWith(PREFIJO_RUTA_BANCARIA) === true;
+}
+
 export function construirChecklist(
   soportes: readonly SoporteEvaluado[],
   campos: readonly CampoMapeado[],
   hoy: FechaISO,
 ): Checklist {
   const bloqueos = bloqueosDe(soportes, idCrudo);
+  const porConfirmar = campos.filter((campo) => campo.estado === ESTADO_CAMPO.REQUIERE_CONFIRMACION);
   return {
     fecha_ejecucion: hoy,
     listo_para_firma: bloqueos.length === 0,
@@ -48,9 +54,13 @@ export function construirChecklist(
     faltantes: campos
       .filter((campo) => campo.estado === ESTADO_CAMPO.FALTANTE)
       .map((campo) => campo.etiqueta),
-    requiere_confirmacion: campos
-      .filter((campo) => campo.estado === ESTADO_CAMPO.REQUIERE_CONFIRMACION)
-      .map((campo) => ({ etiqueta: campo.etiqueta, nota: campo.nota ?? TEXTO_COMUN.porConfirmar })),
+    requiere_confirmacion: porConfirmar.map((campo) => ({
+      etiqueta: campo.etiqueta,
+      nota: campo.nota ?? TEXTO_COMUN.porConfirmar,
+    })),
+    confirmaciones_al_cliente: porConfirmar
+      .filter((campo) => !esRutaBancaria(campo.ruta))
+      .map((campo) => campo.etiqueta),
   };
 }
 

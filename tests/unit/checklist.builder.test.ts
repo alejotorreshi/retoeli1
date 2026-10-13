@@ -1,4 +1,5 @@
 import { describe, expect, test } from "bun:test";
+import { ESTADO_CAMPO, REGLA_MAPEO } from "@/config/constants/mapping.constants.ts";
 import { ESTADO_SOPORTE } from "@/config/constants/supports.constants.ts";
 import {
   construirChecklist,
@@ -6,6 +7,7 @@ import {
   motivosDeBloqueo,
 } from "@/domain/builders/checklist.builder.ts";
 import type { FechaISO } from "@/domain/types/fecha.type.ts";
+import type { CampoMapeado } from "@/domain/types/mapeo.type.ts";
 import type { SoporteEvaluado } from "@/domain/types/soportes.type.ts";
 
 const HOY: FechaISO = "2026-09-03";
@@ -91,5 +93,35 @@ describe("checklist.builder: nombres legibles solo en la salida para personas (G
       expect(datos.ausentes).toEqual([{ nombre: tipo }]);
       expect(datos.vencidos).toEqual([{ nombre: tipo, vigencia: "2026-08-31" }]);
     }
+  });
+});
+
+describe("construirChecklist: confirmaciones que se le piden al cliente (WR-02, RN2)", () => {
+  function porConfirmar(etiqueta: string, ruta: string | null): CampoMapeado {
+    return {
+      etiqueta,
+      ruta,
+      estado: ESTADO_CAMPO.REQUIERE_CONFIRMACION,
+      regla: REGLA_MAPEO.GLOSARIO_EXACTO,
+      confianza: 0.5,
+      valor: null,
+      nota: "Nota ficticia para la analista",
+      propuesta: null,
+    };
+  }
+
+  test("excluye los campos con ruta bancaria y conserva el resto en orden", () => {
+    const campos = [
+      porConfirmar("Identificador ficticio", "nit"),
+      porConfirmar("Cuenta ficticia", "banco.numero_cuenta"),
+      porConfirmar("Sin ruta ficticia", null),
+    ];
+    const checklist = construirChecklist([], campos, HOY);
+    expect(checklist.requiere_confirmacion.map((campo) => campo.etiqueta)).toEqual([
+      "Identificador ficticio",
+      "Cuenta ficticia",
+      "Sin ruta ficticia",
+    ]);
+    expect(checklist.confirmaciones_al_cliente).toEqual(["Identificador ficticio", "Sin ruta ficticia"]);
   });
 });

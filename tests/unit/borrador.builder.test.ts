@@ -91,6 +91,7 @@ function checklist(
     soportes: SOPORTES,
     faltantes,
     requiere_confirmacion: porConfirmar,
+    confirmaciones_al_cliente: porConfirmar.map((campo) => campo.etiqueta),
   };
 }
 
@@ -125,9 +126,28 @@ describe("construirDatosBorrador: estado de firma (GC-1, G-01-H4b)", () => {
     expect(datos.firma_bloqueada).toEqual([]);
     expect(datos.hay_por_confirmar).toEqual([{}]);
     expect(datos.por_confirmar).toEqual([
-      { etiqueta: "Identificador ficticio", nota: "Nota ficticia uno" },
-      { etiqueta: "Otro campo ficticio", nota: "Nota ficticia dos" },
+      { etiqueta: "Identificador ficticio" },
+      { etiqueta: "Otro campo ficticio" },
     ]);
+  });
+
+  test("las notas internas para la analista nunca llegan al contexto del borrador (WR-02)", () => {
+    const serializado = JSON.stringify(borrador(true, POR_CONFIRMAR));
+    expect(serializado).not.toContain("Nota ficticia uno");
+    expect(serializado).not.toContain("Nota ficticia dos");
+  });
+
+  test("un campo bancario por confirmar no se le pregunta al cliente (WR-02, RN2)", () => {
+    const bancario = { etiqueta: "Cuenta ficticia", nota: "Nota bancaria ficticia" };
+    const base = checklist(true, [...POR_CONFIRMAR, bancario]);
+    const datos = construirDatosBorrador(
+      solicitud(FORMATO.XLSX),
+      MAESTRO,
+      { ...base, confirmaciones_al_cliente: POR_CONFIRMAR.map((campo) => campo.etiqueta) },
+      FORMULARIO_XLSX,
+    );
+    expect(datos.por_confirmar.map((campo) => campo.etiqueta)).not.toContain("Cuenta ficticia");
+    expect(JSON.stringify(datos)).not.toContain("Nota bancaria ficticia");
   });
 
   test("bloqueado sin campos por confirmar solo activa firma_bloqueada", () => {
@@ -295,6 +315,7 @@ describe("nombres de soporte con tipos desconocidos (GC-2, G-01-H4c)", () => {
       soportes,
       faltantes: [],
       requiere_confirmacion: [],
+      confirmaciones_al_cliente: [],
     };
   }
 

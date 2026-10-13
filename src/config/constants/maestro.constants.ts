@@ -8,6 +8,8 @@ export const RUTA_MAESTRO = {
   INGRESOS_ANO: "ingresos_ultimo_ano.ano",
 } as const;
 
+export const PREFIJO_RUTA_BANCARIA = "banco.";
+
 export const RUTAS_BORRADOR = [
   RUTA_MAESTRO.RAZON_SOCIAL,
   RUTA_MAESTRO.CONTACTO_FINANCIERO_NOMBRE,

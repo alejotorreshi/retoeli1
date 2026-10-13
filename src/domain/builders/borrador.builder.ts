@@ -56,7 +56,7 @@ export function construirDatosBorrador(
   nombreFormulario: string,
 ): DatosBorradorCorreo {
   const soportesPendientes = soportesPendientesDe(checklist);
-  const hayPorConfirmar = checklist.requiere_confirmacion.length > 0;
+  const hayPorConfirmar = checklist.confirmaciones_al_cliente.length > 0;
   const hayCamposSinDato = checklist.faltantes.length > 0;
   const hayPreguntas = hayPorConfirmar || hayCamposSinDato;
   return {
@@ -69,7 +69,7 @@ export function construirDatosBorrador(
     formulario: nombreFormulario,
     adjunta_formulario: seccionSi(adjuntaFormulario(solicitud.formato)),
     soportes_adjuntos: adjuntos(checklist.soportes),
-    por_confirmar: checklist.requiere_confirmacion.map(({ etiqueta, nota }) => ({ etiqueta, nota })),
+    por_confirmar: checklist.confirmaciones_al_cliente.map((etiqueta) => ({ etiqueta })),
     hay_por_confirmar: seccionSi(hayPorConfirmar),
     campos_sin_dato: checklist.faltantes.map((etiqueta) => ({ etiqueta })),
     hay_campos_sin_dato: seccionSi(hayCamposSinDato),
