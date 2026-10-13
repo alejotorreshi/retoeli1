@@ -100,7 +100,7 @@ describe("golden: borrador-correo.md y ENVIO-SIMULADO.md (PAQ-04, ENV-01, D-25, 
     expect(lineas[1]).toBe("Asunto: RE: Solicitud de registro como proveedor - Periferia IT Group");
     expect(borrador).toContain("Industrias Delta S.A.S.");
     expect(borrador).toContain("formulario.xlsx");
-    expect(borrador).toContain("- rut (rut-2026.txt)");
+    expect(borrador).toContain("- Registro Único Tributario (rut-2026.txt)");
     expect(borrador).toContain("Camila Ortiz Vélez");
     expect(borrador).toContain("Analista Administrativa");
     expect(borrador).toContain("Periferia IT Group S.A.S.");
@@ -122,16 +122,18 @@ describe("golden: borrador-correo.md y ENVIO-SIMULADO.md (PAQ-04, ENV-01, D-25, 
   test("ec lista los pendientes y no anuncia como adjunto el certificado ausente", async () => {
     const borrador = await leerPaquete(compartido.raiz, EC, "borrador-correo.md");
     expect(borrador).toContain("Quedan pendientes:");
-    expect(borrador).toContain("- certificado_cumplimiento_tributario\n");
+    expect(borrador).toContain("- Certificado de cumplimiento tributario\n");
     expect(borrador).toContain("- Número de contribuyente especial\n");
     expect(borrador).toContain("Los enviaremos por separado.");
     expect(borrador).toContain("formulario.pdf");
-    expect(borrador).not.toContain("(certificado_cumplimiento_tributario");
+    expect(borrador).not.toContain("Certificado de cumplimiento tributario (");
   });
 
   test("hn anuncia el soporte vencido como pendiente y no como adjunto", async () => {
     const borrador = await leerPaquete(compartido.raiz, HN, "borrador-correo.md");
-    expect(borrador).toContain("- parafiscales (vencido, enviaremos la versión actualizada)");
+    expect(borrador).toContain(
+      "- Certificación de aportes parafiscales (soporte vencido, enviaremos la versión actualizada)",
+    );
     expect(borrador).not.toContain("parafiscales-2026-07.txt");
   });
 

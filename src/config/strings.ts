@@ -78,9 +78,29 @@ export const TEXTO_CHECKLIST = {
   bloqueoVencido: (tipo: string, vigencia: string): string => `vencido: ${tipo} (${vigencia})`,
 } as const;
 
+export const NOMBRE_SOPORTE = {
+  camara_comercio: "Certificado de existencia y representación legal",
+  rut: "Registro Único Tributario",
+  certificacion_bancaria: "Certificación bancaria",
+  parafiscales: "Certificación de aportes parafiscales",
+  estados_financieros: "Estados financieros",
+  certificado_iso_9001: "Certificado ISO 9001",
+  certificado_cumplimiento_tributario: "Certificado de cumplimiento tributario",
+} as const satisfies Readonly<Record<string, string>>;
+
+function nombreDeSoporte(tipo: string): string {
+  const nombres: Readonly<Record<string, string>> = NOMBRE_SOPORTE;
+  return Object.hasOwn(nombres, tipo) ? (nombres[tipo] ?? tipo) : tipo;
+}
+
+export const TEXTO_SOPORTE = {
+  nombre: nombreDeSoporte,
+} as const;
+
 export const TEXTO_BORRADOR = {
   prefijoRespuesta: "RE: ",
-  pendienteVencido: (tipo: string): string => `${tipo} (vencido, enviaremos la versión actualizada)`,
+  pendienteVencido: (nombre: string): string =>
+    `${nombre} (soporte vencido, enviaremos la versión actualizada)`,
 } as const;
 
 export const TEXTO_PORTAL = {

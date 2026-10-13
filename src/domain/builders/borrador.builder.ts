@@ -1,7 +1,7 @@
 import { FORMATO } from "@/config/constants/forms.constants.ts";
 import { RUTA_MAESTRO } from "@/config/constants/maestro.constants.ts";
 import { ESTADO_SOPORTE } from "@/config/constants/supports.constants.ts";
-import { TEXTO_BORRADOR, TEXTO_COMUN } from "@/config/strings.ts";
+import { TEXTO_BORRADOR, TEXTO_COMUN, TEXTO_SOPORTE } from "@/config/strings.ts";
 import { seccionSi } from "@/domain/engines/motor-plantillas.engine.ts";
 import { leerRuta } from "@/domain/selectors/maestro.selector.ts";
 import type { DatosBorradorCorreo, DatosEnvioSimulado, RutaBorrador } from "@/domain/types/borrador.type.ts";
@@ -21,7 +21,7 @@ function leerDelMaestro(maestro: Maestro, ruta: RutaBorrador): string {
 function adjuntos(soportes: readonly SoporteEvaluado[]): DatosBorradorCorreo["soportes_adjuntos"] {
   return soportes.flatMap((soporte) =>
     soporte.estado === ESTADO_SOPORTE.PRESENTE && soporte.archivo !== null
-      ? [{ tipo: soporte.tipo, archivo: soporte.archivo }]
+      ? [{ nombre: TEXTO_SOPORTE.nombre(soporte.tipo), archivo: soporte.archivo }]
       : [],
   );
 }
@@ -44,8 +44,8 @@ function pendientesDe(checklist: Checklist): readonly string[] {
   const vencidos = checklist.soportes.filter((soporte) => soporte.estado === ESTADO_SOPORTE.VENCIDO);
   return [
     ...checklist.faltantes,
-    ...ausentes.map((soporte) => soporte.tipo),
-    ...vencidos.map((soporte) => TEXTO_BORRADOR.pendienteVencido(soporte.tipo)),
+    ...ausentes.map((soporte) => TEXTO_SOPORTE.nombre(soporte.tipo)),
+    ...vencidos.map((soporte) => TEXTO_BORRADOR.pendienteVencido(TEXTO_SOPORTE.nombre(soporte.tipo))),
   ];
 }
 

@@ -6,7 +6,7 @@ Buenos días, equipo de {{cliente}}:
 {{#adjunta_formulario}}Adjuntamos el formulario de registro como proveedor ({{formulario}}) y los siguientes soportes:
 {{/adjunta_formulario}}{{^adjunta_formulario}}El formulario de registro como proveedor se diligencia en su portal. Adjuntamos los siguientes soportes:
 {{/adjunta_formulario}}
-{{#soportes_adjuntos}}- {{tipo}} ({{archivo}})
+{{#soportes_adjuntos}}- {{nombre}} ({{archivo}})
 {{/soportes_adjuntos}}{{^soportes_adjuntos}}- Ninguno por ahora.
 {{/soportes_adjuntos}}
 {{#hay_por_confirmar}}Antes de la firma necesitamos que nos confirmen estos campos:

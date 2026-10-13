@@ -13,7 +13,7 @@ export type DatosBorradorCorreo = {
   readonly firmante_cargo: string;
   readonly formulario: string;
   readonly adjunta_formulario: SeccionCondicional;
-  readonly soportes_adjuntos: readonly { readonly tipo: string; readonly archivo: string }[];
+  readonly soportes_adjuntos: readonly { readonly nombre: string; readonly archivo: string }[];
   readonly por_confirmar: readonly CampoPorConfirmar[];
   readonly hay_por_confirmar: SeccionCondicional;
   readonly pendientes: readonly { readonly texto: string }[];
