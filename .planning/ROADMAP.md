@@ -31,7 +31,7 @@ Decimal phases appear between their surrounding integers in numeric order.
   4. Las 5 herramientas `proveedor_*` se importan sin servidor ni secretos y nunca lanzan. Con args inválidos, un `mapeo` que trae valores, un `caso` con path traversal, un caso inexistente o una plantilla corrupta devuelven `{ ok: false, error }` con código estable y mensaje en español, sin traza cruda. `simular_envio` sin confirmación devuelve "requiere confirmación explícita". Cada llamada queda registrada, con resumen redactado, en `out/log.jsonl` y en `out/<caso>/log.jsonl`.
   5. `bun run check` (tsc estricto sin `any` y con `noUncheckedIndexedAccess`, más Biome) y `bun test` pasan. Eso incluye los golden tests por caso, los fixtures sintéticos de `tests/fixtures/` (una etiqueta ambigua da `requiere_confirmacion` con el equivalente del país) y el test de arquitectura que verifica la dirección de los imports. El código no tiene comentarios, y las constantes y la configuración viven centralizadas y validadas con zod.
 
-**Plans:** 11/14 plans executed
+**Plans:** 11/15 plans executed
 
 Plans:
 **Wave 1**
@@ -72,7 +72,10 @@ Plans:
 - [ ] 01-13-PLAN.md — `ENVIO-SIMULADO.md` solo lista lo que va al cliente. El borrador depende del estado, nunca afirma una firma y pregunta por los campos por confirmar (G-01-H4a, G-01-H4b)
 
 **Cierre de brechas de la UAT, Wave 2** *(blocked on 01-13)*
-- [ ] 01-14-PLAN.md — Nombres legibles de los soportes, tomados de `strings.ts`, en el borrador, el checklist y `ENVIO-SIMULADO.md`. Los datos de las herramientas conservan el `tipo` (G-01-H4c)
+- [ ] 01-14-PLAN.md — Nombres legibles de los soportes, tomados de `strings.ts`, en el borrador y el checklist. Los datos de las herramientas conservan el `tipo` (G-01-H4c)
+
+**Cierre de brechas de la UAT, Wave 3** *(blocked on 01-14)*
+- [ ] 01-15-PLAN.md — Bloqueos de `ENVIO-SIMULADO.md` con nombres legibles y guarda transversal: ningún id snake_case en las salidas para personas y cobertura de la tabla de nombres sobre los fixtures (G-01-H4c)
 
 ### Phase 2: Agente y compuerta de confirmación
 
