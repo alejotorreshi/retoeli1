@@ -11,7 +11,7 @@ import type { FechaISO } from "@/domain/types/fecha.type.ts";
 import type { FilaCelda, FilaFormulario } from "@/domain/types/formulario.type.ts";
 import type { Maestro } from "@/domain/types/maestro.type.ts";
 import type { Glosario } from "@/domain/types/mapeo.type.ts";
-import type { Plantilla, TipoPlantilla } from "@/domain/types/plantilla-caso.type.ts";
+import type { PlantillaCaso, TipoPlantilla } from "@/domain/types/plantilla-caso.type.ts";
 import type { ClavePlantilla, Reglas } from "@/domain/types/reglas.type.ts";
 import type { Resultado } from "@/domain/types/resultado.type.ts";
 import type { Solicitud } from "@/domain/types/solicitud.type.ts";
@@ -34,8 +34,8 @@ export type CasosDisponibles = {
 export type FixturesCaso = {
   leerSolicitud(directorioCaso: string): Promise<Lectura<Solicitud>>;
   leerSoportesExigidos(directorioCaso: string): Promise<Lectura<readonly string[]>>;
-  existePlantilla(directorioCaso: string, tipo: TipoPlantilla): Promise<boolean>;
-  leerPlantilla(directorioCaso: string, tipo: TipoPlantilla): Promise<Lectura<Plantilla>>;
+  existePlantillaCaso(directorioCaso: string, tipo: TipoPlantilla): Promise<boolean>;
+  leerPlantillaCaso(directorioCaso: string, tipo: TipoPlantilla): Promise<Lectura<PlantillaCaso>>;
 };
 
 export type Reloj = {
@@ -111,7 +111,7 @@ export type Entorno = {
   readonly salida: SalidaCaso;
   readonly soportes: SoportesRepositorio;
   readonly formularios: GeneradoresFormulario;
-  readonly plantillas: PlantillasConocimiento;
+  readonly conocimiento: PlantillasConocimiento;
   readonly candado: Candado;
   reglas(): Promise<Resultado<Reglas>>;
   maestro(): Promise<Lectura<Maestro>>;

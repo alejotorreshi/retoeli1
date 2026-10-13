@@ -1,3 +1,4 @@
+import type { z } from "zod";
 import type { Entorno, Lectura, OrigenCopia, Reloj } from "@/application/types/puertos.type.ts";
 import { CODIGO_ERROR } from "@/config/constants/errors.constants.ts";
 import { ARCHIVO_PLANTILLA, ARCHIVOS_CASO } from "@/config/constants/files.constants.ts";
@@ -8,7 +9,7 @@ import { ZONA_HORARIA_POR_DEFECTO } from "@/config/constants/runtime.constants.t
 import { readToolEnv, type ToolEnv } from "@/config/env.ts";
 import { formatearIssues } from "@/domain/formatear-issues.ts";
 import { exito, fallo } from "@/domain/resultado.ts";
-import type { Plantilla, TipoPlantilla } from "@/domain/types/plantilla-caso.type.ts";
+import type { PlantillaCaso, TipoPlantilla } from "@/domain/types/plantilla-caso.type.ts";
 import { fixedClock, systemClock } from "@/infra/clock/clock.adapter.ts";
 import { listCases, resolveCase } from "@/infra/fixtures/case-resolver.adapter.ts";
 import {
@@ -46,19 +47,23 @@ import { renderPdf } from "@/infra/output/pdf/pdf-renderer.adapter.ts";
 import { writeXlsx } from "@/infra/output/xlsx-writer.adapter.ts";
 import type { ContextoNormalizado, EntornoEjecucion, OpcionesEntorno } from "@/tools/types/entorno.type.ts";
 
-async function leerPlantilla(directorioCaso: string, tipo: TipoPlantilla): Promise<Lectura<Plantilla>> {
+async function leerCamposDePlantilla<C>(
+  ruta: string,
+  esquema: z.ZodType<C>,
+  construir: (campos: C) => PlantillaCaso,
+): Promise<Lectura<PlantillaCaso>> {
+  const lectura = await readValidatedJson(ruta, esquema);
+  return lectura.estado === ESTADO_LECTURA.OK
+    ? { estado: ESTADO_LECTURA.OK, valor: construir(lectura.valor) }
+    : lectura;
+}
+
+function leerPlantillaCaso(directorioCaso: string, tipo: TipoPlantilla): Promise<Lectura<PlantillaCaso>> {
   const archivo = ARCHIVO_PLANTILLA[tipo];
   const ruta = pathInCase(directorioCaso, archivo);
-  if (tipo === TIPO_PLANTILLA.CELDAS) {
-    const lectura = await readValidatedJson(ruta, cellTemplateSchema);
-    return lectura.estado === ESTADO_LECTURA.OK
-      ? { estado: ESTADO_LECTURA.OK, valor: { tipo, archivo, campos: lectura.valor } }
-      : lectura;
-  }
-  const lectura = await readValidatedJson(ruta, fieldTemplateSchema);
-  return lectura.estado === ESTADO_LECTURA.OK
-    ? { estado: ESTADO_LECTURA.OK, valor: { tipo, archivo, campos: lectura.valor } }
-    : lectura;
+  return tipo === TIPO_PLANTILLA.CELDAS
+    ? leerCamposDePlantilla(ruta, cellTemplateSchema, (campos) => ({ tipo, archivo, campos }))
+    : leerCamposDePlantilla(ruta, fieldTemplateSchema, (campos) => ({ tipo, archivo, campos }));
 }
 
 function copiar(raiz: string, caso: string, origen: OrigenCopia): Promise<string> {
@@ -87,8 +92,8 @@ function entornoDeFixtures(raiz: string, reloj: Reloj, directorioConocimiento: s
         readValidatedJson(pathInCase(directorio, ARCHIVOS_CASO.solicitud), requestSchema),
       leerSoportesExigidos: (directorio) =>
         readValidatedJson(pathInCase(directorio, ARCHIVOS_CASO.soportesExigidos), requiredSupportsSchema),
-      existePlantilla: (directorio, tipo) => fileExists(pathInCase(directorio, ARCHIVO_PLANTILLA[tipo])),
-      leerPlantilla,
+      existePlantillaCaso: (directorio, tipo) => fileExists(pathInCase(directorio, ARCHIVO_PLANTILLA[tipo])),
+      leerPlantillaCaso,
     },
     salida: {
       escribir: (caso, archivo, contenido) => writeOutputFile(raiz, caso, archivo, contenido),
@@ -108,7 +113,7 @@ function entornoDeFixtures(raiz: string, reloj: Reloj, directorioConocimiento: s
       presentes: () => presentSupports(raiz),
     },
     formularios: { xlsx: writeXlsx, pdf: renderPdf },
-    plantillas: {
+    conocimiento: {
       cargar: (reglas, clave) => loadKnowledgeTemplate(directorioConocimiento, reglas, clave),
     },
     candado: (caso, seccion) => withCaseLock(caseOutputDirectory(raiz, caso), seccion),

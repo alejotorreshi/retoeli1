@@ -24,7 +24,7 @@ async function simularBajoCandado(args: ArgsSimularEnvio, entorno: Entorno): Pro
   const checklist = await evaluarEstadoPaquete(contexto.data, entorno);
   if (!checklist.ok) return checklist;
 
-  const plantilla = await entorno.plantillas.cargar(contexto.data.reglas, CLAVE_PLANTILLA.ENVIO_SIMULADO);
+  const plantilla = await entorno.conocimiento.cargar(contexto.data.reglas, CLAVE_PLANTILLA.ENVIO_SIMULADO);
   if (!plantilla.ok) return plantilla;
   const archivos = await entorno.salida.listarPaquete(caso);
   const datos = construirDatosEnvio(caso, contexto.data.solicitud, checklist.data, archivos);

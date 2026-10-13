@@ -61,7 +61,7 @@ async function generarPortal(
   canonico: readonly CampoMapeado[],
   entorno: Entorno,
 ): Promise<Resultado<DatosFormulario>> {
-  const plantilla = await entorno.plantillas.cargar(contexto.reglas, CLAVE_PLANTILLA.VALORES_PORTAL);
+  const plantilla = await entorno.conocimiento.cargar(contexto.reglas, CLAVE_PLANTILLA.VALORES_PORTAL);
   if (!plantilla.ok) return plantilla;
   const caso = { caso: contexto.caso, cliente: contexto.solicitud.cliente };
   const datos = construirDatosPortal(caso, canonico, entorno.reloj.hoy());

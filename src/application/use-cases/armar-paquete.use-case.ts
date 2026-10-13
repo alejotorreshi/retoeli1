@@ -23,7 +23,7 @@ async function renderizarChecklist(
   checklist: Checklist,
   entorno: Entorno,
 ): Promise<Resultado<string>> {
-  const plantilla = await entorno.plantillas.cargar(contexto.reglas, CLAVE_PLANTILLA.CHECKLIST);
+  const plantilla = await entorno.conocimiento.cargar(contexto.reglas, CLAVE_PLANTILLA.CHECKLIST);
   if (!plantilla.ok) return plantilla;
   const caso = { caso: contexto.caso, cliente: contexto.solicitud.cliente };
   const datos = construirDatosChecklist(caso, checklist);
@@ -36,7 +36,7 @@ async function renderizarBorrador(
   formulario: ArchivoFormulario,
   entorno: Entorno,
 ): Promise<Resultado<string>> {
-  const plantilla = await entorno.plantillas.cargar(contexto.reglas, CLAVE_PLANTILLA.BORRADOR_CORREO);
+  const plantilla = await entorno.conocimiento.cargar(contexto.reglas, CLAVE_PLANTILLA.BORRADOR_CORREO);
   if (!plantilla.ok) return plantilla;
   const datos = construirDatosBorrador(contexto.solicitud, contexto.maestro, checklist, formulario);
   return renderizarTextoPlano(

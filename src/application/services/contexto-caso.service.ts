@@ -34,13 +34,13 @@ export async function cargarSolicitudCaso(caso: string, entorno: Entorno): Promi
   const parcial = { pais, cliente, formato, soportes: soportes.valor };
 
   const presentes = {
-    [TIPO_PLANTILLA.CELDAS]: await entorno.fixtures.existePlantilla(directorio, TIPO_PLANTILLA.CELDAS),
-    [TIPO_PLANTILLA.CAMPOS]: await entorno.fixtures.existePlantilla(directorio, TIPO_PLANTILLA.CAMPOS),
+    [TIPO_PLANTILLA.CELDAS]: await entorno.fixtures.existePlantillaCaso(directorio, TIPO_PLANTILLA.CELDAS),
+    [TIPO_PLANTILLA.CAMPOS]: await entorno.fixtures.existePlantillaCaso(directorio, TIPO_PLANTILLA.CAMPOS),
   };
   const tipo = elegirPlantilla(formato, presentes);
   if (tipo === null) return fallo(CODIGO_ERROR.PLANTILLA_INVALIDA, { parcial });
 
-  const plantilla = await entorno.fixtures.leerPlantilla(directorio, tipo);
+  const plantilla = await entorno.fixtures.leerPlantillaCaso(directorio, tipo);
   if (plantilla.estado !== ESTADO_LECTURA.OK) return fallo(CODIGO_ERROR.PLANTILLA_INVALIDA, { parcial });
 
   return exito({

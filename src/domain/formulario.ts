@@ -4,7 +4,7 @@ import { ESTADO_CAMPO } from "@/config/constants/mapping.constants.ts";
 import { exito, fallo } from "@/domain/resultado.ts";
 import type { FilaFormulario, Formulario } from "@/domain/types/formulario.type.ts";
 import type { CampoMapeado } from "@/domain/types/mapeo.type.ts";
-import type { Plantilla } from "@/domain/types/plantilla-caso.type.ts";
+import type { PlantillaCaso } from "@/domain/types/plantilla-caso.type.ts";
 import type { Resultado } from "@/domain/types/resultado.type.ts";
 
 type Ubicable = { readonly etiqueta: string };
@@ -36,7 +36,7 @@ function emparejar<T extends Ubicable, F>(
 }
 
 export function construirFilas(
-  plantilla: Plantilla,
+  plantilla: PlantillaCaso,
   canonico: readonly CampoMapeado[],
 ): Resultado<Formulario> {
   if (plantilla.tipo === TIPO_PLANTILLA.CELDAS) {

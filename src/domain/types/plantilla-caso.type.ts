@@ -15,7 +15,7 @@ export type CampoLista = {
 
 export type TipoPlantilla = ValorDe<typeof TIPO_PLANTILLA>;
 
-export type Plantilla =
+export type PlantillaCaso =
   | {
       readonly tipo: typeof TIPO_PLANTILLA.CELDAS;
       readonly archivo: string;

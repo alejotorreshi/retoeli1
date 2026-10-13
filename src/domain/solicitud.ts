@@ -1,7 +1,7 @@
 import { FORMATO, PLANTILLA_DEL_FORMATO, TIPO_PLANTILLA } from "@/config/constants/forms.constants.ts";
 import { ESTADO_CAMPO } from "@/config/constants/mapping.constants.ts";
 import { normalizarEtiqueta } from "@/domain/normalizar.ts";
-import type { Plantilla, TipoPlantilla } from "@/domain/types/plantilla-caso.type.ts";
+import type { PlantillaCaso, TipoPlantilla } from "@/domain/types/plantilla-caso.type.ts";
 import type { Reglas } from "@/domain/types/reglas.type.ts";
 import type {
   CampoAmbiguo,
@@ -19,7 +19,7 @@ export function elegirPlantilla(formato: Formato, presentes: PlantillasPresentes
   return null;
 }
 
-export function camposSolicitados(plantilla: Plantilla): CampoSolicitado[] {
+export function camposSolicitados(plantilla: PlantillaCaso): CampoSolicitado[] {
   if (plantilla.tipo === TIPO_PLANTILLA.CELDAS) {
     return plantilla.campos.map((campo) => ({ etiqueta: campo.etiqueta, obligatorio: null }));
   }
