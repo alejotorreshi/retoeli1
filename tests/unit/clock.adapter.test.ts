@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, setSystemTime, test } from "bun:test";
-import { fixedClock, systemClock } from "@/infra/clock/clock.adapter.ts";
+import { clockFromToolEnv, fixedClock, systemClock } from "@/infra/clock/clock.adapter.ts";
 
 afterEach(() => {
   setSystemTime();
@@ -24,5 +24,20 @@ describe("systemClock arma la fecha por partes, sin depender del formato de un l
   test("conserva los ceros a la izquierda de mes y día", () => {
     setSystemTime(new Date("2027-01-05T12:00:00.000Z"));
     expect(systemClock("America/Bogota").hoy()).toBe("2027-01-05");
+  });
+});
+
+describe("clockFromToolEnv elige el reloj desde el entorno de las herramientas", () => {
+  test("FECHA_EJECUCION fija la fecha y sin ella se usa la zona de negocio", () => {
+    setSystemTime(new Date("2026-09-03T03:00:00.000Z"));
+    expect(clockFromToolEnv({ FECHA_EJECUCION: "2026-01-02", TZ_NEGOCIO: "America/Bogota" }).hoy()).toBe(
+      "2026-01-02",
+    );
+    expect(clockFromToolEnv({ FECHA_EJECUCION: undefined, TZ_NEGOCIO: "America/Bogota" }).hoy()).toBe(
+      "2026-09-02",
+    );
+    expect(clockFromToolEnv({ FECHA_EJECUCION: undefined, TZ_NEGOCIO: "Asia/Tokyo" }).hoy()).toBe(
+      "2026-09-03",
+    );
   });
 });
