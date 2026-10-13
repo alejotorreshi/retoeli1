@@ -8,6 +8,7 @@
   "scripts": {
     "demo": "bun run demo.ts",
     "test": "bun test",
+    "test:vivo": "LLM_EN_VIVO=1 bun test tests/live",
     "typecheck": "tsc --noEmit",
     "lint": "biome check .",
     "audit": "bun audit --audit-level=moderate",
