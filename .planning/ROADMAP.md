@@ -89,7 +89,7 @@ Plans:
   4. Al llegar al tope de iteraciones (25 por defecto) o al de tokens por sesión, el usuario recibe en lenguaje claro lo que se tiene y lo que falta, no un error. Una instrucción inyectada en el cuerpo del correo del cliente no cambia el comportamiento del agente.
   5. Un cambio en `src/knowledge/registro-proveedor.md` o en `agent/prompt.md` cambia el comportamiento del agente sin tocar código del servidor. Los logs JSON llevan IDs de sesión, turno y tool call, sin clave ni PII. `bun test` cubre el ciclo con un LLM falso (tope, compuerta con "No envíes…" y el guion §11, CA5 e inyección) sin gastar tokens.
 
-**Plans:** 7/9 plans executed
+**Plans:** 8/9 plans executed
 
 Plans:
 **Wave 1**
@@ -108,7 +108,7 @@ Plans:
 - [x] 02-07-PLAN.md — Topes con respuesta clara: presupuesto de tokens por sesión y tope de iteraciones con llamada de resumen sin herramientas y cierre determinista
 
 **Wave 5** *(blocked on Wave 4 completion)*
-- [ ] 02-08-PLAN.md — CA5 con decoradores compuestos y respaldo de modelo, deadline de turno, abortos y argumentos truncados, y bitácora JSON integrada
+- [x] 02-08-PLAN.md — CA5 con decoradores compuestos y respaldo de modelo, deadline de turno, abortos y argumentos truncados, y bitácora JSON integrada
 
 **Wave 6** *(blocked on Wave 5 completion)*
 - [ ] 02-09-PLAN.md — `agent/prompt.md` y `registro-proveedor.md` finales, edición en caliente, PII hacia el modelo, redacción de requisitos D-59 y corrida en vivo obligatoria (criterio 1 y guion §11) con línea de evidencia VIVO PASS
@@ -154,6 +154,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Núcleo determinista | 15/15 | Complete    | 2026-10-13 |
-| 2. Agente y compuerta de confirmación | 7/9 | In Progress | - |
+| 2. Agente y compuerta de confirmación | 8/9 | In Progress | - |
 | 3. Chat web, API SSE y despliegue | 0/TBD | Not started | - |
 | 4. Módulo, documentación y defensa | 0/TBD | Not started | - |

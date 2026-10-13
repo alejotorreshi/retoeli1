@@ -58,13 +58,13 @@ Fuente vinculante: `reto-01/PRD.md`, sin modificar. Fixtures: `reto-01/fixtures/
 - [x] **AGT-02**: El system prompt vive en `agent/prompt.md` y el conocimiento del proceso en `src/knowledge/registro-proveedor.md`, separados de la ejecución en `src/tools/`. Un cambio de reglas de negocio no toca el servidor.
 - [ ] **AGT-03**: El prompt prohíbe afirmar valores que no hayan salido de una herramienta (CA2).
 - [x] **AGT-04**: La sesión vive en un store en memoria detrás de una interfaz, con TTL. El historial queda íntegro: cada tool call tiene su resultado y un paso abortado se descarta. La sesión sobrevive a errores de herramienta o del proveedor (CA5).
-- [ ] **AGT-05**: Los errores de herramienta y de proveedor se traducen a lenguaje claro en español, a partir de un catálogo centralizado de errores.
+- [x] **AGT-05**: Los errores de herramienta y de proveedor se traducen a lenguaje claro en español, a partir de un catálogo centralizado de errores.
 
 ### Adaptador LLM y resiliencia (§6.1, §8)
 
 - [x] **LLM-01**: Hay una interfaz propia `enviar(mensajes, herramientas) → respuesta` con un modelo de mensajes neutral. Cambiar de proveedor no toca el ciclo.
 - [ ] **LLM-02**: La implementación DeepSeek usa `fetch` directo contra la API compatible con OpenAI. El modelo se lee de env (`deepseek-flash` por defecto), el modo thinking va desactivado, `max_tokens` es explícito y el campo `reasoning_content` se conserva en el tipo.
-- [ ] **LLM-03**: Hay timeout al proveedor con mensaje claro. Se reintenta con backoff y jitter solo ante errores transitorios (429, 500, 503 y red). Los errores 400, 401 y 422 no se reintentan, y el 402 se informa como "saldo agotado".
+- [x] **LLM-03**: Hay timeout al proveedor con mensaje claro. Se reintenta con backoff y jitter solo ante errores transitorios (429, 500, 503 y red). Los errores 400, 401 y 422 no se reintentan, y el 402 se informa como "saldo agotado".
 - [ ] **LLM-04**: Un decorador de fallback de proveedor o modelo (por ejemplo `deepseek-flash` → `deepseek-v4-pro`) actúa cuando el primario falla de forma transitoria.
 - [x] **LLM-05**: El tope de tokens por sesión y el tope de iteraciones por turno son configurables. Al superarlos, el usuario recibe un mensaje claro, no un 500.
 - [ ] **LLM-06**: Existe un modo degradado sin LLM. Si no hay clave, se agotó el saldo o el proveedor cayó, `/api/health` lo reporta y la UI permite correr el flujo determinista de un caso con las mismas herramientas que `demo.ts`.
@@ -93,7 +93,7 @@ Fuente vinculante: `reto-01/PRD.md`, sin modificar. Fixtures: `reto-01/fixtures/
 
 - [ ] **SEG-01**: La clave del LLM vive solo en una env var del backend y nunca aparece en el front (sin el prefijo `VITE_`), los logs, las respuestas de la API ni el repo. Existe un `.env.example` sin valores y un test verifica que la clave no esté en `web/dist` ni en las respuestas.
 - [ ] **SEG-02**: Una única función `redactar()`, basada en una política de rutas sensibles, se aplica a los logs, la API, el SSE y los resúmenes de tool calls. Un test busca con grep valores PII conocidos y verifica que no aparezcan fuera de los archivos de salida.
-- [ ] **SEG-03**: Los logs son JSON estructurados, con IDs de correlación por sesión, turno y tool call, y nunca registran la clave ni PII.
+- [x] **SEG-03**: Los logs son JSON estructurados, con IDs de correlación por sesión, turno y tool call, y nunca registran la clave ni PII.
 - [x] **SEG-04**: Cada tool call queda registrada en `out/log.jsonl` (CA4) y en `out/<caso>/log.jsonl` (RN5) con `{ ts, herramienta, ok, resumen }`, con el resumen redactado.
 
 ### Demo y pruebas (§6.6, §8)
@@ -206,10 +206,10 @@ Cada requisito v1 está asignado a exactamente una fase del roadmap (`.planning/
 | AGT-02 | Phase 2 | Complete |
 | AGT-03 | Phase 2 | Pending |
 | AGT-04 | Phase 2 | Complete |
-| AGT-05 | Phase 2 | Pending |
+| AGT-05 | Phase 2 | Complete |
 | LLM-01 | Phase 2 | Complete |
 | LLM-02 | Phase 2 | Pending |
-| LLM-03 | Phase 2 | Pending |
+| LLM-03 | Phase 2 | Complete |
 | LLM-04 | Phase 2 | Pending |
 | LLM-05 | Phase 2 | Complete |
 | LLM-06 | Phase 3 | Pending |
@@ -229,7 +229,7 @@ Cada requisito v1 está asignado a exactamente una fase del roadmap (`.planning/
 | UI-09 | Phase 3 | Pending |
 | SEG-01 | Phase 3 | Pending |
 | SEG-02 | Phase 1 | Partial — política de rutas PII y test grep listos; falta `redactar()` única para logs/API/SSE (Fases 2–3) |
-| SEG-03 | Phase 2 | Pending |
+| SEG-03 | Phase 2 | Complete |
 | SEG-04 | Phase 1 | Complete |
 | DEMO-01 | Phase 1 | Complete |
 | DEMO-02 | Phase 1 | Complete |

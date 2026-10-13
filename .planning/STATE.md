@@ -3,16 +3,16 @@ gsd_state_version: "1.0"
 current_phase: 02
 current_phase_name: Agente y compuerta de confirmación
 status: executing
-stopped_at: Completed 02-07-PLAN.md
-last_updated: "2026-10-13T20:03:26.463Z"
+stopped_at: Completed 02-08-PLAN.md
+last_updated: "2026-10-13T20:21:25.221Z"
 last_activity: 2026-10-13
 last_activity_desc: Phase 02 execution started
-state_head: 226a33ad71b5bcfbf18334ff2d8748922b0e1339
+state_head: 0049d22fc9ba6307b4136170607f5d9879a13537
 progress:
   total_phases: 4
   completed_phases: 1
   total_plans: 24
-  completed_plans: 22
+  completed_plans: 23
   percent: 25
 ---
 
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-10-13)
 ## Current Position
 
 Phase: 02 (Agente y compuerta de confirmación) — EXECUTING
-Plan: 8 of 9
+Plan: 9 of 9
 Status: Ready to execute
 Last activity: 2026-10-13 — Phase 02 execution started
 
@@ -78,6 +78,7 @@ Progress: [███░░░░░░░] 25%
 | Phase 02 P05 | 3 min | 2 tasks | 9 files |
 | Phase 02 P06 | 10 min | 3 tasks | 29 files |
 | Phase 02 P07 | 4 min | 2 tasks | 10 files |
+| Phase 02 P08 | 13 min | 3 tasks | 32 files |
 
 ## Accumulated Context
 
@@ -159,6 +160,10 @@ Recent decisions affecting current work:
 - [Phase 02]: 02-07: una sesión sin presupuesto responde al abrir el turno con PRESUPUESTO_AGOTADO y cero llamadas; a mitad de turno cierra con tope_tokens, el mensaje y cierreDeterminista
 - [Phase 02]: 02-07: al tope de iteraciones hay una sola llamada sin herramientas con instruccionTope al final (no persistida); si falla, pide herramientas, trae texto vacío o no cabe en el presupuesto, el servidor usa cierreDeterminista con motivo tope_iteraciones
 - [Phase 02]: 02-07: ResultadoTope lleva la RespuestaLlm completa para que el evento usage conserve proveedor y modelo; todo uso pasa por acumularUso
+- [Phase 02]: 02-08: los fallos por intento y el cambio de proveedor se registran vía OpcionesEnvio.observador (withObservacion entre withTimeout y withRetry; alCambiar recibe las opciones), así llm_error y llm_fallback llevan sesionId y turnoId
+- [Phase 02]: 02-08: un aborto del llamante cierra con motivo abortado, sin evento error ni texto, guarda TURNO_INTERRUMPIDO y deja la compuerta LIBRE; el deadline del turno emite TIEMPO_TURNO_AGOTADO y cierra la compuerta normalmente
+- [Phase 02]: 02-08: un turno abandonado se guarda en finally como usuario + pasos completos + TURNO_INTERRUMPIDO antes de liberar; un paso fin limite no ejecuta herramientas y responde ARGUMENTOS_TRUNCADOS por llamada
+- [Phase 02]: 02-08: las líneas gate_* llevan caso solo si es un paquete armado por el servidor; CODIGO_AGENTE.TOPE_ITERACIONES y su mensaje se eliminaron por no tener emisor
 
 ### Pending Todos
 
@@ -184,6 +189,6 @@ Items acknowledged and deferred at milestone close, most recent first:
 
 ## Session Continuity
 
-Last session: 2026-10-13T20:03:26.411Z
-Stopped at: Completed 02-07-PLAN.md
+Last session: 2026-10-13T20:21:18.746Z
+Stopped at: Completed 02-08-PLAN.md
 Resume file: None
