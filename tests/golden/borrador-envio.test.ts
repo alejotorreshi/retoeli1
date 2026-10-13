@@ -143,6 +143,20 @@ describe("golden: borrador-correo.md y ENVIO-SIMULADO.md (PAQ-04, ENV-01, D-25, 
     expect(prohibidosEn(crudo)).toEqual([]);
   });
 
+  test("ENVIO-SIMULADO.md de hn no envía el soporte vencido que el borrador anuncia como pendiente (WR-06)", async () => {
+    const crudo = await herramientas.simular_envio.execute(
+      { caso: HN, confirmado: true },
+      ctx(compartido.raiz),
+    );
+    expect(JSON.parse(crudo).ok).toBe(true);
+    const registro = await readFile(join(compartido.raiz, "out", HN, "ENVIO-SIMULADO.md"), "utf8");
+    const [enviados = "", retenidos = ""] = registro.split("## Soportes vencidos que no se envían");
+    expect(enviados).toContain("- paquete/formulario.xlsx");
+    expect(enviados).not.toContain("parafiscales-2026-07.txt");
+    expect(retenidos).toContain("- paquete/parafiscales-2026-07.txt");
+    expect(existsSync(rutaPaquete(compartido.raiz, HN, "parafiscales-2026-07.txt"))).toBe(true);
+  });
+
   test("una plantilla editada con {{banco.numero_cuenta}} da REGLAS_INVALIDAS y no escribe el borrador", async () => {
     const conocimiento = await nuevoConocimiento();
     const plantilla = join(conocimiento.directorio, "plantillas", "borrador-correo.md");

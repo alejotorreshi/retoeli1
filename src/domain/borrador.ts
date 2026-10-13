@@ -83,8 +83,17 @@ export type DatosEnvioSimulado = {
   readonly asunto: string;
   readonly fecha_ejecucion: string;
   readonly archivos: readonly { readonly archivo: string }[];
+  readonly retenidos: readonly { readonly archivo: string }[];
   readonly bloqueos: readonly { readonly bloqueo: string }[];
 };
+
+function archivosVencidos(checklist: Checklist): ReadonlySet<string> {
+  return new Set(
+    checklist.soportes.flatMap((soporte) =>
+      soporte.estado === "vencido" && soporte.archivo !== null ? [soporte.archivo] : [],
+    ),
+  );
+}
 
 export function construirDatosEnvio(
   caso: string,
@@ -92,13 +101,15 @@ export function construirDatosEnvio(
   checklist: Checklist,
   archivos: readonly string[],
 ): DatosEnvioSimulado {
+  const vencidos = archivosVencidos(checklist);
   return {
     caso,
     cliente: solicitud.cliente,
     destinatario: solicitud.de,
     asunto: asuntoRespuesta(solicitud),
     fecha_ejecucion: checklist.fecha_ejecucion,
-    archivos: archivos.map((archivo) => ({ archivo })),
+    archivos: archivos.filter((archivo) => !vencidos.has(archivo)).map((archivo) => ({ archivo })),
+    retenidos: archivos.filter((archivo) => vencidos.has(archivo)).map((archivo) => ({ archivo })),
     bloqueos: checklist.bloqueos.map((bloqueo) => ({ bloqueo })),
   };
 }
