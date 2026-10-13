@@ -8,7 +8,7 @@ import { listarSalida } from "@tests/helpers/instantanea.helper.ts";
 import { crearProyectoTemporal } from "@tests/helpers/proyecto-temporal.helper.ts";
 import type { Corrida } from "@tests/helpers/types/correr-demo.type.ts";
 import type { ProyectoTemporal } from "@tests/helpers/types/proyecto-temporal.type.ts";
-import { ejecutarDemo } from "@/demo/ejecutar-demo.runner.ts";
+import { ejecutarDemo } from "@/demo/runners/ejecutar-demo.runner.ts";
 
 const CASOS_REALES = ["co-industrias-delta", "ec-corp-andina", "hn-agroexport-sula", "pa-logistica-istmo"];
 const proyectos: ProyectoTemporal[] = [];
