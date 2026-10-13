@@ -82,6 +82,21 @@ describe("leerRuta", () => {
     expect(leerRuta(maestro, "codigo_postal")).toBe("050021");
   });
 
+  test("leerHoja convierte números solo con String y devuelve los textos tal cual", () => {
+    const cifras: Maestro = {
+      grande: 98000000000,
+      empleados: 480,
+      ano: 2025,
+      postal: "050021",
+      tel: "+57 604 555 0100",
+    };
+    expect(leerHoja(cifras, "grande")).toEqual({ tipo: "texto", valor: "98000000000" });
+    expect(leerHoja(cifras, "empleados")).toEqual({ tipo: "texto", valor: "480" });
+    expect(leerHoja(cifras, "ano")).toEqual({ tipo: "texto", valor: "2025" });
+    expect(leerHoja(cifras, "postal")).toEqual({ tipo: "texto", valor: "050021" });
+    expect(leerHoja(cifras, "tel")).toEqual({ tipo: "texto", valor: "+57 604 555 0100" });
+  });
+
   test("leerHoja distingue texto, dato no textual y ausencia", () => {
     expect(leerHoja(maestro, "numero_empleados")).toEqual({ tipo: "texto", valor: "480" });
     for (const ruta of ["gran_contribuyente", "certificaciones", "banco"]) {

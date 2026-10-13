@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { aTexto, normalizarEtiqueta } from "@/domain/utils/normalizar.util.ts";
+import { normalizarEtiqueta } from "@/domain/utils/normalizar.util.ts";
 
 describe("normalizarEtiqueta", () => {
   test("quita tildes, mayúsculas y marcas finales", () => {
@@ -22,18 +22,5 @@ describe("normalizarEtiqueta", () => {
 
   test("conserva la ñ como n sin tilde y no toca otros signos internos", () => {
     expect(normalizarEtiqueta("Año / Período")).toBe("ano / periodo");
-  });
-});
-
-describe("aTexto", () => {
-  test("convierte números solo con String, sin formato regional ni exponente", () => {
-    expect(aTexto(98000000000)).toBe("98000000000");
-    expect(aTexto(480)).toBe("480");
-    expect(aTexto(2025)).toBe("2025");
-  });
-
-  test("devuelve los textos tal cual, con sus ceros a la izquierda", () => {
-    expect(aTexto("050021")).toBe("050021");
-    expect(aTexto("+57 604 555 0100")).toBe("+57 604 555 0100");
   });
 });

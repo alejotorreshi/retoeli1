@@ -1,7 +1,6 @@
 import { CLAVES_PROHIBIDAS, TIPO_HOJA_MAESTRO } from "@/config/constants/mapping.constants.ts";
 import { PATRON_SEGMENTO_RUTA, PATRON_TEXTO_NO_VACIO } from "@/config/constants/patterns.constants.ts";
 import type { HojaMaestro, Maestro } from "@/domain/types/maestro.type.ts";
-import { aTexto } from "@/domain/utils/normalizar.util.ts";
 
 const AUSENTE: HojaMaestro = { tipo: TIPO_HOJA_MAESTRO.AUSENTE };
 const NO_TEXTUAL: HojaMaestro = { tipo: TIPO_HOJA_MAESTRO.NO_TEXTUAL };
@@ -23,7 +22,7 @@ function valorEnRuta(maestro: Maestro, ruta: string): unknown {
 }
 
 function hojaDe(valor: unknown): HojaMaestro {
-  if (typeof valor === "number") return { tipo: TIPO_HOJA_MAESTRO.TEXTO, valor: aTexto(valor) };
+  if (typeof valor === "number") return { tipo: TIPO_HOJA_MAESTRO.TEXTO, valor: String(valor) };
   if (typeof valor === "string")
     return PATRON_TEXTO_NO_VACIO.test(valor) ? { tipo: TIPO_HOJA_MAESTRO.TEXTO, valor } : AUSENTE;
   if (typeof valor === "boolean") return NO_TEXTUAL;

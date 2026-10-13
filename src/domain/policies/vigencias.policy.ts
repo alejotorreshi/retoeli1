@@ -1,7 +1,8 @@
 import { ESTADO_VIGENCIA, MILISEGUNDOS_POR_DIA } from "@/config/constants/supports.constants.ts";
 import { TEXTO_VIGENCIA } from "@/config/strings.ts";
 import type { Vigencia } from "@/domain/types/vigencias.type.ts";
-export function textoVence(dias: number): string {
+
+function textoVence(dias: number): string {
   if (dias === 0) return TEXTO_VIGENCIA.venceHoy;
   if (dias === 1) return TEXTO_VIGENCIA.venceEnUnDia;
   return TEXTO_VIGENCIA.venceEnDias(dias);

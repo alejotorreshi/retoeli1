@@ -13,7 +13,3 @@ export function normalizarEtiqueta(etiqueta: string): string {
     .replace(PATRON_MARCAS_FINALES, "")
     .trim();
 }
-
-export function aTexto(valor: string | number): string {
-  return typeof valor === "number" ? String(valor) : valor;
-}

@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { evaluarVigencia, textoVence } from "@/domain/policies/vigencias.policy.ts";
+import { evaluarVigencia } from "@/domain/policies/vigencias.policy.ts";
 import type { FechaISO } from "@/domain/types/fecha.type.ts";
 
 const HOY: FechaISO = "2026-09-03";
@@ -30,7 +30,7 @@ describe("evaluarVigencia (PAQ-05, D-23)", () => {
 
   test("a un día del vencimiento avisa en singular", () => {
     expect(evaluarVigencia("2026-09-04", HOY, DIAS_AVISO).aviso).toBe("vence en 1 día");
-    expect(textoVence(2)).toBe("vence en 2 días");
+    expect(evaluarVigencia("2026-09-05", HOY, DIAS_AVISO).aviso).toBe("vence en 2 días");
   });
 
   test("sin vigencia es vigente y no avisa", () => {
