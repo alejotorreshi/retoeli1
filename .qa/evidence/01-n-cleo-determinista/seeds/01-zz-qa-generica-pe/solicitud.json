@@ -1,0 +1,12 @@
+{
+  "id": "zz-qa-generica-pe",
+  "de": "compras@cliente-sintetico-pe.example",
+  "para": "recepcion@periferia-ficticia.com",
+  "asunto": "Registro de proveedor - caso QA sintético PE",
+  "fecha": "2026-08-22",
+  "pais": "PE",
+  "cliente": "Cliente Sintético Perú S.A.C.",
+  "formato": "pdf",
+  "cuerpo": "Caso sintético QA: etiqueta tributaria genérica ausente del glosario. No contiene datos reales.",
+  "adjuntos": ["Formulario_QA_PE.pdf"]
+}

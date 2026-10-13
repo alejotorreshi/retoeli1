@@ -1,0 +1,1 @@
+{ "patch": "jq del(.\"Número de identificación fiscal\") over reto-01/fixtures/reto-01/glosario-campos.json (scratch copy only)" }

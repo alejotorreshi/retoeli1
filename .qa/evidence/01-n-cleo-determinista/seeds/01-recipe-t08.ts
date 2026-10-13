@@ -1,0 +1,15 @@
+import { call, proyectar, pdfTrazos } from "./qa-lib.ts";
+const caso = "zz-generica-co";
+console.log("leer:", (await call("leer_solicitud", { caso })).resumen);
+const m = await call("mapear_campos", { caso, campos: [] });
+console.log("conteo:", JSON.stringify(m.data.conteo));
+for (const g of ["llenos", "faltantes", "requiere_confirmacion"]) for (const i of m.data[g]) if (/contribuyente/i.test(i.etiqueta)) console.log("GRAN:", g, JSON.stringify(i));
+const g = await call("generar_formulario", { caso, mapeo: proyectar(m) });
+console.log("generar:", JSON.stringify(g));
+const t = await pdfTrazos(`out/${caso}/formulario.pdf`);
+const idx = t.findIndex((x) => /Gran contribuyente/i.test(x.texto));
+console.log("pdf near label:", JSON.stringify(t.slice(Math.max(0, idx - 1), idx + 3)));
+const all = t.map((x) => x.texto).join("\n");
+console.log("pdf contains Sí/No/true/false tokens as values:", /(^|\n)(Sí|Si|No|true|false)(\n|$)/.test(all));
+const mj = await Bun.file(`out/${caso}/mapeo.json`).json();
+console.log("mapeo.json entry:", JSON.stringify((mj.campos ?? mj.mapeo ?? mj.items ?? []).find?.((x: any) => /contribuyente/i.test(x.etiqueta)) ?? Object.keys(mj)));

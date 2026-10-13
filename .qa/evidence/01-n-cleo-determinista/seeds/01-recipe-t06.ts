@@ -1,0 +1,15 @@
+import { call, proyectar } from "./qa-lib.ts";
+const caso = "ec-corp-andina";
+const calls: [string, any][] = [];
+const c = async (n: any, a: any) => { const r = await call(n, a); calls.push([n, { ok: r.ok, codigo: r.codigo }]); return r; };
+await c("leer_solicitud", { caso });
+const mapeo = proyectar(await c("mapear_campos", { caso, campos: [] }));
+await c("generar_formulario", { caso, mapeo });
+await c("armar_paquete", { caso });
+await c("simular_envio", { caso, confirmado: false });
+await c("leer_solicitud", { caso, extra: "QAMARK-EXTRA-5531" });
+await c("mapear_campos", { caso, campos: [{ x: "QAMARK-CAMPOS-7702" }] });
+await c("generar_formulario", { caso, mapeo: [{ etiqueta: "QAMARK-ETQ-1188", estado: "lleno", ruta: "QAMARK/../RUTA" }] });
+await c("armar_paquete", { caso: "QAMARK-CASO-4410" });
+await c("simular_envio", { caso, confirmado: "QAMARK-CONF-2290" });
+console.log(JSON.stringify(calls));

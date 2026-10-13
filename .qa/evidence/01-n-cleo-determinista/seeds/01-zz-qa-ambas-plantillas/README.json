@@ -1,0 +1,1 @@
+{ "recipe": "for f in xlsx pdf portal: copy reto-01 co-industrias-delta to casos/zz-qa-ambas-$f, add ec-corp-andina/plantilla-campos.json, set solicitud.formato=$f and id=zz-qa-ambas-$f (scratch copy only)" }

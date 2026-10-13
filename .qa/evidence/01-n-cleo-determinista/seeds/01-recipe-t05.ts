@@ -1,0 +1,18 @@
+import { readdir, stat } from "node:fs/promises";
+import { call, proyectar } from "./qa-lib.ts";
+const caso = "ec-corp-andina";
+const ls = async () => (await readdir(`out/${caso}`, { recursive: true })).sort();
+await call("leer_solicitud", { caso });
+const mapeo = proyectar(await call("mapear_campos", { caso, campos: [] }));
+await call("generar_formulario", { caso, mapeo });
+await call("armar_paquete", { caso });
+const e = await call("simular_envio", { caso, confirmado: true });
+console.log("send ok:", e.ok, e.data?.ruta);
+console.log("before regen:", await ls());
+const m1 = (await stat(`out/${caso}/formulario.pdf`)).mtimeMs;
+await Bun.sleep(30);
+const g = await call("generar_formulario", { caso, mapeo });
+console.log("regen:", JSON.stringify(g));
+console.log("after regen:", await ls());
+const m2 = (await stat(`out/${caso}/formulario.pdf`)).mtimeMs;
+console.log("formulario.pdf fresh (mtime increased):", m2 > m1);

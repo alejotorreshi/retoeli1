@@ -1,0 +1,51 @@
+{
+  "version": 1,
+  "confianza": {
+    "umbral": 0.8,
+    "glosario_exacto": 1,
+    "glosario_normalizado": 0.95,
+    "clave_directa": 0.85,
+    "regla_pais": 0.99,
+    "etiqueta_generica": 0.95,
+    "sin_fuente": 0
+  },
+  "identificador_tributario": {
+    "ruta": "nit",
+    "pais_origen": "CO",
+    "por_pais": {
+      "CO": "NIT",
+      "EC": "RUC",
+      "PE": "RUC",
+      "PA": "RUC",
+      "HN": "RTN"
+    },
+    "nota_extranjero": "Identificador extranjero: confirmar si el cliente acepta el NIT colombiano",
+    "nota_generica": "Etiqueta genérica: el equivalente en {{pais}} es {{identificador}}; confirmar con el cliente"
+  },
+  "etiquetas_genericas": [
+    "Identificación tributaria",
+    "Número de identificación fiscal"
+  ],
+  "notas_contexto": [
+    {
+      "ruta": "ingresos_ultimo_ano.valor",
+      "aplica": "extranjero",
+      "texto": "{{moneda}}, año {{ano}}"
+    },
+    {
+      "ruta": "pais",
+      "aplica": "siempre",
+      "texto": "Código ISO del país de constitución de Periferia"
+    }
+  ],
+  "soportes": {
+    "dias_aviso_vencimiento": 30,
+    "aviso_emisor_distinto": "Emitido en {{pais_emisor}}: confirmar si el cliente lo acepta"
+  },
+  "plantillas": {
+    "checklist": "plantillas/checklist.md",
+    "borrador_correo": "plantillas/borrador-correo.md",
+    "envio_simulado": "plantillas/envio-simulado.md",
+    "valores_portal": "plantillas/valores-portal.md"
+  }
+}
