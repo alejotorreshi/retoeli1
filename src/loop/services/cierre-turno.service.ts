@@ -7,6 +7,7 @@ import {
   necesitaPreguntaDeterminista,
 } from "@/domain/policies/compuerta.policy.ts";
 import type { CasoPendiente, EstadoCompuerta } from "@/domain/types/compuerta.type.ts";
+import { limpiarMarkdown } from "@/domain/utils/texto-plano.util.ts";
 import type { EventoConfirmacionRequerida } from "@/loop/types/evento.type.ts";
 import type { CierreTurnoCompuerta, EntradaCierreTurno } from "@/loop/types/turno.type.ts";
 
@@ -38,7 +39,7 @@ export function cerrarTurnoConCompuerta(entrada: EntradaCierreTurno): CierreTurn
   return {
     estado,
     pendientes,
-    texto: conPregunta(entrada.texto, pendientes),
+    texto: conPregunta(limpiarMarkdown(entrada.texto), pendientes),
     eventosConfirmacion: pendientes.map((pendiente) => eventoConfirmacion(entrada.turnoId, pendiente)),
     needsConfirmation: casosPendientes(estado).length > 0,
   };

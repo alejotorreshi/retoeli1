@@ -23,3 +23,7 @@ export const PATRON_PREGUNTA: RegExp = /[?¿]/;
 export const PATRON_SLUG_EN_TEXTO: RegExp = /[a-z0-9]+(?:-[a-z0-9]+)+/g;
 export const PATRON_NO_PALABRA: RegExp = /[^a-z0-9ñ]+/;
 export const PATRON_ENTERO_NO_NEGATIVO: RegExp = /^\d+$/;
+export const PATRON_NEGRITA: RegExp = /\*\*|__/g;
+export const PATRON_ENCABEZADO_MD: RegExp = /^[ \t]*#{1,6}[ \t]+/gm;
+export const PATRON_SEPARADOR_TABLA_MD: RegExp = /^(?=[^\n]*\|)(?=[^\n]*-)[ \t|:-]+$(?:\r?\n)?/gm;
+export const PATRON_BORDE_TABLA_MD: RegExp = /^[ \t]*\|[ \t]*|[ \t]*\|[ \t]*$/gm;

@@ -91,3 +91,17 @@ export type CierreTurnoCompuerta = {
   readonly eventosConfirmacion: readonly EventoConfirmacionRequerida[];
   readonly needsConfirmation: boolean;
 };
+
+export type LlamadaRespondida = {
+  readonly herramienta: string;
+  readonly argumentos: unknown;
+  readonly ok: boolean;
+  readonly codigo: string | null;
+  readonly resumen: string | null;
+};
+
+export type RespuestaTurno = {
+  readonly reply: string;
+  readonly toolCalls: readonly LlamadaRespondida[];
+  readonly needsConfirmation: boolean;
+};
