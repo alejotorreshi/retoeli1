@@ -153,6 +153,7 @@ function conteo(cuenta: ConteoPorEstado): string {
 
 export const RESUMEN_HERRAMIENTA = {
   conteo,
+  fallo: (herramienta: string, codigo: string): string => `${herramienta}: ${codigo}`,
   solicitud: (caso: string, formato: string, pais: string, campos: number, soportes: number): string =>
     `${caso}: ${formato}, ${pais}, ${campos} campos, ${soportes} soportes exigidos`,
   mapeo: (caso: string, cuenta: ConteoPorEstado): string => `${caso}: ${conteo(cuenta)}`,
