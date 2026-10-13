@@ -1,4 +1,4 @@
-import { SEPARADOR_PARRAFOS } from "@/config/constants/agent.constants.ts";
+import { CODIGO_AGENTE, SEPARADOR_PARRAFOS } from "@/config/constants/agent.constants.ts";
 import { MENSAJE_AGENTE } from "@/config/strings.ts";
 import { cierreDeterminista } from "@/domain/builders/cierre-turno.builder.ts";
 import type { LlamadaResumida } from "@/domain/types/cierre-turno.type.ts";
@@ -14,5 +14,5 @@ export function acumularUso(sesion: Sesion, uso: Uso): Sesion {
 }
 
 export function cierrePorPresupuesto(llamadas: readonly LlamadaResumida[]): string {
-  return `${MENSAJE_AGENTE.PRESUPUESTO_AGOTADO}${SEPARADOR_PARRAFOS}${cierreDeterminista(llamadas)}`;
+  return `${MENSAJE_AGENTE[CODIGO_AGENTE.PRESUPUESTO_AGOTADO]}${SEPARADOR_PARRAFOS}${cierreDeterminista(llamadas)}`;
 }

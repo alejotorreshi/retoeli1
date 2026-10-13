@@ -102,7 +102,7 @@ async function* conversar(turno: Turno, sistema: readonly Mensaje[]): Ejecucion<
 
 export async function* resolverTurno(turno: Turno): Ejecucion<Cierre> {
   if (presupuestoAgotado(turno.sesion, turno.deps.presupuestoTokens)) {
-    return cerrarSinError(MOTIVO_FIN.TOPE_TOKENS, MENSAJE_AGENTE.PRESUPUESTO_AGOTADO);
+    return cerrarSinError(MOTIVO_FIN.TOPE_TOKENS, MENSAJE_AGENTE[CODIGO_AGENTE.PRESUPUESTO_AGOTADO]);
   }
   const lectura = await turno.deps.instrucciones();
   if (!lectura.ok) return yield* fallar(turno, CODIGO_AGENTE.INSTRUCCIONES_NO_DISPONIBLES);
