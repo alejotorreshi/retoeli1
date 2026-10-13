@@ -19,12 +19,16 @@ import { crearProyectoTemporal } from "@tests/helpers/proyecto-temporal.helper.t
 import type { AgentePrueba } from "@tests/helpers/types/agente-prueba.type.ts";
 import type { PasoLlmFalso } from "@tests/helpers/types/llm-falso.type.ts";
 import type { ProyectoTemporal } from "@tests/helpers/types/proyecto-temporal.type.ts";
-import { ACCION } from "@/config/constants/agent.constants.ts";
+import { ACCION, SEPARADOR_PARRAFOS } from "@/config/constants/agent.constants.ts";
 import { FECHA_DEMO } from "@/config/constants/demo.constants.ts";
 import { CODIGO_ERROR } from "@/config/constants/errors.constants.ts";
 import { ROL_MENSAJE } from "@/config/constants/llm.constants.ts";
+import { ESTADO_SOPORTE } from "@/config/constants/supports.constants.ts";
 import { HERRAMIENTA } from "@/config/constants/tools.constants.ts";
 import { pinExecutionDate } from "@/config/env.ts";
+import { preguntaConfirmacion } from "@/domain/builders/cierre-turno.builder.ts";
+import type { CasoPendiente } from "@/domain/types/compuerta.type.ts";
+import { respuestaDeTurno } from "@/loop/services/respuesta-turno.service.ts";
 
 const EC = "ec-corp-andina";
 const LITERAL = "requiere confirmación explícita";
@@ -36,16 +40,33 @@ const MENSAJE_TURNO_1 =
   'Procesa el caso "ec-corp-andina" del cliente Corporación Andina de Servicios. Genera el formulario, arma el paquete y dime qué falta. No envíes nada todavía.';
 const TEXTO_TURNO_1 = "Armé el paquete de ec-corp-andina. Queda BLOQUEADO por un soporte ausente.";
 
-const GUION_TURNO_1: readonly PasoLlmFalso[] = [
+const PENDIENTE_EC: CasoPendiente = {
+  caso: EC,
+  bloqueos: [BLOQUEO_EC],
+  motivos: [{ tipo: "certificado_cumplimiento_tributario", causa: ESTADO_SOPORTE.AUSENTE }],
+};
+const PREGUNTA_AJENA = `¿Quieres que vuelva a generar el formulario de ${EC}?`;
+const PREGUNTA_ENVIO_MODELO = `¿Confirmo el envío de ${EC}?`;
+const LINEA_ESTADO = "Estado: BLOQUEADO por un soporte ausente.";
+
+const PASOS_HASTA_GENERAR: readonly PasoLlmFalso[] = [
   respuestaHerramientas(llamar("leer-1", HERRAMIENTA.LEER_SOLICITUD, { caso: EC })),
   respuestaHerramientas(llamar("mapear-1", HERRAMIENTA.MAPEAR_CAMPOS, { caso: EC, campos: [] })),
   pasoGenerarConMapeo(EC),
-  respuestaHerramientas(
-    llamar("armar-1", HERRAMIENTA.ARMAR_PAQUETE, { caso: EC }),
-    llamar("simular-1", HERRAMIENTA.SIMULAR_ENVIO, { caso: EC, confirmado: true }),
-  ),
-  respuestaTexto(TEXTO_TURNO_1),
 ];
+
+function guionTurno1(textoModelo: string): readonly PasoLlmFalso[] {
+  return [
+    ...PASOS_HASTA_GENERAR,
+    respuestaHerramientas(
+      llamar("armar-1", HERRAMIENTA.ARMAR_PAQUETE, { caso: EC }),
+      llamar("simular-1", HERRAMIENTA.SIMULAR_ENVIO, { caso: EC, confirmado: true }),
+    ),
+    respuestaTexto(textoModelo),
+  ];
+}
+
+const GUION_TURNO_1: readonly PasoLlmFalso[] = guionTurno1(TEXTO_TURNO_1);
 
 function intentoDeEnvio(id: string): readonly PasoLlmFalso[] {
   return [
@@ -90,6 +111,18 @@ function resultadoDeHerramienta(prueba: AgentePrueba, llamadaId: string): string
     }
   }
   return undefined;
+}
+
+function ultimoParrafo(texto: string): string | undefined {
+  return texto.trimEnd().split(SEPARADOR_PARRAFOS).at(-1);
+}
+
+function ultimoTextoAsistente(prueba: AgentePrueba, pedido: number): string | undefined {
+  const mensajes = prueba.llm.pedidos[pedido]?.mensajes ?? [];
+  const asistente = mensajes
+    .filter((mensaje) => mensaje.rol === ROL_MENSAJE.ASISTENTE && mensaje.llamadas.length === 0)
+    .at(-1);
+  return asistente?.rol === ROL_MENSAJE.ASISTENTE ? (asistente.contenido ?? undefined) : undefined;
 }
 
 describe("guion PRD §11 de punta a punta con el LLM falso (ENV-02, ENV-03, CA3)", () => {
@@ -160,5 +193,82 @@ describe("guion PRD §11 de punta a punta con el LLM falso (ENV-02, ENV-03, CA3)
     expect(await casosConEnvioSimulado(proyecto.raiz)).toEqual([]);
     expect((await lineasDeEnvio(proyecto.raiz)).filter((linea) => linea.ok)).toHaveLength(0);
     historialSano(prueba);
+  });
+});
+
+describe("CR-02: con un caso pendiente la pregunta del servidor cierra el turno (ENV-02, ENV-03, D-44)", () => {
+  test("(a) la pregunta ajena del modelo se quita, la del servidor es el último párrafo y el 'sí' siguiente la responde y envía una vez (vía alternativa del gap 2)", async () => {
+    const prueba = agente([
+      ...guionTurno1(`${TEXTO_TURNO_1}${SEPARADOR_PARRAFOS}${PREGUNTA_AJENA}`),
+      ...intentoDeEnvio("simular-2"),
+    ]);
+    const turno1 = await prueba.turno(MENSAJE_TURNO_1);
+    const pregunta = preguntaConfirmacion([PENDIENTE_EC]);
+
+    for (const texto of [textoFinal(turno1), respuestaDeTurno(turno1).reply]) {
+      expect(texto).not.toContain("¿Quieres que vuelva a generar");
+      expect(texto.startsWith(TEXTO_TURNO_1)).toBe(true);
+      expect(texto).toContain(NOMBRE_BLOQUEO_EC);
+      expect(ultimoParrafo(texto)).toBe(pregunta);
+    }
+    expect(finDeTurno(turno1).needsConfirmation).toBe(true);
+
+    const pedidosTurno1 = prueba.llm.pedidos.length;
+    const turno2 = await prueba.turno("sí");
+    expect(ultimoParrafo(ultimoTextoAsistente(prueba, pedidosTurno1) ?? "")).toBe(pregunta);
+    expect(finesDeHerramienta(turno2)).toEqual([expect.objectContaining({ ok: true })]);
+    expect(await casosConEnvioSimulado(proyecto.raiz)).toEqual([EC]);
+    expect((await lineasDeEnvio(proyecto.raiz)).filter((linea) => linea.ok)).toHaveLength(1);
+    expect(finDeTurno(turno2).needsConfirmation).toBe(false);
+    historialSano(prueba);
+  });
+
+  test("(a-control) sin caso pendiente la pregunta del modelo queda al final y un 'sí' no autoriza el envío", async () => {
+    const preguntaModelo = `¿Quieres que arme el paquete de ${EC}?`;
+    const textoModelo = `Generé el formulario de ${EC}.${SEPARADOR_PARRAFOS}${preguntaModelo}`;
+    const prueba = agente([
+      ...PASOS_HASTA_GENERAR,
+      respuestaTexto(textoModelo),
+      ...intentoDeEnvio("simular-2"),
+    ]);
+    const turno1 = await prueba.turno(`Procesa el caso ${EC} hasta el formulario.`);
+
+    expect(textoFinal(turno1)).toBe(textoModelo);
+    expect(respuestaDeTurno(turno1).reply.endsWith(preguntaModelo)).toBe(true);
+    expect(confirmaciones(turno1)).toEqual([]);
+    expect(finDeTurno(turno1).needsConfirmation).toBe(false);
+
+    const turno2 = await prueba.turno("sí");
+    expect(finesDeHerramienta(turno2)).toEqual([
+      expect.objectContaining({ ok: false, codigo: CODIGO_ERROR.CONFIRMACION_REQUERIDA }),
+    ]);
+    expect(await casosConEnvioSimulado(proyecto.raiz)).toEqual([]);
+    expect((await lineasDeEnvio(proyecto.raiz)).filter((linea) => linea.ok)).toHaveLength(0);
+    historialSano(prueba);
+  });
+
+  test("(b) la pregunta de envío del modelo se quita, la línea de estado queda y la respuesta lista los bloqueos legibles", async () => {
+    const prueba = agente(
+      guionTurno1(`${TEXTO_TURNO_1}${SEPARADOR_PARRAFOS}${LINEA_ESTADO}\n${PREGUNTA_ENVIO_MODELO}`),
+    );
+    const turno1 = await prueba.turno(MENSAJE_TURNO_1);
+    const pregunta = preguntaConfirmacion([PENDIENTE_EC]);
+    const respuesta = respuestaDeTurno(turno1);
+
+    for (const texto of [textoFinal(turno1), respuesta.reply]) {
+      expect(texto).toContain(LINEA_ESTADO);
+      expect(texto).not.toContain(PREGUNTA_ENVIO_MODELO);
+      expect(texto).toContain(NOMBRE_BLOQUEO_EC);
+      expect(ultimoParrafo(texto)).toBe(pregunta);
+    }
+    expect(respuesta.needsConfirmation).toBe(true);
+    historialSano(prueba);
+  });
+
+  test("un texto del modelo sin pregunta sigue cerrando con la pregunta del servidor", async () => {
+    const prueba = agente(GUION_TURNO_1);
+    const turno1 = await prueba.turno(MENSAJE_TURNO_1);
+    const texto = textoFinal(turno1);
+    expect(texto).toBe(`${TEXTO_TURNO_1}${SEPARADOR_PARRAFOS}${preguntaConfirmacion([PENDIENTE_EC])}`);
   });
 });
