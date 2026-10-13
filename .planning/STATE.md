@@ -3,16 +3,16 @@ gsd_state_version: "1.0"
 current_phase: 02
 current_phase_name: Agente y compuerta de confirmación
 status: executing
-stopped_at: Completed 02-03-PLAN.md
-last_updated: "2026-10-13T19:28:37.756Z"
+stopped_at: Completed 02-04-PLAN.md
+last_updated: "2026-10-13T19:36:08.630Z"
 last_activity: 2026-10-13
 last_activity_desc: Phase 02 execution started
-state_head: d5ecf546ff2f21c63069fbc39cfcc5d2be20935f
+state_head: 968f6c7eba519be640c2bf0b83c98e74628ec286
 progress:
   total_phases: 4
   completed_phases: 1
   total_plans: 24
-  completed_plans: 18
+  completed_plans: 19
   percent: 25
 ---
 
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-10-13)
 ## Current Position
 
 Phase: 02 (Agente y compuerta de confirmación) — EXECUTING
-Plan: 4 of 9
+Plan: 5 of 9
 Status: Ready to execute
 Last activity: 2026-10-13 — Phase 02 execution started
 
@@ -74,6 +74,7 @@ Progress: [███░░░░░░░] 25%
 | Phase 02 P01 | 12 min | 2 tasks | 28 files |
 | Phase 02 P02 | 6 min | 2 tasks | 15 files |
 | Phase 02 P03 | 6 min | 2 tasks | 14 files |
+| Phase 02 P04 | 5 min | 2 tasks | 18 files |
 
 ## Accumulated Context
 
@@ -141,6 +142,9 @@ Recent decisions affecting current work:
 - [Phase 02]: 02-03: abrirTurno con confirma de un caso no pendiente no autoriza y cancela a LIBRE; falta_caso conserva los casos
 - [Phase 02]: 02-03: cerrarTurno solo vuelve pendiente un bloqueado si su paquete está en conocidos; el bucle debe registrar cada paquete armado en conocidos
 - [Phase 02]: 02-03: necesitaPreguntaDeterminista exige que el último párrafo termine en ? y nombre cada caso pendiente
+- [Phase 02]: 02-04: Retry-After honored only as a non-negative integer of seconds, capped at BACKOFF_TOPE_MS; HTTP dates fall back to full-jitter backoff
+- [Phase 02]: 02-04: Missing provider usage is estimated as ceil(chars / CARACTERES_POR_TOKEN) so the session budget still bites
+- [Phase 02]: 02-04: Resilience is three stateless decorators (withTimeout, withRetry, withFallback) with injected esperar/azar; fallback only after a retryable primary error and never on caller abort
 
 ### Pending Todos
 
@@ -166,6 +170,6 @@ Items acknowledged and deferred at milestone close, most recent first:
 
 ## Session Continuity
 
-Last session: 2026-10-13T19:28:37.704Z
-Stopped at: Completed 02-03-PLAN.md
+Last session: 2026-10-13T19:36:08.579Z
+Stopped at: Completed 02-04-PLAN.md
 Resume file: None
