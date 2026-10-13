@@ -1,9 +1,9 @@
 ---
-status: complete
+status: diagnosed
 phase: 01-n-cleo-determinista
 source: [01-01-SUMMARY.md, 01-02-SUMMARY.md, 01-03-SUMMARY.md, 01-04-SUMMARY.md, 01-05-SUMMARY.md, 01-06-SUMMARY.md, 01-07-SUMMARY.md, 01-08-SUMMARY.md, 01-09-SUMMARY.md, 01-10-SUMMARY.md, 01-11-SUMMARY.md]
 started: 2026-10-13T02:11:03Z
-updated: 2026-10-13T02:45:39Z
+updated: 2026-10-13T02:57:43Z
 ---
 
 ## Current Test
@@ -578,37 +578,81 @@ blocked: 0
   severity: cosmetic
   test: 17
   gap_id: G-01-H1
-  root_cause: ""
-  artifacts: []
-  missing: []
-  debug_session: ""
+  root_cause: "xlsx writer never sets column widths (no getColumn().width / <cols>), so viewers use the ~8.43-char default; used columns depend on the template (co B/C, hn A/B)"
+  artifacts:
+    - path: "src/infra/output/xlsx-writer.adapter.ts"
+      issue: "writeXlsx (L41-51) has no width step"
+    - path: "src/config/constants/xlsx.constants.ts"
+      issue: "no width constants"
+    - path: "tests/golden/formulario-xlsx.test.ts"
+      issue: "no width/wrap asserts"
+  missing:
+    - "Per sheet, derive used columns from celda_etiqueta/celda_valor and set width = clamp(longest written text + margin, min, max) with constants in xlsx.constants.ts"
+    - "wrapText on value cells longer than max"
+    - "Golden test: co (B,C) and hn (A,B) widths >= longest label and <= max; boundary tests"
+  debug_session: ".planning/debug/xlsx-anchos-columna.md"
 - truth: "ENVIO-SIMULADO lists only the files actually sent to the client (H4a)"
   status: failed
   reason: "User reported: ENVIO-SIMULADO lists checklist.md and borrador-correo.md (internal) as sent"
   severity: minor
   test: 20
   gap_id: G-01-H4a
-  root_cause: ""
-  artifacts: []
-  missing: []
-  debug_session: ""
+  root_cause: "ENVIO-SIMULADO sent list is the raw paquete/ listing minus expired supports; internal checklist.md and borrador-correo.md are never excluded, and the WR-06 rename to \"Archivos que se envían\" turned the listing into a false claim"
+  artifacts:
+    - path: "src/domain/builders/borrador.builder.ts"
+      issue: "construirDatosEnvio (L59-84) only splits expired"
+    - path: "src/application/use-cases/simular-envio.use-case.ts"
+      issue: "L29-30 sent list from listarPaquete"
+    - path: "src/knowledge/plantillas/envio-simulado.md"
+      issue: "L10-14 heading"
+    - path: "tests/golden/borrador-envio.test.ts"
+      issue: "no exclusion assert"
+  missing:
+    - "Build the sent list from domain state like the borrador (formulario + soportes presente), keep the folder listing for the expired section / existence check"
+    - "Golden: checklist.md and borrador-correo.md never in the sent list for co, ec, hn"
+  debug_session: ".planning/debug/envio-lista-internos.md"
 - truth: "The borrador never claims the form is signed while the case is blocked or has fields to confirm (H4b)"
   status: failed
   reason: "User reported: borrador says firmado por el representante legal while BLOQUEADO / RUC por confirmar — asserts something not true"
   severity: major
   test: 20
   gap_id: G-01-H4b
-  root_cause: ""
-  artifacts: []
-  missing: []
-  debug_session: ""
+  root_cause: "borrador-correo.md states \"firmado por el representante legal\" unconditionally, and construirDatosBorrador drops listo_para_firma, bloqueos and requiere_confirmacion from the Checklist it receives, so the template cannot vary by state (unknown sections are rejected)"
+  artifacts:
+    - path: "src/knowledge/plantillas/borrador-correo.md"
+      issue: "L6 unconditional signed claim"
+    - path: "src/domain/builders/borrador.builder.ts"
+      issue: "L28-36, L41-59 drop state"
+    - path: "src/domain/types/borrador.type.ts"
+      issue: "L6-17 no state fields"
+    - path: "src/config/strings.ts"
+      issue: "TEXTO_BORRADOR L81-84"
+    - path: "tests/golden/borrador-envio.test.ts"
+      issue: "no state asserts"
+  missing:
+    - "Expose package state (listo/bloqueado, bloqueos, por confirmar labels) in DatosBorradorCorreo from the Checklist"
+    - "Template wording only states tool-produced facts: para firma / una vez firmado; blocked wording never presents the form as final"
+    - "Goldens: ec/hn never contain firmado; pa (LISTO + por confirmar) never claims final"
+    - "Related: pa borrador attaches valores-portal.md though portal has no attachment"
+  debug_session: ".planning/debug/borrador-afirma-firmado.md"
 - truth: "The borrador shows human-readable support names (H4c)"
   status: failed
   reason: "User reported: borrador shows snake_case ids like certificado_cumplimiento_tributario"
   severity: cosmetic
   test: 20
   gap_id: G-01-H4c
-  root_cause: ""
-  artifacts: []
-  missing: []
-  debug_session: ""
+  root_cause: "No mapping from soporte tipo (machine key) to a human name; builders copy SoporteEvaluado.tipo verbatim into borrador, checklist table/actions/motivos and ENVIO bloqueos; fixtures cannot supply names (index descripcion describes a file and is absent for ausente types)"
+  artifacts:
+    - path: "src/domain/builders/borrador.builder.ts"
+      issue: "L23, L33, L34, L82"
+    - path: "src/domain/builders/checklist.builder.ts"
+      issue: "L15, L17, L48, L71, L74"
+    - path: "src/config/strings.ts"
+      issue: "L77-78, L83; no names table"
+    - path: "src/domain/types/soportes.type.ts"
+      issue: "SoporteEvaluado has no name"
+  missing:
+    - "Typed zod-validated tipo→nombre table (reglas.json soportes.nombres or strings.ts — product decision); unknown tipo renders the raw id"
+    - "Keep tipo as machine key in tool data/logs (contract v1); resolve names only in human-facing outputs"
+    - "Update goldens on purpose; guard: no known soporte id in human-facing files; test unknown tipo renders safely"
+  debug_session: ".planning/debug/borrador-ids-snake-case.md"
