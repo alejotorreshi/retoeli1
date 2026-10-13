@@ -12,7 +12,7 @@ No hay secciones anidadas ni condicionales booleanos. Una variable o sección de
 
 ## Sección como condición
 
-Para mostrar un bloque solo cuando se cumple una condición, el dominio pasa una lista con una fila vacía (bloque visible) o una lista vacía (bloque oculto). Esa lista la construye `seccionSi(condicion)` de `motor-plantillas.ts`, con el tipo `SeccionCondicional`. Por ejemplo, `hay_soportes_pendientes` en `borrador-correo.md`:
+Para mostrar un bloque solo cuando se cumple una condición, el dominio pasa una lista con una fila vacía (bloque visible) o una lista vacía (bloque oculto). Esa lista la construye `seccionSi(condicion)` de `motor-plantillas.engine.ts`, con el tipo `SeccionCondicional`. Por ejemplo, `hay_soportes_pendientes` en `borrador-correo.md`:
 
 ```
 {{#hay_soportes_pendientes}}Quedan pendientes estos soportes:
