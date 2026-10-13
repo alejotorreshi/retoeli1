@@ -125,6 +125,17 @@ const DUENOS_DE_TEXTO = /^src\/(?:config\/strings\.ts|knowledge\/)/;
 
 const ANTES_DE_REGEX = new Set(["", "(", ",", "=", ":", "[", "!", "&", "|", "?", "{", "}", ";"]);
 
+const ARCHIVO_DE_TIPOS = /(?:^|\/)types\/[a-z0-9-]+\.type\.ts$/;
+
+const EXPORTA_TIPO = /^export\s+(?:type|interface)\s|^export\s+(?:type\s+)?\{[^}]*\btype\b/;
+
+const TIPOS_JUNTO_A_SU_ESQUEMA: ReadonlySet<string> = new Set(["src/config/env.ts"]);
+
+const VALOR_EN_ARCHIVO_DE_TIPOS =
+  /^export\s+(?:declare\s+)?(?:async\s+)?(?:const|let|var|function|class|default|enum)\b/;
+
+const IMPORTA_VALOR = /^import\s+(?!type\b)/;
+
 const CAPAS_FUTURAS = /^src\/(?:server[^/]*|http|loop|llm)(?:\/|$)/;
 
 function sinExtension(ruta: string): string {
@@ -332,6 +343,19 @@ function violacionesDeTexto(ruta: string, codigo: string): string[] {
     .map((literal) => `${ruta}: texto legible fuera de strings.ts: ${literal}`);
 }
 
+function violacionesDeUbicacionDeTipos(ruta: string, codigo: string): string[] {
+  if (ARCHIVO_DE_TIPOS.test(ruta) || TIPOS_JUNTO_A_SU_ESQUEMA.has(ruta)) return [];
+  return lineasQueCumplen(ruta, codigo, EXPORTA_TIPO, "exporta un tipo fuera de types/*.type.ts");
+}
+
+function violacionesDeArchivoDeTipos(ruta: string, codigo: string): string[] {
+  if (!ARCHIVO_DE_TIPOS.test(ruta)) return [];
+  return [
+    ...lineasQueCumplen(ruta, codigo, VALOR_EN_ARCHIVO_DE_TIPOS, "un archivo de tipos exporta un valor"),
+    ...lineasQueCumplen(ruta, codigo, IMPORTA_VALOR, "un archivo de tipos importa sin import type"),
+  ];
+}
+
 function violacionesDeShell(ruta: string, codigo: string): string[] {
   return codigo
     .split("\n")
@@ -502,6 +526,18 @@ describe("reglas de capas sobre el código real", () => {
 
   test("G8: el texto legible vive solo en src/config/strings.ts", () => {
     expect(listarFuentes().flatMap((ruta) => violacionesDeTexto(ruta, leer(ruta)))).toEqual([]);
+  });
+
+  test("G3: los tipos exportados viven solo en types/*.type.ts", () => {
+    const fuentes = listarTodasLasFuentes();
+    expect(fuentes.filter((ruta) => ARCHIVO_DE_TIPOS.test(ruta)).length).toBeGreaterThan(0);
+    expect(fuentes.flatMap((ruta) => violacionesDeUbicacionDeTipos(ruta, leer(ruta)))).toEqual([]);
+  });
+
+  test("G4: los archivos de tipos solo tienen tipos e import type", () => {
+    expect(listarTodasLasFuentes().flatMap((ruta) => violacionesDeArchivoDeTipos(ruta, leer(ruta)))).toEqual(
+      [],
+    );
   });
 
   test("src/ y demo.ts no usan APIs de shell", () => {
@@ -737,6 +773,38 @@ describe("el escáner muerde sobre fuentes de muestra", () => {
       "src/infra/x.ts: texto legible fuera de strings.ts: sin datos",
     ]);
     expect(violacionesDeTexto("src/config/strings.ts", codigo)).toEqual([]);
+  });
+
+  test("G3: reporta tipos exportados fuera de types/ y deja pasar ToolEnv", () => {
+    const codigo = [
+      "export type A = string;",
+      "export interface B { readonly c: string }",
+      'export { type D } from "@/domain/d.ts";',
+      "type Local = number;",
+      "export const e = 1;",
+    ].join("\n");
+    expect(violacionesDeUbicacionDeTipos("src/domain/x.ts", codigo)).toEqual([
+      "src/domain/x.ts:1: exporta un tipo fuera de types/*.type.ts",
+      "src/domain/x.ts:2: exporta un tipo fuera de types/*.type.ts",
+      "src/domain/x.ts:3: exporta un tipo fuera de types/*.type.ts",
+    ]);
+    expect(violacionesDeUbicacionDeTipos("src/domain/types/x.type.ts", codigo)).toEqual([]);
+    expect(violacionesDeUbicacionDeTipos("src/config/env.ts", codigo)).toEqual([]);
+  });
+
+  test("G4: reporta valores e importaciones de valor en un archivo de tipos", () => {
+    const codigo = [
+      'import { ESTADO } from "@/config/constants/x.constants.ts";',
+      'import type { ValorDe } from "@/config/types/valor-de.type.ts";',
+      "export const a = 1;",
+      "export function b(): void {}",
+      "export type C = ValorDe<typeof ESTADO>;",
+    ].join("\n");
+    expect(violacionesDeArchivoDeTipos("src/domain/types/x.type.ts", codigo)).toEqual([
+      "src/domain/types/x.type.ts:3: un archivo de tipos exporta un valor",
+      "src/domain/types/x.type.ts:4: un archivo de tipos exporta un valor",
+      "src/domain/types/x.type.ts:1: un archivo de tipos importa sin import type",
+    ]);
   });
 
   test("reporta un archivo en una capa no declarada", () => {
