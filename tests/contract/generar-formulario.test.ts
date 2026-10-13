@@ -2,8 +2,10 @@ import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import { existsSync } from "node:fs";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
-import { type ItemProyectado, mapearProyectado, type RespuestaGenerar } from "@tests/helpers/flujo.ts";
-import { crearProyectoTemporal, type ProyectoTemporal } from "@tests/helpers/proyecto-temporal.ts";
+import { mapearProyectado } from "@tests/helpers/flujo.ts";
+import { crearProyectoTemporal } from "@tests/helpers/proyecto-temporal.ts";
+import type { ItemProyectado, RespuestaGenerar } from "@tests/helpers/types/flujo.type.ts";
+import type { ProyectoTemporal } from "@tests/helpers/types/proyecto-temporal.type.ts";
 import { generar_formulario, mapear_campos } from "@/tools/proveedor.ts";
 
 const CO = "co-industrias-delta";

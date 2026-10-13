@@ -1,19 +1,16 @@
 import { cp, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import type {
+  ConocimientoTemporal,
+  OpcionesProyecto,
+  ProyectoTemporal,
+} from "@tests/helpers/types/proyecto-temporal.type.ts";
 import { CASOS_DIR, FIXTURES_DIR } from "@/config/constants/files.constants.ts";
 
 const RAIZ_REPO = join(import.meta.dir, "..", "..");
 const CASOS_SINTETICOS = join(RAIZ_REPO, "tests", "fixtures", "casos");
 const CONOCIMIENTO = join(RAIZ_REPO, "src", "knowledge");
-
-export type ProyectoTemporal = {
-  readonly raiz: string;
-  readonly casosDir: string;
-  limpiar(): Promise<void>;
-};
-
-export type OpcionesProyecto = { readonly sinteticos?: readonly string[] };
 
 export async function crearProyectoTemporal(opciones: OpcionesProyecto = {}): Promise<ProyectoTemporal> {
   const raiz = await mkdtemp(join(tmpdir(), "proveedor-"));
@@ -30,11 +27,6 @@ export async function crearProyectoTemporal(opciones: OpcionesProyecto = {}): Pr
     limpiar: () => rm(raiz, { recursive: true, force: true }),
   };
 }
-
-export type ConocimientoTemporal = {
-  readonly directorio: string;
-  limpiar(): Promise<void>;
-};
 
 export async function copiarConocimiento(): Promise<ConocimientoTemporal> {
   const base = await mkdtemp(join(tmpdir(), "conocimiento-"));

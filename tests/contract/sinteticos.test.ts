@@ -3,7 +3,8 @@ import { copyFile, readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { generarCaso } from "@tests/helpers/flujo.ts";
 import { extraerTrazos } from "@tests/helpers/pdf-texto.ts";
-import { crearProyectoTemporal, type ProyectoTemporal } from "@tests/helpers/proyecto-temporal.ts";
+import { crearProyectoTemporal } from "@tests/helpers/proyecto-temporal.ts";
+import type { ProyectoTemporal } from "@tests/helpers/types/proyecto-temporal.type.ts";
 import { generar_formulario, leer_solicitud, mapear_campos } from "@/tools/proveedor.ts";
 
 type Item = {

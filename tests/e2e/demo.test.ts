@@ -3,9 +3,11 @@ import { existsSync } from "node:fs";
 import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { type Corrida, correrDemo } from "@tests/helpers/correr-demo.ts";
+import { correrDemo } from "@tests/helpers/correr-demo.ts";
 import { listarSalida } from "@tests/helpers/instantanea.ts";
-import { crearProyectoTemporal, type ProyectoTemporal } from "@tests/helpers/proyecto-temporal.ts";
+import { crearProyectoTemporal } from "@tests/helpers/proyecto-temporal.ts";
+import type { Corrida } from "@tests/helpers/types/correr-demo.type.ts";
+import type { ProyectoTemporal } from "@tests/helpers/types/proyecto-temporal.type.ts";
 import { ejecutarDemo } from "@/demo/ejecutar-demo.ts";
 
 const CASOS_REALES = ["co-industrias-delta", "ec-corp-andina", "hn-agroexport-sula", "pa-logistica-istmo"];

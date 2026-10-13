@@ -1,7 +1,6 @@
 import { inflateSync } from "node:zlib";
+import type { Trazo } from "@tests/helpers/types/pdf-texto.type.ts";
 import { PDFArray, PDFDocument, PDFName, type PDFObject, PDFRawStream, PDFRef } from "pdf-lib";
-
-export type Trazo = { texto: string; color: string };
 
 function flujos(doc: PDFDocument, contenido: PDFObject | undefined): PDFRawStream[] {
   const items = contenido instanceof PDFArray ? contenido.asArray() : contenido ? [contenido] : [];

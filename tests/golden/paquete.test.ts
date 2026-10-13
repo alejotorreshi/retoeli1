@@ -3,7 +3,8 @@ import { existsSync } from "node:fs";
 import { chmod, readdir, readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { generarCaso } from "@tests/helpers/flujo.ts";
-import { crearProyectoTemporal, type ProyectoTemporal } from "@tests/helpers/proyecto-temporal.ts";
+import { crearProyectoTemporal } from "@tests/helpers/proyecto-temporal.ts";
+import type { ProyectoTemporal } from "@tests/helpers/types/proyecto-temporal.type.ts";
 import { FIXTURES_DIR } from "@/config/constants/files.constants.ts";
 import { crearHerramientas } from "@/tools/fabrica.ts";
 

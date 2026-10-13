@@ -1,14 +1,5 @@
+import type { Corrida, OpcionesCorrida, Respuesta } from "@tests/helpers/types/correr-demo.type.ts";
 import { ejecutarDemo } from "@/demo/ejecutar-demo.ts";
-
-export type Respuesta = { readonly herramienta: string; readonly respuesta: string };
-
-export type Corrida = {
-  readonly lineas: string[];
-  readonly respuestas: Respuesta[];
-  readonly fallido: boolean;
-};
-
-export type OpcionesCorrida = { readonly despues?: () => Promise<void> };
 
 export async function correrDemo(directorio: string, opciones: OpcionesCorrida = {}): Promise<Corrida> {
   const previa = process.env.FECHA_EJECUCION;

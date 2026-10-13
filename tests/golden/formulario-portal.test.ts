@@ -2,13 +2,10 @@ import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import { existsSync } from "node:fs";
 import { readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
-import { generarCaso, mapearProyectado, type RespuestaGenerar } from "@tests/helpers/flujo.ts";
-import {
-  type ConocimientoTemporal,
-  copiarConocimiento,
-  crearProyectoTemporal,
-  type ProyectoTemporal,
-} from "@tests/helpers/proyecto-temporal.ts";
+import { generarCaso, mapearProyectado } from "@tests/helpers/flujo.ts";
+import { copiarConocimiento, crearProyectoTemporal } from "@tests/helpers/proyecto-temporal.ts";
+import type { RespuestaGenerar } from "@tests/helpers/types/flujo.type.ts";
+import type { ConocimientoTemporal, ProyectoTemporal } from "@tests/helpers/types/proyecto-temporal.type.ts";
 import { FIXTURES_DIR } from "@/config/constants/files.constants.ts";
 import { leerRuta } from "@/domain/mapeo.ts";
 import type { Maestro } from "@/domain/types/maestro.type.ts";

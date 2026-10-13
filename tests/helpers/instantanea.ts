@@ -1,25 +1,8 @@
 import { readdir, readFile } from "node:fs/promises";
 import { extname, join } from "node:path";
+import type { Instantanea, LineaBitacora, ValorComparable } from "@tests/helpers/types/instantanea.type.ts";
 import { leerCeldasXlsx, leerMetadatosXlsx } from "@tests/helpers/xlsx-leer.ts";
 import { OUT_DIR } from "@/config/constants/files.constants.ts";
-
-type LineaBitacora = Record<string, unknown>;
-
-type CeldaComparable = {
-  readonly hoja: string;
-  readonly celda: string;
-  readonly valor: unknown;
-  readonly tipo: string;
-  readonly relleno: string | null;
-  readonly nota: string | null;
-};
-
-export type ValorComparable =
-  | { readonly tipo: "bytes"; readonly bytes: Uint8Array }
-  | { readonly tipo: "jsonl"; readonly lineas: readonly LineaBitacora[] }
-  | { readonly tipo: "xlsx"; readonly hojas: readonly string[]; readonly celdas: readonly CeldaComparable[] };
-
-export type Instantanea = ReadonlyMap<string, ValorComparable>;
 
 const CLAVE_MARCA_TIEMPO = "ts";
 

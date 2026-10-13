@@ -2,12 +2,8 @@ import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import { existsSync } from "node:fs";
 import { readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
-import {
-  type ConocimientoTemporal,
-  copiarConocimiento,
-  crearProyectoTemporal,
-  type ProyectoTemporal,
-} from "@tests/helpers/proyecto-temporal.ts";
+import { copiarConocimiento, crearProyectoTemporal } from "@tests/helpers/proyecto-temporal.ts";
+import type { ConocimientoTemporal, ProyectoTemporal } from "@tests/helpers/types/proyecto-temporal.type.ts";
 import { crearHerramientas } from "@/tools/fabrica.ts";
 import { mapear_campos } from "@/tools/proveedor.ts";
 
