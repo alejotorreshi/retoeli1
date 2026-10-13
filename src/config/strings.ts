@@ -209,6 +209,8 @@ export const TEXTO_INFRA = {
   fechaSinFormato: "La fecha no tiene el formato YYYY-MM-DD.",
   salidaFueraDeOut: `La carpeta de salida del caso sale de ${OUT_DIR}/.`,
   paqueteFueraDelCaso: "La carpeta del paquete sale del caso.",
+  archivoNoPropio:
+    "El archivo es un enlace, comparte enlaces duros, no es un archivo regular o supera el límite de lectura.",
   casoInvalidoParaEscribir: "El caso no es válido para escribir una salida.",
   casoInvalidoParaArmar: "El caso no es válido para armar un paquete.",
   casoInvalidoParaListar: "El caso no es válido para listar un paquete.",
