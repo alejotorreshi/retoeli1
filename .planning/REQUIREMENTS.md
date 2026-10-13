@@ -54,7 +54,7 @@ Fuente vinculante: `reto-01/PRD.md`, sin modificar. Fixtures: `reto-01/fixtures/
 
 ### Ciclo del agente (§6.1, §6.3)
 
-- [ ] **AGT-01**: El ciclo es propio: prompt → modelo → herramientas → respuesta. Las herramientas se ejecutan en secuencia y hay un tope configurable de iteraciones por turno (25 por defecto). Al alcanzarlo, el agente responde con lo que tiene y lo que falta.
+- [x] **AGT-01**: El ciclo es propio: prompt → modelo → herramientas → respuesta. Las herramientas se ejecutan en secuencia y hay un tope configurable de iteraciones por turno (25 por defecto). Al alcanzarlo, el agente responde con lo que tiene y lo que falta.
 - [x] **AGT-02**: El system prompt vive en `agent/prompt.md` y el conocimiento del proceso en `src/knowledge/registro-proveedor.md`, separados de la ejecución en `src/tools/`. Un cambio de reglas de negocio no toca el servidor.
 - [ ] **AGT-03**: El prompt prohíbe afirmar valores que no hayan salido de una herramienta (CA2).
 - [x] **AGT-04**: La sesión vive en un store en memoria detrás de una interfaz, con TTL. El historial queda íntegro: cada tool call tiene su resultado y un paso abortado se descarta. La sesión sobrevive a errores de herramienta o del proveedor (CA5).
@@ -66,7 +66,7 @@ Fuente vinculante: `reto-01/PRD.md`, sin modificar. Fixtures: `reto-01/fixtures/
 - [ ] **LLM-02**: La implementación DeepSeek usa `fetch` directo contra la API compatible con OpenAI. El modelo se lee de env (`deepseek-flash` por defecto), el modo thinking va desactivado, `max_tokens` es explícito y el campo `reasoning_content` se conserva en el tipo.
 - [ ] **LLM-03**: Hay timeout al proveedor con mensaje claro. Se reintenta con backoff y jitter solo ante errores transitorios (429, 500, 503 y red). Los errores 400, 401 y 422 no se reintentan, y el 402 se informa como "saldo agotado".
 - [ ] **LLM-04**: Un decorador de fallback de proveedor o modelo (por ejemplo `deepseek-flash` → `deepseek-v4-pro`) actúa cuando el primario falla de forma transitoria.
-- [ ] **LLM-05**: El tope de tokens por sesión y el tope de iteraciones por turno son configurables. Al superarlos, el usuario recibe un mensaje claro, no un 500.
+- [x] **LLM-05**: El tope de tokens por sesión y el tope de iteraciones por turno son configurables. Al superarlos, el usuario recibe un mensaje claro, no un 500.
 - [ ] **LLM-06**: Existe un modo degradado sin LLM. Si no hay clave, se agotó el saldo o el proveedor cayó, `/api/health` lo reporta y la UI permite correr el flujo determinista de un caso con las mismas herramientas que `demo.ts`.
 
 ### API HTTP (§6.4)
@@ -202,7 +202,7 @@ Cada requisito v1 está asignado a exactamente una fase del roadmap (`.planning/
 | ENV-01 | Phase 1 | Complete |
 | ENV-02 | Phase 2 | Complete |
 | ENV-03 | Phase 2 | Complete |
-| AGT-01 | Phase 2 | Pending |
+| AGT-01 | Phase 2 | Complete |
 | AGT-02 | Phase 2 | Complete |
 | AGT-03 | Phase 2 | Pending |
 | AGT-04 | Phase 2 | Complete |
@@ -211,7 +211,7 @@ Cada requisito v1 está asignado a exactamente una fase del roadmap (`.planning/
 | LLM-02 | Phase 2 | Pending |
 | LLM-03 | Phase 2 | Pending |
 | LLM-04 | Phase 2 | Pending |
-| LLM-05 | Phase 2 | Pending |
+| LLM-05 | Phase 2 | Complete |
 | LLM-06 | Phase 3 | Pending |
 | API-01 | Phase 3 | Pending |
 | API-02 | Phase 3 | Pending |

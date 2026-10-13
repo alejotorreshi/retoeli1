@@ -3,16 +3,16 @@ gsd_state_version: "1.0"
 current_phase: 02
 current_phase_name: Agente y compuerta de confirmación
 status: executing
-stopped_at: Completed 02-06-PLAN.md
-last_updated: "2026-10-13T19:55:28.811Z"
+stopped_at: Completed 02-07-PLAN.md
+last_updated: "2026-10-13T20:03:26.463Z"
 last_activity: 2026-10-13
 last_activity_desc: Phase 02 execution started
-state_head: b01416f945cd274b29808f9ef4901e319a876285
+state_head: 226a33ad71b5bcfbf18334ff2d8748922b0e1339
 progress:
   total_phases: 4
   completed_phases: 1
   total_plans: 24
-  completed_plans: 21
+  completed_plans: 22
   percent: 25
 ---
 
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-10-13)
 ## Current Position
 
 Phase: 02 (Agente y compuerta de confirmación) — EXECUTING
-Plan: 7 of 9
+Plan: 8 of 9
 Status: Ready to execute
 Last activity: 2026-10-13 — Phase 02 execution started
 
@@ -77,6 +77,7 @@ Progress: [███░░░░░░░] 25%
 | Phase 02 P04 | 5 min | 2 tasks | 18 files |
 | Phase 02 P05 | 3 min | 2 tasks | 9 files |
 | Phase 02 P06 | 10 min | 3 tasks | 29 files |
+| Phase 02 P07 | 4 min | 2 tasks | 10 files |
 
 ## Accumulated Context
 
@@ -155,6 +156,9 @@ Recent decisions affecting current work:
 - [Phase 02]: 02-06: revocarAlArmar se aplica a toda llamada a armar_paquete del caso, no solo a las ok; un envío autorizado que la herramienta rechaza consume la autorización
 - [Phase 02]: 02-06: paquetesConocidos conserva el caso tras enviar, así un reintento bloqueado vuelve a preguntar en vez de enviar dos veces
 - [Phase 02]: 02-06: cerrarTurnoConCompuerta limpia el markdown antes de decidir y agregar la pregunta; en error o tope el texto emitido es solo la pregunta y el historial guarda error + pregunta
+- [Phase 02]: 02-07: una sesión sin presupuesto responde al abrir el turno con PRESUPUESTO_AGOTADO y cero llamadas; a mitad de turno cierra con tope_tokens, el mensaje y cierreDeterminista
+- [Phase 02]: 02-07: al tope de iteraciones hay una sola llamada sin herramientas con instruccionTope al final (no persistida); si falla, pide herramientas, trae texto vacío o no cabe en el presupuesto, el servidor usa cierreDeterminista con motivo tope_iteraciones
+- [Phase 02]: 02-07: ResultadoTope lleva la RespuestaLlm completa para que el evento usage conserve proveedor y modelo; todo uso pasa por acumularUso
 
 ### Pending Todos
 
@@ -180,6 +184,6 @@ Items acknowledged and deferred at milestone close, most recent first:
 
 ## Session Continuity
 
-Last session: 2026-10-13T19:55:28.755Z
-Stopped at: Completed 02-06-PLAN.md
+Last session: 2026-10-13T20:03:26.411Z
+Stopped at: Completed 02-07-PLAN.md
 Resume file: None
