@@ -4,7 +4,7 @@ import { CODIGO_ERROR } from "@/config/constants/errors.constants.ts";
 import { ESTADO_SOPORTE } from "@/config/constants/supports.constants.ts";
 import { HERRAMIENTA, NOMBRE_VISIBLE } from "@/config/constants/tools.constants.ts";
 import { MENSAJE_ERROR, RESUMEN_HERRAMIENTA } from "@/config/strings.ts";
-import { evaluarEnvio, revocarAlArmar } from "@/domain/policies/compuerta.policy.ts";
+import { evaluarEnvio, paqueteConocido, revocarAlArmar } from "@/domain/policies/compuerta.policy.ts";
 import type { MotivoBloqueo } from "@/domain/types/checklist.type.ts";
 import type { CasoPendiente } from "@/domain/types/compuerta.type.ts";
 import { cuerpoDeFallo } from "@/domain/utils/respuesta-herramienta.util.ts";
@@ -39,7 +39,7 @@ function rechazoSinConfirmacion(): ResultadoLlamada {
 
 function casosDeBitacora(caso: string | null, contexto: ContextoDespacho) {
   if (caso === null) return {};
-  return Object.hasOwn(contexto.conocidos, caso) ? { caso, casoResuelto: caso } : { caso };
+  return paqueteConocido(contexto.conocidos, caso) === undefined ? { caso } : { caso, casoResuelto: caso };
 }
 
 async function bloquearEnvio(caso: string | null, contexto: ContextoDespacho): Promise<ResultadoDespacho> {

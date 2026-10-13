@@ -1,5 +1,6 @@
 import type { BitacoraEstructurada } from "@/application/types/puertos-agente.type.ts";
 import { EVENTO_BITACORA } from "@/config/constants/agent.constants.ts";
+import { paqueteConocido } from "@/domain/policies/compuerta.policy.ts";
 import type { LlamadaHerramienta, ObservadorLlm, RespuestaLlm } from "@/llm/types/llm.type.ts";
 import { casoDeLlamada } from "@/loop/services/despacho-llamada.service.ts";
 import type { PaquetesConocidos, ResultadoDespacho } from "@/loop/types/turno.type.ts";
@@ -44,7 +45,7 @@ export function anotarLlamadaLlm(
 
 function casoConocido(llamada: LlamadaHerramienta, conocidos: PaquetesConocidos): string | null {
   const caso = casoDeLlamada(llamada);
-  return caso !== null && Object.hasOwn(conocidos, caso) ? caso : null;
+  return caso !== null && paqueteConocido(conocidos, caso) !== undefined ? caso : null;
 }
 
 export function anotarHerramienta(

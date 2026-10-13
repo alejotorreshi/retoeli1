@@ -25,12 +25,19 @@ function estadoCon(casos: readonly CasoPendiente[]): EstadoCompuerta {
   return { tipo: ESTADO_COMPUERTA.PENDIENTE, accion: ACCION.ENVIO, casos };
 }
 
-function pendientesDe(estado: EstadoCompuerta): readonly CasoPendiente[] {
+export function pendientesDe(estado: EstadoCompuerta): readonly CasoPendiente[] {
   return estado.tipo === ESTADO_COMPUERTA.PENDIENTE ? estado.casos : [];
 }
 
 export function casosPendientes(estado: EstadoCompuerta): readonly string[] {
   return pendientesDe(estado).map(({ caso }) => caso);
+}
+
+export function paqueteConocido(
+  conocidos: EntradaCierreCompuerta["conocidos"],
+  caso: string,
+): CasoPendiente | undefined {
+  return Object.hasOwn(conocidos, caso) ? conocidos[caso] : undefined;
 }
 
 function sinAutorizacion(siguiente: EstadoCompuerta, preguntarCual: boolean): AperturaTurno {
@@ -63,7 +70,7 @@ function conocido(
   conocidos: EntradaCierreCompuerta["conocidos"],
   pendientes: ReadonlyMap<string, CasoPendiente>,
 ): CasoPendiente | undefined {
-  return Object.hasOwn(conocidos, caso) ? conocidos[caso] : pendientes.get(caso);
+  return paqueteConocido(conocidos, caso) ?? pendientes.get(caso);
 }
 
 function aplicarEvento(
@@ -98,6 +105,6 @@ export function recuperarAutorizado(
   const { caso, usada } = autorizacion;
   if (motivo === MOTIVO_FIN.FINAL || motivo === MOTIVO_FIN.ABORTADO) return [];
   if (caso === null || usada) return [];
-  const paquete = Object.hasOwn(conocidos, caso) ? conocidos[caso] : undefined;
+  const paquete = paqueteConocido(conocidos, caso);
   return paquete === undefined ? [] : [paquete];
 }

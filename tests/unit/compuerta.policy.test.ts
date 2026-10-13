@@ -12,6 +12,8 @@ import {
   cerrarTurno,
   estadoLibre,
   evaluarEnvio,
+  paqueteConocido,
+  pendientesDe,
   recuperarAutorizado,
   revocarAlArmar,
 } from "@/domain/policies/compuerta.policy.ts";
@@ -240,4 +242,18 @@ describe("recuperarAutorizado (WR-02, D-63.2, D-38)", () => {
       expect(recuperarAutorizado(...argumentos)).toEqual(esperado);
     });
   }
+});
+
+describe("lectura del estado y de los paquetes conocidos", () => {
+  test("pendientesDe devuelve los casos pendientes o ninguno si la compuerta está libre", () => {
+    expect(pendientesDe(pendiente(PENDIENTE_EC, PENDIENTE_CO))).toEqual([PENDIENTE_EC, PENDIENTE_CO]);
+    expect(pendientesDe(estadoLibre())).toEqual([]);
+  });
+
+  test("paqueteConocido solo mira claves propias", () => {
+    const conocidos = { [EC]: PENDIENTE_EC };
+    expect(paqueteConocido(conocidos, EC)).toEqual(PENDIENTE_EC);
+    expect(paqueteConocido(conocidos, CO)).toBeUndefined();
+    expect(paqueteConocido(conocidos, "toString")).toBeUndefined();
+  });
 });
