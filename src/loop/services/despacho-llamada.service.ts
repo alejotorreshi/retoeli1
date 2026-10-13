@@ -2,7 +2,7 @@ import type { z } from "zod";
 import { EVENTO_COMPUERTA } from "@/config/constants/confirmacion.constants.ts";
 import { CODIGO_ERROR } from "@/config/constants/errors.constants.ts";
 import { ESTADO_SOPORTE } from "@/config/constants/supports.constants.ts";
-import { HERRAMIENTA, PREFIJO_HERRAMIENTA } from "@/config/constants/tools.constants.ts";
+import { HERRAMIENTA, NOMBRE_VISIBLE } from "@/config/constants/tools.constants.ts";
 import { MENSAJE_ERROR, RESUMEN_HERRAMIENTA } from "@/config/strings.ts";
 import { evaluarEnvio, revocarAlArmar } from "@/domain/policies/compuerta.policy.ts";
 import type { MotivoBloqueo } from "@/domain/types/checklist.type.ts";
@@ -12,8 +12,8 @@ import { argumentosConCasoSchema, armarPaqueteSchema } from "@/loop/schemas/resu
 import { argumentosDeLlamada } from "@/loop/services/registro-herramientas.service.ts";
 import type { ContextoDespacho, ResultadoDespacho, ResultadoLlamada } from "@/loop/types/turno.type.ts";
 
-const SIMULAR_ENVIO = `${PREFIJO_HERRAMIENTA}${HERRAMIENTA.SIMULAR_ENVIO}`;
-const ARMAR_PAQUETE = `${PREFIJO_HERRAMIENTA}${HERRAMIENTA.ARMAR_PAQUETE}`;
+const SIMULAR_ENVIO = NOMBRE_VISIBLE[HERRAMIENTA.SIMULAR_ENVIO];
+const ARMAR_PAQUETE = NOMBRE_VISIBLE[HERRAMIENTA.ARMAR_PAQUETE];
 const SIN_CONFIRMACION = CODIGO_ERROR.CONFIRMACION_REQUERIDA;
 const RESUMEN_SIN_CONFIRMACION = RESUMEN_HERRAMIENTA.fallo(HERRAMIENTA.SIMULAR_ENVIO, SIN_CONFIRMACION);
 

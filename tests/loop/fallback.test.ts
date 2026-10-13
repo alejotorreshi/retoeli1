@@ -12,11 +12,11 @@ import {
   PROVEEDOR_DEEPSEEK,
   REINTENTOS_LLM_POR_DEFECTO,
 } from "@/config/constants/llm.constants.ts";
-import { HERRAMIENTA, PREFIJO_HERRAMIENTA } from "@/config/constants/tools.constants.ts";
+import { HERRAMIENTA, NOMBRE_VISIBLE } from "@/config/constants/tools.constants.ts";
 import { pinExecutionDate } from "@/config/env.ts";
 
 const CASO = "co-industrias-delta";
-const LEER = `${PREFIJO_HERRAMIENTA}${HERRAMIENTA.LEER_SOLICITUD}`;
+const LEER = NOMBRE_VISIBLE[HERRAMIENTA.LEER_SOLICITUD];
 const INTENTOS = 1 + REINTENTOS_LLM_POR_DEFECTO;
 const NO_DISPONIBLE: RespuestaGuion = {
   estado: 503,

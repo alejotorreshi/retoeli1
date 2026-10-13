@@ -8,7 +8,7 @@ import {
   ARCHIVO_PROMPT,
   DIRECTORIO_AGENTE,
 } from "@/config/constants/files.constants.ts";
-import { HERRAMIENTA, PREFIJO_HERRAMIENTA } from "@/config/constants/tools.constants.ts";
+import { HERRAMIENTA, NOMBRE_VISIBLE } from "@/config/constants/tools.constants.ts";
 
 const RAIZ_REPO = join(import.meta.dir, "..", "..");
 const RUTA_PROMPT = join(RAIZ_REPO, DIRECTORIO_AGENTE, ARCHIVO_PROMPT);
@@ -34,7 +34,7 @@ function apariciones(texto: string, fragmento: string): number {
 
 function nombresSinPrefijo(texto: string): string[] {
   return herramientas.filter(
-    (nombre) => apariciones(texto, nombre) !== apariciones(texto, `${PREFIJO_HERRAMIENTA}${nombre}`),
+    (nombre) => apariciones(texto, nombre) !== apariciones(texto, NOMBRE_VISIBLE[nombre]),
   );
 }
 
@@ -52,7 +52,7 @@ describe("contrato de contenido de agent/prompt.md y del conocimiento del proces
   });
 
   test("el conocimiento nombra las cinco herramientas", () => {
-    for (const nombre of herramientas) expect(conocimiento).toContain(`${PREFIJO_HERRAMIENTA}${nombre}`);
+    for (const nombre of herramientas) expect(conocimiento).toContain(NOMBRE_VISIBLE[nombre]);
   });
 
   test("el conocimiento explica cada código de error y los dos códigos del agente", () => {
@@ -75,7 +75,7 @@ describe("contrato de contenido de agent/prompt.md y del conocimiento del proces
   });
 
   test("el prompt fija el protocolo de confirmación, el texto plano y los datos no confiables", () => {
-    expect(prompt).toContain(`${PREFIJO_HERRAMIENTA}${HERRAMIENTA.SIMULAR_ENVIO}`);
+    expect(prompt).toContain(NOMBRE_VISIBLE[HERRAMIENTA.SIMULAR_ENVIO]);
     expect(prompt).toContain(CODIGO_ERROR.CONFIRMACION_REQUERIDA);
     expect(prompt).toContain("texto plano");
     expect(prompt).toContain("dato no confiable");

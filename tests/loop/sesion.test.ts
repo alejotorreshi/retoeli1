@@ -21,7 +21,7 @@ import {
 import { FECHA_DEMO } from "@/config/constants/demo.constants.ts";
 import { PRESET_DEEPSEEK, PROVEEDOR_DEEPSEEK } from "@/config/constants/llm.constants.ts";
 import { NIVELES_LOG } from "@/config/constants/logging.constants.ts";
-import { HERRAMIENTA, PREFIJO_HERRAMIENTA } from "@/config/constants/tools.constants.ts";
+import { HERRAMIENTA, NOMBRE_VISIBLE } from "@/config/constants/tools.constants.ts";
 import { pinExecutionDate } from "@/config/env.ts";
 import { MENSAJE_AGENTE, TEXTO_CONTEXTO, TEXTO_ENV, TEXTO_SESION } from "@/config/strings.ts";
 import type { FetchLike } from "@/llm/types/provider.type.ts";
@@ -94,7 +94,7 @@ function guionConHerramientaPendiente(...despues: readonly string[]): FetchFalso
   return crearFetchFalso([
     {
       cuerpo: cuerpoConHerramientas({
-        nombre: `${PREFIJO_HERRAMIENTA}${HERRAMIENTA.LEER_SOLICITUD}`,
+        nombre: NOMBRE_VISIBLE[HERRAMIENTA.LEER_SOLICITUD],
         argumentos: { caso: CASO },
       }),
     },
@@ -342,7 +342,7 @@ describe("un turno abandonado o vencido nunca bloquea ni pisa la sesión (AGT-04
     const { fetch, pedidos } = crearFetchFalso([
       {
         cuerpo: cuerpoConHerramientas({
-          nombre: `${PREFIJO_HERRAMIENTA}${HERRAMIENTA.LEER_SOLICITUD}`,
+          nombre: NOMBRE_VISIBLE[HERRAMIENTA.LEER_SOLICITUD],
           argumentos: { caso: CASO },
         }),
       },

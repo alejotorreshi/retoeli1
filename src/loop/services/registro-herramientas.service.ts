@@ -1,7 +1,8 @@
 import { z } from "zod";
 import { CODIGO_AGENTE, ESQUEMA_PARAMETROS } from "@/config/constants/agent.constants.ts";
-import { PREFIJO_HERRAMIENTA } from "@/config/constants/tools.constants.ts";
+import { HERRAMIENTA, NOMBRE_VISIBLE } from "@/config/constants/tools.constants.ts";
 import { MENSAJE_AGENTE } from "@/config/strings.ts";
+import type { ValorDe } from "@/config/types/valor-de.type.ts";
 import type { DefinicionHerramienta } from "@/llm/types/llm.type.ts";
 import { resultadoHerramientaSchema } from "@/loop/schemas/resultado-herramienta.schema.ts";
 import type { RegistroHerramientas, ResultadoLlamada } from "@/loop/types/turno.type.ts";
@@ -17,11 +18,19 @@ function parametrosDe(args: z.ZodRawShape): Readonly<Record<string, unknown>> {
   return parametros;
 }
 
+type ModuloHerramientas = Readonly<Record<ValorDe<typeof HERRAMIENTA>, Herramienta<z.ZodRawShape>>>;
+
+const EXPORTADAS: ReadonlySet<string> = new Set(Object.values(HERRAMIENTA));
+
+function esHerramienta(exportado: string): exportado is ValorDe<typeof HERRAMIENTA> {
+  return EXPORTADAS.has(exportado);
+}
+
 function registrar(
-  exportado: string,
+  exportado: ValorDe<typeof HERRAMIENTA>,
   herramienta: Herramienta<z.ZodRawShape>,
 ): readonly [string, Registrada] {
-  const nombre = `${PREFIJO_HERRAMIENTA}${exportado}`;
+  const nombre = NOMBRE_VISIBLE[exportado];
   return [
     nombre,
     {
@@ -79,11 +88,11 @@ function herramientaDesconocida(): ResultadoLlamada {
   };
 }
 
-export function crearRegistroHerramientas(
-  modulo: Readonly<Record<string, Herramienta<z.ZodRawShape>>>,
-): RegistroHerramientas {
+export function crearRegistroHerramientas(modulo: ModuloHerramientas): RegistroHerramientas {
   const porNombre = new Map(
-    Object.entries(modulo).map(([exportado, herramienta]) => registrar(exportado, herramienta)),
+    Object.entries(modulo).flatMap(([exportado, herramienta]) =>
+      esHerramienta(exportado) ? [registrar(exportado, herramienta)] : [],
+    ),
   );
   return {
     definiciones: [...porNombre.values()].map((registrada) => registrada.definicion),

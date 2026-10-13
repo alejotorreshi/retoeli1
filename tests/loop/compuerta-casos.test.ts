@@ -35,7 +35,7 @@ import { CODIGO_ERROR } from "@/config/constants/errors.constants.ts";
 import { ARCHIVO_PROMPT, ARCHIVOS_SALIDA, OUT_DIR } from "@/config/constants/files.constants.ts";
 import { TIPO_ERROR_LLM } from "@/config/constants/llm.constants.ts";
 import { ESTADO_SOPORTE } from "@/config/constants/supports.constants.ts";
-import { HERRAMIENTA, PREFIJO_HERRAMIENTA } from "@/config/constants/tools.constants.ts";
+import { HERRAMIENTA, NOMBRE_VISIBLE } from "@/config/constants/tools.constants.ts";
 import { pinExecutionDate } from "@/config/env.ts";
 import { MENSAJE_AGENTE } from "@/config/strings.ts";
 import { preguntaConfirmacion } from "@/domain/builders/cierre-turno.builder.ts";
@@ -387,7 +387,7 @@ describe("PRD 6.4: respuestaDeTurno pliega los eventos en {reply, toolCalls, nee
         HERRAMIENTA.GENERAR_FORMULARIO,
         HERRAMIENTA.ARMAR_PAQUETE,
         HERRAMIENTA.SIMULAR_ENVIO,
-      ].map((nombre) => `${PREFIJO_HERRAMIENTA}${nombre}`),
+      ].map((nombre) => NOMBRE_VISIBLE[nombre]),
     );
     expect(respuesta.toolCalls.at(-1)).toMatchObject({
       argumentos: { caso: EC, confirmado: true },

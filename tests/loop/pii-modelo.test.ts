@@ -19,7 +19,7 @@ import type { ProyectoTemporal } from "@tests/helpers/types/proyecto-temporal.ty
 import { FECHA_DEMO } from "@/config/constants/demo.constants.ts";
 import { ARCHIVOS_CASO } from "@/config/constants/files.constants.ts";
 import { ROL_MENSAJE } from "@/config/constants/llm.constants.ts";
-import { HERRAMIENTA, PREFIJO_HERRAMIENTA } from "@/config/constants/tools.constants.ts";
+import { HERRAMIENTA, NOMBRE_VISIBLE } from "@/config/constants/tools.constants.ts";
 import { pinExecutionDate } from "@/config/env.ts";
 import type { EventoAgente } from "@/loop/types/evento.type.ts";
 
@@ -102,7 +102,7 @@ function fragmentosDeCuerpo(cuerpo: string): string[] {
 describe("el modelo nunca recibe un valor real del maestro ni el cuerpo del correo (AGT-03, CA2, MAP-05)", () => {
   test("los cuatro casos corren el flujo completo y la pregunta por el NIT consulta solo ese campo", () => {
     for (const herramienta of HERRAMIENTAS_DEL_FLUJO) {
-      const fines = finesDeHerramienta(eventos, `${PREFIJO_HERRAMIENTA}${herramienta}`);
+      const fines = finesDeHerramienta(eventos, NOMBRE_VISIBLE[herramienta]);
       expect(fines.filter((fin) => fin.ok).length).toBeGreaterThanOrEqual(CASOS.length);
     }
     expect(prueba.llm.pedidos).toHaveLength(CASOS.length * 5 + 2);

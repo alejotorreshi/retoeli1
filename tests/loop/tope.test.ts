@@ -15,7 +15,7 @@ import type { ProyectoTemporal } from "@tests/helpers/types/proyecto-temporal.ty
 import { MOTIVO_FIN, SEPARADOR_PARRAFOS, TIPO_EVENTO } from "@/config/constants/agent.constants.ts";
 import { FECHA_DEMO } from "@/config/constants/demo.constants.ts";
 import { ROL_MENSAJE, TIPO_ERROR_LLM } from "@/config/constants/llm.constants.ts";
-import { HERRAMIENTA, PREFIJO_HERRAMIENTA } from "@/config/constants/tools.constants.ts";
+import { HERRAMIENTA, NOMBRE_VISIBLE } from "@/config/constants/tools.constants.ts";
 import { pinExecutionDate } from "@/config/env.ts";
 import { TEXTO_CIERRE } from "@/config/strings.ts";
 import { cierreDeterminista } from "@/domain/builders/cierre-turno.builder.ts";
@@ -27,7 +27,7 @@ const CO = "co-industrias-delta";
 const EC = "ec-corp-andina";
 const MAX_ITERACIONES = 3;
 const RESUMEN_MODELO = "Leí la solicitud de co-industrias-delta. Falta mapear los campos.";
-const LEER = `${PREFIJO_HERRAMIENTA}${HERRAMIENTA.LEER_SOLICITUD}`;
+const LEER = NOMBRE_VISIBLE[HERRAMIENTA.LEER_SOLICITUD];
 const ERROR_SERVIDOR: ErrorLlm = {
   tipo: TIPO_ERROR_LLM.SERVIDOR,
   reintentable: true,

@@ -1,7 +1,7 @@
 import { proyectarMapeo } from "@tests/helpers/flujo.helper.ts";
 import type { LlmFalso, PasoLlmFalso, PedidoLlmFalso } from "@tests/helpers/types/llm-falso.type.ts";
 import { FIN_LLM, ROL_MENSAJE } from "@/config/constants/llm.constants.ts";
-import { HERRAMIENTA, PREFIJO_HERRAMIENTA } from "@/config/constants/tools.constants.ts";
+import { HERRAMIENTA, NOMBRE_VISIBLE } from "@/config/constants/tools.constants.ts";
 import type { ValorDe } from "@/config/types/valor-de.type.ts";
 import type { LlamadaHerramienta, Mensaje, MensajeHerramienta, RespuestaLlm } from "@/llm/types/llm.type.ts";
 
@@ -34,7 +34,7 @@ export function llamar(
   herramienta: ValorDe<typeof HERRAMIENTA>,
   args: unknown,
 ): LlamadaHerramienta {
-  return { id, nombre: `${PREFIJO_HERRAMIENTA}${herramienta}`, argumentos: JSON.stringify(args) };
+  return { id, nombre: NOMBRE_VISIBLE[herramienta], argumentos: JSON.stringify(args) };
 }
 
 export function respuestaHerramientas(...llamadas: readonly LlamadaHerramienta[]): RespuestaLlm {
@@ -79,7 +79,7 @@ function ultimoResultadoDe(mensajes: readonly Mensaje[], nombre: string): string
 
 export function pasoGenerarConMapeo(caso: string, id = `generar-${caso}`): PasoLlmFalso {
   return (mensajes) => {
-    const contenido = ultimoResultadoDe(mensajes, `${PREFIJO_HERRAMIENTA}${HERRAMIENTA.MAPEAR_CAMPOS}`);
+    const contenido = ultimoResultadoDe(mensajes, NOMBRE_VISIBLE[HERRAMIENTA.MAPEAR_CAMPOS]);
     const mapeo = proyectarMapeo(JSON.parse(contenido));
     return respuestaHerramientas(llamar(id, HERRAMIENTA.GENERAR_FORMULARIO, { caso, mapeo }));
   };

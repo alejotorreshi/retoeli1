@@ -19,7 +19,7 @@ import { ARCHIVOS_CASO, ARCHIVOS_SALIDA, OUT_DIR } from "@/config/constants/file
 import { MODO_THINKING, PROVEEDOR_DEEPSEEK } from "@/config/constants/llm.constants.ts";
 import { NIVELES_LOG } from "@/config/constants/logging.constants.ts";
 import { ESTADO_SOPORTE } from "@/config/constants/supports.constants.ts";
-import { HERRAMIENTA, PREFIJO_HERRAMIENTA } from "@/config/constants/tools.constants.ts";
+import { HERRAMIENTA, NOMBRE_VISIBLE } from "@/config/constants/tools.constants.ts";
 import { type ProviderSettings, parseAgentEnv, pinExecutionDate } from "@/config/env.ts";
 import { TEXTO_SOPORTE } from "@/config/strings.ts";
 import { preguntaConfirmacion } from "@/domain/builders/cierre-turno.builder.ts";
@@ -55,7 +55,7 @@ const FLUJO = [
   HERRAMIENTA.MAPEAR_CAMPOS,
   HERRAMIENTA.GENERAR_FORMULARIO,
   HERRAMIENTA.ARMAR_PAQUETE,
-].map((herramienta) => `${PREFIJO_HERRAMIENTA}${herramienta}`);
+].map((herramienta) => NOMBRE_VISIBLE[herramienta]);
 
 const claves = [
   process.env.LLM_API_KEY,

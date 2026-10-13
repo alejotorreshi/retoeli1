@@ -37,15 +37,15 @@ import {
   REINTENTOS_LLM_POR_DEFECTO,
   ROL_MENSAJE,
 } from "@/config/constants/llm.constants.ts";
-import { HERRAMIENTA, PREFIJO_HERRAMIENTA } from "@/config/constants/tools.constants.ts";
+import { HERRAMIENTA, NOMBRE_VISIBLE } from "@/config/constants/tools.constants.ts";
 import { pinExecutionDate } from "@/config/env.ts";
 import { MENSAJE_AGENTE } from "@/config/strings.ts";
 import type { LlamadaHerramienta, Mensaje, RespuestaLlm } from "@/llm/types/llm.type.ts";
 import type { EventoAgente } from "@/loop/types/evento.type.ts";
 
 const CASO = "co-industrias-delta";
-const LEER = `${PREFIJO_HERRAMIENTA}${HERRAMIENTA.LEER_SOLICITUD}`;
-const GENERAR = `${PREFIJO_HERRAMIENTA}${HERRAMIENTA.GENERAR_FORMULARIO}`;
+const LEER = NOMBRE_VISIBLE[HERRAMIENTA.LEER_SOLICITUD];
+const GENERAR = NOMBRE_VISIBLE[HERRAMIENTA.GENERAR_FORMULARIO];
 const TRUNCADO = '{"caso":"co-industrias-delta","mapeo":[{"etiq';
 const VUELVO = "Vuelvo a pedirla.";
 const SIN_RESPALDO = { LLM_FALLBACK_ENABLED: "false" };

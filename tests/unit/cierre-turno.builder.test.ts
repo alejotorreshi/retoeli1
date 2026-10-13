@@ -2,7 +2,7 @@ import { describe, expect, test } from "bun:test";
 import { SALTO_DE_LINEA, SEPARADOR_PARRAFOS } from "@/config/constants/agent.constants.ts";
 import { PATRON_PREGUNTA } from "@/config/constants/patterns.constants.ts";
 import { ESTADO_SOPORTE } from "@/config/constants/supports.constants.ts";
-import { HERRAMIENTA, PREFIJO_HERRAMIENTA } from "@/config/constants/tools.constants.ts";
+import { HERRAMIENTA, NOMBRE_VISIBLE } from "@/config/constants/tools.constants.ts";
 import { TEXTO_CHECKLIST, TEXTO_CIERRE } from "@/config/strings.ts";
 import {
   cierreConPregunta,
@@ -74,7 +74,7 @@ describe("cierreDeterminista (D-53)", () => {
     ];
     const texto = cierreDeterminista(llamadas);
     for (const { resumen } of llamadas) expect(texto).toContain(resumen ?? "");
-    expect(texto).toContain(`${PREFIJO_HERRAMIENTA}${HERRAMIENTA.ARMAR_PAQUETE}`);
+    expect(texto).toContain(NOMBRE_VISIBLE[HERRAMIENTA.ARMAR_PAQUETE]);
     expect(texto).toContain(CO);
     expect(texto.indexOf("Completé")).toBeLessThan(texto.indexOf("Falta"));
     sinMarkdown(texto);

@@ -4,7 +4,7 @@ import { join } from "node:path";
 import type { LineaBitacora } from "@tests/helpers/types/eventos.type.ts";
 import { TIPO_EVENTO } from "@/config/constants/agent.constants.ts";
 import { ARCHIVO_BITACORA, ARCHIVOS_SALIDA, OUT_DIR } from "@/config/constants/files.constants.ts";
-import { HERRAMIENTA, PREFIJO_HERRAMIENTA } from "@/config/constants/tools.constants.ts";
+import { HERRAMIENTA, NOMBRE_VISIBLE } from "@/config/constants/tools.constants.ts";
 import type {
   EventoAgente,
   EventoConfirmacionRequerida,
@@ -15,7 +15,7 @@ import type {
   EventoUso,
 } from "@/loop/types/evento.type.ts";
 
-export const SIMULAR = `${PREFIJO_HERRAMIENTA}${HERRAMIENTA.SIMULAR_ENVIO}`;
+export const SIMULAR = NOMBRE_VISIBLE[HERRAMIENTA.SIMULAR_ENVIO];
 
 export function confirmaciones(eventos: readonly EventoAgente[]): EventoConfirmacionRequerida[] {
   return eventos.filter(
@@ -37,7 +37,7 @@ export function usos(eventos: readonly EventoAgente[]): EventoUso[] {
 
 export function finesDeHerramienta(
   eventos: readonly EventoAgente[],
-  nombre = SIMULAR,
+  nombre: string = SIMULAR,
 ): EventoFinHerramienta[] {
   return eventos.filter(
     (evento): evento is EventoFinHerramienta =>

@@ -14,7 +14,7 @@ import type { PasoLlmFalso } from "@tests/helpers/types/llm-falso.type.ts";
 import type { ProyectoTemporal } from "@tests/helpers/types/proyecto-temporal.type.ts";
 import { MOTIVO_FIN, SEPARADOR_PARRAFOS, TIPO_EVENTO } from "@/config/constants/agent.constants.ts";
 import { FECHA_DEMO } from "@/config/constants/demo.constants.ts";
-import { HERRAMIENTA, PREFIJO_HERRAMIENTA } from "@/config/constants/tools.constants.ts";
+import { HERRAMIENTA, NOMBRE_VISIBLE } from "@/config/constants/tools.constants.ts";
 import { pinExecutionDate } from "@/config/env.ts";
 import { MENSAJE_AGENTE } from "@/config/strings.ts";
 import type { ValorDe } from "@/config/types/valor-de.type.ts";
@@ -68,7 +68,7 @@ function resumidas(
   herramientas: readonly ValorDe<typeof HERRAMIENTA>[],
 ): LlamadaResumida[] {
   return herramientas.flatMap((herramienta) =>
-    finesDeHerramienta(eventos, `${PREFIJO_HERRAMIENTA}${herramienta}`).map((fin) => ({
+    finesDeHerramienta(eventos, NOMBRE_VISIBLE[herramienta]).map((fin) => ({
       herramienta,
       caso,
       ok: fin.ok,

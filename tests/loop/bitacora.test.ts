@@ -17,15 +17,15 @@ import {
   TIPO_ERROR_LLM,
 } from "@/config/constants/llm.constants.ts";
 import { NIVELES_LOG } from "@/config/constants/logging.constants.ts";
-import { HERRAMIENTA, PREFIJO_HERRAMIENTA } from "@/config/constants/tools.constants.ts";
+import { HERRAMIENTA, NOMBRE_VISIBLE } from "@/config/constants/tools.constants.ts";
 import { pinExecutionDate } from "@/config/env.ts";
 import { TEXTO_MASCARA } from "@/config/strings.ts";
 import { redactar } from "@/domain/policies/redaccion.policy.ts";
 import type { EventoAgente, EventoInicioHerramienta } from "@/loop/types/evento.type.ts";
 
 const CASO = "co-industrias-delta";
-const LEER = `${PREFIJO_HERRAMIENTA}${HERRAMIENTA.LEER_SOLICITUD}`;
-const SIMULAR = `${PREFIJO_HERRAMIENTA}${HERRAMIENTA.SIMULAR_ENVIO}`;
+const LEER = NOMBRE_VISIBLE[HERRAMIENTA.LEER_SOLICITUD];
+const SIMULAR = NOMBRE_VISIBLE[HERRAMIENTA.SIMULAR_ENVIO];
 const MENSAJE = `procesa el caso ${CASO}, el NIT es 900123456`;
 const TEXTO_PRIVADO = "el NIT es 900123456";
 const CON_LOGS = { LOG_LEVEL: NIVELES_LOG.INFO };

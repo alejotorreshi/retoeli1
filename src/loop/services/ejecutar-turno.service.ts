@@ -10,9 +10,8 @@ import {
 } from "@/config/constants/agent.constants.ts";
 import { DECISION_CONFIRMACION, ESTADO_COMPUERTA } from "@/config/constants/confirmacion.constants.ts";
 import { ARGUMENTOS_VACIOS, FIN_LLM, ROL_MENSAJE } from "@/config/constants/llm.constants.ts";
-import { HERRAMIENTA, PREFIJO_HERRAMIENTA } from "@/config/constants/tools.constants.ts";
+import { HERRAMIENTA_POR_NOMBRE_VISIBLE } from "@/config/constants/tools.constants.ts";
 import { MENSAJE_AGENTE, TEXTO_CONTEXTO, TEXTO_SESION } from "@/config/strings.ts";
-import type { ValorDe } from "@/config/types/valor-de.type.ts";
 import {
   abrirTurno,
   casosPendientes,
@@ -165,12 +164,8 @@ async function* fallarEnvio(turno: Turno, error: ErrorLlm): Ejecucion<Cierre> {
   return yield* fallar(turno, CODIGO_AGENTE_POR_ERROR_LLM[error.tipo]);
 }
 
-function herramientaDe(nombre: string): ValorDe<typeof HERRAMIENTA> | undefined {
-  return Object.values(HERRAMIENTA).find((herramienta) => `${PREFIJO_HERRAMIENTA}${herramienta}` === nombre);
-}
-
 function resumida(llamada: LlamadaHerramienta, resultado: ResultadoLlamada): readonly LlamadaResumida[] {
-  const herramienta = herramientaDe(llamada.nombre);
+  const herramienta = HERRAMIENTA_POR_NOMBRE_VISIBLE.get(llamada.nombre);
   if (herramienta === undefined) return [];
   return [{ herramienta, caso: casoDeLlamada(llamada), ok: resultado.ok, resumen: resultado.resumen }];
 }
