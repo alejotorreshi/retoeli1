@@ -9,6 +9,8 @@ export type Vigencia = {
 const MILISEGUNDOS_POR_DIA = 86_400_000;
 
 export function textoVence(dias: number): string {
+  if (dias === 0) return "vence hoy";
+  if (dias === 1) return "vence en 1 día";
   return `vence en ${dias} días`;
 }
 

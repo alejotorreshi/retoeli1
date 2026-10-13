@@ -9,7 +9,7 @@ import type { CampoMapeado } from "../../src/domain/mapeo.ts";
 import type { ReglasSoportes } from "../../src/domain/reglas.ts";
 import type { Resultado } from "../../src/domain/resultado.ts";
 import type { FechaISO } from "../../src/domain/tipos.ts";
-import { evaluarVigencia } from "../../src/domain/vigencias.ts";
+import { evaluarVigencia, textoVence } from "../../src/domain/vigencias.ts";
 
 const HOY: FechaISO = "2026-09-03";
 const DIAS_AVISO = 30;
@@ -76,12 +76,17 @@ describe("evaluarVigencia (PAQ-05, D-23)", () => {
     expect(evaluarVigencia("2026-08-31", HOY, DIAS_AVISO).aviso).toBeNull();
   });
 
-  test("el mismo día del vencimiento sigue vigente y avisa 'vence en 0 días'", () => {
+  test("el mismo día del vencimiento sigue vigente y avisa 'vence hoy'", () => {
     expect(evaluarVigencia("2026-09-03", HOY, DIAS_AVISO)).toEqual({
       estado: "vigente",
       dias_restantes: 0,
-      aviso: "vence en 0 días",
+      aviso: "vence hoy",
     });
+  });
+
+  test("a un día del vencimiento avisa en singular", () => {
+    expect(evaluarVigencia("2026-09-04", HOY, DIAS_AVISO).aviso).toBe("vence en 1 día");
+    expect(textoVence(2)).toBe("vence en 2 días");
   });
 
   test("sin vigencia es vigente y no avisa", () => {
