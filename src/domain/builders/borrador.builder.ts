@@ -2,7 +2,7 @@ import { FORMATO } from "@/config/constants/forms.constants.ts";
 import { RUTA_MAESTRO } from "@/config/constants/maestro.constants.ts";
 import { ESTADO_SOPORTE } from "@/config/constants/supports.constants.ts";
 import { TEXTO_BORRADOR, TEXTO_COMUN, TEXTO_SOPORTE } from "@/config/strings.ts";
-import { motivosDeBloqueo } from "@/domain/builders/checklist.builder.ts";
+import { motivosDeBloqueo, soportesConAvisoEmisor } from "@/domain/builders/checklist.builder.ts";
 import { seccionSi } from "@/domain/engines/motor-plantillas.engine.ts";
 import { leerRuta } from "@/domain/selectors/maestro.selector.ts";
 import type { DatosBorradorCorreo, DatosEnvioSimulado, RutaBorrador } from "@/domain/types/borrador.type.ts";
@@ -58,7 +58,10 @@ export function construirDatosBorrador(
   const soportesPendientes = soportesPendientesDe(checklist);
   const hayPorConfirmar = checklist.confirmaciones_al_cliente.length > 0;
   const hayCamposSinDato = checklist.faltantes.length > 0;
-  const hayPreguntas = hayPorConfirmar || hayCamposSinDato;
+  const conAvisoEmisor = soportesConAvisoEmisor(
+    checklist.soportes.filter((soporte) => soporte.estado === ESTADO_SOPORTE.PRESENTE),
+  );
+  const hayPreguntas = hayPorConfirmar || hayCamposSinDato || conAvisoEmisor.length > 0;
   return {
     para: solicitud.de,
     asunto: asuntoRespuesta(solicitud),
@@ -71,6 +74,8 @@ export function construirDatosBorrador(
     soportes_adjuntos: adjuntos(checklist.soportes),
     por_confirmar: checklist.confirmaciones_al_cliente.map((etiqueta) => ({ etiqueta })),
     hay_por_confirmar: seccionSi(hayPorConfirmar),
+    con_aviso_emisor: conAvisoEmisor,
+    hay_aviso_emisor: seccionSi(conAvisoEmisor.length > 0),
     campos_sin_dato: checklist.faltantes.map((etiqueta) => ({ etiqueta })),
     hay_campos_sin_dato: seccionSi(hayCamposSinDato),
     soportes_pendientes: soportesPendientes.map((texto) => ({ texto })),

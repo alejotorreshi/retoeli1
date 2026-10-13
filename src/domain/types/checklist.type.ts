@@ -29,6 +29,8 @@ export type FilaSoporteChecklist = {
   readonly aviso_emisor: string;
 };
 
+export type SoporteConAvisoEmisor = { readonly nombre: string; readonly pais_emisor: string };
+
 export type DatosChecklist = {
   readonly caso: string;
   readonly cliente: string;
@@ -40,6 +42,7 @@ export type DatosChecklist = {
   readonly por_confirmar: readonly CampoPorConfirmar[];
   readonly ausentes: readonly { readonly nombre: string }[];
   readonly vencidos: readonly { readonly nombre: string; readonly vigencia: string }[];
+  readonly con_aviso_emisor: readonly SoporteConAvisoEmisor[];
 };
 
 export type CasoChecklist = { readonly caso: string; readonly cliente: string };

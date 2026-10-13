@@ -27,4 +27,5 @@ Estado: {{estado}}
 {{/ausentes}}{{#vencidos}}- [ ] Renovar el soporte {{nombre}}, vencido desde {{vigencia}}
 {{/vencidos}}{{#faltantes}}- [ ] Conseguir el dato "{{etiqueta}}" y completarlo en el formulario
 {{/faltantes}}{{#por_confirmar}}- [ ] Confirmar con el cliente el campo "{{etiqueta}}"
-{{/por_confirmar}}- [ ] Revisar el formulario y pasarlo a firma del representante legal
+{{/por_confirmar}}{{#con_aviso_emisor}}- [ ] Confirmar con el cliente si acepta el soporte {{nombre}}, emitido en {{pais_emisor}}
+{{/con_aviso_emisor}}- [ ] Revisar el formulario y pasarlo a firma del representante legal

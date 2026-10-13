@@ -8,6 +8,7 @@ import type {
   DatosChecklist,
   FilaSoporteChecklist,
   MotivoBloqueo,
+  SoporteConAvisoEmisor,
 } from "@/domain/types/checklist.type.ts";
 import type { FechaISO } from "@/domain/types/fecha.type.ts";
 import type { CampoMapeado } from "@/domain/types/mapeo.type.ts";
@@ -87,6 +88,16 @@ function filaSoporte(soporte: SoporteEvaluado): FilaSoporteChecklist {
   };
 }
 
+export function soportesConAvisoEmisor(
+  soportes: readonly SoporteEvaluado[],
+): readonly SoporteConAvisoEmisor[] {
+  return soportes.flatMap((soporte) =>
+    soporte.aviso_emisor !== null && soporte.pais_emisor !== null
+      ? [{ nombre: TEXTO_SOPORTE.nombre(soporte.tipo), pais_emisor: soporte.pais_emisor }]
+      : [],
+  );
+}
+
 export function construirDatosChecklist(caso: CasoChecklist, checklist: Checklist): DatosChecklist {
   const { soportes } = checklist;
   return {
@@ -104,5 +115,6 @@ export function construirDatosChecklist(caso: CasoChecklist, checklist: Checklis
     vencidos: soportes
       .filter((soporte) => soporte.estado === ESTADO_SOPORTE.VENCIDO)
       .map((soporte) => ({ nombre: TEXTO_SOPORTE.nombre(soporte.tipo), vigencia: vigenciaVisible(soporte) })),
+    con_aviso_emisor: soportesConAvisoEmisor(soportes),
   };
 }

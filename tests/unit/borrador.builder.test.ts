@@ -30,6 +30,8 @@ const CLAVES_BORRADOR = [
   "soportes_adjuntos",
   "por_confirmar",
   "hay_por_confirmar",
+  "con_aviso_emisor",
+  "hay_aviso_emisor",
   "campos_sin_dato",
   "hay_campos_sin_dato",
   "soportes_pendientes",
@@ -390,5 +392,41 @@ describe("nombres de soporte con tipos desconocidos (GC-2, G-01-H4c)", () => {
       { texto: "Certificado de cumplimiento tributario" },
       { texto: TEXTO_BORRADOR.pendienteVencido("Certificación de aportes parafiscales") },
     ]);
+  });
+});
+
+describe("construirDatosBorrador: soportes emitidos en otro país (IN-04)", () => {
+  function conEmisor(
+    tipo: string,
+    estado: SoporteEvaluado["estado"],
+    archivo: string | null,
+    aviso: string | null,
+  ): SoporteEvaluado {
+    return { ...soporte(tipo, estado, archivo), pais_emisor: "CO", aviso_emisor: aviso };
+  }
+
+  test("pregunta al cliente solo por los adjuntos con aviso de emisor y no declara el formulario listo", () => {
+    const soportes = [
+      conEmisor("rut", ESTADO_SOPORTE.PRESENTE, "rut-ficticio.txt", "Aviso ficticio"),
+      conEmisor("camara_comercio", ESTADO_SOPORTE.PRESENTE, "camara-ficticia.txt", null),
+      conEmisor("parafiscales", ESTADO_SOPORTE.VENCIDO, "parafiscales-ficticio.txt", "Aviso ficticio"),
+    ];
+    const datos = construirDatosBorrador(
+      solicitud(FORMATO.XLSX),
+      MAESTRO,
+      { ...checklist(true, []), soportes },
+      FORMULARIO_XLSX,
+    );
+    expect(datos.con_aviso_emisor).toEqual([{ nombre: "Registro Único Tributario", pais_emisor: "CO" }]);
+    expect(datos.hay_aviso_emisor).toEqual([{}]);
+    expect(datos.firma_lista).toEqual([]);
+    expect(datos.firma_tras_confirmar).toEqual([{}]);
+  });
+
+  test("sin avisos de emisor la sección queda apagada", () => {
+    const datos = borrador(true, []);
+    expect(datos.con_aviso_emisor).toEqual([]);
+    expect(datos.hay_aviso_emisor).toEqual([]);
+    expect(datos.firma_lista).toEqual([{}]);
   });
 });

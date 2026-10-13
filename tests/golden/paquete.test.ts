@@ -187,6 +187,7 @@ describe("golden: proveedor_armar_paquete (PAQ-01, PAQ-02, PAQ-03, D-21)", () =>
     expect(checklist).toContain("Estado: LISTO");
     expect(checklist).toContain("vence en 27 días");
     expect(checklist).not.toContain(AVISO_CO);
+    expect(checklist).not.toContain("- [ ] Confirmar con el cliente si acepta el soporte");
     expect(checklist).toContain("- [ ] Revisar el formulario y pasarlo a firma del representante legal");
   });
 
@@ -198,6 +199,9 @@ describe("golden: proveedor_armar_paquete (PAQ-01, PAQ-02, PAQ-03, D-21)", () =>
     expect(checklist).toContain("Número de contribuyente especial");
     expect(checklist).toContain(`- RUC: ${NOTA_RUC}`);
     expect(checklist).toContain(AVISO_CO);
+    expect(checklist).toContain(
+      "- [ ] Confirmar con el cliente si acepta el soporte Registro Único Tributario, emitido en CO",
+    );
     expect(checklist.split("\n").filter((linea) => linea.startsWith("- [ ]")).length).toBeGreaterThan(1);
     expect(checklist).toContain(
       "| Soporte | Archivo | Vigencia | Estado | Aviso | País emisor | Aviso de emisor |",

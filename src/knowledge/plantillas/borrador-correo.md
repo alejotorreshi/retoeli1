@@ -12,7 +12,10 @@ Buenos días, equipo de {{cliente}}:
 {{#hay_por_confirmar}}Antes de la firma necesitamos que nos confirmen qué dato de nuestra empresa esperan en estos campos:
 {{/hay_por_confirmar}}{{#por_confirmar}}- {{etiqueta}}
 {{/por_confirmar}}{{#hay_por_confirmar}}
-{{/hay_por_confirmar}}{{#hay_campos_sin_dato}}Estos campos del formulario quedan en blanco porque no contamos con el dato; les agradecemos indicarnos si aplican para su registro:
+{{/hay_por_confirmar}}{{#hay_aviso_emisor}}Estos soportes fueron emitidos en otro país; les agradecemos confirmarnos si los aceptan:
+{{/hay_aviso_emisor}}{{#con_aviso_emisor}}- {{nombre}} (país emisor: {{pais_emisor}})
+{{/con_aviso_emisor}}{{#hay_aviso_emisor}}
+{{/hay_aviso_emisor}}{{#hay_campos_sin_dato}}Estos campos del formulario quedan en blanco porque no contamos con el dato; les agradecemos indicarnos si aplican para su registro:
 {{/hay_campos_sin_dato}}{{#campos_sin_dato}}- {{etiqueta}}
 {{/campos_sin_dato}}{{#hay_campos_sin_dato}}
 {{/hay_campos_sin_dato}}{{#hay_soportes_pendientes}}Quedan pendientes estos soportes:

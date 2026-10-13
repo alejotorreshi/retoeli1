@@ -150,3 +150,19 @@ describe("construirChecklist: confirmaciones que se le piden al cliente (WR-02, 
     expect(checklist.confirmaciones_al_cliente).toEqual(["Identificador ficticio", "Sin ruta ficticia"]);
   });
 });
+
+describe("construirDatosChecklist: acción por cada soporte con aviso de emisor (IN-04)", () => {
+  test("lista el nombre y el país emisor de los soportes con aviso y omite los demás", () => {
+    const soportes = [
+      {
+        ...soporte("rut", ESTADO_SOPORTE.PRESENTE, "rut-ficticio.txt", null),
+        pais_emisor: "CO",
+        aviso_emisor: "Aviso",
+      },
+      { ...soporte("camara_comercio", ESTADO_SOPORTE.PRESENTE, "camara.txt", null), pais_emisor: "HN" },
+      soporte("certificado_cumplimiento_tributario", ESTADO_SOPORTE.AUSENTE, null, null),
+    ];
+    const datos = construirDatosChecklist(CASO, construirChecklist(soportes, [], HOY));
+    expect(datos.con_aviso_emisor).toEqual([{ nombre: "Registro Único Tributario", pais_emisor: "CO" }]);
+  });
+});

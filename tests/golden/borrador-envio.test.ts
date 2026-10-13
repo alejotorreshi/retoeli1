@@ -24,6 +24,8 @@ const FIRMA_BLOQUEADA =
 const CAMPOS_SIN_DATO =
   "Estos campos del formulario quedan en blanco porque no contamos con el dato; les agradecemos indicarnos si aplican para su registro:";
 const SOPORTES_PENDIENTES = "Quedan pendientes estos soportes:";
+const PREGUNTA_EMISOR =
+  "Estos soportes fueron emitidos en otro país; les agradecemos confirmarnos si los aceptan:";
 const PROHIBIDOS = ["Bancolombia", "Ahorros", "03100012345", "COLOCOBM", "900123456", "71555123"];
 
 type Respuesta = {
@@ -187,6 +189,14 @@ describe("golden: borrador-correo.md y ENVIO-SIMULADO.md (PAQ-04, ENV-01, D-25, 
     expect(borrador).not.toContain(FIRMA_LISTA);
     expect(borrador).not.toContain("valores-portal.md");
     expect(borrador).not.toContain("Adjuntamos el formulario");
+  });
+
+  test("pa pregunta al cliente si acepta los soportes emitidos en CO y co no pregunta (IN-04)", async () => {
+    const pa = await leerPaquete(compartido.raiz, PA, "borrador-correo.md");
+    expect(pa).toContain(
+      `${PREGUNTA_EMISOR}\n- Certificado de existencia y representación legal (país emisor: CO)\n- Registro Único Tributario (país emisor: CO)\n`,
+    );
+    expect(await leerPaquete(compartido.raiz, CO, "borrador-correo.md")).not.toContain(PREGUNTA_EMISOR);
   });
 
   test("ningún borrador copia al cliente las notas internas de la analista (WR-02)", async () => {

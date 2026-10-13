@@ -1,4 +1,5 @@
 import type { RUTAS_BORRADOR } from "@/config/constants/maestro.constants.ts";
+import type { SoporteConAvisoEmisor } from "@/domain/types/checklist.type.ts";
 import type { SeccionCondicional } from "@/domain/types/motor-plantillas.type.ts";
 
 export type RutaBorrador = (typeof RUTAS_BORRADOR)[number];
@@ -15,6 +16,8 @@ export type DatosBorradorCorreo = {
   readonly soportes_adjuntos: readonly { readonly nombre: string; readonly archivo: string }[];
   readonly por_confirmar: readonly { readonly etiqueta: string }[];
   readonly hay_por_confirmar: SeccionCondicional;
+  readonly con_aviso_emisor: readonly SoporteConAvisoEmisor[];
+  readonly hay_aviso_emisor: SeccionCondicional;
   readonly campos_sin_dato: readonly { readonly etiqueta: string }[];
   readonly hay_campos_sin_dato: SeccionCondicional;
   readonly soportes_pendientes: readonly { readonly texto: string }[];
