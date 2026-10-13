@@ -4,6 +4,7 @@ import { FECHA_DEMO, GRUPOS_MAPEO, SESION_DEMO } from "@/config/constants/demo.c
 import { CODIGO_ERROR } from "@/config/constants/errors.constants.ts";
 import { OUT_DIR } from "@/config/constants/files.constants.ts";
 import { ESTADO_CAMPO } from "@/config/constants/mapping.constants.ts";
+import { ESTADO_SOPORTE } from "@/config/constants/supports.constants.ts";
 import { pinExecutionDate } from "@/config/env.ts";
 import {
   armar_paquete,
@@ -145,7 +146,7 @@ function escribirFormulario(sesion: Sesion, formulario: Registro, conteo: Regist
 function escribirPaquete(sesion: Sesion, paquete: Registro): string {
   const checklist = registroDe(paquete, "checklist");
   sesion.escribir(
-    `Soportes ausentes: ${tiposConEstado(checklist, "ausente")} · Vencidos: ${tiposConEstado(checklist, "vencido")}`,
+    `Soportes ausentes: ${tiposConEstado(checklist, ESTADO_SOPORTE.AUSENTE)} · Vencidos: ${tiposConEstado(checklist, ESTADO_SOPORTE.VENCIDO)}`,
   );
   sesion.escribir(`Estado: ${estadoPaquete(paquete)}`);
   return paquete.listo_para_firma === true ? "LISTO" : "BLOQUEADO";

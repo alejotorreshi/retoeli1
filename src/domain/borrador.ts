@@ -1,5 +1,5 @@
-import type { Checklist, SoporteEvaluado } from "@/domain/checklist.ts";
-import { TEXTO_CELDA_VACIA } from "@/domain/checklist.ts";
+import { ESTADO_SOPORTE } from "@/config/constants/supports.constants.ts";
+import { type Checklist, type SoporteEvaluado, TEXTO_CELDA_VACIA } from "@/domain/checklist.ts";
 import { leerRuta, type Maestro } from "@/domain/mapeo.ts";
 import type { Solicitud } from "@/domain/tipos.ts";
 
@@ -39,15 +39,15 @@ function leerDelMaestro(maestro: Maestro, ruta: RutaBorrador): string {
 
 function adjuntos(soportes: readonly SoporteEvaluado[]): DatosBorradorCorreo["soportes_adjuntos"] {
   return soportes.flatMap((soporte) =>
-    soporte.estado === "presente" && soporte.archivo !== null
+    soporte.estado === ESTADO_SOPORTE.PRESENTE && soporte.archivo !== null
       ? [{ tipo: soporte.tipo, archivo: soporte.archivo }]
       : [],
   );
 }
 
 function pendientesDe(checklist: Checklist): readonly string[] {
-  const ausentes = checklist.soportes.filter((soporte) => soporte.estado === "ausente");
-  const vencidos = checklist.soportes.filter((soporte) => soporte.estado === "vencido");
+  const ausentes = checklist.soportes.filter((soporte) => soporte.estado === ESTADO_SOPORTE.AUSENTE);
+  const vencidos = checklist.soportes.filter((soporte) => soporte.estado === ESTADO_SOPORTE.VENCIDO);
   return [
     ...checklist.faltantes,
     ...ausentes.map((soporte) => soporte.tipo),
@@ -90,7 +90,7 @@ export type DatosEnvioSimulado = {
 function archivosVencidos(checklist: Checklist): ReadonlySet<string> {
   return new Set(
     checklist.soportes.flatMap((soporte) =>
-      soporte.estado === "vencido" && soporte.archivo !== null ? [soporte.archivo] : [],
+      soporte.estado === ESTADO_SOPORTE.VENCIDO && soporte.archivo !== null ? [soporte.archivo] : [],
     ),
   );
 }

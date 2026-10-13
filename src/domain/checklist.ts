@@ -1,4 +1,10 @@
 import { ESTADO_CAMPO } from "@/config/constants/mapping.constants.ts";
+import {
+  ESTADO_SOPORTE,
+  ESTADO_VIGENCIA,
+  VIGENCIA_SIN_VENCIMIENTO,
+} from "@/config/constants/supports.constants.ts";
+import type { ValorDe } from "@/config/types/valor-de.type.ts";
 import type { CampoMapeado } from "@/domain/mapeo.ts";
 import { renderizarTextoPlano } from "@/domain/plantillas.ts";
 import type { ReglasSoportes } from "@/domain/reglas.ts";
@@ -14,7 +20,7 @@ export type SoporteIndice = {
   readonly descripcion: string;
 };
 
-export type EstadoSoporte = "presente" | "ausente" | "vencido";
+export type EstadoSoporte = ValorDe<typeof ESTADO_SOPORTE>;
 
 export type SoporteEvaluado = {
   readonly tipo: string;
@@ -66,7 +72,6 @@ export const ESTADO_LISTO = "LISTO";
 export const ESTADO_BLOQUEADO = "BLOQUEADO";
 export const NOTA_POR_CONFIRMAR = "confirmar con el cliente";
 const NOMBRE_AVISO_EMISOR = "soportes.aviso_emisor_distinto";
-const VIGENCIA_SIN_VENCIMIENTO = "9999-12-31";
 
 function avisoEmisor(
   entrada: SoporteIndice,
@@ -82,7 +87,14 @@ function avisoEmisor(
 }
 
 function soporteAusente(tipo: string): SoporteEvaluado {
-  return { tipo, estado: "ausente", vigencia_hasta: null, archivo: null, aviso: null, aviso_emisor: null };
+  return {
+    tipo,
+    estado: ESTADO_SOPORTE.AUSENTE,
+    vigencia_hasta: null,
+    archivo: null,
+    aviso: null,
+    aviso_emisor: null,
+  };
 }
 
 function vigenciaComparable(entrada: SoporteIndice): string {
@@ -118,7 +130,7 @@ function evaluarSoporte(
   if (!emisor.ok) return emisor;
   return exito({
     tipo,
-    estado: vigencia.estado === "vencido" ? "vencido" : "presente",
+    estado: vigencia.estado === ESTADO_VIGENCIA.VENCIDO ? ESTADO_SOPORTE.VENCIDO : ESTADO_SOPORTE.PRESENTE,
     vigencia_hasta: entrada.vigencia_hasta,
     archivo: entrada.archivo,
     aviso: vigencia.aviso,
@@ -144,8 +156,9 @@ export function evaluarSoportes(
 }
 
 function bloqueoDe(soporte: SoporteEvaluado): readonly string[] {
-  if (soporte.estado === "ausente") return [`ausente: ${soporte.tipo}`];
-  if (soporte.estado === "vencido") return [`vencido: ${soporte.tipo} (${soporte.vigencia_hasta ?? ""})`];
+  if (soporte.estado === ESTADO_SOPORTE.AUSENTE) return [`ausente: ${soporte.tipo}`];
+  if (soporte.estado === ESTADO_SOPORTE.VENCIDO)
+    return [`vencido: ${soporte.tipo} (${soporte.vigencia_hasta ?? ""})`];
   return [];
 }
 
@@ -170,7 +183,7 @@ export function construirChecklist(
 }
 
 function vigenciaVisible(soporte: SoporteEvaluado): string {
-  if (soporte.estado === "ausente") return TEXTO_CELDA_VACIA;
+  if (soporte.estado === ESTADO_SOPORTE.AUSENTE) return TEXTO_CELDA_VACIA;
   return soporte.vigencia_hasta ?? TEXTO_SIN_VIGENCIA;
 }
 
@@ -196,9 +209,11 @@ export function construirDatosChecklist(caso: CasoChecklist, checklist: Checklis
     soportes: soportes.map(filaSoporte),
     faltantes: checklist.faltantes.map((etiqueta) => ({ etiqueta })),
     por_confirmar: checklist.requiere_confirmacion,
-    ausentes: soportes.filter((soporte) => soporte.estado === "ausente").map(({ tipo }) => ({ tipo })),
+    ausentes: soportes
+      .filter((soporte) => soporte.estado === ESTADO_SOPORTE.AUSENTE)
+      .map(({ tipo }) => ({ tipo })),
     vencidos: soportes
-      .filter((soporte) => soporte.estado === "vencido")
+      .filter((soporte) => soporte.estado === ESTADO_SOPORTE.VENCIDO)
       .map((soporte) => ({ tipo: soporte.tipo, vigencia: vigenciaVisible(soporte) })),
   };
 }
