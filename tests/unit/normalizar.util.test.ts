@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { normalizarEtiqueta } from "@/domain/utils/normalizar.util.ts";
+import { normalizarEtiqueta, sinDiacriticos } from "@/domain/utils/normalizar.util.ts";
 
 describe("normalizarEtiqueta", () => {
   test("quita tildes, mayúsculas y marcas finales", () => {
@@ -22,5 +22,12 @@ describe("normalizarEtiqueta", () => {
 
   test("conserva la ñ como n sin tilde y no toca otros signos internos", () => {
     expect(normalizarEtiqueta("Año / Período")).toBe("ano / periodo");
+  });
+});
+
+describe("sinDiacriticos", () => {
+  test("quita tildes y diéresis sin tocar mayúsculas ni espacios", () => {
+    expect(sinDiacriticos("Envíalo  Ya")).toBe("Envialo  Ya");
+    expect(sinDiacriticos("pingüino")).toBe("pinguino");
   });
 });

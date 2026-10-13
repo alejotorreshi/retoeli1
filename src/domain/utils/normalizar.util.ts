@@ -3,10 +3,13 @@ import {
   PATRON_ESPACIOS,
   PATRON_MARCAS_FINALES,
 } from "@/config/constants/patterns.constants.ts";
+
+export function sinDiacriticos(texto: string): string {
+  return texto.normalize("NFD").replace(PATRON_DIACRITICOS, "");
+}
+
 export function normalizarEtiqueta(etiqueta: string): string {
-  return etiqueta
-    .normalize("NFD")
-    .replace(PATRON_DIACRITICOS, "")
+  return sinDiacriticos(etiqueta)
     .toLowerCase()
     .replace(PATRON_ESPACIOS, " ")
     .trim()

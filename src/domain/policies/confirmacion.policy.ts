@@ -9,22 +9,18 @@ import {
   VERBOS_ENVIO,
 } from "@/config/constants/confirmacion.constants.ts";
 import {
-  PATRON_DIACRITICOS,
   PATRON_NO_PALABRA,
   PATRON_PREGUNTA,
   PATRON_SLUG_EN_TEXTO,
 } from "@/config/constants/patterns.constants.ts";
 import type { DecisionConfirmacion } from "@/domain/types/confirmacion.type.ts";
+import { sinDiacriticos } from "@/domain/utils/normalizar.util.ts";
 
 const OTRO: DecisionConfirmacion = { decision: DECISION_CONFIRMACION.OTRO };
 const RECHAZA: DecisionConfirmacion = { decision: DECISION_CONFIRMACION.RECHAZA };
 const FALTA_CASO: DecisionConfirmacion = { decision: DECISION_CONFIRMACION.FALTA_CASO };
 
 type Frase = { readonly slugs: readonly string[]; readonly palabras: readonly string[] };
-
-function normalizar(texto: string): string {
-  return texto.normalize("NFD").replace(PATRON_DIACRITICOS, "").toLowerCase().trim();
-}
 
 function separar(normalizado: string): Frase {
   const slugs = normalizado.match(PATRON_SLUG_EN_TEXTO) ?? [];
@@ -72,7 +68,7 @@ function casoConfirmado(slugs: readonly string[], pendientes: readonly string[])
 }
 
 export function clasificarConfirmacion(texto: string, pendientes: readonly string[]): DecisionConfirmacion {
-  const normalizado = normalizar(texto);
+  const normalizado = sinDiacriticos(texto).toLowerCase().trim();
   if (normalizado === "" || PATRON_PREGUNTA.test(texto)) return OTRO;
   const { slugs, palabras } = separar(normalizado);
   if (palabras.some((palabra) => NEGACIONES.has(palabra))) return RECHAZA;
