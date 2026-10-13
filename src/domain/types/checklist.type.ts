@@ -13,7 +13,7 @@ export type Checklist = {
 };
 
 export type FilaSoporteChecklist = {
-  readonly tipo: string;
+  readonly nombre: string;
   readonly archivo: string;
   readonly vigencia: string;
   readonly estado: EstadoSoporte;
@@ -31,8 +31,8 @@ export type DatosChecklist = {
   readonly soportes: readonly FilaSoporteChecklist[];
   readonly faltantes: readonly { readonly etiqueta: string }[];
   readonly por_confirmar: readonly CampoPorConfirmar[];
-  readonly ausentes: readonly { readonly tipo: string }[];
-  readonly vencidos: readonly { readonly tipo: string; readonly vigencia: string }[];
+  readonly ausentes: readonly { readonly nombre: string }[];
+  readonly vencidos: readonly { readonly nombre: string; readonly vigencia: string }[];
 };
 
 export type CasoChecklist = { readonly caso: string; readonly cliente: string };

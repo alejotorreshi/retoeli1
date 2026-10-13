@@ -71,7 +71,9 @@ describe("checklist.builder: nombres legibles solo en la salida para personas (G
   test("las acciones de ausentes y vencidos nombran el soporte", () => {
     const datos = construirDatosChecklist(CASO, construirChecklist(SOPORTES, [], HOY));
     expect(datos.ausentes).toEqual([{ nombre: "Certificado de cumplimiento tributario" }]);
-    expect(datos.vencidos).toEqual([{ nombre: "Certificación de aportes parafiscales", vigencia: "2026-08-31" }]);
+    expect(datos.vencidos).toEqual([
+      { nombre: "Certificación de aportes parafiscales", vigencia: "2026-08-31" },
+    ]);
   });
 
   test("un id desconocido o con forma de propiedad heredada se muestra crudo en filas, motivos y acciones", () => {

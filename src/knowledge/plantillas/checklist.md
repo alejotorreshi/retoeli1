@@ -7,9 +7,9 @@ Estado: {{estado}}
 {{/motivos}}
 ## Soportes
 
-| Tipo | Archivo | Vigencia | Estado | Aviso | País emisor | Aviso de emisor |
+| Soporte | Archivo | Vigencia | Estado | Aviso | País emisor | Aviso de emisor |
 |------|---------|----------|--------|-------|-------------|-----------------|
-{{#soportes}}| {{tipo}} | {{archivo}} | {{vigencia}} | {{estado}} | {{aviso}} | {{pais_emisor}} | {{aviso_emisor}} |
+{{#soportes}}| {{nombre}} | {{archivo}} | {{vigencia}} | {{estado}} | {{aviso}} | {{pais_emisor}} | {{aviso_emisor}} |
 {{/soportes}}
 ## Campos faltantes
 
@@ -23,8 +23,8 @@ Estado: {{estado}}
 {{/por_confirmar}}
 ## Acciones
 
-{{#ausentes}}- [ ] Conseguir el soporte {{tipo}} y agregarlo al paquete
-{{/ausentes}}{{#vencidos}}- [ ] Renovar el soporte {{tipo}}, vencido desde {{vigencia}}
+{{#ausentes}}- [ ] Conseguir el soporte {{nombre}} y agregarlo al paquete
+{{/ausentes}}{{#vencidos}}- [ ] Renovar el soporte {{nombre}}, vencido desde {{vigencia}}
 {{/vencidos}}{{#faltantes}}- [ ] Conseguir el dato "{{etiqueta}}" y completarlo en el formulario
 {{/faltantes}}{{#por_confirmar}}- [ ] Confirmar con el cliente el campo "{{etiqueta}}"
 {{/por_confirmar}}- [ ] Revisar el formulario y pasarlo a firma del representante legal
