@@ -38,7 +38,7 @@ import { ESTADO_SOPORTE } from "@/config/constants/supports.constants.ts";
 import { HERRAMIENTA, NOMBRE_VISIBLE } from "@/config/constants/tools.constants.ts";
 import { pinExecutionDate } from "@/config/env.ts";
 import { MENSAJE_AGENTE } from "@/config/strings.ts";
-import { preguntaConfirmacion } from "@/domain/builders/cierre-turno.builder.ts";
+import { cierreConPregunta } from "@/domain/builders/cierre-turno.builder.ts";
 import type { CasoPendiente } from "@/domain/types/compuerta.type.ts";
 import { createInstructionsLoader } from "@/infra/knowledge/instructions-loader.adapter.ts";
 import type { ErrorLlm, RespuestaLlm } from "@/llm/types/llm.type.ts";
@@ -404,7 +404,7 @@ const PENDIENTE_EC: CasoPendiente = {
   bloqueos: [BLOQUEO_EC],
   motivos: [{ tipo: "certificado_cumplimiento_tributario", causa: ESTADO_SOPORTE.AUSENTE }],
 };
-const PREGUNTA_EC = preguntaConfirmacion([PENDIENTE_EC]);
+const PREGUNTA_EC = cierreConPregunta("", [PENDIENTE_EC]);
 const PRESUPUESTO_PRUEBA = 1000;
 
 function gastando(respuesta: RespuestaLlm, entrada: number, salida: number): RespuestaLlm {

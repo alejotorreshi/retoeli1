@@ -26,7 +26,7 @@ import { ROL_MENSAJE } from "@/config/constants/llm.constants.ts";
 import { ESTADO_SOPORTE } from "@/config/constants/supports.constants.ts";
 import { HERRAMIENTA } from "@/config/constants/tools.constants.ts";
 import { pinExecutionDate } from "@/config/env.ts";
-import { preguntaConfirmacion } from "@/domain/builders/cierre-turno.builder.ts";
+import { cierreConPregunta } from "@/domain/builders/cierre-turno.builder.ts";
 import type { CasoPendiente } from "@/domain/types/compuerta.type.ts";
 import { respuestaDeTurno } from "@/loop/services/respuesta-turno.service.ts";
 
@@ -222,7 +222,7 @@ describe("CR-02: con un caso pendiente la pregunta del servidor cierra el turno 
       ...intentoDeEnvio("simular-2"),
     ]);
     const turno1 = await prueba.turno(MENSAJE_TURNO_1);
-    const pregunta = preguntaConfirmacion([PENDIENTE_EC]);
+    const pregunta = cierreConPregunta("", [PENDIENTE_EC]);
 
     for (const texto of [textoFinal(turno1), respuestaDeTurno(turno1).reply]) {
       expect(texto).not.toContain("¿Quieres que vuelva a generar");
@@ -271,7 +271,7 @@ describe("CR-02: con un caso pendiente la pregunta del servidor cierra el turno 
       guionTurno1(`${TEXTO_TURNO_1}${SEPARADOR_PARRAFOS}${LINEA_ESTADO}\n${PREGUNTA_ENVIO_MODELO}`),
     );
     const turno1 = await prueba.turno(MENSAJE_TURNO_1);
-    const pregunta = preguntaConfirmacion([PENDIENTE_EC]);
+    const pregunta = cierreConPregunta("", [PENDIENTE_EC]);
     const respuesta = respuestaDeTurno(turno1);
 
     for (const texto of [textoFinal(turno1), respuesta.reply]) {
@@ -288,6 +288,6 @@ describe("CR-02: con un caso pendiente la pregunta del servidor cierra el turno 
     const prueba = agente(GUION_TURNO_1);
     const turno1 = await prueba.turno(MENSAJE_TURNO_1);
     const texto = textoFinal(turno1);
-    expect(texto).toBe(`${TEXTO_TURNO_1}${SEPARADOR_PARRAFOS}${preguntaConfirmacion([PENDIENTE_EC])}`);
+    expect(texto).toBe(`${TEXTO_TURNO_1}${SEPARADOR_PARRAFOS}${cierreConPregunta("", [PENDIENTE_EC])}`);
   });
 });

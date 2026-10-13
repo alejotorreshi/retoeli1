@@ -7,7 +7,7 @@ import { motivosDeBloqueo } from "@/domain/builders/checklist.builder.ts";
 import type { LlamadaResumida } from "@/domain/types/cierre-turno.type.ts";
 import type { CasoPendiente } from "@/domain/types/compuerta.type.ts";
 
-export function preguntaConfirmacion(pendientes: readonly CasoPendiente[]): string {
+function preguntaConfirmacion(pendientes: readonly CasoPendiente[]): string {
   const legibles = pendientes.map(({ caso, motivos }) => ({
     caso,
     bloqueos: motivosDeBloqueo({ motivos_bloqueo: motivos }),

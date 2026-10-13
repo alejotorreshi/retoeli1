@@ -22,7 +22,7 @@ import { ESTADO_SOPORTE } from "@/config/constants/supports.constants.ts";
 import { HERRAMIENTA, NOMBRE_VISIBLE } from "@/config/constants/tools.constants.ts";
 import { type ProviderSettings, parseAgentEnv, pinExecutionDate } from "@/config/env.ts";
 import { TEXTO_SOPORTE } from "@/config/strings.ts";
-import { preguntaConfirmacion } from "@/domain/builders/cierre-turno.builder.ts";
+import { cierreConPregunta } from "@/domain/builders/cierre-turno.builder.ts";
 import type { CasoPendiente } from "@/domain/types/compuerta.type.ts";
 import type { FetchLike } from "@/llm/types/provider.type.ts";
 import { respuestaDeTurno } from "@/loop/services/respuesta-turno.service.ts";
@@ -163,7 +163,7 @@ describe.skipIf(process.env.LLM_EN_VIVO !== "1")(
           expect(enOrden(primerosOkDelFlujo(respuestaA.toolCalls, CO))).toBe(true);
           expect(respuestaA.reply.trim().length).toBeGreaterThan(0);
           expect(respuestaA.reply).not.toContain(NEGRITA);
-          expect(ultimoParrafo(respuestaA.reply)).toBe(preguntaConfirmacion([PENDIENTE_CO]));
+          expect(ultimoParrafo(respuestaA.reply)).toBe(cierreConPregunta("", [PENDIENTE_CO]));
           expect(existsSync(join(proyecto.raiz, OUT_DIR, CO, ARCHIVOS_SALIDA.ENVIO_SIMULADO))).toBe(false);
 
           const agenteB = nuevoAgente();
@@ -178,7 +178,7 @@ describe.skipIf(process.env.LLM_EN_VIVO !== "1")(
               .filter((confirmacion) => confirmacion.caso === EC)
               .at(-1),
           ).toEqual(expect.objectContaining({ caso: EC, bloqueos: [BLOQUEO_EC] }));
-          expect(ultimoParrafo(respuestaB1.reply)).toBe(preguntaConfirmacion([PENDIENTE_EC]));
+          expect(ultimoParrafo(respuestaB1.reply)).toBe(cierreConPregunta("", [PENDIENTE_EC]));
           expect(respuestaB1.reply).toContain(TEXTO_SOPORTE.nombre(TIPO_BLOQUEO_EC));
           expect(respuestaB1.reply).toContain(`${OUT_DIR}/${EC}`);
           expect(respuestaB1.reply).not.toContain(NEGRITA);

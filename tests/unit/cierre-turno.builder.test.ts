@@ -4,11 +4,7 @@ import { PATRON_PREGUNTA } from "@/config/constants/patterns.constants.ts";
 import { ESTADO_SOPORTE } from "@/config/constants/supports.constants.ts";
 import { HERRAMIENTA, NOMBRE_VISIBLE } from "@/config/constants/tools.constants.ts";
 import { TEXTO_CHECKLIST, TEXTO_CIERRE } from "@/config/strings.ts";
-import {
-  cierreConPregunta,
-  cierreDeterminista,
-  preguntaConfirmacion,
-} from "@/domain/builders/cierre-turno.builder.ts";
+import { cierreConPregunta, cierreDeterminista } from "@/domain/builders/cierre-turno.builder.ts";
 import type { LlamadaResumida } from "@/domain/types/cierre-turno.type.ts";
 import type { CasoPendiente } from "@/domain/types/compuerta.type.ts";
 
@@ -28,9 +24,9 @@ function sinMarkdown(texto: string): void {
   expect(texto).not.toContain("|");
 }
 
-describe("preguntaConfirmacion (ENV-03, D-41, D-44)", () => {
+describe("pregunta de confirmación: cierreConPregunta sin texto previo (ENV-03, D-41, D-44)", () => {
   test("un caso bloqueado nombra el caso y sus bloqueos legibles y termina en pregunta", () => {
-    const texto = preguntaConfirmacion([PENDIENTE_EC]);
+    const texto = cierreConPregunta("", [PENDIENTE_EC]);
     expect(texto.endsWith("?")).toBe(true);
     expect(texto).toContain(EC);
     expect(texto).toContain(TEXTO_CHECKLIST.estado.bloqueado);
@@ -40,7 +36,7 @@ describe("preguntaConfirmacion (ENV-03, D-41, D-44)", () => {
   });
 
   test("un caso listo dice LISTO y termina en pregunta", () => {
-    const texto = preguntaConfirmacion([PENDIENTE_CO]);
+    const texto = cierreConPregunta("", [PENDIENTE_CO]);
     expect(texto.endsWith("?")).toBe(true);
     expect(texto).toContain(CO);
     expect(texto).toContain(TEXTO_CHECKLIST.estado.listo);
@@ -48,7 +44,7 @@ describe("preguntaConfirmacion (ENV-03, D-41, D-44)", () => {
   });
 
   test("varios casos los lista todos, pide nombrar uno y termina en pregunta (D-40)", () => {
-    const texto = preguntaConfirmacion([PENDIENTE_EC, PENDIENTE_CO]);
+    const texto = cierreConPregunta("", [PENDIENTE_EC, PENDIENTE_CO]);
     expect(texto.endsWith("?")).toBe(true);
     expect(texto).toContain(EC);
     expect(texto).toContain(CO);
@@ -180,7 +176,7 @@ describe("cierreConPregunta (D-44, CR-02)", () => {
   test.each(FILAS_CIERRE)(
     "con un caso pendiente quita la pregunta final del modelo: %s",
     (_nombre, texto, previo) => {
-      const pregunta = preguntaConfirmacion([PENDIENTE_EC]);
+      const pregunta = cierreConPregunta("", [PENDIENTE_EC]);
       expect(cierreConPregunta(texto, [PENDIENTE_EC])).toBe(cierreEsperado(previo, pregunta));
     },
   );
@@ -198,7 +194,7 @@ describe("cierreConPregunta (D-44, CR-02)", () => {
     ["un caso", [PENDIENTE_EC]],
     ["varios casos", [PENDIENTE_EC, PENDIENTE_CO]],
   ] as const)("el último párrafo es exactamente la pregunta del servidor con %s", (_nombre, pendientes) => {
-    const pregunta = preguntaConfirmacion(pendientes);
+    const pregunta = cierreConPregunta("", pendientes);
     for (const [, texto] of FILAS_CIERRE) {
       expect(cierreConPregunta(texto, pendientes).split(SEPARADOR_PARRAFOS).at(-1)).toBe(pregunta);
     }
@@ -207,7 +203,7 @@ describe("cierreConPregunta (D-44, CR-02)", () => {
   test.each(FILAS_CIERRE)(
     "el texto que queda antes de la pregunta no está mutilado: %s",
     (_nombre, texto) => {
-      const pregunta = preguntaConfirmacion([PENDIENTE_EC]);
+      const pregunta = cierreConPregunta("", [PENDIENTE_EC]);
       const previo = textoPrevio(cierreConPregunta(texto, [PENDIENTE_EC]), pregunta);
       if (previo === "") return;
       const ultima = previo.split(SALTO_DE_LINEA).at(-1) ?? "";
