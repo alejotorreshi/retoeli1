@@ -1,6 +1,7 @@
 import { z } from "zod";
 import type { Entorno, EntradaBitacora } from "@/application/puertos.ts";
-import { PATRON_CASO, PATRON_SESION, PREFIJO_HERRAMIENTA, SESION_POR_DEFECTO } from "@/config/constantes.ts";
+import { PATRON_CASO, PATRON_SESION } from "@/config/constants/patterns.constants.ts";
+import { PREFIJO_HERRAMIENTA, SESION_POR_DEFECTO } from "@/config/constants/tools.constants.ts";
 import { exito, type Fallo, fallo, type Resultado } from "@/domain/resultado.ts";
 import { formatearIssues } from "@/tools/issues.ts";
 import { type ContextoNormalizado, crearEntorno, type OpcionesEntorno } from "@/tools/wiring.ts";

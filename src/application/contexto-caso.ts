@@ -1,4 +1,5 @@
 import type { Entorno } from "@/application/puertos.ts";
+import { PATRON_CASO } from "@/config/constants/patterns.constants.ts";
 import { construirIndiceGlosario, type IndiceGlosario, type Maestro } from "@/domain/mapeo.ts";
 import type { Reglas } from "@/domain/reglas.ts";
 import { exito, type Fallo, fallo, type Resultado } from "@/domain/resultado.ts";
@@ -25,7 +26,7 @@ async function casoNoEncontrado(entorno: Entorno): Promise<Fallo> {
 
 export async function cargarSolicitudCaso(caso: string, entorno: Entorno): Promise<Resultado<SolicitudCaso>> {
   if (caso === "") return casoNoEncontrado(entorno);
-  if (!entorno.patronCaso.test(caso)) return fallo("CASO_INVALIDO");
+  if (!PATRON_CASO.test(caso)) return fallo("CASO_INVALIDO");
 
   const resolucion = await entorno.casos.resolver(caso);
   if (resolucion.estado === "invalido") return fallo("CASO_INVALIDO");

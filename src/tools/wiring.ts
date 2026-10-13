@@ -1,11 +1,7 @@
 import type { Entorno, Lectura, OrigenCopia, Registrar, Reloj } from "@/application/puertos.ts";
-import {
-  ARCHIVOS_CASO,
-  ARCHIVOS_SALIDA,
-  PATRON_CASO,
-  ZONA_HORARIA_POR_DEFECTO,
-} from "@/config/constantes.ts";
-import { parseToolEnv, type ToolEnv } from "@/config/env.ts";
+import { ARCHIVOS_CASO, ARCHIVOS_SALIDA } from "@/config/constants/files.constants.ts";
+import { ZONA_HORARIA_POR_DEFECTO } from "@/config/constants/runtime.constants.ts";
+import { readToolEnv, type ToolEnv } from "@/config/env.ts";
 import { exito, fallo, type Resultado } from "@/domain/resultado.ts";
 import type { Plantilla, TipoPlantilla } from "@/domain/tipos.ts";
 import { crearBitacora } from "@/infra/bitacora.ts";
@@ -89,7 +85,6 @@ function relojDe(config: ToolEnv): Reloj {
 function entornoDeFixtures(raiz: string, reloj: Reloj, directorioConocimiento: string): Entorno {
   return {
     raiz,
-    patronCaso: PATRON_CASO,
     reloj,
     casos: {
       resolver: (caso) => resolverCaso(raiz, caso),
@@ -135,7 +130,7 @@ export function crearEntorno(
   opciones: OpcionesEntorno = {},
 ): EntornoEjecucion {
   const raiz = resolverRaiz(contexto.directorio);
-  const config = parseToolEnv(process.env);
+  const config = readToolEnv();
   if (!config.success) {
     return {
       registrar: crearBitacora(raiz, relojSistema(ZONA_HORARIA_POR_DEFECTO)),

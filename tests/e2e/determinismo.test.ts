@@ -4,7 +4,7 @@ import { join } from "node:path";
 import { type Corrida, correrDemo } from "@tests/helpers/correr-demo.ts";
 import { type Instantanea, listarSalida, tomarInstantanea } from "@tests/helpers/instantanea.ts";
 import { crearProyectoTemporal, type ProyectoTemporal } from "@tests/helpers/proyecto-temporal.ts";
-import { OUT_DIR } from "@/config/constantes.ts";
+import { OUT_DIR } from "@/config/constants/files.constants.ts";
 
 const EXTENSIONES_TEXTO = /\.(?:md|json|jsonl)$/;
 const proyectos: ProyectoTemporal[] = [];

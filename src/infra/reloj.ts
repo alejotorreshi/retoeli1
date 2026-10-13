@@ -1,5 +1,5 @@
 import type { Reloj } from "@/application/puertos.ts";
-import { PATRON_FECHA } from "@/config/constantes.ts";
+import { PATRON_FECHA } from "@/config/constants/patterns.constants.ts";
 import type { FechaISO } from "@/domain/tipos.ts";
 
 function esFechaISO(texto: string): texto is FechaISO {

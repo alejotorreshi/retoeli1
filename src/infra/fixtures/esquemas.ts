@@ -1,9 +1,7 @@
 import { z } from "zod";
+import { NOMBRES_RESERVADOS_PAQUETE } from "@/config/constants/files.constants.ts";
+import { LIMITES_FIXTURES } from "@/config/constants/limits.constants.ts";
 import {
-  HOJA_RESERVADA_XLSX,
-  LIMITES_FIXTURES,
-  LIMITES_XLSX,
-  NOMBRES_RESERVADOS_PAQUETE,
   PATRON_ARCHIVO_SOPORTE,
   PATRON_CELDA,
   PATRON_FECHA,
@@ -11,9 +9,10 @@ import {
   PATRON_PAIS,
   PATRON_RUTA_MAESTRO,
   PATRON_TIPO_SOPORTE,
-} from "@/config/constantes.ts";
-import { esFechaReal } from "@/config/env.ts";
+} from "@/config/constants/patterns.constants.ts";
+import { HOJA_RESERVADA_XLSX, LIMITES_XLSX } from "@/config/constants/xlsx.constants.ts";
 import type { SoporteIndice } from "@/domain/checklist.ts";
+import { esFechaReal } from "@/domain/fecha.ts";
 import { FORMATOS } from "@/domain/tipos.ts";
 
 const textoCorto = z.string().max(LIMITES_FIXTURES.textoCorto);

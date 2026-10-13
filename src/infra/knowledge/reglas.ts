@@ -2,16 +2,15 @@ import { readFile, stat } from "node:fs/promises";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { z } from "zod";
+import { ARCHIVO_REGLAS } from "@/config/constants/files.constants.ts";
+import { VERSION_REGLAS } from "@/config/constants/knowledge.constants.ts";
+import { LIMITE_LECTURA_BYTES, LIMITES_REGLAS } from "@/config/constants/limits.constants.ts";
 import {
-  ARCHIVO_REGLAS,
-  LIMITE_LECTURA_BYTES,
-  LIMITES_REGLAS,
   PATRON_PAIS,
   PATRON_PLANTILLA_CONOCIMIENTO,
   PATRON_RUTA_MAESTRO,
   PATRON_TEXTO_NO_VACIO,
-  VERSION_REGLAS,
-} from "@/config/constantes.ts";
+} from "@/config/constants/patterns.constants.ts";
 import { APLICACIONES_NOTA, type Reglas } from "@/domain/reglas.ts";
 import { fallo, type Resultado } from "@/domain/resultado.ts";
 import { validarTextosDeReglas } from "@/domain/validar-reglas.ts";

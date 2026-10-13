@@ -1,13 +1,10 @@
 import { z } from "zod";
-import { PATRON_FECHA, ZONA_HORARIA_POR_DEFECTO } from "@/config/constantes.ts";
+import { PATRON_FECHA } from "@/config/constants/patterns.constants.ts";
+import { ZONA_HORARIA_POR_DEFECTO } from "@/config/constants/runtime.constants.ts";
+import { esFechaReal } from "@/domain/fecha.ts";
 
 function vacioComoAusente(valor: unknown): unknown {
   return valor === "" ? undefined : valor;
-}
-
-export function esFechaReal(texto: string): boolean {
-  const milisegundos = Date.parse(`${texto}T00:00:00Z`);
-  return !Number.isNaN(milisegundos) && new Date(milisegundos).toISOString().slice(0, 10) === texto;
 }
 
 function esZonaHoraria(zona: string): boolean {
@@ -39,4 +36,17 @@ export type FuenteEntorno = Readonly<Record<string, string | undefined>>;
 
 export function parseToolEnv(source: FuenteEntorno) {
   return toolEnvSchema.safeParse(source, { error: z.locales.es().localeError });
+}
+
+export function readToolEnv() {
+  return parseToolEnv(process.env);
+}
+
+export function pinExecutionDate(fecha: string): () => void {
+  const previous = process.env.FECHA_EJECUCION;
+  process.env.FECHA_EJECUCION = fecha;
+  return () => {
+    if (previous === undefined) delete process.env.FECHA_EJECUCION;
+    else process.env.FECHA_EJECUCION = previous;
+  };
 }

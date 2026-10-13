@@ -6,7 +6,7 @@ import { generarCaso } from "@tests/helpers/flujo.ts";
 import { extraerTrazos, type Trazo } from "@tests/helpers/pdf-texto.ts";
 import { crearProyectoTemporal, type ProyectoTemporal } from "@tests/helpers/proyecto-temporal.ts";
 import { PDFDocument } from "pdf-lib";
-import { FIXTURES_DIR } from "@/config/constantes.ts";
+import { FIXTURES_DIR } from "@/config/constants/files.constants.ts";
 import { leerRuta, type Maestro } from "@/domain/mapeo.ts";
 import type { CampoLista } from "@/domain/tipos.ts";
 import { crearHerramientas } from "@/tools/fabrica.ts";

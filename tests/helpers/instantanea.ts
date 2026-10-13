@@ -1,7 +1,7 @@
 import { readdir, readFile } from "node:fs/promises";
 import { extname, join } from "node:path";
 import { leerCeldasXlsx, leerMetadatosXlsx } from "@tests/helpers/xlsx-leer.ts";
-import { OUT_DIR } from "@/config/constantes.ts";
+import { OUT_DIR } from "@/config/constants/files.constants.ts";
 
 type LineaBitacora = Record<string, unknown>;
 

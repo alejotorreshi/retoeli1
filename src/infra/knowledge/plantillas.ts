@@ -1,5 +1,5 @@
 import { join } from "node:path";
-import { PATRON_PLANTILLA_CONOCIMIENTO } from "@/config/constantes.ts";
+import { PATRON_PLANTILLA_CONOCIMIENTO } from "@/config/constants/patterns.constants.ts";
 import type { ClavePlantilla, Reglas } from "@/domain/reglas.ts";
 import { exito, fallo, type Resultado } from "@/domain/resultado.ts";
 import { leerTexto } from "@/infra/knowledge/reglas.ts";

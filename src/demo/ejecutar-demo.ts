@@ -1,6 +1,8 @@
 import { rm, stat } from "node:fs/promises";
 import { join, resolve } from "node:path";
-import { FECHA_DEMO, OUT_DIR, SESION_DEMO } from "@/config/constantes.ts";
+import { FECHA_DEMO, SESION_DEMO } from "@/config/constants/demo.constants.ts";
+import { OUT_DIR } from "@/config/constants/files.constants.ts";
+import { pinExecutionDate } from "@/config/env.ts";
 import {
   armar_paquete,
   generar_formulario,
@@ -207,11 +209,6 @@ function crearSesion(opciones: OpcionesDemo, ctx: Contexto): Sesion {
   };
 }
 
-function restaurarFecha(previa: string | undefined): void {
-  if (previa === undefined) delete process.env.FECHA_EJECUCION;
-  else process.env.FECHA_EJECUCION = previa;
-}
-
 async function correrCasos(opciones: OpcionesDemo, raiz: string): Promise<ResultadoDemo> {
   opciones.escribir(`Fecha de ejecución efectiva: ${FECHA_DEMO}`);
   const sesion = crearSesion(opciones, { directory: raiz, sessionId: SESION_DEMO });
@@ -237,11 +234,10 @@ export async function ejecutarDemo(opciones: OpcionesDemo): Promise<ResultadoDem
     return { fallido: true };
   }
   await rm(join(raiz, OUT_DIR), { recursive: true, force: true });
-  const fechaPrevia = process.env.FECHA_EJECUCION;
-  process.env.FECHA_EJECUCION = FECHA_DEMO;
+  const restaurarFecha = pinExecutionDate(FECHA_DEMO);
   try {
     return await correrCasos(opciones, raiz);
   } finally {
-    restaurarFecha(fechaPrevia);
+    restaurarFecha();
   }
 }

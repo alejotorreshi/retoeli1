@@ -11,19 +11,39 @@ const API_SHELL = /child_process|\bBun\s*\.\s*(?:spawn|\$)|\bBun\s*\[\s*["'`](?:
 
 const PAQUETES_CON_CAPA = new Set(["zod", "exceljs", "pdf-lib"]);
 
-const DESTINOS_DE_HERRAMIENTAS = ["domain", "application", "config", "tools", "proveedor", "wiring", "zod"];
+const DESTINOS_DE_HERRAMIENTAS = [
+  "domain",
+  "application",
+  "config-pure",
+  "config-env",
+  "tools",
+  "proveedor",
+  "wiring",
+  "zod",
+];
+
+const DESTINOS_DE_DEMO = ["demo", "proveedor", "config-pure", "config-env", "node"];
 
 const PERMITIDOS: Readonly<Record<string, readonly string[]>> = {
-  domain: ["domain"],
-  application: ["domain", "application"],
-  infra: ["domain", "application", "config", "infra", "node", "zod", "exceljs", "pdf-lib"],
-  config: ["config", "zod"],
+  domain: ["domain", "config-pure"],
+  application: ["domain", "application", "config-pure"],
+  "config-pure": ["config-pure"],
+  "config-env": ["config-env", "config-pure", "domain", "zod"],
+  infra: ["domain", "application", "config-pure", "config-env", "infra", "node", "zod", "exceljs", "pdf-lib"],
   tools: DESTINOS_DE_HERRAMIENTAS,
   proveedor: DESTINOS_DE_HERRAMIENTAS,
   wiring: [...DESTINOS_DE_HERRAMIENTAS, "infra"],
-  demo: ["demo", "proveedor", "config", "node"],
-  "raiz-demo": ["demo", "proveedor", "config", "node"],
+  demo: DESTINOS_DE_DEMO,
+  "raiz-demo": DESTINOS_DE_DEMO,
 };
+
+const CONFIG_PURA = /^src\/config\/(?:constants\/.+|strings)$/;
+
+const LECTURA_DE_ENTORNO = /\b(?:process|Bun)\s*\.\s*env\b/;
+
+const IMPURO_EN_CONFIG = /\bprocess\s*\.\s*env\b|\bBun\s*\.|\bimport\s*\.\s*meta\b|["']node:|["']zod["']/;
+
+const LECTORES_DE_ENTORNO: ReadonlySet<string> = new Set(["src/config/env.ts"]);
 
 const HERRAMIENTAS_PRD: readonly string[] = [
   "leer_solicitud",
@@ -44,8 +64,11 @@ function capaDeRuta(ruta: string): string {
   if (base === "demo") return "raiz-demo";
   if (base === "src/tools/wiring") return "wiring";
   if (base === "src/tools/proveedor") return "proveedor";
+  if (base.startsWith("tests/")) return "tests";
+  if (CONFIG_PURA.test(base)) return "config-pure";
+  if (base === "src/config/env") return "config-env";
   if (CAPAS_FUTURAS.test(base)) return "prohibida";
-  const capa = /^src\/(domain|application|infra|config|tools|demo)\//.exec(base)?.[1];
+  const capa = /^src\/(domain|application|infra|tools|demo)\//.exec(base)?.[1];
   return capa ?? "desconocida";
 }
 
@@ -87,11 +110,28 @@ function extraerImportaciones(codigo: string): string[] {
 
 function violacionesDeCapas(ruta: string, codigo: string): string[] {
   const origen = capaDeRuta(ruta);
+  if (origen === "tests") return [];
   const permitidos = PERMITIDOS[origen];
   if (permitidos === undefined) return [`${ruta}: pertenece a una capa no declarada (${origen})`];
   return extraerImportaciones(codigo)
     .filter((especificador) => !permitidos.includes(capaDeDestino(ruta, especificador)))
     .map((especificador) => `${ruta}: la capa ${origen} no puede importar ${especificador}`);
+}
+
+function lineasQueCumplen(ruta: string, codigo: string, patron: RegExp, motivo: string): string[] {
+  return codigo
+    .split("\n")
+    .flatMap((linea, indice) => (patron.test(linea) ? [`${ruta}:${indice + 1}: ${motivo}`] : []));
+}
+
+function violacionesDePureza(ruta: string, codigo: string): string[] {
+  if (capaDeRuta(ruta) !== "config-pure") return [];
+  return lineasQueCumplen(ruta, codigo, IMPURO_EN_CONFIG, "config pura con entorno, node, Bun o zod");
+}
+
+function violacionesDeLecturaDeEntorno(ruta: string, codigo: string): string[] {
+  if (LECTORES_DE_ENTORNO.has(ruta)) return [];
+  return lineasQueCumplen(ruta, codigo, LECTURA_DE_ENTORNO, "lee el entorno fuera de src/config/env.ts");
 }
 
 function violacionesDeShell(ruta: string, codigo: string): string[] {
@@ -239,6 +279,16 @@ describe("reglas de capas sobre el código real", () => {
     expect(ciclosDe(grafo)).toEqual(["src/domain/a.ts -> src/domain/b.ts -> src/domain/a.ts"]);
   });
 
+  test("G9: la config pura no lee entorno ni importa node:, Bun ni zod", () => {
+    const fuentes = listarFuentes();
+    expect(fuentes.filter((ruta) => capaDeRuta(ruta) === "config-pure").length).toBeGreaterThan(0);
+    expect(fuentes.flatMap((ruta) => violacionesDePureza(ruta, leer(ruta)))).toEqual([]);
+  });
+
+  test("G10: solo src/config/env.ts lee el entorno", () => {
+    expect(listarFuentes().flatMap((ruta) => violacionesDeLecturaDeEntorno(ruta, leer(ruta)))).toEqual([]);
+  });
+
   test("src/ y demo.ts no usan APIs de shell", () => {
     const violaciones = listarFuentes().flatMap((ruta) => violacionesDeShell(ruta, leer(ruta)));
     expect(violaciones).toEqual([]);
@@ -376,6 +426,42 @@ describe("el escáner muerde sobre fuentes de muestra", () => {
   test("src no puede importar desde @tests/", () => {
     expect(violacionesDeCapas("src/domain/e.ts", 'import { f } from "@tests/helpers/f.ts";\n')).toEqual([
       "src/domain/e.ts: la capa domain no puede importar @tests/helpers/f.ts",
+    ]);
+  });
+
+  test("G9: reporta config pura que importa zod o node: y lee el entorno", () => {
+    const punto = ".";
+    const codigo = [
+      'import { z } from "zod";',
+      'import { join } from "node:path";',
+      `const zona = Bun${punto}env.TZ;`,
+      "export const A = 1;",
+    ].join("\n");
+    expect(violacionesDePureza("src/config/constants/x.constants.ts", codigo)).toEqual([
+      "src/config/constants/x.constants.ts:1: config pura con entorno, node, Bun o zod",
+      "src/config/constants/x.constants.ts:2: config pura con entorno, node, Bun o zod",
+      "src/config/constants/x.constants.ts:3: config pura con entorno, node, Bun o zod",
+    ]);
+    expect(violacionesDeCapas("src/config/strings.ts", 'import { x } from "@/domain/x.ts";\n')).toEqual([
+      "src/config/strings.ts: la capa config-pure no puede importar @/domain/x.ts",
+    ]);
+  });
+
+  test("G10: reporta una lectura del entorno fuera de env.ts", () => {
+    const punto = ".";
+    const codigo = `const fecha = process${punto}env.FECHA_EJECUCION;\n`;
+    expect(violacionesDeLecturaDeEntorno("src/tools/x.ts", codigo)).toEqual([
+      "src/tools/x.ts:1: lee el entorno fuera de src/config/env.ts",
+    ]);
+    expect(violacionesDeLecturaDeEntorno("src/config/env.ts", codigo)).toEqual([]);
+  });
+
+  test("domain y application leen la config pura pero no el entorno", () => {
+    const pura = 'import { PATRON_CASO } from "@/config/constants/patterns.constants.ts";\n';
+    const entorno = 'import { readToolEnv } from "@/config/env.ts";\n';
+    expect(violacionesDeCapas("src/application/a.ts", pura)).toEqual([]);
+    expect(violacionesDeCapas("src/domain/a.ts", entorno)).toEqual([
+      "src/domain/a.ts: la capa domain no puede importar @/config/env.ts",
     ]);
   });
 

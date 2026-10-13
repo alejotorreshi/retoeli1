@@ -5,7 +5,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { crearProyectoTemporal, type ProyectoTemporal } from "@tests/helpers/proyecto-temporal.ts";
 import { z } from "zod";
-import { LIMITE_LECTURA_BYTES, MAX_ISSUES_ARGS } from "@/config/constantes.ts";
+import { LIMITE_LECTURA_BYTES, MAX_ISSUES_ARGS } from "@/config/constants/limits.constants.ts";
 import { exito } from "@/domain/resultado.ts";
 import { relojFijo, relojSistema } from "@/infra/reloj.ts";
 import { type ContextoHerramienta, defineTool, normalizarContexto } from "@/tools/define-tool.ts";

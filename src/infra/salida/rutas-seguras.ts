@@ -1,7 +1,8 @@
 import { readdir, realpath, stat } from "node:fs/promises";
 import { join, relative, resolve, sep } from "node:path";
 import type { ResolucionCaso } from "@/application/puertos.ts";
-import { CASOS_DIR, FIXTURES_DIR, OUT_DIR, PATRON_CASO } from "@/config/constantes.ts";
+import { CASOS_DIR, FIXTURES_DIR, OUT_DIR } from "@/config/constants/files.constants.ts";
+import { PATRON_CASO } from "@/config/constants/patterns.constants.ts";
 
 const NO_ENCONTRADO = { estado: "no_encontrado" } as const;
 const INVALIDO = { estado: "invalido" } as const;

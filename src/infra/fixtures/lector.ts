@@ -6,10 +6,10 @@ import {
   ARCHIVOS_REPOSITORIO,
   FIXTURES_DIR,
   INDICE_SOPORTES,
-  LIMITE_LECTURA_BYTES,
-  PATRON_ARCHIVO_SOPORTE,
   SOPORTES_DIR,
-} from "@/config/constantes.ts";
+} from "@/config/constants/files.constants.ts";
+import { LIMITE_LECTURA_BYTES } from "@/config/constants/limits.constants.ts";
+import { PATRON_ARCHIVO_SOPORTE } from "@/config/constants/patterns.constants.ts";
 import type { SoporteIndice } from "@/domain/checklist.ts";
 import type { Glosario, Maestro } from "@/domain/mapeo.ts";
 import { esquemaGlosario, esquemaIndiceSoportes, esquemaMaestro } from "@/infra/fixtures/esquemas.ts";

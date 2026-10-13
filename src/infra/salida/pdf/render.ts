@@ -1,6 +1,7 @@
 import { PDFDocument, type PDFFont, type PDFPage, rgb, StandardFonts } from "pdf-lib";
 import type { EntradaFormularioPdf } from "@/application/puertos.ts";
-import { AUTOR_DOCUMENTOS, DISENO_PDF, TEXTOS_PDF } from "@/config/constantes.ts";
+import { DISENO_PDF, TEXTOS_PDF } from "@/config/constants/pdf.constants.ts";
+import { AUTOR_DOCUMENTOS } from "@/config/constants/runtime.constants.ts";
 import type { FilaFormulario } from "@/domain/formulario.ts";
 import type { FechaISO } from "@/domain/tipos.ts";
 import { componerPdf, type LineaPdf, type Medir } from "@/infra/salida/pdf/layout.ts";

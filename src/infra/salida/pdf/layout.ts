@@ -1,5 +1,5 @@
 import type { EntradaFormularioPdf } from "@/application/puertos.ts";
-import { DISENO_PDF, TEXTOS_PDF } from "@/config/constantes.ts";
+import { DISENO_PDF, TEXTOS_PDF } from "@/config/constants/pdf.constants.ts";
 import type { FilaFormulario } from "@/domain/formulario.ts";
 import type { FechaISO } from "@/domain/tipos.ts";
 

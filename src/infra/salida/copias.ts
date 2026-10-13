@@ -1,12 +1,7 @@
 import { realpath } from "node:fs/promises";
 import { join, sep } from "node:path";
-import {
-  ARCHIVOS_SALIDA,
-  NOMBRES_RESERVADOS_PAQUETE,
-  OUT_DIR,
-  PATRON_ARCHIVO_SOPORTE,
-  PATRON_CASO,
-} from "@/config/constantes.ts";
+import { ARCHIVOS_SALIDA, NOMBRES_RESERVADOS_PAQUETE, OUT_DIR } from "@/config/constants/files.constants.ts";
+import { PATRON_ARCHIVO_SOPORTE, PATRON_CASO } from "@/config/constants/patterns.constants.ts";
 import { directorioSoportes } from "@/infra/fixtures/lector.ts";
 import { directorioSalidaCaso, rutaRelativa } from "@/infra/salida/rutas-seguras.ts";
 

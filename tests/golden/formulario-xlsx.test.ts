@@ -4,7 +4,7 @@ import { join } from "node:path";
 import { generarCaso, type ItemProyectado } from "@tests/helpers/flujo.ts";
 import { crearProyectoTemporal, type ProyectoTemporal } from "@tests/helpers/proyecto-temporal.ts";
 import { celdaEn, leerCeldasXlsx, leerMetadatosXlsx } from "@tests/helpers/xlsx-leer.ts";
-import { FIXTURES_DIR } from "@/config/constantes.ts";
+import { FIXTURES_DIR } from "@/config/constants/files.constants.ts";
 import type { FilaCelda } from "@/domain/formulario.ts";
 import { leerRuta, type Maestro } from "@/domain/mapeo.ts";
 import type { CampoCelda } from "@/domain/tipos.ts";

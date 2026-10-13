@@ -1,5 +1,6 @@
 import { type Cell, type Fill, Workbook, type Worksheet } from "exceljs";
-import { AUTOR_DOCUMENTOS, MARCAS_XLSX } from "@/config/constantes.ts";
+import { AUTOR_DOCUMENTOS } from "@/config/constants/runtime.constants.ts";
+import { MARCAS_XLSX } from "@/config/constants/xlsx.constants.ts";
 import type { FilaCelda } from "@/domain/formulario.ts";
 import type { FechaISO } from "@/domain/tipos.ts";
 
