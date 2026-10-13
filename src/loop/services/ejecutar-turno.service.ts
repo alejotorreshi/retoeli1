@@ -31,6 +31,7 @@ import {
   presupuestoAgotado,
 } from "@/loop/services/presupuesto.service.ts";
 import { argumentosDeLlamada } from "@/loop/services/registro-herramientas.service.ts";
+import { cerrarPorTope } from "@/loop/services/tope-iteraciones.service.ts";
 import type { CodigoAgente, EventoAgente, EventoInicioTurno, MotivoFin } from "@/loop/types/evento.type.ts";
 import type {
   CierreTurnoCompuerta,
@@ -102,14 +103,10 @@ function mensajeAsistente(cierre: Cierre): MensajeAsistente {
   };
 }
 
-async function* fallar(
-  turno: Turno,
-  codigo: CodigoAgente,
-  motivo: MotivoFin = MOTIVO_FIN.ERROR,
-): Ejecucion<Cierre> {
+async function* fallar(turno: Turno, codigo: CodigoAgente): Ejecucion<Cierre> {
   const mensaje = MENSAJE_AGENTE[codigo];
   yield { tipo: TIPO_EVENTO.ERROR, turnoId: turno.turnoId, codigo, mensaje };
-  return { motivo, texto: mensaje, razonamiento: null, porError: true };
+  return { motivo: MOTIVO_FIN.ERROR, texto: mensaje, razonamiento: null, porError: true };
 }
 
 function cerrarSinError(motivo: MotivoFin, texto: string, razonamiento: string | null = null): Cierre {
@@ -182,17 +179,37 @@ async function* ejecutarPaso(turno: Turno, respuesta: RespuestaLlm): Ejecucion<r
   return [asistente, ...respuestasHerramienta];
 }
 
+function mensajesDelTurno(turno: Turno, sistema: readonly Mensaje[]): readonly Mensaje[] {
+  return [...sistema, ...turno.sesion.historial, turno.usuario, ...turno.pasos];
+}
+
+async function* cerrarAlTope(turno: Turno, sistema: readonly Mensaje[]): Ejecucion<Cierre> {
+  const { deps } = turno;
+  const tope = await cerrarPorTope(deps.llm, {
+    mensajes: mensajesDelTurno(turno, sistema),
+    definiciones: deps.herramientas.definiciones,
+    signal: turno.signal,
+    llamadas: turno.llamadas,
+    cabePresupuesto: !presupuestoAgotado(turno.sesion, deps.presupuestoTokens),
+  });
+  if (tope.respuesta !== null) yield* contarUso(turno, tope.respuesta);
+  return cerrarSinError(MOTIVO_FIN.TOPE_ITERACIONES, tope.texto);
+}
+
 async function* conversar(turno: Turno, sistema: readonly Mensaje[]): Ejecucion<Cierre> {
   const { deps } = turno;
   for (let iteracion = 0; iteracion < deps.maxIteraciones; iteracion += 1) {
     if (presupuestoAgotado(turno.sesion, deps.presupuestoTokens)) {
       return cerrarSinError(MOTIVO_FIN.TOPE_TOKENS, cierrePorPresupuesto(turno.llamadas));
     }
-    const mensajes = [...sistema, ...turno.sesion.historial, turno.usuario, ...turno.pasos];
-    const resultado = await deps.llm.enviar(mensajes, deps.herramientas.definiciones, {
-      signal: turno.signal,
-      herramientasDesactivadas: false,
-    });
+    const resultado = await deps.llm.enviar(
+      mensajesDelTurno(turno, sistema),
+      deps.herramientas.definiciones,
+      {
+        signal: turno.signal,
+        herramientasDesactivadas: false,
+      },
+    );
     if (!resultado.ok) return yield* fallar(turno, CODIGO_AGENTE_POR_ERROR_LLM[resultado.error.tipo]);
     const { respuesta } = resultado;
     yield* contarUso(turno, respuesta);
@@ -201,7 +218,7 @@ async function* conversar(turno: Turno, sistema: readonly Mensaje[]): Ejecucion<
     }
     turno.pasos.push(...(yield* ejecutarPaso(turno, respuesta)));
   }
-  return yield* fallar(turno, CODIGO_AGENTE.TOPE_ITERACIONES, MOTIVO_FIN.TOPE_ITERACIONES);
+  return yield* cerrarAlTope(turno, sistema);
 }
 
 async function* resolverTurno(turno: Turno): Ejecucion<Cierre> {

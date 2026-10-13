@@ -1,5 +1,6 @@
 import type { Registrar, Reloj } from "@/application/types/puertos.type.ts";
 import type { AlmacenSesiones, CargarInstrucciones } from "@/application/types/puertos-agente.type.ts";
+import type { LlamadaResumida } from "@/domain/types/cierre-turno.type.ts";
 import type {
   AutorizacionTurno,
   CasoPendiente,
@@ -11,6 +12,7 @@ import type {
   DefinicionHerramienta,
   LlamadaHerramienta,
   Mensaje,
+  RespuestaLlm,
 } from "@/llm/types/llm.type.ts";
 import type { EventoConfirmacionRequerida } from "@/loop/types/evento.type.ts";
 import type { ContextoHerramienta } from "@/tools/types/herramienta.type.ts";
@@ -105,4 +107,17 @@ export type RespuestaTurno = {
   readonly reply: string;
   readonly toolCalls: readonly LlamadaRespondida[];
   readonly needsConfirmation: boolean;
+};
+
+export type ContextoTope = {
+  readonly mensajes: readonly Mensaje[];
+  readonly definiciones: readonly DefinicionHerramienta[];
+  readonly signal: AbortSignal;
+  readonly llamadas: readonly LlamadaResumida[];
+  readonly cabePresupuesto: boolean;
+};
+
+export type ResultadoTope = {
+  readonly texto: string;
+  readonly respuesta: RespuestaLlm | null;
 };
