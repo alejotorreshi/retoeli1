@@ -1,5 +1,6 @@
 import { beforeAll, describe, expect, test } from "bun:test";
-import { construirChecklist, evaluarSoportes } from "@/domain/checklist.ts";
+import { construirChecklist } from "@/domain/builders/checklist.builder.ts";
+import { evaluarSoportes } from "@/domain/policies/soportes.policy.ts";
 import { evaluarVigencia, textoVence } from "@/domain/policies/vigencias.policy.ts";
 import type { SoporteEvaluado, SoporteIndice } from "@/domain/types/checklist.type.ts";
 import type { FechaISO } from "@/domain/types/fecha.type.ts";

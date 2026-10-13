@@ -12,7 +12,7 @@ import { ARCHIVO_FORMULARIO, ARCHIVOS_PAQUETE } from "@/config/constants/files.c
 import { ORIGEN_COPIA } from "@/config/constants/io.constants.ts";
 import { CLAVE_PLANTILLA } from "@/config/constants/knowledge.constants.ts";
 import { construirDatosBorrador } from "@/domain/builders/borrador.builder.ts";
-import { construirDatosChecklist } from "@/domain/checklist.ts";
+import { construirDatosChecklist } from "@/domain/builders/checklist.builder.ts";
 import { renderizarPlantilla, renderizarTextoPlano } from "@/domain/engines/motor-plantillas.engine.ts";
 import type { Checklist, SoporteEvaluado } from "@/domain/types/checklist.type.ts";
 import type { Resultado } from "@/domain/types/resultado.type.ts";
