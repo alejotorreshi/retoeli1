@@ -5,47 +5,47 @@ titles: json
 findings:
   - id: CR-01
     severity: critical
-    disposition: open
+    disposition: fixed
     title: "El registro de envío omite en silencio los archivos que faltan en `paquete/` y declara \"Sin bloqueos\""
   - id: WR-01
     severity: warning
-    disposition: open
+    disposition: fixed
     title: "El borrador mezcla datos faltantes del maestro con soportes pendientes, promete enviarlos y puede declararse \"listo para la firma\" a la vez"
   - id: WR-02
     severity: warning
-    disposition: open
+    disposition: fixed
     title: "El correo al cliente copia literalmente las notas internas que son para la analista"
   - id: WR-03
     severity: warning
-    disposition: open
+    disposition: skipped
     title: "G-01-H4c no queda cerrado: la salida de `demo.ts` sigue mostrando ids crudos"
   - id: WR-04
     severity: warning
-    disposition: open
+    disposition: fixed
     title: "El guardián de nombres no vigila `rut` ni `parafiscales`"
   - id: IN-01
     severity: info
-    disposition: open
+    disposition: fixed
     title: "`NOMBRE_SOPORTE` duplica y contradice la `descripcion` del índice de soportes"
   - id: IN-02
     severity: info
-    disposition: open
+    disposition: fixed
     title: "Respaldo mágico `?? \"\"` en el bloqueo por vencimiento"
   - id: IN-03
     severity: info
-    disposition: open
+    disposition: fixed
     title: "El registro de envío deriva los bloqueos por un camino paralelo al del checklist"
   - id: IN-04
     severity: info
-    disposition: open
+    disposition: fixed
     title: "El aviso de emisor distinto no genera ninguna acción ni ninguna pregunta al cliente"
   - id: IN-05
     severity: info
-    disposition: open
+    disposition: fixed
     title: "El ancho del xlsx cuenta puntos de código y no tiene en cuenta saltos de línea ni glifos anchos"
   - id: IN-06
     severity: info
-    disposition: open
+    disposition: fixed
     title: "Los goldens de anchos reimplementan la fórmula de producción y el tipo de prueba no se deriva de una constante"
   - id: WR-21
     severity: warning
@@ -191,26 +191,26 @@ findings:
     severity: info
     disposition: fixed
     title: "`sessionId` has no length bound before it is written to every log line"
-open: 11
+open: 0
 total: 47
-recorded: 2026-10-13T04:24:18.793Z
+recorded: 2026-10-13T05:13:35.514Z
 ---
 
 # Phase 01: Code Review Disposition
 
 | Finding | Severity | Disposition | Source |
 |---------|----------|-------------|--------|
-| CR-01 | critical | open | - |
-| WR-01 | warning | open | - |
-| WR-02 | warning | open | - |
-| WR-03 | warning | open | - |
-| WR-04 | warning | open | - |
-| IN-01 | info | open | - |
-| IN-02 | info | open | - |
-| IN-03 | info | open | - |
-| IN-04 | info | open | - |
-| IN-05 | info | open | - |
-| IN-06 | info | open | - |
+| CR-01 | critical | fixed | 01-REVIEW-FIX.md |
+| WR-01 | warning | fixed | 01-REVIEW-FIX.md |
+| WR-02 | warning | fixed | 01-REVIEW-FIX.md |
+| WR-03 | warning | skipped | 01-REVIEW-FIX.md |
+| WR-04 | warning | fixed | 01-REVIEW-FIX.md |
+| IN-01 | info | fixed | 01-REVIEW-FIX.md |
+| IN-02 | info | fixed | 01-REVIEW-FIX.md |
+| IN-03 | info | fixed | 01-REVIEW-FIX.md |
+| IN-04 | info | fixed | 01-REVIEW-FIX.md |
+| IN-05 | info | fixed | 01-REVIEW-FIX.md |
+| IN-06 | info | fixed | 01-REVIEW-FIX.md |
 | WR-21 | warning | fixed | 01-REVIEW-FIX.md (not in the current review) |
 | WR-22 | warning | fixed | 01-REVIEW-FIX.md (not in the current review) |
 | WR-23 | warning | fixed | 01-REVIEW-FIX.md (not in the current review) |
