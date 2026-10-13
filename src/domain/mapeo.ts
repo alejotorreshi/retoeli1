@@ -37,6 +37,14 @@ export type CampoMapeado = {
 
 export type ConteoEstados = Readonly<Record<EstadoCampo, number>>;
 
+export type HojaMaestro =
+  | { readonly tipo: "texto"; readonly valor: string }
+  | { readonly tipo: "no_textual" }
+  | { readonly tipo: "ausente" };
+
+export const NOTA_DATO_NO_TEXTUAL =
+  "El maestro tiene este dato, pero no como texto: confirmar qué valor escribir";
+
 type Fuente = { readonly ruta: string; readonly regla: ReglaMapeo };
 
 type Ajuste = {
@@ -58,6 +66,8 @@ const CLAVES_PROHIBIDAS: ReadonlySet<string> = new Set(["__proto__", "constructo
 const ESPACIO = / /g;
 const TEXTO_CON_CONTENIDO = /\S/;
 const SEPARADOR_NOTAS = ". ";
+const AUSENTE: HojaMaestro = { tipo: "ausente" };
+const NO_TEXTUAL: HojaMaestro = { tipo: "no_textual" };
 
 function agregarSinColision(mapa: Map<string, string>, clave: string, ruta: string): boolean {
   const previa = mapa.get(clave);
@@ -82,17 +92,33 @@ function segmentoValido(segmento: string): boolean {
   return SEGMENTO_RUTA.test(segmento) && !CLAVES_PROHIBIDAS.has(segmento);
 }
 
-export function leerRuta(maestro: Maestro, ruta: string): string | null {
+function valorEnRuta(maestro: Maestro, ruta: string): unknown {
   let actual: unknown = maestro;
   for (const segmento of ruta.split(".")) {
-    if (!segmentoValido(segmento)) return null;
-    if (typeof actual !== "object" || actual === null || Array.isArray(actual)) return null;
+    if (!segmentoValido(segmento)) return undefined;
+    if (typeof actual !== "object" || actual === null || Array.isArray(actual)) return undefined;
     const descriptor = Object.getOwnPropertyDescriptor(actual, segmento);
-    if (descriptor === undefined || !("value" in descriptor)) return null;
+    if (descriptor === undefined || !("value" in descriptor)) return undefined;
     actual = descriptor.value;
   }
-  if (typeof actual === "number") return aTexto(actual);
-  return typeof actual === "string" && TEXTO_CON_CONTENIDO.test(actual) ? actual : null;
+  return actual;
+}
+
+function hojaDe(valor: unknown): HojaMaestro {
+  if (typeof valor === "number") return { tipo: "texto", valor: aTexto(valor) };
+  if (typeof valor === "string") return TEXTO_CON_CONTENIDO.test(valor) ? { tipo: "texto", valor } : AUSENTE;
+  if (typeof valor === "boolean") return NO_TEXTUAL;
+  if (typeof valor === "object" && valor !== null && Object.keys(valor).length > 0) return NO_TEXTUAL;
+  return AUSENTE;
+}
+
+export function leerHoja(maestro: Maestro, ruta: string): HojaMaestro {
+  return hojaDe(valorEnRuta(maestro, ruta));
+}
+
+export function leerRuta(maestro: Maestro, ruta: string): string | null {
+  const hoja = leerHoja(maestro, ruta);
+  return hoja.tipo === "texto" ? hoja.valor : null;
 }
 
 function rutaCandidata(etiqueta: string, indice: IndiceGlosario): Fuente | null {
@@ -184,11 +210,26 @@ function campoFaltante(etiqueta: string, reglas: Reglas): CampoMapeado {
   };
 }
 
-function mapearEtiqueta(etiqueta: string, contexto: ContextoMapeo): Resultado<CampoMapeado> {
-  const { maestro, reglas, indice } = contexto.entrada;
-  const fuente = rutaCandidata(etiqueta, indice);
-  const valor = fuente === null ? null : leerRuta(maestro, fuente.ruta);
-  if (fuente === null || valor === null) return exito(campoFaltante(etiqueta, reglas));
+function campoNoTextual(etiqueta: string, fuente: Fuente, reglas: Reglas): CampoMapeado {
+  return {
+    etiqueta,
+    ruta: fuente.ruta,
+    estado: "requiere_confirmacion",
+    regla: fuente.regla,
+    confianza: reglas.confianza[fuente.regla],
+    valor: null,
+    nota: NOTA_DATO_NO_TEXTUAL,
+    propuesta: null,
+  };
+}
+
+function mapearValor(
+  etiqueta: string,
+  fuente: Fuente,
+  valor: string,
+  contexto: ContextoMapeo,
+): Resultado<CampoMapeado> {
+  const { reglas } = contexto.entrada;
   const ajuste = ajustarPorIdentificador(etiqueta, fuente, contexto);
   if (!ajuste.ok) return ajuste;
   const contextuales = notasDeContexto(fuente.ruta, contexto);
@@ -205,6 +246,16 @@ function mapearEtiqueta(etiqueta: string, contexto: ContextoMapeo): Resultado<Ca
     nota: notas.length === 0 ? null : notas.join(SEPARADOR_NOTAS),
     propuesta: ajuste.data.propuesta,
   });
+}
+
+function mapearEtiqueta(etiqueta: string, contexto: ContextoMapeo): Resultado<CampoMapeado> {
+  const { maestro, reglas, indice } = contexto.entrada;
+  const fuente = rutaCandidata(etiqueta, indice);
+  if (fuente === null) return exito(campoFaltante(etiqueta, reglas));
+  const hoja = leerHoja(maestro, fuente.ruta);
+  if (hoja.tipo === "ausente") return exito(campoFaltante(etiqueta, reglas));
+  if (hoja.tipo === "no_textual") return exito(campoNoTextual(etiqueta, fuente, reglas));
+  return mapearValor(etiqueta, fuente, hoja.valor, contexto);
 }
 
 function contextoDeMapeo(entrada: EntradaMapeo): ContextoMapeo {

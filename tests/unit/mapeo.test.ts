@@ -6,9 +6,11 @@ import {
   type EntradaMapeo,
   type Glosario,
   type IndiceGlosario,
+  leerHoja,
   leerRuta,
   type Maestro,
   mapearCampos,
+  NOTA_DATO_NO_TEXTUAL,
 } from "../../src/domain/mapeo.ts";
 import type { Reglas } from "../../src/domain/reglas.ts";
 
@@ -84,6 +86,17 @@ describe("leerRuta", () => {
     expect(leerRuta(maestro, "ingresos_ultimo_ano.valor")).toBe("98000000000");
     expect(leerRuta(maestro, "numero_empleados")).toBe("480");
     expect(leerRuta(maestro, "codigo_postal")).toBe("050021");
+  });
+
+  test("leerHoja distingue texto, dato no textual y ausencia", () => {
+    expect(leerHoja(maestro, "numero_empleados")).toEqual({ tipo: "texto", valor: "480" });
+    for (const ruta of ["gran_contribuyente", "certificaciones", "banco"]) {
+      expect(leerHoja(maestro, ruta)).toEqual({ tipo: "no_textual" });
+    }
+    const vacios: Maestro = { ...maestro, certificaciones: [], banco: {}, sitio_web: null, ciudad: " " };
+    for (const ruta of ["certificaciones", "banco", "sitio_web", "ciudad", "no.existe", "__proto__"]) {
+      expect(leerHoja(vacios, ruta)).toEqual({ tipo: "ausente" });
+    }
   });
 
   test("objetos, listas, booleanos y rutas inexistentes no tienen fuente", () => {
@@ -322,10 +335,30 @@ describe("reglas sobre etiquetas sintéticas", () => {
       estado: "lleno",
       valor: "https://www.periferia-ficticia.com",
     });
-    for (const etiqueta of ["Gran contribuyente", "constructor", "toString", "__proto__"]) {
+    for (const etiqueta of ["constructor", "toString", "__proto__"]) {
       expect(campo(campos, etiqueta)).toMatchObject({ ruta: null, estado: "faltante", valor: null });
     }
-    expect(contarEstados(campos)).toEqual({ lleno: 3, faltante: 4, requiere_confirmacion: 1 });
+    expect(contarEstados(campos)).toEqual({ lleno: 3, faltante: 3, requiere_confirmacion: 2 });
+  });
+
+  test("un booleano, una lista o un objeto del maestro piden confirmación sin inventar un valor", () => {
+    const campos = mapear(entrada(["Gran contribuyente", "Certificaciones", "Banco *"], "CO"));
+    expect(campo(campos, "Gran contribuyente")).toEqual({
+      etiqueta: "Gran contribuyente",
+      ruta: "gran_contribuyente",
+      estado: "requiere_confirmacion",
+      regla: "clave_directa",
+      confianza: 0.85,
+      valor: null,
+      nota: NOTA_DATO_NO_TEXTUAL,
+      propuesta: null,
+    });
+    expect(campo(campos, "Certificaciones")).toMatchObject({
+      ruta: "certificaciones",
+      estado: "requiere_confirmacion",
+      valor: null,
+    });
+    expect(campo(campos, "Banco *")).toMatchObject({ ruta: "banco.nombre", estado: "lleno" });
   });
 
   test("un dato del maestro vacío o en blanco queda faltante y sin valor", () => {

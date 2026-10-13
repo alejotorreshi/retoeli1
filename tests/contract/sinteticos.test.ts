@@ -1,7 +1,9 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
-import { leer_solicitud, mapear_campos } from "../../src/tools/proveedor.ts";
+import { generar_formulario, leer_solicitud, mapear_campos } from "../../src/tools/proveedor.ts";
+import { generarCaso } from "../helpers/flujo.ts";
+import { extraerTrazos } from "../helpers/pdf-texto.ts";
 import { crearProyectoTemporal, type ProyectoTemporal } from "../helpers/proyecto-temporal.ts";
 
 type Item = {
@@ -117,13 +119,13 @@ describe("sintéticos: mapear_campos ejercita las reglas que los casos reales no
       ["RAZON SOCIAL:", "lleno", "glosario_normalizado", 0.95, "razon_social"],
       ["Teléfono *", "lleno", "glosario_normalizado", 0.95, "telefono"],
       ["Sitio web", "lleno", "clave_directa", 0.85, "sitio_web"],
-      ["Gran contribuyente", "faltante", "sin_fuente", 0, null],
+      ["Gran contribuyente", "requiere_confirmacion", "clave_directa", 0.85, "gran_contribuyente"],
       ["constructor", "faltante", "sin_fuente", 0, null],
     ];
     for (const [etiqueta, estado, regla, confianza, ruta] of esperado) {
       expect(item(datos, etiqueta)).toMatchObject({ estado, regla, confianza, ruta });
     }
-    expect(datos.conteo).toEqual({ lleno: 3, faltante: 2, requiere_confirmacion: 1 });
+    expect(datos.conteo).toEqual({ lleno: 3, faltante: 1, requiere_confirmacion: 2 });
   });
 
   test("la etiqueta genérica en CO también pide confirmación y propone NIT sin nota de extranjero", async () => {
@@ -133,11 +135,22 @@ describe("sintéticos: mapear_campos ejercita las reglas que los casos reales no
     expect(generica.nota).not.toContain("Identificador extranjero");
   });
 
-  test("un booleano del maestro y una clave del prototipo quedan faltantes sin valor", async () => {
+  test("un booleano del maestro pide confirmación y una clave del prototipo queda faltante, ambos sin valor", async () => {
     const datos = await mapearOk("zz-generica-co");
-    for (const etiqueta of ["Gran contribuyente", "constructor"]) {
-      expect(item(datos, etiqueta).valor_enmascarado).toBeNull();
-    }
+    expect(item(datos, "Gran contribuyente")).toMatchObject({
+      estado: "requiere_confirmacion",
+      valor_enmascarado: null,
+      nota: "El maestro tiene este dato, pero no como texto: confirmar qué valor escribir",
+    });
+    expect(item(datos, "constructor")).toMatchObject({ estado: "faltante", valor_enmascarado: null });
+  });
+
+  test("generar_formulario acepta el booleano por confirmar y lo deja sin valor en el PDF", async () => {
+    const flujo = await generarCaso({ mapear_campos, generar_formulario }, ctx(), "zz-generica-co");
+    expect(flujo.respuesta.ok).toBe(true);
+    const bytes = await readFile(join(proyecto.raiz, "out", "zz-generica-co", "formulario.pdf"));
+    const textos = (await extraerTrazos(new Uint8Array(bytes))).map((trazo) => trazo.texto);
+    expect(textos[textos.indexOf("Gran contribuyente *") + 1]).toBe("[POR CONFIRMAR]");
   });
 
   test("zz-generica-ec marca la etiqueta genérica con la nota de identificador extranjero", async () => {
