@@ -209,16 +209,26 @@ function estadoPorConfirmar({ caso, bloqueos }: CasoPorConfirmar): string {
 
 export const EJEMPLOS_CONFIRMACION = ["envía", "sí"] as const;
 
+const MARCADOR_CASO = "<caso>";
+const SIN_CONFIRMACION_NO_ENVIA = "si la respuesta no es una confirmación explícita, no se envía";
+
+function confirmacionExplicita(ejemplos: readonly string[]): string {
+  return `responde con una confirmación explícita, como ${ejemplos.map((ejemplo) => `"${ejemplo}"`).join(" o ")}`;
+}
+
+const CONFIRMA_UN_CASO = confirmacionExplicita(EJEMPLOS_CONFIRMACION);
+const CONFIRMA_VARIOS_CASOS = confirmacionExplicita([`${EJEMPLOS_CONFIRMACION[0]} ${MARCADOR_CASO}`]);
+
 export const TEXTO_CONFIRMACION = {
   unCaso: (caso: string, bloqueos: readonly string[]): string =>
     bloqueos.length === 0
-      ? `El paquete de ${caso} queda ${ESTADO_PAQUETE.listo} para firma. Responde "envía" para registrar el envío simulado, o cualquier otra cosa para no enviarlo. ¿Confirmas el envío simulado de ${caso}?`
-      : `El paquete de ${caso} queda ${ESTADO_PAQUETE.bloqueado}: ${listaDeBloqueos(bloqueos)}. Responde "envía" para registrar el envío simulado con esos bloqueos, o cualquier otra cosa para no enviarlo. ¿Confirmas el envío simulado de ${caso}?`,
+      ? `El paquete de ${caso} queda ${ESTADO_PAQUETE.listo} para firma. Para registrar el envío simulado ${CONFIRMA_UN_CASO}; ${SIN_CONFIRMACION_NO_ENVIA} nada. ¿Confirmas el envío simulado de ${caso}?`
+      : `El paquete de ${caso} queda ${ESTADO_PAQUETE.bloqueado}: ${listaDeBloqueos(bloqueos)}. Para registrar el envío simulado con esos bloqueos ${CONFIRMA_UN_CASO}; ${SIN_CONFIRMACION_NO_ENVIA} nada. ¿Confirmas el envío simulado de ${caso}?`,
   variosCasos: (casos: readonly CasoPorConfirmar[]): string =>
     [
       "Quedaron armados estos paquetes:",
       vinetas(casos.map(estadoPorConfirmar)),
-      'Cada confirmación registra un solo envío simulado. Responde "envía <caso>" con el caso que quieres registrar, o cualquier otra cosa para no enviar ninguno.',
+      `Cada confirmación registra un solo envío simulado. Para registrar uno ${CONFIRMA_VARIOS_CASOS}, con el caso que quieres registrar; ${SIN_CONFIRMACION_NO_ENVIA} ninguno.`,
       "¿Cuál caso confirmas para el envío simulado?",
     ].join(SALTO_DE_LINEA),
 } as const;
@@ -233,7 +243,7 @@ const SIGUIENTE_PASO = {
   [HERRAMIENTA.ARMAR_PAQUETE]: (caso: string): string =>
     `armar el paquete de ${caso} con ${nombreVisible(HERRAMIENTA.ARMAR_PAQUETE)}`,
   [HERRAMIENTA.SIMULAR_ENVIO]: (caso: string): string =>
-    `confirmar el envío simulado de ${caso}: responde "envía" para registrarlo o cualquier otra cosa para no enviarlo`,
+    `confirmar el envío simulado de ${caso}: ${CONFIRMA_UN_CASO}, para registrarlo; ${SIN_CONFIRMACION_NO_ENVIA} nada`,
 } as const satisfies Record<ValorDe<typeof HERRAMIENTA>, (caso: string) => string>;
 
 export const TEXTO_CIERRE = {
