@@ -10,7 +10,7 @@ import {
 } from "@/config/constants/files.constants.ts";
 import { PATRON_CASO } from "@/config/constants/patterns.constants.ts";
 import { TEXTO_INFRA } from "@/config/strings.ts";
-import { directorioSalidaCaso, rutaRelativa } from "@/infra/salida/rutas-seguras.ts";
+import { directorioSalidaCaso, rutaRelativa } from "@/infra/fs/safe-paths.util.ts";
 
 export function rutaEnPaquete(nombre: string): string {
   return `${DIRECTORIO_PAQUETE}/${nombre}`;

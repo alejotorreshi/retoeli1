@@ -15,7 +15,11 @@ import { PATRON_ARCHIVO_SOPORTE } from "@/config/constants/patterns.constants.ts
 import type { SoporteIndice } from "@/domain/types/checklist.type.ts";
 import type { Maestro } from "@/domain/types/maestro.type.ts";
 import type { Glosario } from "@/domain/types/mapeo.type.ts";
-import { esquemaGlosario, esquemaIndiceSoportes, esquemaMaestro } from "@/infra/fixtures/esquemas.ts";
+import {
+  esquemaGlosario,
+  esquemaIndiceSoportes,
+  esquemaMaestro,
+} from "@/infra/fixtures/schemas/fixtures.schema.ts";
 
 const NO_ENCONTRADO = { estado: ESTADO_LECTURA.NO_ENCONTRADO } as const;
 const INVALIDO = { estado: ESTADO_LECTURA.INVALIDO } as const;

@@ -4,7 +4,7 @@ import type { EntradaBitacora, Registrar, Reloj } from "@/application/types/puer
 import { ARCHIVO_BITACORA, OUT_DIR } from "@/config/constants/files.constants.ts";
 import { PATRON_CASO } from "@/config/constants/patterns.constants.ts";
 import { TEXTO_INFRA } from "@/config/strings.ts";
-import { directorioSalidaCaso } from "@/infra/salida/rutas-seguras.ts";
+import { directorioSalidaCaso } from "@/infra/fs/safe-paths.util.ts";
 
 async function anexar(directorio: string, linea: Readonly<Record<string, unknown>>): Promise<void> {
   await mkdir(directorio, { recursive: true });

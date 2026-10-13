@@ -7,13 +7,8 @@ import { ZONA_HORARIA_POR_DEFECTO } from "@/config/constants/runtime.constants.t
 import { readToolEnv, type ToolEnv } from "@/config/env.ts";
 import { exito, fallo } from "@/domain/resultado.ts";
 import type { Plantilla, TipoPlantilla } from "@/domain/types/plantilla-caso.type.ts";
-import { crearBitacora } from "@/infra/bitacora.ts";
-import {
-  esquemaPlantillaCampos,
-  esquemaPlantillaCeldas,
-  esquemaSolicitud,
-  esquemaSoportesExigidos,
-} from "@/infra/fixtures/esquemas.ts";
+import { relojFijo, relojSistema } from "@/infra/clock/clock.adapter.ts";
+import { listarCasos, resolverCaso } from "@/infra/fixtures/case-resolver.adapter.ts";
 import {
   directorioSoportes,
   existeArchivo,
@@ -24,10 +19,18 @@ import {
   resolverRaiz,
   rutaEnCaso,
   soportesPresentes,
-} from "@/infra/fixtures/lector.ts";
-import { cargarPlantillaTexto } from "@/infra/knowledge/plantillas.ts";
-import { cargarReglas, DIRECTORIO_CONOCIMIENTO_POR_DEFECTO } from "@/infra/knowledge/reglas.ts";
-import { relojFijo, relojSistema } from "@/infra/reloj.ts";
+} from "@/infra/fixtures/fixtures-reader.adapter.ts";
+import {
+  esquemaPlantillaCampos,
+  esquemaPlantillaCeldas,
+  esquemaSolicitud,
+  esquemaSoportesExigidos,
+} from "@/infra/fixtures/schemas/fixtures.schema.ts";
+import { directorioSalidaCaso } from "@/infra/fs/safe-paths.util.ts";
+import { cargarReglas, DIRECTORIO_CONOCIMIENTO_POR_DEFECTO } from "@/infra/knowledge/rules-loader.adapter.ts";
+import { cargarPlantillaTexto } from "@/infra/knowledge/template-loader.adapter.ts";
+import { crearBitacora } from "@/infra/logging/audit-log.adapter.ts";
+import { conCandadoCaso } from "@/infra/output/case-lock.adapter.ts";
 import {
   escribirArchivoSalida,
   escribirBinarioSalida,
@@ -35,12 +38,10 @@ import {
   listarPaquete,
   reiniciarPaquete,
   rutaEnPaquete,
-} from "@/infra/salida/archivos.ts";
-import { copiarAlPaquete } from "@/infra/salida/copias.ts";
-import { conCandadoCaso } from "@/infra/salida/mutex.ts";
-import { renderizarPdf } from "@/infra/salida/pdf/render.ts";
-import { directorioSalidaCaso, listarCasos, resolverCaso } from "@/infra/salida/rutas-seguras.ts";
-import { escribirXlsx } from "@/infra/salida/xlsx.ts";
+} from "@/infra/output/output-files.adapter.ts";
+import { copiarAlPaquete } from "@/infra/output/package-copy.adapter.ts";
+import { renderizarPdf } from "@/infra/output/pdf/pdf-renderer.adapter.ts";
+import { escribirXlsx } from "@/infra/output/xlsx-writer.adapter.ts";
 import { formatearIssues } from "@/tools/issues.ts";
 import type { ContextoNormalizado, EntornoEjecucion, OpcionesEntorno } from "@/tools/types/entorno.type.ts";
 

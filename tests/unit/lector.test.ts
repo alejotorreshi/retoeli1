@@ -4,7 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { crearProyectoTemporal } from "@tests/helpers/proyecto-temporal.ts";
 import type { ProyectoTemporal } from "@tests/helpers/types/proyecto-temporal.type.ts";
-import { directorioSoportes, soportesPresentes } from "@/infra/fixtures/lector.ts";
+import { directorioSoportes, soportesPresentes } from "@/infra/fixtures/fixtures-reader.adapter.ts";
 
 const SOLO_ESCRITURA_Y_PASO = 0o300;
 const LECTURA_COMPLETA = 0o755;

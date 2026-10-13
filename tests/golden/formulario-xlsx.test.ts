@@ -11,7 +11,7 @@ import { leerRuta } from "@/domain/mapeo.ts";
 import type { FilaCelda } from "@/domain/types/formulario.type.ts";
 import type { Maestro } from "@/domain/types/maestro.type.ts";
 import type { CampoCelda } from "@/domain/types/plantilla-caso.type.ts";
-import { escribirXlsx } from "@/infra/salida/xlsx.ts";
+import { escribirXlsx } from "@/infra/output/xlsx-writer.adapter.ts";
 import { crearHerramientas } from "@/tools/fabrica.ts";
 
 const RELLENO_FALTANTE = "FFFFC7CE";

@@ -5,7 +5,7 @@ import { TEXTO_CONOCIMIENTO, TEXTO_MOTOR_PLANTILLAS } from "@/config/strings.ts"
 import { exito, fallo } from "@/domain/resultado.ts";
 import type { ClavePlantilla, Reglas } from "@/domain/types/reglas.type.ts";
 import type { Resultado } from "@/domain/types/resultado.type.ts";
-import { leerTexto } from "@/infra/knowledge/reglas.ts";
+import { leerTexto } from "@/infra/knowledge/rules-loader.adapter.ts";
 
 function plantillaInvalida(ruta: string, problema: string): Resultado<string> {
   return fallo(CODIGO_ERROR.REGLAS_INVALIDAS, {

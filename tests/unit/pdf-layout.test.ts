@@ -1,8 +1,12 @@
 import { describe, expect, test } from "bun:test";
 import { PDFDocument, StandardFonts } from "pdf-lib";
 import type { FilaFormulario } from "@/domain/types/formulario.type.ts";
-import { componerPdf } from "@/infra/salida/pdf/layout.ts";
-import { marcarNoRepresentables, renderizarPdf, sanearWinAnsi } from "@/infra/salida/pdf/render.ts";
+import { componerPdf } from "@/infra/output/pdf/pdf-layout.util.ts";
+import {
+  marcarNoRepresentables,
+  renderizarPdf,
+  sanearWinAnsi,
+} from "@/infra/output/pdf/pdf-renderer.adapter.ts";
 import type { EntradaLayoutPdf, LineaPdf } from "@/infra/types/pdf-layout.type.ts";
 
 const ACTIVIDAD = "Desarrollo de sistemas informáticos y consultoría en tecnologías de la información";

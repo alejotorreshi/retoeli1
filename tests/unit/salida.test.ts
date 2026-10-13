@@ -3,8 +3,8 @@ import { existsSync } from "node:fs";
 import { mkdir, mkdtemp, readFile, rm, symlink, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { escribirArchivoSalida, limpiarArtefactosPrevios } from "@/infra/salida/archivos.ts";
-import { conCandadoCaso } from "@/infra/salida/mutex.ts";
+import { conCandadoCaso } from "@/infra/output/case-lock.adapter.ts";
+import { escribirArchivoSalida, limpiarArtefactosPrevios } from "@/infra/output/output-files.adapter.ts";
 
 const temporales: string[] = [];
 

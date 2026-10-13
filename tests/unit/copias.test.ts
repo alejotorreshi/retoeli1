@@ -4,9 +4,9 @@ import { mkdir, mkdtemp, readdir, readFile, rm, symlink, writeFile } from "node:
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { FIXTURES_DIR, SOPORTES_DIR } from "@/config/constants/files.constants.ts";
-import { esquemaIndiceSoportes } from "@/infra/fixtures/esquemas.ts";
-import { reiniciarPaquete } from "@/infra/salida/archivos.ts";
-import { copiarAlPaquete } from "@/infra/salida/copias.ts";
+import { esquemaIndiceSoportes } from "@/infra/fixtures/schemas/fixtures.schema.ts";
+import { reiniciarPaquete } from "@/infra/output/output-files.adapter.ts";
+import { copiarAlPaquete } from "@/infra/output/package-copy.adapter.ts";
 
 const CASO = "co-industrias-delta";
 const temporales: string[] = [];

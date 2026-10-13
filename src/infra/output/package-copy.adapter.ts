@@ -8,8 +8,8 @@ import {
 } from "@/config/constants/files.constants.ts";
 import { PATRON_ARCHIVO_SOPORTE, PATRON_CASO } from "@/config/constants/patterns.constants.ts";
 import { TEXTO_INFRA } from "@/config/strings.ts";
-import { directorioSoportes } from "@/infra/fixtures/lector.ts";
-import { directorioSalidaCaso, rutaRelativa } from "@/infra/salida/rutas-seguras.ts";
+import { directorioSoportes } from "@/infra/fixtures/fixtures-reader.adapter.ts";
+import { directorioSalidaCaso, rutaRelativa } from "@/infra/fs/safe-paths.util.ts";
 
 const COPIAS_DE_FORMULARIO: ReadonlySet<string> = new Set(Object.values(ARCHIVO_FORMULARIO));
 
