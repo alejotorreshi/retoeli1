@@ -8,7 +8,7 @@ import {
   TIPO_EVENTO,
 } from "@/config/constants/agent.constants.ts";
 import { DECISION_CONFIRMACION, ESTADO_COMPUERTA } from "@/config/constants/confirmacion.constants.ts";
-import { FIN_LLM, ROL_MENSAJE } from "@/config/constants/llm.constants.ts";
+import { ARGUMENTOS_VACIOS, FIN_LLM, ROL_MENSAJE } from "@/config/constants/llm.constants.ts";
 import { HERRAMIENTA, PREFIJO_HERRAMIENTA } from "@/config/constants/tools.constants.ts";
 import { MENSAJE_AGENTE, TEXTO_CONTEXTO, TEXTO_SESION } from "@/config/strings.ts";
 import type { ValorDe } from "@/config/types/valor-de.type.ts";
@@ -193,12 +193,13 @@ function asistenteDelPaso(respuesta: RespuestaLlm): MensajeAsistente {
 function pasoTruncado(respuesta: RespuestaLlm): readonly Mensaje[] {
   const codigo = CODIGO_AGENTE.ARGUMENTOS_TRUNCADOS;
   const contenido = JSON.stringify({ ok: false, codigo, error: MENSAJE_AGENTE[codigo] });
-  const respuestas: readonly Mensaje[] = respuesta.llamadas.map((llamada) => ({
+  const llamadas = respuesta.llamadas.map((llamada) => ({ ...llamada, argumentos: ARGUMENTOS_VACIOS }));
+  const respuestas: readonly Mensaje[] = llamadas.map((llamada) => ({
     rol: ROL_MENSAJE.HERRAMIENTA,
     llamadaId: llamada.id,
     contenido,
   }));
-  return [asistenteDelPaso(respuesta), ...respuestas];
+  return [{ ...asistenteDelPaso(respuesta), llamadas }, ...respuestas];
 }
 
 async function* ejecutarPaso(turno: Turno, respuesta: RespuestaLlm): Ejecucion<readonly Mensaje[] | null> {
