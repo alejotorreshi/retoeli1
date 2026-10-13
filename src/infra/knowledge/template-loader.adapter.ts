@@ -1,7 +1,7 @@
 import { join } from "node:path";
 import { PATRON_PLANTILLA_CONOCIMIENTO } from "@/config/constants/patterns.constants.ts";
 import { TEXTO_CONOCIMIENTO } from "@/config/strings.ts";
-import { plantillaInvalida } from "@/domain/motor-plantillas.ts";
+import { plantillaInvalida } from "@/domain/engines/motor-plantillas.engine.ts";
 import type { ClavePlantilla, Reglas } from "@/domain/types/reglas.type.ts";
 import type { Resultado } from "@/domain/types/resultado.type.ts";
 import { exito } from "@/domain/utils/resultado.util.ts";

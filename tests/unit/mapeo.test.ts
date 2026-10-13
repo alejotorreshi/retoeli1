@@ -1,8 +1,8 @@
 import { describe, expect, test } from "bun:test";
 import { TEXTO_MAPEO } from "@/config/strings.ts";
+import { contarEstados, mapearEtiquetas } from "@/domain/engines/mapeo.engine.ts";
 import { construirIndiceGlosario } from "@/domain/glosario.ts";
 import { leerHoja, leerRuta } from "@/domain/maestro.ts";
-import { contarEstados, mapearEtiquetas } from "@/domain/mapeo.ts";
 import type { Maestro } from "@/domain/types/maestro.type.ts";
 import type { CampoMapeado, EntradaMapeo, Glosario, IndiceGlosario } from "@/domain/types/mapeo.type.ts";
 import type { Reglas } from "@/domain/types/reglas.type.ts";

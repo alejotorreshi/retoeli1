@@ -213,7 +213,7 @@ Conventions not yet established. Will populate as patterns emerge during develop
   - `tests/**/*.test.ts` y `tests/helpers/*.helper.ts`.
 
   El dominio va sin sufijo. Los nombres que fija el PRD no cambian: `demo.ts`, `src/tools/proveedor.ts` y `src/knowledge/**`.
-- Constantes por ámbito en `src/config/constants/<ámbito>.constants.ts`. Las regex van solo en `patterns.constants.ts`; la excepción es el parser de `domain/motor-plantillas.ts`.
+- Constantes por ámbito en `src/config/constants/<ámbito>.constants.ts`. Las regex van solo en `patterns.constants.ts`; la excepción es el parser de `domain/engines/motor-plantillas.engine.ts`.
 - Todo texto para personas o para el modelo (mensajes, `description`, `.describe()`) vive en un único `src/config/strings.ts`. Un texto que repite un dato se deriva de su constante, y las herramientas se nombran siempre `proveedor_<export>`.
 - La config pura (`config/constants/**`, `config/types/**`, `config/strings.ts`) no lee el entorno ni importa `node:`, `Bun` o zod, y cualquier capa puede importarla. `config/env.ts` es el único módulo que lee `process.env`, y solo lo importan infra, tools y demo.
 - Los imports internos usan solo los alias `@/` (`src/`) y `@tests/` (`tests/`); nunca `../` ni `./`. Bun resuelve los alias desde `tsconfig.json`, así que el Dockerfile debe copiarlo. Un módulo distribuible futuro debe construirse con `bun build`, para que los alias queden resueltos.

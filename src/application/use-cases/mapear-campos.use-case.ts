@@ -4,7 +4,7 @@ import type { ArgsMapearCampos, DatosMapeo } from "@/application/types/mapear-ca
 import type { Entorno } from "@/application/types/puertos.type.ts";
 import { CODIGO_ERROR } from "@/config/constants/errors.constants.ts";
 import { ESTADO_CAMPO } from "@/config/constants/mapping.constants.ts";
-import { contarEstados } from "@/domain/mapeo.ts";
+import { contarEstados } from "@/domain/engines/mapeo.engine.ts";
 import { presentarCampo } from "@/domain/pii.ts";
 import type { CampoMapeado } from "@/domain/types/mapeo.type.ts";
 import type { CampoPresentado } from "@/domain/types/pii.type.ts";

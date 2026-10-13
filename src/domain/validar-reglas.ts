@@ -4,7 +4,7 @@ import {
   VARIABLES_AVISO_SOPORTE,
   VARIABLES_NOTA_CAMPO,
 } from "@/config/constants/mapping.constants.ts";
-import { renderizarTextoPlano } from "@/domain/motor-plantillas.ts";
+import { renderizarTextoPlano } from "@/domain/engines/motor-plantillas.engine.ts";
 import type { Reglas } from "@/domain/types/reglas.type.ts";
 import type { Resultado } from "@/domain/types/resultado.type.ts";
 import { exito } from "@/domain/utils/resultado.util.ts";

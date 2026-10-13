@@ -5,7 +5,7 @@ import {
   VIGENCIA_SIN_VENCIMIENTO,
 } from "@/config/constants/supports.constants.ts";
 import { TEXTO_CHECKLIST, TEXTO_COMUN } from "@/config/strings.ts";
-import { renderizarTextoPlano } from "@/domain/motor-plantillas.ts";
+import { renderizarTextoPlano } from "@/domain/engines/motor-plantillas.engine.ts";
 import type {
   CasoChecklist,
   Checklist,

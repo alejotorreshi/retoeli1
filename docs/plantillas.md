@@ -1,6 +1,6 @@
 # Plantillas de conocimiento
 
-Las plantillas de `src/knowledge/plantillas/*.md` usan un subconjunto de mustache que implementa `src/domain/motor-plantillas.ts`:
+Las plantillas de `src/knowledge/plantillas/*.md` usan un subconjunto de mustache que implementa `src/domain/engines/motor-plantillas.engine.ts`:
 
 | Sintaxis | Efecto |
 |---|---|

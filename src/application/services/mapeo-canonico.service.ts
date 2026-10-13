@@ -3,7 +3,7 @@ import type { DocumentoMapeo } from "@/application/types/mapeo-canonico.type.ts"
 import type { Entorno } from "@/application/types/puertos.type.ts";
 import { ARCHIVOS_SALIDA } from "@/config/constants/files.constants.ts";
 import { SANGRIA_JSON } from "@/config/constants/limits.constants.ts";
-import { mapearEtiquetas } from "@/domain/mapeo.ts";
+import { mapearEtiquetas } from "@/domain/engines/mapeo.engine.ts";
 import { presentarCampo } from "@/domain/pii.ts";
 import type { CampoMapeado } from "@/domain/types/mapeo.type.ts";
 import type { Resultado } from "@/domain/types/resultado.type.ts";
