@@ -3,16 +3,16 @@ gsd_state_version: "1.0"
 current_phase: 02
 current_phase_name: Agente y compuerta de confirmación
 status: executing
-stopped_at: Completed 02-01-PLAN.md
-last_updated: "2026-10-13T19:12:49.330Z"
+stopped_at: Completed 02-02-PLAN.md
+last_updated: "2026-10-13T19:21:21.681Z"
 last_activity: 2026-10-13
 last_activity_desc: Phase 02 execution started
-state_head: adceb345819c553c21012b377b02969a561fa156
+state_head: ebd61474f0cbebb57a41792b3662979d5ae66b7c
 progress:
   total_phases: 4
   completed_phases: 1
   total_plans: 24
-  completed_plans: 16
+  completed_plans: 17
   percent: 25
 ---
 
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-10-13)
 ## Current Position
 
 Phase: 02 (Agente y compuerta de confirmación) — EXECUTING
-Plan: 2 of 9
+Plan: 3 of 9
 Status: Ready to execute
 Last activity: 2026-10-13 — Phase 02 execution started
 
@@ -72,6 +72,7 @@ Progress: [███░░░░░░░] 25%
 | Phase 01 P14 | 3min | 2 tasks | 10 files |
 | Phase 01 P15 | 3 min | 2 tasks | 4 files |
 | Phase 02 P01 | 12 min | 2 tasks | 28 files |
+| Phase 02 P02 | 6 min | 2 tasks | 15 files |
 
 ## Accumulated Context
 
@@ -132,6 +133,9 @@ Recent decisions affecting current work:
 - [Phase 02]: 02-01: una respuesta con tool_calls cuenta como paso de herramientas aunque finish_reason no sea tool_calls (length gana como limite)
 - [Phase 02]: 02-01: un respaldo sobre la URL de DeepSeek puede usar el alias DEEPSEEK_API_KEY; cualquier otra herencia de clave exige URL base idéntica
 - [Phase 02]: 02-01: NIVELES_LOG es un objeto as const y, como BOOLEANO_ENV, está registrado en FAMILIAS_DE_CODIGOS
+- [Phase 02]: 02-02: el almacén de sesiones registra la sesión nueva en abrir y nunca la desaloja por su propia creación; una sesión ocupada no expira ni se desaloja
+- [Phase 02]: 02-02: el turno libera la sesión tras guardar el historial y antes de emitir turn_end; un turno rechazado por SESION_OCUPADA nunca libera
+- [Phase 02]: 02-02: el reloj del agente relee el entorno de herramientas en cada llamada (clockFromToolEnv), así modelo y herramientas usan la misma fecha
 
 ### Pending Todos
 
@@ -157,6 +161,6 @@ Items acknowledged and deferred at milestone close, most recent first:
 
 ## Session Continuity
 
-Last session: 2026-10-13T19:12:49.277Z
-Stopped at: Completed 02-01-PLAN.md
+Last session: 2026-10-13T19:21:21.618Z
+Stopped at: Completed 02-02-PLAN.md
 Resume file: None
