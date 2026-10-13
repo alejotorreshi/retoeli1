@@ -136,6 +136,30 @@ const VALOR_EN_ARCHIVO_DE_TIPOS =
 
 const IMPORTA_VALOR = /^import\s+(?!type\b)/;
 
+const KEBAB = "[a-z0-9]+(?:-[a-z0-9]+)*";
+
+const NOMBRES_CON_ROL: readonly RegExp[] = [
+  /^demo\.ts$/,
+  /^src\/tools\/proveedor\.ts$/,
+  /^src\/config\/(?:strings|env)\.ts$/,
+  new RegExp(`^src/config/constants/${KEBAB}\\.constants\\.ts$`),
+  new RegExp(`^src/(?:config|domain|application|infra|tools|demo)/(?:${KEBAB}/)*types/${KEBAB}\\.type\\.ts$`),
+  new RegExp(`^tests/helpers/types/${KEBAB}\\.type\\.ts$`),
+  new RegExp(`^src/(?:infra|tools)/(?:${KEBAB}/)*schemas/${KEBAB}\\.schema\\.ts$`),
+  new RegExp(`^src/application/use-cases/${KEBAB}\\.use-case\\.ts$`),
+  new RegExp(`^src/application/services/${KEBAB}\\.service\\.ts$`),
+  new RegExp(`^src/domain/${KEBAB}\\.ts$`),
+  new RegExp(`^src/infra/(?:${KEBAB}/)*${KEBAB}\\.(?:adapter|util)\\.ts$`),
+  new RegExp(`^src/tools/${KEBAB}\\.(?:factory|wiring|util)\\.ts$`),
+  new RegExp(`^src/demo/${KEBAB}\\.runner\\.ts$`),
+  new RegExp(`^tests/(?:${KEBAB}/)*${KEBAB}\\.test\\.ts$`),
+  new RegExp(`^tests/helpers/${KEBAB}\\.helper\\.ts$`),
+];
+
+const CASO_DE_USO = /^src\/application\/use-cases\//;
+
+const EXPORTA_FUNCION = /^export\s+(?:async\s+)?function\s/;
+
 const CAPAS_FUTURAS = /^src\/(?:server[^/]*|http|loop|llm)(?:\/|$)/;
 
 function sinExtension(ruta: string): string {
@@ -356,6 +380,21 @@ function violacionesDeArchivoDeTipos(ruta: string, codigo: string): string[] {
   ];
 }
 
+function violacionesDeNombre(ruta: string): string[] {
+  return NOMBRES_CON_ROL.some((patron) => patron.test(ruta))
+    ? []
+    : [`${ruta}: el nombre no sigue la tabla de sufijos por carpeta`];
+}
+
+function violacionesDeCasoDeUso(ruta: string, codigo: string): string[] {
+  if (!CASO_DE_USO.test(ruta)) return [];
+  const exportaciones = codigo.split("\n").filter((linea) => linea.startsWith("export "));
+  const funciones = exportaciones.filter((linea) => EXPORTA_FUNCION.test(linea));
+  return funciones.length === 1 && exportaciones.length === 1
+    ? []
+    : [`${ruta}: un caso de uso exporta exactamente una función`];
+}
+
 function violacionesDeShell(ruta: string, codigo: string): string[] {
   return codigo
     .split("\n")
@@ -538,6 +577,16 @@ describe("reglas de capas sobre el código real", () => {
     expect(listarTodasLasFuentes().flatMap((ruta) => violacionesDeArchivoDeTipos(ruta, leer(ruta)))).toEqual(
       [],
     );
+  });
+
+  test("G5: cada archivo sigue la tabla de sufijos de su carpeta", () => {
+    expect(listarTodasLasFuentes().flatMap(violacionesDeNombre)).toEqual([]);
+  });
+
+  test("G5: cada caso de uso exporta exactamente una función", () => {
+    const fuentes = listarFuentes().filter((ruta) => CASO_DE_USO.test(ruta));
+    expect(fuentes.length).toBe(5);
+    expect(fuentes.flatMap((ruta) => violacionesDeCasoDeUso(ruta, leer(ruta)))).toEqual([]);
   });
 
   test("src/ y demo.ts no usan APIs de shell", () => {
@@ -804,6 +853,36 @@ describe("el escáner muerde sobre fuentes de muestra", () => {
       "src/domain/types/x.type.ts:3: un archivo de tipos exporta un valor",
       "src/domain/types/x.type.ts:4: un archivo de tipos exporta un valor",
       "src/domain/types/x.type.ts:1: un archivo de tipos importa sin import type",
+    ]);
+  });
+
+  test("G5: reporta sufijos fuera de su carpeta, nombres sin kebab-case y rol ausente", () => {
+    const rutas = [
+      "src/domain/mapeo.service.ts",
+      "src/domain/MapeoCampos.ts",
+      "src/application/armar.ts",
+      "src/infra/output/xlsx.ts",
+      "src/domain/types/x.ts",
+      "src/tools/fabrica.ts",
+      "tests/helpers/flujo.ts",
+      "src/infra/output/xlsx-writer.adapter.ts",
+      "src/application/use-cases/armar-paquete.use-case.ts",
+    ];
+    expect(rutas.flatMap(violacionesDeNombre)).toEqual([
+      "src/domain/mapeo.service.ts: el nombre no sigue la tabla de sufijos por carpeta",
+      "src/domain/MapeoCampos.ts: el nombre no sigue la tabla de sufijos por carpeta",
+      "src/application/armar.ts: el nombre no sigue la tabla de sufijos por carpeta",
+      "src/infra/output/xlsx.ts: el nombre no sigue la tabla de sufijos por carpeta",
+      "src/domain/types/x.ts: el nombre no sigue la tabla de sufijos por carpeta",
+      "src/tools/fabrica.ts: el nombre no sigue la tabla de sufijos por carpeta",
+      "tests/helpers/flujo.ts: el nombre no sigue la tabla de sufijos por carpeta",
+    ]);
+  });
+
+  test("G5: reporta un caso de uso que exporta dos funciones", () => {
+    const codigo = "export function a(): void {}\nexport async function b(): Promise<void> {}\n";
+    expect(violacionesDeCasoDeUso("src/application/use-cases/x.use-case.ts", codigo)).toEqual([
+      "src/application/use-cases/x.use-case.ts: un caso de uso exporta exactamente una función",
     ]);
   });
 
