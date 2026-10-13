@@ -13,7 +13,8 @@ import {
   VERSION_REGLAS,
 } from "../../config/constantes.ts";
 import { APLICACIONES_NOTA, type Reglas } from "../../domain/reglas.ts";
-import { exito, fallo, type Resultado } from "../../domain/resultado.ts";
+import { fallo, type Resultado } from "../../domain/resultado.ts";
+import { validarTextosDeReglas } from "../../domain/validar-reglas.ts";
 
 export const DIRECTORIO_CONOCIMIENTO_POR_DEFECTO = fileURLToPath(
   new URL("../../knowledge/", import.meta.url),
@@ -108,5 +109,6 @@ export async function cargarReglas(directorio: string): Promise<Resultado<Reglas
   const json = parsearJson(contenido);
   if (!json.ok) return reglasInvalidas("no es JSON válido");
   const validado = esquemaReglas.safeParse(json.valor, { error: z.locales.es().localeError });
-  return validado.success ? exito(validado.data) : reglasInvalidas(detalleDe(validado.error.issues));
+  if (!validado.success) return reglasInvalidas(detalleDe(validado.error.issues));
+  return validarTextosDeReglas(validado.data);
 }

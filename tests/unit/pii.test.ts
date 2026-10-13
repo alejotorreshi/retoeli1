@@ -150,7 +150,6 @@ describe("presentarCampo (MAP-05)", () => {
         indice: indice.data,
         maestro,
         reglas,
-        variablesNota: {},
       });
       if (!mapeo.ok) throw new Error(mapeo.error);
       for (const item of mapeo.data) {

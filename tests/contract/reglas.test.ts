@@ -112,6 +112,16 @@ describe("reglas.json inválido da REGLAS_INVALIDAS en español y sin traza (CAL
     expect(JSON.parse(crudo).error).toContain("no es JSON válido");
   });
 
+  test("una nota de contexto con una variable desconocida falla al cargar, aunque el caso no use esa ruta (IN-09)", async () => {
+    const reglas = await copia();
+    await reglas.editar((crudas) => {
+      crudas.notas_contexto = [{ ruta: "sitio_web", aplica: "siempre", texto: "{{monedaa}}" }];
+    });
+    const crudo = await leerCrudo(reglas.herramientas, "co-industrias-delta");
+    esperarReglasInvalidas(crudo);
+    expect(JSON.parse(crudo).error).toContain("monedaa");
+  });
+
   test("una llave desconocida en la raíz falla por el esquema estricto", async () => {
     const reglas = await copia();
     await reglas.editar((crudas) => {

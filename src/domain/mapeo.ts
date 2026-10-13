@@ -1,5 +1,5 @@
 import { aTexto, normalizarEtiqueta } from "./normalizar.ts";
-import { VARIABLES_NOTA_DEL_MAESTRO, VARIABLES_NOTA_PERMITIDAS, type VariableNota } from "./pii.ts";
+import { VARIABLES_NOTA_DEL_MAESTRO, type VariableNota } from "./pii.ts";
 import { renderizarTextoPlano } from "./plantillas.ts";
 import {
   type EscalaConfianza,
@@ -19,15 +19,12 @@ export type IndiceGlosario = {
   readonly normalizado: ReadonlyMap<string, string>;
 };
 
-export type VariablesNota = Readonly<Partial<Record<VariableNota, string>>>;
-
 export type EntradaMapeo = {
   readonly etiquetas: readonly string[];
   readonly pais: string;
   readonly indice: IndiceGlosario;
   readonly maestro: Maestro;
   readonly reglas: Reglas;
-  readonly variablesNota: VariablesNota;
 };
 
 export type CampoMapeado = {
@@ -146,11 +143,9 @@ function variablesDeNota(
   identificador: string | null,
 ): Readonly<Record<string, string>> {
   const variables = new Map<string, string>();
-  const fijar = (nombre: VariableNota, valor: string | null | undefined): void => {
-    if (valor === null || valor === undefined) variables.delete(nombre);
-    else variables.set(nombre, valor);
+  const fijar = (nombre: VariableNota, valor: string | null): void => {
+    if (valor !== null) variables.set(nombre, valor);
   };
-  for (const nombre of VARIABLES_NOTA_PERMITIDAS) fijar(nombre, entrada.variablesNota[nombre]);
   for (const [nombre, ruta] of VARIABLES_NOTA_DEL_MAESTRO) fijar(nombre, leerRuta(entrada.maestro, ruta));
   fijar("pais", entrada.pais);
   fijar("identificador", identificador);

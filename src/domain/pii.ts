@@ -14,7 +14,11 @@ export type CampoPresentado = {
   readonly propuesta: string | null;
 };
 
-export const VARIABLES_NOTA_PERMITIDAS = ["moneda", "ano", "pais", "identificador", "pais_emisor"] as const;
+export const VARIABLES_NOTA_CAMPO = ["moneda", "ano", "pais", "identificador"] as const;
+
+export const VARIABLES_AVISO_SOPORTE = ["pais_emisor"] as const;
+
+export const VARIABLES_NOTA_PERMITIDAS = [...VARIABLES_NOTA_CAMPO, ...VARIABLES_AVISO_SOPORTE] as const;
 
 export type VariableNota = (typeof VARIABLES_NOTA_PERMITIDAS)[number];
 

@@ -63,7 +63,6 @@ export function mapeoCanonico(contexto: ContextoCaso): Resultado<readonly CampoM
     indice,
     maestro,
     reglas,
-    variablesNota: {},
   });
 }
 

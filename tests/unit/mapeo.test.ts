@@ -49,7 +49,7 @@ function entrada(
   pais: string,
   cambios: Partial<EntradaMapeo> = {},
 ): EntradaMapeo {
-  return { etiquetas, pais, indice: indiceReal(), maestro, reglas, variablesNota: {}, ...cambios };
+  return { etiquetas, pais, indice: indiceReal(), maestro, reglas, ...cambios };
 }
 
 function mapear(datos: EntradaMapeo): readonly CampoMapeado[] {
@@ -461,22 +461,11 @@ describe("notas de contexto como datos (D-36)", () => {
     expect(resultado.error).toContain("notas_contexto");
   });
 
-  test("pais_emisor solo existe si el llamador lo entrega", () => {
+  test("pais_emisor es una variable de los avisos de soportes, no de las notas de campo", () => {
     const conEmisor: Reglas = {
       ...reglas,
       notas_contexto: [{ ruta: "pais", aplica: "siempre", texto: "Emitido en {{pais_emisor}}" }],
     };
     expect(mapearCampos(entrada(["País"], "EC", { reglas: conEmisor })).ok).toBe(false);
-    const campos = mapear(
-      entrada(["País"], "EC", { reglas: conEmisor, variablesNota: { pais_emisor: "CO" } }),
-    );
-    expect(campos[0]?.nota).toBe("Emitido en CO");
-  });
-
-  test("las variables calculadas no se pueden suplantar desde variablesNota", () => {
-    const campos = mapear(
-      entrada(["Ingresos anuales"], "HN", { variablesNota: { moneda: "USD", ano: "1999", pais: "XX" } }),
-    );
-    expect(campos[0]?.nota).toBe("COP, año 2025");
   });
 });
