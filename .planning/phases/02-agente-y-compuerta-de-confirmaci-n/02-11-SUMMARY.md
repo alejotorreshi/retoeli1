@@ -179,3 +179,9 @@ None. No external service configuration is required.
 ---
 *Phase: 02-agente-y-compuerta-de-confirmaci-n*
 *Completed: 2026-10-13*
+
+## Self-Check: PASSED
+
+- Files: tests/unit/wire-messages.mapper.test.ts, llm.constants.ts, ejecutar-turno.service.ts and wire-messages.mapper.ts all exist.
+- Commits: 87ad81e, 319794e, 281470e and 2f5a929 are all ancestors of HEAD.
+- Plan verification: bun run check exits 0; bun test gives 1021 pass, 0 fail, 1 skip (the opt-in live test); git status --porcelain -- reto-01 is empty.
