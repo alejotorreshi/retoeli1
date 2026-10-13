@@ -10,9 +10,6 @@ export const FINES_DE_ORACION = [". ", "! "] as const;
 
 export const AFIRMACIONES: ReadonlySet<string> = new Set([
   "si",
-  "ok",
-  "okay",
-  "vale",
   "dale",
   "confirmo",
   "confirmado",
@@ -20,21 +17,17 @@ export const AFIRMACIONES: ReadonlySet<string> = new Set([
   "procede",
   "proceda",
   "adelante",
-  "listo",
-  "claro",
-  "correcto",
   "hazlo",
   "autorizo",
   "autorizado",
 ]);
 
+export const ACUSES: ReadonlySet<string> = new Set(["ok", "okay", "vale", "listo", "claro", "correcto"]);
+
 export const VERBOS_ENVIO: ReadonlySet<string> = new Set([
   "envia",
   "envialo",
   "enviala",
-  "envie",
-  "envio",
-  "enviar",
   "manda",
   "mandalo",
   "despacha",

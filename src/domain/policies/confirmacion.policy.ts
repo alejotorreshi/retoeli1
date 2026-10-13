@@ -1,4 +1,5 @@
 import {
+  ACUSES,
   AFIRMACIONES,
   CONDICIONALES,
   DECISION_CONFIRMACION,
@@ -34,18 +35,27 @@ function separar(normalizado: string): Frase {
   return { slugs, palabras };
 }
 
-function esAfirmativa(palabra: string): boolean {
+function esAfirmacionFuerte(palabra: string): boolean {
   return AFIRMACIONES.has(palabra) || VERBOS_ENVIO.has(palabra);
 }
 
+function esAcuse(palabra: string): boolean {
+  return ACUSES.has(palabra);
+}
+
 function esPermitida(palabra: string): boolean {
-  return esAfirmativa(palabra) || RELLENO.has(palabra);
+  return esAfirmacionFuerte(palabra) || esAcuse(palabra) || RELLENO.has(palabra);
+}
+
+function soloAcuses(palabras: readonly string[]): boolean {
+  return palabras.length > 0 && palabras.every(esAcuse);
 }
 
 function esConfirmacionClara(palabras: readonly string[]): boolean {
   if (palabras.length > MAX_PALABRAS_CONFIRMACION) return false;
   if (palabras.some((palabra) => CONDICIONALES.has(palabra))) return false;
-  return palabras.every(esPermitida) && palabras.some(esAfirmativa);
+  if (!palabras.every(esPermitida)) return false;
+  return palabras.some(esAfirmacionFuerte) || soloAcuses(palabras);
 }
 
 function casoConfirmado(slugs: readonly string[], pendientes: readonly string[]): DecisionConfirmacion {
