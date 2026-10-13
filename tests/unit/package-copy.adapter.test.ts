@@ -4,7 +4,6 @@ import { mkdir, mkdtemp, readdir, readFile, rm, symlink, writeFile } from "node:
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { FIXTURES_DIR, SOPORTES_DIR } from "@/config/constants/files.constants.ts";
-import { supportIndexSchema } from "@/infra/fixtures/schemas/fixtures.schema.ts";
 import { resetPackage } from "@/infra/output/output-files.adapter.ts";
 import { copyIntoPackage } from "@/infra/output/package-copy.adapter.ts";
 
@@ -102,40 +101,5 @@ describe("copyIntoPackage (T-01-16)", () => {
     await expect(copyIntoPackage(raiz, "CO", join(soportes, "rut-2026.txt"), "rut-2026.txt")).rejects.toThrow(
       RangeError,
     );
-  });
-});
-
-describe("supportIndexSchema (T-01-16)", () => {
-  const valida = {
-    tipo: "rut",
-    archivo: "rut-2026.txt",
-    vigencia_hasta: null,
-    pais_emisor: "CO",
-    descripcion: "Registro Único Tributario",
-  };
-
-  test("acepta una entrada válida con y sin vigencia", () => {
-    expect(supportIndexSchema.safeParse([valida, { ...valida, vigencia_hasta: "2026-09-30" }]).success).toBe(
-      true,
-    );
-  });
-
-  for (const archivo of [
-    "../maestro.json",
-    "a..b.txt",
-    "checklist.md",
-    "formulario.xlsx",
-    "Rut.txt",
-    "a/b",
-  ]) {
-    test(`rechaza el archivo "${archivo}"`, () => {
-      expect(supportIndexSchema.safeParse([{ ...valida, archivo }]).success).toBe(false);
-    });
-  }
-
-  test("rechaza una fecha inexistente, un país en minúsculas y claves extra", () => {
-    expect(supportIndexSchema.safeParse([{ ...valida, vigencia_hasta: "2026-02-31" }]).success).toBe(false);
-    expect(supportIndexSchema.safeParse([{ ...valida, pais_emisor: "co" }]).success).toBe(false);
-    expect(supportIndexSchema.safeParse([{ ...valida, extra: 1 }]).success).toBe(false);
   });
 });

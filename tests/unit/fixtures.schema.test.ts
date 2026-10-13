@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { cellTemplateSchema } from "@/infra/fixtures/schemas/fixtures.schema.ts";
+import { cellTemplateSchema, supportIndexSchema } from "@/infra/fixtures/schemas/fixtures.schema.ts";
 
 type Entrada = { hoja: string; celda_etiqueta: string; etiqueta: string; celda_valor: string };
 
@@ -74,5 +74,40 @@ describe("cellTemplateSchema acepta solo lo que el xlsx puede escribir (WR-08)",
 
   test("la misma celda en hojas distintas no choca", () => {
     expect(valida([entrada(), entrada({ hoja: "Banco" })])).toBe(true);
+  });
+});
+
+describe("supportIndexSchema (T-01-16)", () => {
+  const valida = {
+    tipo: "rut",
+    archivo: "rut-2026.txt",
+    vigencia_hasta: null,
+    pais_emisor: "CO",
+    descripcion: "Registro Único Tributario",
+  };
+
+  test("acepta una entrada válida con y sin vigencia", () => {
+    expect(supportIndexSchema.safeParse([valida, { ...valida, vigencia_hasta: "2026-09-30" }]).success).toBe(
+      true,
+    );
+  });
+
+  for (const archivo of [
+    "../maestro.json",
+    "a..b.txt",
+    "checklist.md",
+    "formulario.xlsx",
+    "Rut.txt",
+    "a/b",
+  ]) {
+    test(`rechaza el archivo "${archivo}"`, () => {
+      expect(supportIndexSchema.safeParse([{ ...valida, archivo }]).success).toBe(false);
+    });
+  }
+
+  test("rechaza una fecha inexistente, un país en minúsculas y claves extra", () => {
+    expect(supportIndexSchema.safeParse([{ ...valida, vigencia_hasta: "2026-02-31" }]).success).toBe(false);
+    expect(supportIndexSchema.safeParse([{ ...valida, pais_emisor: "co" }]).success).toBe(false);
+    expect(supportIndexSchema.safeParse([{ ...valida, extra: 1 }]).success).toBe(false);
   });
 });
