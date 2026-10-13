@@ -4,6 +4,7 @@ import { HERRAMIENTA, NOMBRE_VISIBLE } from "@/config/constants/tools.constants.
 import { MENSAJE_AGENTE } from "@/config/strings.ts";
 import type { ValorDe } from "@/config/types/valor-de.type.ts";
 import type { CuerpoFallo } from "@/domain/types/respuesta-herramienta.type.ts";
+import { parsearJson } from "@/domain/utils/json.util.ts";
 import { cuerpoDeFallo } from "@/domain/utils/respuesta-herramienta.util.ts";
 import type { DefinicionHerramienta } from "@/llm/types/llm.type.ts";
 import { resultadoHerramientaSchema } from "@/loop/schemas/resultado-herramienta.schema.ts";
@@ -46,24 +47,17 @@ function registrar(
   ];
 }
 
-export function argumentosDeLlamada(argumentos: string): unknown {
-  try {
-    return JSON.parse(argumentos);
-  } catch {
-    return argumentos;
-  }
+function jsonO(texto: string, alternativa: unknown): unknown {
+  const json = parsearJson(texto);
+  return json.ok ? json.valor : alternativa;
 }
 
-function jsonDe(contenido: string): unknown {
-  try {
-    return JSON.parse(contenido);
-  } catch {
-    return null;
-  }
+export function argumentosDeLlamada(argumentos: string): unknown {
+  return jsonO(argumentos, argumentos);
 }
 
 function resultadoDe(contenido: string): ResultadoLlamada {
-  const respuesta = jsonDe(contenido);
+  const respuesta = jsonO(contenido, null);
   const resultado = resultadoHerramientaSchema.safeParse(respuesta);
   if (!resultado.success) return { contenido, ok: false, codigo: null, resumen: null, respuesta };
   return {

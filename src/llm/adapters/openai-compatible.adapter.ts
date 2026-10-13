@@ -12,7 +12,12 @@ import {
   errorFromStatus,
   invalidResponseError,
 } from "@/llm/mappers/provider-error.mapper.ts";
-import { fromChatCompletion, toWireMessages, toWireTools } from "@/llm/mappers/wire-messages.mapper.ts";
+import {
+  fromChatCompletion,
+  parseJson,
+  toWireMessages,
+  toWireTools,
+} from "@/llm/mappers/wire-messages.mapper.ts";
 import { chatCompletionSchema } from "@/llm/schemas/chat-completion.schema.ts";
 import type {
   AdaptadorLlm,
@@ -80,13 +85,9 @@ async function discardBody(response: Response): Promise<void> {
 }
 
 function parseCompletion(text: string, provider: string, requestCharacters: number): ResultadoEnvio {
-  let json: unknown;
-  try {
-    json = JSON.parse(text.trim());
-  } catch {
-    return { ok: false, error: invalidResponseError() };
-  }
-  const parsed = chatCompletionSchema.safeParse(json, { error: z.locales.es().localeError });
+  const json = parseJson(text.trim());
+  if (!json.ok) return { ok: false, error: invalidResponseError() };
+  const parsed = chatCompletionSchema.safeParse(json.value, { error: z.locales.es().localeError });
   if (!parsed.success) return { ok: false, error: invalidResponseError() };
   return fromChatCompletion(parsed.data, provider, requestCharacters);
 }

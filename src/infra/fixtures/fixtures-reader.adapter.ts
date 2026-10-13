@@ -13,12 +13,13 @@ import { PATRON_ARCHIVO_SOPORTE } from "@/config/constants/patterns.constants.ts
 import type { Glosario } from "@/domain/types/glosario.type.ts";
 import type { Maestro } from "@/domain/types/maestro.type.ts";
 import type { SoporteIndice } from "@/domain/types/soportes.type.ts";
+import { parsearJson } from "@/domain/utils/json.util.ts";
 import {
   glossarySchema,
   masterSchema,
   supportIndexSchema,
 } from "@/infra/fixtures/schemas/fixtures.schema.ts";
-import { isNotFound, parseJson, readBoundedText } from "@/infra/fs/fs.util.ts";
+import { isNotFound, readBoundedText } from "@/infra/fs/fs.util.ts";
 
 export function resolveRoot(directorio: string): string {
   return resolve(directorio);
@@ -40,7 +41,7 @@ export async function readValidatedJson<T>(rutaAbs: string, esquema: z.ZodType<T
   try {
     const texto = await readBoundedText(rutaAbs);
     if (texto === null) return LECTURA_INVALIDA;
-    const json = parseJson(texto);
+    const json = parsearJson(texto);
     if (!json.ok) return LECTURA_INVALIDA;
     const validado = esquema.safeParse(json.valor);
     return validado.success ? { estado: ESTADO_LECTURA.OK, valor: validado.data } : LECTURA_INVALIDA;

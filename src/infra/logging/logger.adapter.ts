@@ -3,18 +3,15 @@ import type { BitacoraEstructurada, CamposBitacora } from "@/application/types/p
 import { RUTAS_REDACCION_LOG } from "@/config/constants/logging.constants.ts";
 import { TEXTO_MASCARA } from "@/config/strings.ts";
 import { redactar } from "@/domain/policies/redaccion.policy.ts";
+import { esRegistro } from "@/domain/utils/json.util.ts";
 import type { LoggerOptions } from "@/infra/types/logger.type.ts";
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
-}
 
 function cleanFields(
   fields: CamposBitacora | undefined,
   secrets: readonly string[],
 ): Record<string, unknown> {
   const clean = redactar(fields ?? {}, secrets);
-  return isRecord(clean) ? clean : {};
+  return esRegistro(clean) ? clean : {};
 }
 
 function wrap(logger: Logger, secrets: readonly string[]): BitacoraEstructurada {

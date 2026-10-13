@@ -9,8 +9,9 @@ import { validarTextosDeReglas } from "@/domain/policies/validar-reglas.policy.t
 import type { Reglas } from "@/domain/types/reglas.type.ts";
 import type { Resultado } from "@/domain/types/resultado.type.ts";
 import { formatearIssues } from "@/domain/utils/formatear-issues.util.ts";
+import { parsearJson } from "@/domain/utils/json.util.ts";
 import { fallo } from "@/domain/utils/resultado.util.ts";
-import { parseJson, readText } from "@/infra/fs/fs.util.ts";
+import { readText } from "@/infra/fs/fs.util.ts";
 import { rulesSchema } from "@/infra/knowledge/schemas/rules.schema.ts";
 
 export const DEFAULT_KNOWLEDGE_DIRECTORY = fileURLToPath(new URL("../../knowledge/", import.meta.url));
@@ -28,7 +29,7 @@ function detalleDe(issues: readonly z.core.$ZodIssue[]): string {
 export async function loadRules(directorio: string): Promise<Resultado<Reglas>> {
   const contenido = await readText(join(directorio, ARCHIVO_REGLAS));
   if (contenido === null) return reglasInvalidas(TEXTO_CONOCIMIENTO.archivoNoLegible);
-  const json = parseJson(contenido);
+  const json = parsearJson(contenido);
   if (!json.ok) return reglasInvalidas(TEXTO_CONOCIMIENTO.jsonInvalido);
   const validado = rulesSchema.safeParse(json.valor, { error: z.locales.es().localeError });
   if (!validado.success) return reglasInvalidas(detalleDe(validado.error.issues));

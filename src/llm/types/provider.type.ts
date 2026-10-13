@@ -10,6 +10,8 @@ export type ToolChoice = ValorDe<typeof TOOL_CHOICE>;
 
 export type ProviderSlot = ProviderEndpoint & { readonly apiKey: string };
 
+export type ParsedJson = { readonly ok: true; readonly value: unknown } | { readonly ok: false };
+
 export type FetchLike = (url: string, init: RequestInit) => Promise<Response>;
 
 export type AdapterDependencies = { readonly fetch: FetchLike };

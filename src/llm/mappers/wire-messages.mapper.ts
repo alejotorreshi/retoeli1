@@ -20,18 +20,25 @@ import type {
   ChatCompletion,
   ChatCompletionToolCall,
   ChatCompletionUsage,
+  ParsedJson,
   WireMessage,
   WireTool,
   WireToolCall,
 } from "@/llm/types/provider.type.ts";
 
-function isJsonObject(text: string): boolean {
+export function parseJson(text: string): ParsedJson {
   try {
-    const value: unknown = JSON.parse(text);
-    return typeof value === "object" && value !== null && !Array.isArray(value);
+    return { ok: true, value: JSON.parse(text) };
   } catch {
-    return false;
+    return { ok: false };
   }
+}
+
+function isJsonObject(text: string): boolean {
+  const parsed = parseJson(text);
+  return (
+    parsed.ok && typeof parsed.value === "object" && parsed.value !== null && !Array.isArray(parsed.value)
+  );
 }
 
 function toWireToolCall(call: LlamadaHerramienta): WireToolCall {

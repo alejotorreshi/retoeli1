@@ -3,7 +3,6 @@ import { type FileHandle, open, readFile, stat } from "node:fs/promises";
 import { CODIGO_FS, CODIGOS_FS_NO_ENCONTRADO } from "@/config/constants/errors.constants.ts";
 import { LIMITE_LECTURA_BYTES } from "@/config/constants/limits.constants.ts";
 import { TEXTO_INFRA } from "@/config/strings.ts";
-import type { ParsedJson } from "@/infra/types/fs.type.ts";
 
 function fsCodeOf(error: unknown): string | null {
   if (typeof error !== "object" || error === null || !("code" in error)) return null;
@@ -13,14 +12,6 @@ function fsCodeOf(error: unknown): string | null {
 export function isNotFound(error: unknown): boolean {
   const codigo = fsCodeOf(error);
   return codigo !== null && CODIGOS_FS_NO_ENCONTRADO.has(codigo);
-}
-
-export function parseJson(texto: string): ParsedJson {
-  try {
-    return { ok: true, valor: JSON.parse(texto) };
-  } catch {
-    return { ok: false };
-  }
 }
 
 export async function readBoundedText(ruta: string): Promise<string | null> {
