@@ -13,6 +13,7 @@ import type {
   EstadoCompuerta,
   EvaluacionEnvio,
   EventoCompuerta,
+  PaquetesConocidos,
 } from "@/domain/types/compuerta.type.ts";
 import type { DecisionConfirmacion } from "@/domain/types/confirmacion.type.ts";
 
@@ -33,10 +34,7 @@ export function casosPendientes(estado: EstadoCompuerta): readonly string[] {
   return pendientesDe(estado).map(({ caso }) => caso);
 }
 
-export function paqueteConocido(
-  conocidos: EntradaCierreCompuerta["conocidos"],
-  caso: string,
-): CasoPendiente | undefined {
+export function paqueteConocido(conocidos: PaquetesConocidos, caso: string): CasoPendiente | undefined {
   return Object.hasOwn(conocidos, caso) ? conocidos[caso] : undefined;
 }
 
@@ -67,7 +65,7 @@ export function revocarAlArmar(autorizacion: AutorizacionTurno, caso: string): A
 
 function conocido(
   caso: string,
-  conocidos: EntradaCierreCompuerta["conocidos"],
+  conocidos: PaquetesConocidos,
   pendientes: ReadonlyMap<string, CasoPendiente>,
 ): CasoPendiente | undefined {
   return paqueteConocido(conocidos, caso) ?? pendientes.get(caso);
@@ -76,7 +74,7 @@ function conocido(
 function aplicarEvento(
   pendientes: Map<string, CasoPendiente>,
   evento: EventoCompuerta,
-  conocidos: EntradaCierreCompuerta["conocidos"],
+  conocidos: PaquetesConocidos,
 ): void {
   if (evento.tipo === EVENTO_COMPUERTA.ARMADO) {
     pendientes.set(evento.pendiente.caso, evento.pendiente);
@@ -100,7 +98,7 @@ export function cerrarTurno(entrada: EntradaCierreCompuerta): EstadoCompuerta {
 export function recuperarAutorizado(
   motivo: ValorDe<typeof MOTIVO_FIN>,
   autorizacion: AutorizacionTurno,
-  conocidos: Readonly<Record<string, CasoPendiente>>,
+  conocidos: PaquetesConocidos,
 ): readonly CasoPendiente[] {
   const { caso, usada } = autorizacion;
   if (motivo === MOTIVO_FIN.FINAL || motivo === MOTIVO_FIN.ABORTADO) return [];

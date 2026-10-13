@@ -1,9 +1,10 @@
 import type { BitacoraEstructurada } from "@/application/types/puertos-agente.type.ts";
 import { EVENTO_BITACORA } from "@/config/constants/agent.constants.ts";
 import { paqueteConocido } from "@/domain/policies/compuerta.policy.ts";
+import type { PaquetesConocidos } from "@/domain/types/compuerta.type.ts";
 import type { LlamadaHerramienta, ObservadorLlm, RespuestaLlm } from "@/llm/types/llm.type.ts";
 import { casoDeLlamada } from "@/loop/services/despacho-llamada.service.ts";
-import type { PaquetesConocidos, ResultadoDespacho } from "@/loop/types/turno.type.ts";
+import type { ResultadoDespacho } from "@/loop/types/turno.type.ts";
 
 export function bitacoraDelTurno(
   bitacora: BitacoraEstructurada,

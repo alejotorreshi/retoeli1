@@ -8,8 +8,10 @@ import type { LlamadaResumida } from "@/domain/types/cierre-turno.type.ts";
 import type {
   AutorizacionTurno,
   CasoPendiente,
+  EntradaCierreCompuerta,
   EstadoCompuerta,
   EventoCompuerta,
+  PaquetesConocidos,
 } from "@/domain/types/compuerta.type.ts";
 import type {
   AdaptadorLlm,
@@ -26,8 +28,6 @@ import type {
   MotivoFin,
 } from "@/loop/types/evento.type.ts";
 import type { ContextoHerramienta } from "@/tools/types/herramienta.type.ts";
-
-export type PaquetesConocidos = Readonly<Record<string, CasoPendiente>>;
 
 export type Sesion = {
   readonly id: string;
@@ -92,13 +92,9 @@ export type ResultadoDespacho = {
   readonly envioPermitido: boolean | null;
 };
 
-export type EntradaCierreTurno = {
+export type EntradaCierreTurno = EntradaCierreCompuerta & {
   readonly turnoId: string;
   readonly texto: string;
-  readonly arrastrados: readonly CasoPendiente[];
-  readonly eventos: readonly EventoCompuerta[];
-  readonly conocidos: PaquetesConocidos;
-  readonly abortado: boolean;
 };
 
 export type CierreTurnoCompuerta = {

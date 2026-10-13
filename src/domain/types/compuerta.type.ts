@@ -8,6 +8,8 @@ export type CasoPendiente = {
   readonly motivos: readonly MotivoBloqueo[];
 };
 
+export type PaquetesConocidos = Readonly<Record<string, CasoPendiente>>;
+
 export type EstadoCompuerta =
   | { readonly tipo: typeof ESTADO_COMPUERTA.LIBRE }
   | {
@@ -34,6 +36,6 @@ export type EventoCompuerta =
 export type EntradaCierreCompuerta = {
   readonly arrastrados: readonly CasoPendiente[];
   readonly eventos: readonly EventoCompuerta[];
-  readonly conocidos: Readonly<Record<string, CasoPendiente>>;
+  readonly conocidos: PaquetesConocidos;
   readonly abortado: boolean;
 };
