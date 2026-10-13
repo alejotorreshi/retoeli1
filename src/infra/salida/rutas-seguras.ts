@@ -2,10 +2,11 @@ import { readdir, realpath, stat } from "node:fs/promises";
 import { join, relative, resolve, sep } from "node:path";
 import type { ResolucionCaso } from "@/application/puertos.ts";
 import { CASOS_DIR, FIXTURES_DIR, OUT_DIR } from "@/config/constants/files.constants.ts";
+import { ESTADO_LECTURA } from "@/config/constants/io.constants.ts";
 import { PATRON_CASO } from "@/config/constants/patterns.constants.ts";
 
-const NO_ENCONTRADO = { estado: "no_encontrado" } as const;
-const INVALIDO = { estado: "invalido" } as const;
+const NO_ENCONTRADO = { estado: ESTADO_LECTURA.NO_ENCONTRADO } as const;
+const INVALIDO = { estado: ESTADO_LECTURA.INVALIDO } as const;
 const CODIGOS_NO_ENCONTRADO: ReadonlySet<string> = new Set(["ENOENT", "ENOTDIR"]);
 
 function esNoEncontrado(error: unknown): boolean {
@@ -24,7 +25,7 @@ export async function resolverCaso(raiz: string, caso: string): Promise<Resoluci
     const destino = await realpath(join(casosDir, caso));
     if (!destino.startsWith(casosDir + sep)) return INVALIDO;
     if (!(await stat(destino)).isDirectory()) return NO_ENCONTRADO;
-    return { estado: "ok", directorio: destino };
+    return { estado: ESTADO_LECTURA.OK, directorio: destino };
   } catch (error) {
     return esNoEncontrado(error) ? NO_ENCONTRADO : INVALIDO;
   }

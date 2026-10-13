@@ -8,14 +8,15 @@ import {
   INDICE_SOPORTES,
   SOPORTES_DIR,
 } from "@/config/constants/files.constants.ts";
+import { ESTADO_LECTURA } from "@/config/constants/io.constants.ts";
 import { LIMITE_LECTURA_BYTES } from "@/config/constants/limits.constants.ts";
 import { PATRON_ARCHIVO_SOPORTE } from "@/config/constants/patterns.constants.ts";
 import type { SoporteIndice } from "@/domain/checklist.ts";
 import type { Glosario, Maestro } from "@/domain/mapeo.ts";
 import { esquemaGlosario, esquemaIndiceSoportes, esquemaMaestro } from "@/infra/fixtures/esquemas.ts";
 
-const NO_ENCONTRADO = { estado: "no_encontrado" } as const;
-const INVALIDO = { estado: "invalido" } as const;
+const NO_ENCONTRADO = { estado: ESTADO_LECTURA.NO_ENCONTRADO } as const;
+const INVALIDO = { estado: ESTADO_LECTURA.INVALIDO } as const;
 const CODIGOS_NO_ENCONTRADO: ReadonlySet<string> = new Set(["ENOENT", "ENOTDIR"]);
 
 function esNoEncontrado(error: unknown): boolean {
@@ -54,7 +55,7 @@ export async function leerJsonValidado<T>(rutaAbs: string, esquema: z.ZodType<T>
     const json = parsearJson(await readFile(rutaAbs, "utf8"));
     if (!json.ok) return INVALIDO;
     const validado = esquema.safeParse(json.valor);
-    return validado.success ? { estado: "ok", valor: validado.data } : INVALIDO;
+    return validado.success ? { estado: ESTADO_LECTURA.OK, valor: validado.data } : INVALIDO;
   } catch (error) {
     return esNoEncontrado(error) ? NO_ENCONTRADO : INVALIDO;
   }
@@ -85,7 +86,7 @@ export async function soportesPresentes(raiz: string): Promise<Lectura<ReadonlyS
           entrada.isFile() && entrada.name !== INDICE_SOPORTES && PATRON_ARCHIVO_SOPORTE.test(entrada.name),
       )
       .map((entrada) => entrada.name);
-    return { estado: "ok", valor: new Set(archivos) };
+    return { estado: ESTADO_LECTURA.OK, valor: new Set(archivos) };
   } catch (error) {
     return esNoEncontrado(error) ? NO_ENCONTRADO : INVALIDO;
   }

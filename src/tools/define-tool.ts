@@ -1,6 +1,7 @@
 import { z } from "zod";
 import type { Entorno, EntradaBitacora } from "@/application/puertos.ts";
 import { CODIGO_ERROR } from "@/config/constants/errors.constants.ts";
+import { ESTADO_LECTURA } from "@/config/constants/io.constants.ts";
 import { PATRON_CASO, PATRON_SESION } from "@/config/constants/patterns.constants.ts";
 import { PREFIJO_HERRAMIENTA, SESION_POR_DEFECTO } from "@/config/constants/tools.constants.ts";
 import { exito, type Fallo, fallo, type Resultado } from "@/domain/resultado.ts";
@@ -98,7 +99,9 @@ export function defineTool<A extends z.ZodRawShape, D>(
     const caso = casoValidoDe(crudos);
     if (caso === undefined) return { resultado };
     const resolucion = await entorno.casos.resolver(caso);
-    return resolucion.estado === "ok" ? { resultado, caso, casoResuelto: caso } : { resultado, caso };
+    return resolucion.estado === ESTADO_LECTURA.OK
+      ? { resultado, caso, casoResuelto: caso }
+      : { resultado, caso };
   }
 
   function responder(resultado: Resultado<D>): Respuesta {

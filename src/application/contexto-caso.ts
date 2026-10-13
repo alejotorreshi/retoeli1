@@ -1,6 +1,7 @@
 import type { Entorno } from "@/application/puertos.ts";
 import { CODIGO_ERROR } from "@/config/constants/errors.constants.ts";
 import { TIPO_PLANTILLA } from "@/config/constants/forms.constants.ts";
+import { ESTADO_LECTURA } from "@/config/constants/io.constants.ts";
 import { PATRON_CASO } from "@/config/constants/patterns.constants.ts";
 import { construirIndiceGlosario, type IndiceGlosario, type Maestro } from "@/domain/mapeo.ts";
 import type { Reglas } from "@/domain/reglas.ts";
@@ -31,16 +32,16 @@ export async function cargarSolicitudCaso(caso: string, entorno: Entorno): Promi
   if (!PATRON_CASO.test(caso)) return fallo(CODIGO_ERROR.CASO_INVALIDO);
 
   const resolucion = await entorno.casos.resolver(caso);
-  if (resolucion.estado === "invalido") return fallo(CODIGO_ERROR.CASO_INVALIDO);
-  if (resolucion.estado === "no_encontrado") return casoNoEncontrado(entorno);
+  if (resolucion.estado === ESTADO_LECTURA.INVALIDO) return fallo(CODIGO_ERROR.CASO_INVALIDO);
+  if (resolucion.estado === ESTADO_LECTURA.NO_ENCONTRADO) return casoNoEncontrado(entorno);
   const directorio = resolucion.directorio;
 
   const solicitud = await entorno.fixtures.leerSolicitud(directorio);
-  if (solicitud.estado === "no_encontrado") return casoNoEncontrado(entorno);
-  if (solicitud.estado === "invalido") return fallo(CODIGO_ERROR.DATOS_INVALIDOS);
+  if (solicitud.estado === ESTADO_LECTURA.NO_ENCONTRADO) return casoNoEncontrado(entorno);
+  if (solicitud.estado === ESTADO_LECTURA.INVALIDO) return fallo(CODIGO_ERROR.DATOS_INVALIDOS);
 
   const soportes = await entorno.fixtures.leerSoportesExigidos(directorio);
-  if (soportes.estado !== "ok") return fallo(CODIGO_ERROR.DATOS_INVALIDOS);
+  if (soportes.estado !== ESTADO_LECTURA.OK) return fallo(CODIGO_ERROR.DATOS_INVALIDOS);
 
   const { pais, cliente, formato } = solicitud.valor;
   const parcial = { pais, cliente, formato, soportes: soportes.valor };
@@ -53,7 +54,7 @@ export async function cargarSolicitudCaso(caso: string, entorno: Entorno): Promi
   if (tipo === null) return fallo(CODIGO_ERROR.PLANTILLA_INVALIDA, { parcial });
 
   const plantilla = await entorno.fixtures.leerPlantilla(directorio, tipo);
-  if (plantilla.estado !== "ok") return fallo(CODIGO_ERROR.PLANTILLA_INVALIDA, { parcial });
+  if (plantilla.estado !== ESTADO_LECTURA.OK) return fallo(CODIGO_ERROR.PLANTILLA_INVALIDA, { parcial });
 
   return exito({
     caso,
@@ -77,10 +78,10 @@ export async function completarContextoCaso(
   if (!reglas.ok) return reglas;
 
   const maestro = await entorno.maestro();
-  if (maestro.estado !== "ok") return fallo(CODIGO_ERROR.DATOS_INVALIDOS);
+  if (maestro.estado !== ESTADO_LECTURA.OK) return fallo(CODIGO_ERROR.DATOS_INVALIDOS);
 
   const glosario = await entorno.glosario();
-  if (glosario.estado !== "ok") return fallo(CODIGO_ERROR.DATOS_INVALIDOS);
+  if (glosario.estado !== ESTADO_LECTURA.OK) return fallo(CODIGO_ERROR.DATOS_INVALIDOS);
 
   const indice = construirIndiceGlosario(glosario.valor);
   if (!indice.ok) return indice;

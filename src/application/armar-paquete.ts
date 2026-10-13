@@ -2,6 +2,7 @@ import { type ContextoCaso, cargarContextoCaso } from "@/application/contexto-ca
 import { mapeoCanonico } from "@/application/mapear-campos.ts";
 import type { ArchivoFormulario, Entorno } from "@/application/puertos.ts";
 import { CODIGO_ERROR } from "@/config/constants/errors.constants.ts";
+import { ESTADO_LECTURA, ORIGEN_COPIA } from "@/config/constants/io.constants.ts";
 import { construirDatosBorrador } from "@/domain/borrador.ts";
 import {
   type CampoPorConfirmar,
@@ -46,9 +47,9 @@ export async function evaluarEstadoPaquete(
   const canonico = mapeoCanonico(contexto);
   if (!canonico.ok) return canonico;
   const indice = await entorno.soportes.indice();
-  if (indice.estado !== "ok") return fallo(CODIGO_ERROR.DATOS_INVALIDOS);
+  if (indice.estado !== ESTADO_LECTURA.OK) return fallo(CODIGO_ERROR.DATOS_INVALIDOS);
   const presentes = await entorno.soportes.presentes();
-  if (presentes.estado !== "ok") return fallo(CODIGO_ERROR.DATOS_INVALIDOS);
+  if (presentes.estado !== ESTADO_LECTURA.OK) return fallo(CODIGO_ERROR.DATOS_INVALIDOS);
   const hoy = entorno.reloj.hoy();
   const soportes = evaluarSoportes(
     contexto.soportesExigidos,
@@ -93,12 +94,12 @@ async function copiarContenido(
   soportes: readonly SoporteEvaluado[],
   entorno: Entorno,
 ): Promise<readonly string[]> {
-  const copias = [await entorno.salida.copiar(caso, { tipo: "formulario", archivo: formulario })];
+  const copias = [await entorno.salida.copiar(caso, { tipo: ORIGEN_COPIA.FORMULARIO, archivo: formulario })];
   const archivos = new Set(
     soportes.flatMap((soporte) => (soporte.archivo === null ? [] : [soporte.archivo])),
   );
   for (const archivo of archivos)
-    copias.push(await entorno.salida.copiar(caso, { tipo: "soporte", archivo }));
+    copias.push(await entorno.salida.copiar(caso, { tipo: ORIGEN_COPIA.SOPORTE, archivo }));
   return copias;
 }
 

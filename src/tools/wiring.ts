@@ -2,6 +2,7 @@ import type { Entorno, Lectura, OrigenCopia, Registrar, Reloj } from "@/applicat
 import { CODIGO_ERROR } from "@/config/constants/errors.constants.ts";
 import { ARCHIVOS_CASO, ARCHIVOS_SALIDA } from "@/config/constants/files.constants.ts";
 import { TIPO_PLANTILLA } from "@/config/constants/forms.constants.ts";
+import { ESTADO_LECTURA, ORIGEN_COPIA } from "@/config/constants/io.constants.ts";
 import { ZONA_HORARIA_POR_DEFECTO } from "@/config/constants/runtime.constants.ts";
 import { readToolEnv, type ToolEnv } from "@/config/env.ts";
 import { exito, fallo, type Resultado } from "@/domain/resultado.ts";
@@ -60,18 +61,18 @@ async function leerPlantilla(directorioCaso: string, tipo: TipoPlantilla): Promi
   const ruta = rutaEnCaso(directorioCaso, archivo);
   if (tipo === TIPO_PLANTILLA.CELDAS) {
     const lectura = await leerJsonValidado(ruta, esquemaPlantillaCeldas);
-    return lectura.estado === "ok"
-      ? { estado: "ok", valor: { tipo, archivo, campos: lectura.valor } }
+    return lectura.estado === ESTADO_LECTURA.OK
+      ? { estado: ESTADO_LECTURA.OK, valor: { tipo, archivo, campos: lectura.valor } }
       : lectura;
   }
   const lectura = await leerJsonValidado(ruta, esquemaPlantillaCampos);
-  return lectura.estado === "ok"
-    ? { estado: "ok", valor: { tipo, archivo, campos: lectura.valor } }
+  return lectura.estado === ESTADO_LECTURA.OK
+    ? { estado: ESTADO_LECTURA.OK, valor: { tipo, archivo, campos: lectura.valor } }
     : lectura;
 }
 
 function copiar(raiz: string, caso: string, origen: OrigenCopia): Promise<string> {
-  if (origen.tipo === "soporte") {
+  if (origen.tipo === ORIGEN_COPIA.SOPORTE) {
     return copiarAlPaquete(raiz, caso, rutaEnCaso(directorioSoportes(raiz), origen.archivo), origen.archivo);
   }
   const nombre = ARCHIVOS_SALIDA[origen.archivo];

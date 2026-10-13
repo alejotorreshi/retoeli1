@@ -1,3 +1,4 @@
+import type { ESTADO_LECTURA, ORIGEN_COPIA } from "@/config/constants/io.constants.ts";
 import type { SoporteIndice } from "@/domain/checklist.ts";
 import type { CodigoError } from "@/domain/errores.ts";
 import type { FilaCelda, FilaFormulario } from "@/domain/formulario.ts";
@@ -6,15 +7,15 @@ import type { ClavePlantilla, Reglas } from "@/domain/reglas.ts";
 import type { Resultado } from "@/domain/resultado.ts";
 import type { FechaISO, Plantilla, Solicitud, TipoPlantilla } from "@/domain/tipos.ts";
 
-export type Lectura<T> =
-  | { readonly estado: "ok"; readonly valor: T }
-  | { readonly estado: "no_encontrado" }
-  | { readonly estado: "invalido" };
+export type LecturaFallida =
+  | { readonly estado: typeof ESTADO_LECTURA.NO_ENCONTRADO }
+  | { readonly estado: typeof ESTADO_LECTURA.INVALIDO };
+
+export type Lectura<T> = { readonly estado: typeof ESTADO_LECTURA.OK; readonly valor: T } | LecturaFallida;
 
 export type ResolucionCaso =
-  | { readonly estado: "ok"; readonly directorio: string }
-  | { readonly estado: "no_encontrado" }
-  | { readonly estado: "invalido" };
+  | { readonly estado: typeof ESTADO_LECTURA.OK; readonly directorio: string }
+  | LecturaFallida;
 
 export type CasosDisponibles = {
   resolver(caso: string): Promise<ResolucionCaso>;
@@ -52,8 +53,8 @@ export type ArchivoBinario = "formularioXlsx" | "formularioPdf";
 export type ArchivoFormulario = "formularioXlsx" | "formularioPdf" | "valoresPortal";
 
 export type OrigenCopia =
-  | { readonly tipo: "formulario"; readonly archivo: ArchivoFormulario }
-  | { readonly tipo: "soporte"; readonly archivo: string };
+  | { readonly tipo: typeof ORIGEN_COPIA.FORMULARIO; readonly archivo: ArchivoFormulario }
+  | { readonly tipo: typeof ORIGEN_COPIA.SOPORTE; readonly archivo: string };
 
 export type SalidaCaso = {
   escribir(caso: string, archivo: ArchivoSalida, contenido: string): Promise<string>;
