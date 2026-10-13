@@ -1,8 +1,6 @@
-import { CODIGO_ERROR } from "@/config/constants/errors.constants.ts";
 import { VARIABLES_NOTA_DEL_MAESTRO } from "@/config/constants/maestro.constants.ts";
 import {
   APLICA_NOTA,
-  CLAVES_PROHIBIDAS,
   ESTADO_CAMPO,
   NOMBRE_TEXTO_REGLA,
   REGLA_MAPEO,
@@ -10,24 +8,13 @@ import {
   TIPO_HOJA_MAESTRO,
   VARIABLE_NOTA,
 } from "@/config/constants/mapping.constants.ts";
-import {
-  PATRON_ESPACIO,
-  PATRON_SEGMENTO_RUTA,
-  PATRON_TEXTO_NO_VACIO,
-} from "@/config/constants/patterns.constants.ts";
+import { PATRON_ESPACIO } from "@/config/constants/patterns.constants.ts";
 import { TEXTO_COMUN, TEXTO_MAPEO } from "@/config/strings.ts";
+import { leerHoja, leerRuta, segmentoValido } from "@/domain/maestro.ts";
 import { renderizarTextoPlano } from "@/domain/motor-plantillas.ts";
-import { aTexto, normalizarEtiqueta } from "@/domain/normalizar.ts";
-import { exito, fallo } from "@/domain/resultado.ts";
-import type { Maestro } from "@/domain/types/maestro.type.ts";
-import type {
-  CampoMapeado,
-  ConteoEstados,
-  EntradaMapeo,
-  Glosario,
-  HojaMaestro,
-  IndiceGlosario,
-} from "@/domain/types/mapeo.type.ts";
+import { normalizarEtiqueta } from "@/domain/normalizar.ts";
+import { exito } from "@/domain/resultado.ts";
+import type { CampoMapeado, ConteoEstados, EntradaMapeo, IndiceGlosario } from "@/domain/types/mapeo.type.ts";
 import type {
   EscalaConfianza,
   EstadoCampo,
@@ -52,62 +39,6 @@ type ContextoMapeo = {
   readonly extranjero: boolean;
   readonly identificador: string | null;
 };
-
-const AUSENTE: HojaMaestro = { tipo: TIPO_HOJA_MAESTRO.AUSENTE };
-const NO_TEXTUAL: HojaMaestro = { tipo: TIPO_HOJA_MAESTRO.NO_TEXTUAL };
-
-function agregarSinColision(mapa: Map<string, string>, clave: string, ruta: string): boolean {
-  const previa = mapa.get(clave);
-  if (previa !== undefined && previa !== ruta) return false;
-  mapa.set(clave, ruta);
-  return true;
-}
-
-export function construirIndiceGlosario(glosario: Glosario): Resultado<IndiceGlosario> {
-  const exacto = new Map<string, string>();
-  const normalizado = new Map<string, string>();
-  for (const [etiqueta, ruta] of Object.entries(glosario)) {
-    const sinColision =
-      agregarSinColision(exacto, etiqueta.normalize("NFC"), ruta) &&
-      agregarSinColision(normalizado, normalizarEtiqueta(etiqueta), ruta);
-    if (!sinColision) return fallo(CODIGO_ERROR.DATOS_INVALIDOS);
-  }
-  return exito({ exacto, normalizado });
-}
-
-function segmentoValido(segmento: string): boolean {
-  return PATRON_SEGMENTO_RUTA.test(segmento) && !CLAVES_PROHIBIDAS.has(segmento);
-}
-
-function valorEnRuta(maestro: Maestro, ruta: string): unknown {
-  let actual: unknown = maestro;
-  for (const segmento of ruta.split(".")) {
-    if (!segmentoValido(segmento)) return undefined;
-    if (typeof actual !== "object" || actual === null || Array.isArray(actual)) return undefined;
-    const descriptor = Object.getOwnPropertyDescriptor(actual, segmento);
-    if (descriptor === undefined || !("value" in descriptor)) return undefined;
-    actual = descriptor.value;
-  }
-  return actual;
-}
-
-function hojaDe(valor: unknown): HojaMaestro {
-  if (typeof valor === "number") return { tipo: TIPO_HOJA_MAESTRO.TEXTO, valor: aTexto(valor) };
-  if (typeof valor === "string")
-    return PATRON_TEXTO_NO_VACIO.test(valor) ? { tipo: TIPO_HOJA_MAESTRO.TEXTO, valor } : AUSENTE;
-  if (typeof valor === "boolean") return NO_TEXTUAL;
-  if (typeof valor === "object" && valor !== null && Object.keys(valor).length > 0) return NO_TEXTUAL;
-  return AUSENTE;
-}
-
-export function leerHoja(maestro: Maestro, ruta: string): HojaMaestro {
-  return hojaDe(valorEnRuta(maestro, ruta));
-}
-
-export function leerRuta(maestro: Maestro, ruta: string): string | null {
-  const hoja = leerHoja(maestro, ruta);
-  return hoja.tipo === TIPO_HOJA_MAESTRO.TEXTO ? hoja.valor : null;
-}
 
 function rutaCandidata(etiqueta: string, indice: IndiceGlosario): Fuente | null {
   const exacta = indice.exacto.get(etiqueta.normalize("NFC"));
@@ -279,7 +210,7 @@ function contextoDeMapeo(entrada: EntradaMapeo): ContextoMapeo {
   };
 }
 
-export function mapearCampos(entrada: EntradaMapeo): Resultado<readonly CampoMapeado[]> {
+export function mapearEtiquetas(entrada: EntradaMapeo): Resultado<readonly CampoMapeado[]> {
   const contexto = contextoDeMapeo(entrada);
   const campos: CampoMapeado[] = [];
   for (const etiqueta of entrada.etiquetas) {

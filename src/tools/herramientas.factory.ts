@@ -1,7 +1,7 @@
 import { armarPaquete } from "@/application/use-cases/armar-paquete.use-case.ts";
 import { generarFormulario } from "@/application/use-cases/generar-formulario.use-case.ts";
 import { leerSolicitud } from "@/application/use-cases/leer-solicitud.use-case.ts";
-import { mapearCamposCaso } from "@/application/use-cases/mapear-campos.use-case.ts";
+import { mapearCampos } from "@/application/use-cases/mapear-campos.use-case.ts";
 import { simularEnvio } from "@/application/use-cases/simular-envio.use-case.ts";
 import { HERRAMIENTA } from "@/config/constants/tools.constants.ts";
 import { DESCRIPCION_HERRAMIENTA, RESUMEN_HERRAMIENTA } from "@/config/strings.ts";
@@ -40,7 +40,7 @@ export function crearHerramientas(opciones: OpcionesEntorno = {}) {
       nombre: HERRAMIENTA.MAPEAR_CAMPOS,
       description: DESCRIPCION_HERRAMIENTA[HERRAMIENTA.MAPEAR_CAMPOS],
       args: argsMapearCampos,
-      ejecutar: mapearCamposCaso,
+      ejecutar: mapearCampos,
       presentar: (datos) => datos,
       resumir: ({ caso, conteo }) => RESUMEN_HERRAMIENTA.mapeo(caso, conteo),
     },

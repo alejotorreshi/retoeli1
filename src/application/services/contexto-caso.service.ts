@@ -4,7 +4,7 @@ import { CODIGO_ERROR } from "@/config/constants/errors.constants.ts";
 import { TIPO_PLANTILLA } from "@/config/constants/forms.constants.ts";
 import { ESTADO_LECTURA } from "@/config/constants/io.constants.ts";
 import { PATRON_CASO } from "@/config/constants/patterns.constants.ts";
-import { construirIndiceGlosario } from "@/domain/mapeo.ts";
+import { construirIndiceGlosario } from "@/domain/glosario.ts";
 import { exito, fallo } from "@/domain/resultado.ts";
 import { elegirPlantilla } from "@/domain/solicitud.ts";
 import type { Fallo, Resultado } from "@/domain/types/resultado.type.ts";

@@ -62,6 +62,6 @@ async function mapearBajoCandado(args: ArgsMapearCampos, entorno: Entorno): Prom
   });
 }
 
-export function mapearCamposCaso(args: ArgsMapearCampos, entorno: Entorno): Promise<Resultado<DatosMapeo>> {
+export function mapearCampos(args: ArgsMapearCampos, entorno: Entorno): Promise<Resultado<DatosMapeo>> {
   return entorno.candado(args.caso, () => mapearBajoCandado(args, entorno));
 }

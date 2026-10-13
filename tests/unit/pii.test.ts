@@ -1,6 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import { VARIABLES_NOTA_PERMITIDAS } from "@/config/constants/mapping.constants.ts";
-import { construirIndiceGlosario, mapearCampos } from "@/domain/mapeo.ts";
+import { construirIndiceGlosario } from "@/domain/glosario.ts";
+import { mapearEtiquetas } from "@/domain/mapeo.ts";
 import { enmascarar, POLITICA_PII, presentarCampo } from "@/domain/pii.ts";
 import type { Maestro } from "@/domain/types/maestro.type.ts";
 import type { CampoMapeado, Glosario } from "@/domain/types/mapeo.type.ts";
@@ -141,7 +142,7 @@ describe("presentarCampo (MAP-05)", () => {
     for (const [caso, archivo] of casos) {
       const solicitud = await leerJson<{ pais: string }>(new URL(`casos/${caso}/solicitud.json`, FIXTURES));
       const plantilla = await leerJson<{ etiqueta: string }[]>(new URL(`casos/${caso}/${archivo}`, FIXTURES));
-      const mapeo = mapearCampos({
+      const mapeo = mapearEtiquetas({
         etiquetas: plantilla.map((item) => item.etiqueta),
         pais: solicitud.pais,
         indice: indice.data,

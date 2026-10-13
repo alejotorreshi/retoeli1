@@ -1,6 +1,8 @@
 import { describe, expect, test } from "bun:test";
 import { TEXTO_MAPEO } from "@/config/strings.ts";
-import { construirIndiceGlosario, contarEstados, leerHoja, leerRuta, mapearCampos } from "@/domain/mapeo.ts";
+import { construirIndiceGlosario } from "@/domain/glosario.ts";
+import { leerHoja, leerRuta } from "@/domain/maestro.ts";
+import { contarEstados, mapearEtiquetas } from "@/domain/mapeo.ts";
 import type { Maestro } from "@/domain/types/maestro.type.ts";
 import type { CampoMapeado, EntradaMapeo, Glosario, IndiceGlosario } from "@/domain/types/mapeo.type.ts";
 import type { Reglas } from "@/domain/types/reglas.type.ts";
@@ -44,7 +46,7 @@ function entrada(
 }
 
 function mapear(datos: EntradaMapeo): readonly CampoMapeado[] {
-  const resultado = mapearCampos(datos);
+  const resultado = mapearEtiquetas(datos);
   if (!resultado.ok) throw new Error(resultado.error);
   return resultado.data;
 }
@@ -445,7 +447,7 @@ describe("notas de contexto como datos (D-36)", () => {
       ...reglas,
       notas_contexto: [{ ruta: "pais", aplica: "siempre", texto: "NIT {{nit}}" }],
     };
-    const resultado = mapearCampos(entrada(["País"], "EC", { reglas: rotas }));
+    const resultado = mapearEtiquetas(entrada(["País"], "EC", { reglas: rotas }));
     expect(resultado.ok).toBe(false);
     if (resultado.ok) return;
     expect(resultado.codigo).toBe("REGLAS_INVALIDAS");
@@ -457,6 +459,6 @@ describe("notas de contexto como datos (D-36)", () => {
       ...reglas,
       notas_contexto: [{ ruta: "pais", aplica: "siempre", texto: "Emitido en {{pais_emisor}}" }],
     };
-    expect(mapearCampos(entrada(["País"], "EC", { reglas: conEmisor })).ok).toBe(false);
+    expect(mapearEtiquetas(entrada(["País"], "EC", { reglas: conEmisor })).ok).toBe(false);
   });
 });
