@@ -9,12 +9,27 @@ export const REGLAS_MAPEO = [
 
 export type ReglaMapeo = (typeof REGLAS_MAPEO)[number];
 
-export type EstadoCampo = "lleno" | "faltante" | "requiere_confirmacion";
+export const ESTADOS_CAMPO = ["lleno", "faltante", "requiere_confirmacion"] as const;
+
+export type EstadoCampo = (typeof ESTADOS_CAMPO)[number];
 
 export const REGLAS_SIEMPRE_POR_CONFIRMAR: ReadonlySet<ReglaMapeo> = new Set([
   "regla_pais",
   "etiqueta_generica",
 ]);
+
+export const VARIABLES_NOTA_CAMPO = ["moneda", "ano", "pais", "identificador"] as const;
+
+export const VARIABLES_AVISO_SOPORTE = ["pais_emisor"] as const;
+
+export const VARIABLES_NOTA_PERMITIDAS = [...VARIABLES_NOTA_CAMPO, ...VARIABLES_AVISO_SOPORTE] as const;
+
+export type VariableNota = (typeof VARIABLES_NOTA_PERMITIDAS)[number];
+
+export const VARIABLES_NOTA_DEL_MAESTRO: readonly (readonly [VariableNota, string])[] = [
+  ["moneda", "ingresos_ultimo_ano.moneda"],
+  ["ano", "ingresos_ultimo_ano.ano"],
+];
 
 export const APLICACIONES_NOTA = ["siempre", "extranjero"] as const;
 

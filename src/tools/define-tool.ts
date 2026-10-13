@@ -3,11 +3,9 @@ import type { Entorno, EntradaBitacora } from "../application/puertos.ts";
 import { PATRON_CASO, PREFIJO_HERRAMIENTA, SESION_POR_DEFECTO } from "../config/constantes.ts";
 import { exito, type Fallo, fallo, type Resultado } from "../domain/resultado.ts";
 import { formatearIssues } from "./issues.ts";
-import { crearEntorno, type OpcionesEntorno } from "./wiring.ts";
+import { type ContextoNormalizado, crearEntorno, type OpcionesEntorno } from "./wiring.ts";
 
 export type ContextoHerramienta = { directory: string; sessionId?: string; sessionID?: string };
-
-export type ContextoNormalizado = { readonly directorio: string; readonly sesion: string };
 
 export type Herramienta<A extends z.ZodRawShape> = {
   readonly description: string;

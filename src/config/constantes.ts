@@ -89,9 +89,6 @@ export const LIMITES_XLSX = {
 
 export const HOJA_RESERVADA_XLSX = "history";
 
-export const FORMATOS = ["xlsx", "pdf", "portal"] as const;
-export const ESTADOS_CAMPO = ["lleno", "faltante", "requiere_confirmacion"] as const;
-
 export const PREFIJO_HERRAMIENTA = "proveedor_";
 export const SESION_POR_DEFECTO = "sin-sesion";
 export const SESION_DEMO = "demo";

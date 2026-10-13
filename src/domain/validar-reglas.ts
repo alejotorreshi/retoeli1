@@ -1,6 +1,5 @@
-import { VARIABLES_AVISO_SOPORTE, VARIABLES_NOTA_CAMPO } from "./pii.ts";
 import { renderizarTextoPlano } from "./plantillas.ts";
-import type { Reglas } from "./reglas.ts";
+import { type Reglas, VARIABLES_AVISO_SOPORTE, VARIABLES_NOTA_CAMPO } from "./reglas.ts";
 import { exito, type Resultado } from "./resultado.ts";
 
 type TextoDeRegla = {

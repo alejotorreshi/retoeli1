@@ -41,10 +41,11 @@ import { conCandadoCaso } from "../infra/salida/mutex.ts";
 import { renderizarPdf } from "../infra/salida/pdf/render.ts";
 import { directorioSalidaCaso, listarCasos, resolverCaso } from "../infra/salida/rutas-seguras.ts";
 import { escribirXlsx } from "../infra/salida/xlsx.ts";
-import type { ContextoNormalizado } from "./define-tool.ts";
 import { formatearIssues } from "./issues.ts";
 
 export type OpcionesEntorno = { readonly directorioConocimiento?: string };
+
+export type ContextoNormalizado = { readonly directorio: string; readonly sesion: string };
 
 export type EntornoEjecucion = {
   readonly registrar: Registrar;

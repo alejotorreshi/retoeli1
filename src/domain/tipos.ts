@@ -1,4 +1,6 @@
-export type Formato = "xlsx" | "pdf" | "portal";
+export const FORMATOS = ["xlsx", "pdf", "portal"] as const;
+
+export type Formato = (typeof FORMATOS)[number];
 
 export type FechaISO = `${number}-${number}-${number}`;
 

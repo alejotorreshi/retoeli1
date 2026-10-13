@@ -14,19 +14,6 @@ export type CampoPresentado = {
   readonly propuesta: string | null;
 };
 
-export const VARIABLES_NOTA_CAMPO = ["moneda", "ano", "pais", "identificador"] as const;
-
-export const VARIABLES_AVISO_SOPORTE = ["pais_emisor"] as const;
-
-export const VARIABLES_NOTA_PERMITIDAS = [...VARIABLES_NOTA_CAMPO, ...VARIABLES_AVISO_SOPORTE] as const;
-
-export type VariableNota = (typeof VARIABLES_NOTA_PERMITIDAS)[number];
-
-export const VARIABLES_NOTA_DEL_MAESTRO: readonly (readonly [VariableNota, string])[] = [
-  ["moneda", "ingresos_ultimo_ano.moneda"],
-  ["ano", "ingresos_ultimo_ano.ano"],
-];
-
 const PUNTO = "•";
 const LARGO_VISIBLE = 4;
 const MASCARA_MONTO = "[monto oculto]";

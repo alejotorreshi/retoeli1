@@ -6,8 +6,9 @@ import {
   type Maestro,
   mapearCampos,
 } from "../../src/domain/mapeo.ts";
-import { enmascarar, POLITICA_PII, presentarCampo, VARIABLES_NOTA_PERMITIDAS } from "../../src/domain/pii.ts";
+import { enmascarar, POLITICA_PII, presentarCampo } from "../../src/domain/pii.ts";
 import type { Reglas } from "../../src/domain/reglas.ts";
+import { VARIABLES_NOTA_PERMITIDAS } from "../../src/domain/reglas.ts";
 
 const FIXTURES = new URL("../../reto-01/fixtures/reto-01/", import.meta.url);
 

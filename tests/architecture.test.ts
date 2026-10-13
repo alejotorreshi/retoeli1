@@ -138,10 +138,55 @@ function leer(ruta: string): string {
   return readFileSync(join(RAIZ, ruta), "utf8");
 }
 
+type Grafo = ReadonlyMap<string, readonly string[]>;
+
+function dependenciasLocales(ruta: string, codigo: string): string[] {
+  return extraerImportaciones(codigo)
+    .filter((especificador) => especificador.startsWith("."))
+    .map((especificador) => posix.normalize(posix.join(posix.dirname(ruta), especificador)));
+}
+
+function grafoDeFuentes(): Grafo {
+  return new Map(listarFuentes().map((ruta) => [ruta, dependenciasLocales(ruta, leer(ruta))]));
+}
+
+function ciclosDe(grafo: Grafo): string[] {
+  const ciclos: string[] = [];
+  const visitados = new Set<string>();
+  const enCurso: string[] = [];
+  const visitar = (nodo: string): void => {
+    const posicion = enCurso.indexOf(nodo);
+    if (posicion >= 0) {
+      ciclos.push([...enCurso.slice(posicion), nodo].join(" -> "));
+      return;
+    }
+    if (visitados.has(nodo)) return;
+    enCurso.push(nodo);
+    for (const vecino of grafo.get(nodo) ?? []) visitar(vecino);
+    enCurso.pop();
+    visitados.add(nodo);
+  };
+  for (const nodo of grafo.keys()) visitar(nodo);
+  return ciclos;
+}
+
 describe("reglas de capas sobre el código real", () => {
   test("ninguna importación sale de su capa", () => {
     const violaciones = listarFuentes().flatMap((ruta) => violacionesDeCapas(ruta, leer(ruta)));
     expect(violaciones).toEqual([]);
+  });
+
+  test("no hay ciclos de importación, ni siquiera de solo tipos (IN-10)", () => {
+    expect(ciclosDe(grafoDeFuentes())).toEqual([]);
+  });
+
+  test("el detector de ciclos muerde sobre un grafo de muestra", () => {
+    const grafo = new Map([
+      ["a.ts", ["b.ts"]],
+      ["b.ts", ["a.ts"]],
+      ["c.ts", ["a.ts"]],
+    ]);
+    expect(ciclosDe(grafo)).toEqual(["a.ts -> b.ts -> a.ts"]);
   });
 
   test("src/ y demo.ts no usan APIs de shell", () => {

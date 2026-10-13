@@ -1,10 +1,6 @@
 import { z } from "zod";
-import {
-  ESTADOS_CAMPO,
-  LIMITES_ARGS,
-  LONGITUD_MAXIMA_CASO,
-  PATRON_RUTA_MAESTRO,
-} from "../config/constantes.ts";
+import { LIMITES_ARGS, LONGITUD_MAXIMA_CASO, PATRON_RUTA_MAESTRO } from "../config/constantes.ts";
+import { ESTADOS_CAMPO } from "../domain/reglas.ts";
 
 const caso = z
   .string()

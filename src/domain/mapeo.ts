@@ -1,5 +1,4 @@
 import { aTexto, normalizarEtiqueta } from "./normalizar.ts";
-import { VARIABLES_NOTA_DEL_MAESTRO, type VariableNota } from "./pii.ts";
 import { renderizarTextoPlano } from "./plantillas.ts";
 import {
   type EscalaConfianza,
@@ -7,6 +6,8 @@ import {
   REGLAS_SIEMPRE_POR_CONFIRMAR,
   type ReglaMapeo,
   type Reglas,
+  VARIABLES_NOTA_DEL_MAESTRO,
+  type VariableNota,
 } from "./reglas.ts";
 import { exito, fallo, type Resultado } from "./resultado.ts";
 
