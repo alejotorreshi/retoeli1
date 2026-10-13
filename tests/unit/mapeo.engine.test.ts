@@ -3,8 +3,9 @@ import { TEXTO_MAPEO } from "@/config/strings.ts";
 import { construirIndiceGlosario } from "@/domain/builders/glosario.builder.ts";
 import { contarEstados, mapearEtiquetas } from "@/domain/engines/mapeo.engine.ts";
 import { leerHoja, leerRuta } from "@/domain/selectors/maestro.selector.ts";
+import type { Glosario, IndiceGlosario } from "@/domain/types/glosario.type.ts";
 import type { Maestro } from "@/domain/types/maestro.type.ts";
-import type { CampoMapeado, EntradaMapeo, Glosario, IndiceGlosario } from "@/domain/types/mapeo.type.ts";
+import type { CampoMapeado, EntradaMapeo } from "@/domain/types/mapeo.type.ts";
 import type { Reglas } from "@/domain/types/reglas.type.ts";
 
 const FIXTURES = new URL("../../reto-01/fixtures/reto-01/", import.meta.url);

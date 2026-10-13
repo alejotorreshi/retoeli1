@@ -1,7 +1,6 @@
 import { CLAVES_PROHIBIDAS, TIPO_HOJA_MAESTRO } from "@/config/constants/mapping.constants.ts";
 import { PATRON_SEGMENTO_RUTA, PATRON_TEXTO_NO_VACIO } from "@/config/constants/patterns.constants.ts";
-import type { Maestro } from "@/domain/types/maestro.type.ts";
-import type { HojaMaestro } from "@/domain/types/mapeo.type.ts";
+import type { HojaMaestro, Maestro } from "@/domain/types/maestro.type.ts";
 import { aTexto } from "@/domain/utils/normalizar.util.ts";
 
 const AUSENTE: HojaMaestro = { tipo: TIPO_HOJA_MAESTRO.AUSENTE };

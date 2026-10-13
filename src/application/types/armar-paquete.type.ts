@@ -1,4 +1,5 @@
-import type { CampoPorConfirmar, SoporteEvaluado } from "@/domain/types/checklist.type.ts";
+import type { CampoPorConfirmar } from "@/domain/types/checklist.type.ts";
+import type { SoporteEvaluado } from "@/domain/types/soportes.type.ts";
 
 export type ArgsArmarPaquete = { readonly caso: string };
 

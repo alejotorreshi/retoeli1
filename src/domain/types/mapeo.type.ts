@@ -1,13 +1,6 @@
-import type { TIPO_HOJA_MAESTRO } from "@/config/constants/mapping.constants.ts";
+import type { IndiceGlosario } from "@/domain/types/glosario.type.ts";
 import type { Maestro } from "@/domain/types/maestro.type.ts";
 import type { EstadoCampo, ReglaMapeo, Reglas } from "@/domain/types/reglas.type.ts";
-
-export type Glosario = Readonly<Record<string, string>>;
-
-export type IndiceGlosario = {
-  readonly exacto: ReadonlyMap<string, string>;
-  readonly normalizado: ReadonlyMap<string, string>;
-};
 
 export type EntradaMapeo = {
   readonly etiquetas: readonly string[];
@@ -29,8 +22,3 @@ export type CampoMapeado = {
 };
 
 export type ConteoEstados = Readonly<Record<EstadoCampo, number>>;
-
-export type HojaMaestro =
-  | { readonly tipo: typeof TIPO_HOJA_MAESTRO.TEXTO; readonly valor: string }
-  | { readonly tipo: typeof TIPO_HOJA_MAESTRO.NO_TEXTUAL }
-  | { readonly tipo: typeof TIPO_HOJA_MAESTRO.AUSENTE };

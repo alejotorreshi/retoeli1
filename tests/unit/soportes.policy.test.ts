@@ -1,11 +1,11 @@
 import { beforeAll, describe, expect, test } from "bun:test";
 import { construirChecklist } from "@/domain/builders/checklist.builder.ts";
 import { evaluarSoportes } from "@/domain/policies/soportes.policy.ts";
-import type { SoporteEvaluado, SoporteIndice } from "@/domain/types/checklist.type.ts";
 import type { FechaISO } from "@/domain/types/fecha.type.ts";
 import type { CampoMapeado } from "@/domain/types/mapeo.type.ts";
 import type { ReglasSoportes } from "@/domain/types/reglas.type.ts";
 import type { Resultado } from "@/domain/types/resultado.type.ts";
+import type { SoporteEvaluado, SoporteIndice } from "@/domain/types/soportes.type.ts";
 
 const HOY: FechaISO = "2026-09-03";
 const AVISO_CO = "Emitido en CO: confirmar si el cliente lo acepta";

@@ -1,5 +1,5 @@
+import type { IndiceGlosario } from "@/domain/types/glosario.type.ts";
 import type { Maestro } from "@/domain/types/maestro.type.ts";
-import type { IndiceGlosario } from "@/domain/types/mapeo.type.ts";
 import type { PlantillaCaso } from "@/domain/types/plantilla-caso.type.ts";
 import type { Reglas } from "@/domain/types/reglas.type.ts";
 import type { Solicitud } from "@/domain/types/solicitud.type.ts";

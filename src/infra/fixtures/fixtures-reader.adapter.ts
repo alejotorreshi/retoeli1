@@ -10,9 +10,9 @@ import {
 } from "@/config/constants/files.constants.ts";
 import { ESTADO_LECTURA, LECTURA_INVALIDA, LECTURA_NO_ENCONTRADA } from "@/config/constants/io.constants.ts";
 import { PATRON_ARCHIVO_SOPORTE } from "@/config/constants/patterns.constants.ts";
-import type { SoporteIndice } from "@/domain/types/checklist.type.ts";
+import type { Glosario } from "@/domain/types/glosario.type.ts";
 import type { Maestro } from "@/domain/types/maestro.type.ts";
-import type { Glosario } from "@/domain/types/mapeo.type.ts";
+import type { SoporteIndice } from "@/domain/types/soportes.type.ts";
 import {
   glossarySchema,
   masterSchema,

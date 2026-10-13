@@ -16,7 +16,8 @@ import {
   identificadorDelPais,
 } from "@/domain/policies/identificador-tributario.policy.ts";
 import { leerHoja, leerRuta, segmentoValido } from "@/domain/selectors/maestro.selector.ts";
-import type { CampoMapeado, ConteoEstados, EntradaMapeo, IndiceGlosario } from "@/domain/types/mapeo.type.ts";
+import type { IndiceGlosario } from "@/domain/types/glosario.type.ts";
+import type { CampoMapeado, ConteoEstados, EntradaMapeo } from "@/domain/types/mapeo.type.ts";
 import type {
   EscalaConfianza,
   EstadoCampo,

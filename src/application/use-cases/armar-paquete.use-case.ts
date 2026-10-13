@@ -14,8 +14,9 @@ import { CLAVE_PLANTILLA } from "@/config/constants/knowledge.constants.ts";
 import { construirDatosBorrador } from "@/domain/builders/borrador.builder.ts";
 import { construirDatosChecklist } from "@/domain/builders/checklist.builder.ts";
 import { renderizarPlantilla, renderizarTextoPlano } from "@/domain/engines/motor-plantillas.engine.ts";
-import type { Checklist, SoporteEvaluado } from "@/domain/types/checklist.type.ts";
+import type { Checklist } from "@/domain/types/checklist.type.ts";
 import type { Resultado } from "@/domain/types/resultado.type.ts";
+import type { SoporteEvaluado } from "@/domain/types/soportes.type.ts";
 import { exito, fallo } from "@/domain/utils/resultado.util.ts";
 
 async function renderizarChecklist(

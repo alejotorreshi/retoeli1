@@ -4,9 +4,10 @@ import { TEXTO_BORRADOR, TEXTO_COMUN } from "@/config/strings.ts";
 import { seccionSi } from "@/domain/engines/motor-plantillas.engine.ts";
 import { leerRuta } from "@/domain/selectors/maestro.selector.ts";
 import type { DatosBorradorCorreo, DatosEnvioSimulado, RutaBorrador } from "@/domain/types/borrador.type.ts";
-import type { Checklist, SoporteEvaluado } from "@/domain/types/checklist.type.ts";
+import type { Checklist } from "@/domain/types/checklist.type.ts";
 import type { Maestro } from "@/domain/types/maestro.type.ts";
 import type { Solicitud } from "@/domain/types/solicitud.type.ts";
+import type { SoporteEvaluado } from "@/domain/types/soportes.type.ts";
 
 function asuntoRespuesta(solicitud: Solicitud): string {
   return `${TEXTO_BORRADOR.prefijoRespuesta}${solicitud.asunto}`;

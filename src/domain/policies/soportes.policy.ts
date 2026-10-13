@@ -6,13 +6,13 @@ import {
 } from "@/config/constants/supports.constants.ts";
 import { renderizarTextoPlano } from "@/domain/engines/motor-plantillas.engine.ts";
 import { evaluarVigencia } from "@/domain/policies/vigencias.policy.ts";
+import type { ReglasSoportes } from "@/domain/types/reglas.type.ts";
+import type { Resultado } from "@/domain/types/resultado.type.ts";
 import type {
   EntradaEvaluacionSoportes,
   SoporteEvaluado,
   SoporteIndice,
-} from "@/domain/types/checklist.type.ts";
-import type { ReglasSoportes } from "@/domain/types/reglas.type.ts";
-import type { Resultado } from "@/domain/types/resultado.type.ts";
+} from "@/domain/types/soportes.type.ts";
 import { exito } from "@/domain/utils/resultado.util.ts";
 
 function avisoEmisor(

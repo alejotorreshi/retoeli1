@@ -6,10 +6,10 @@ import type {
   Checklist,
   DatosChecklist,
   FilaSoporteChecklist,
-  SoporteEvaluado,
 } from "@/domain/types/checklist.type.ts";
 import type { FechaISO } from "@/domain/types/fecha.type.ts";
 import type { CampoMapeado } from "@/domain/types/mapeo.type.ts";
+import type { SoporteEvaluado } from "@/domain/types/soportes.type.ts";
 
 function bloqueoDe(soporte: SoporteEvaluado): readonly string[] {
   if (soporte.estado === ESTADO_SOPORTE.AUSENTE) return [TEXTO_CHECKLIST.bloqueoAusente(soporte.tipo)];

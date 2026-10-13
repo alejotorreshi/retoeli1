@@ -4,8 +4,9 @@ import { presentarCampo } from "@/domain/builders/campo-presentado.builder.ts";
 import { construirIndiceGlosario } from "@/domain/builders/glosario.builder.ts";
 import { mapearEtiquetas } from "@/domain/engines/mapeo.engine.ts";
 import { enmascarar, POLITICA_PII } from "@/domain/policies/pii.policy.ts";
+import type { Glosario } from "@/domain/types/glosario.type.ts";
 import type { Maestro } from "@/domain/types/maestro.type.ts";
-import type { CampoMapeado, Glosario } from "@/domain/types/mapeo.type.ts";
+import type { CampoMapeado } from "@/domain/types/mapeo.type.ts";
 import type { Reglas } from "@/domain/types/reglas.type.ts";
 
 const FIXTURES = new URL("../../reto-01/fixtures/reto-01/", import.meta.url);
