@@ -5,6 +5,9 @@ import { createMemorySessionStore } from "@/infra/sessions/memory-session-store.
 type SesionPrueba = { readonly id: string; readonly turnos: number };
 
 const TTL_MS = 1_000;
+const PLAZO_MS = 500;
+const PLAZO_LARGO_MS = 3 * TTL_MS;
+const CANDADO_AJENO = "candado-ajeno";
 
 type Banco = {
   readonly almacen: AlmacenSesiones<SesionPrueba>;
@@ -30,6 +33,12 @@ function crearBanco(maxSessions = 10): Banco {
       ahora += ms;
     },
   };
+}
+
+function tomar(almacen: AlmacenSesiones<SesionPrueba>, id: string, plazoMs = PLAZO_MS): string {
+  const candado = almacen.ocupar(id, plazoMs);
+  if (typeof candado !== "string" || candado === "") throw new Error("se esperaba un candado");
+  return candado;
 }
 
 describe("almacén de sesiones en memoria (D-58)", () => {
@@ -69,20 +78,24 @@ describe("almacén de sesiones en memoria (D-58)", () => {
   test("un id inactivo más que el TTL expira, se borra y da una sesión nueva", () => {
     const { almacen, avanzar } = crearBanco();
     const { sesion } = almacen.abrir(null);
-    almacen.guardar({ ...sesion, turnos: 3 });
+    const candado = tomar(almacen, sesion.id);
+    expect(almacen.guardar({ ...sesion, turnos: 3 }, candado)).toBe(true);
+    almacen.liberar(sesion.id, candado);
     avanzar(TTL_MS + 1);
     const abierta = almacen.abrir(sesion.id);
     expect(abierta.sesion.id).not.toBe(sesion.id);
     expect(abierta).toMatchObject({ nueva: true, expirada: true });
     expect(abierta.sesion.turnos).toBe(0);
-    expect(almacen.ocupar(sesion.id)).toBe(false);
+    expect(almacen.ocupar(sesion.id, PLAZO_MS)).toBeNull();
   });
 
-  test("guardar conserva la sesión y renueva su actividad", () => {
+  test("guardar con el candado conserva la sesión y renueva su actividad", () => {
     const { almacen, avanzar } = crearBanco();
     const { sesion } = almacen.abrir(null);
+    const candado = tomar(almacen, sesion.id);
     avanzar(TTL_MS - 1);
-    almacen.guardar({ ...sesion, turnos: 1 });
+    expect(almacen.guardar({ ...sesion, turnos: 1 }, candado)).toBe(true);
+    almacen.liberar(sesion.id, candado);
     avanzar(TTL_MS - 1);
     const reabierta = almacen.abrir(sesion.id);
     expect(reabierta).toMatchObject({ nueva: false, sesion: { id: sesion.id, turnos: 1 } });
@@ -92,7 +105,7 @@ describe("almacén de sesiones en memoria (D-58)", () => {
     const { almacen } = crearBanco(2);
     const primera = almacen.abrir(null).sesion;
     const segunda = almacen.abrir(null).sesion;
-    expect(almacen.ocupar(primera.id)).toBe(true);
+    tomar(almacen, primera.id);
     const tercera = almacen.abrir(null).sesion;
     expect(almacen.abrir(primera.id)).toMatchObject({ nueva: false });
     expect(almacen.abrir(segunda.id)).toMatchObject({ nueva: true, expirada: true });
@@ -109,23 +122,40 @@ describe("almacén de sesiones en memoria (D-58)", () => {
     expect(almacen.abrir(segunda.id)).toMatchObject({ nueva: true });
   });
 
-  test("ocupar da true una vez y false hasta liberar; un id desconocido no se ocupa", () => {
+  test("ocupar da un candado una vez y null hasta liberar; un id desconocido no se ocupa", () => {
     const { almacen } = crearBanco();
     const { sesion } = almacen.abrir(null);
-    expect(almacen.ocupar(sesion.id)).toBe(true);
-    expect(almacen.ocupar(sesion.id)).toBe(false);
-    almacen.liberar(sesion.id);
-    expect(almacen.ocupar(sesion.id)).toBe(true);
-    expect(almacen.ocupar("desconocida")).toBe(false);
-    almacen.liberar("desconocida");
+    const candado = tomar(almacen, sesion.id);
+    expect(almacen.ocupar(sesion.id, PLAZO_MS)).toBeNull();
+    almacen.liberar(sesion.id, candado);
+    expect(tomar(almacen, sesion.id)).not.toBe(candado);
+    expect(almacen.ocupar("desconocida", PLAZO_MS)).toBeNull();
+    almacen.liberar("desconocida", candado);
+  });
+
+  test("liberar con otro candado no suelta la sesión", () => {
+    const { almacen } = crearBanco();
+    const { sesion } = almacen.abrir(null);
+    tomar(almacen, sesion.id);
+    almacen.liberar(sesion.id, CANDADO_AJENO);
+    expect(almacen.ocupar(sesion.id, PLAZO_MS)).toBeNull();
   });
 
   test("guardar una sesión ocupada no la libera", () => {
     const { almacen } = crearBanco();
     const { sesion } = almacen.abrir(null);
-    almacen.ocupar(sesion.id);
-    almacen.guardar({ ...sesion, turnos: 1 });
-    expect(almacen.ocupar(sesion.id)).toBe(false);
+    const candado = tomar(almacen, sesion.id);
+    expect(almacen.guardar({ ...sesion, turnos: 1 }, candado)).toBe(true);
+    expect(almacen.ocupar(sesion.id, PLAZO_MS)).toBeNull();
+  });
+
+  test("guardar sin candado vigente devuelve false y no guarda nada", () => {
+    const { almacen } = crearBanco();
+    const { sesion } = almacen.abrir(null);
+    expect(almacen.guardar({ ...sesion, turnos: 1 }, CANDADO_AJENO)).toBe(false);
+    expect(almacen.guardar({ id: "sesion-99", turnos: 1 }, CANDADO_AJENO)).toBe(false);
+    expect(almacen.abrir(sesion.id).sesion).toBe(sesion);
+    expect(almacen.ocupar("sesion-99", PLAZO_MS)).toBeNull();
   });
 
   test("abrir y guardar barren las expiradas sin temporizadores", () => {
@@ -134,19 +164,82 @@ describe("almacén de sesiones en memoria (D-58)", () => {
     const otraVieja = almacen.abrir(null).sesion;
     avanzar(TTL_MS + 1);
     const nueva = almacen.abrir(null).sesion;
-    expect(almacen.ocupar(vieja.id)).toBe(false);
-    expect(almacen.ocupar(otraVieja.id)).toBe(false);
+    expect(almacen.ocupar(vieja.id, PLAZO_MS)).toBeNull();
+    expect(almacen.ocupar(otraVieja.id, PLAZO_MS)).toBeNull();
+    const activa = almacen.abrir(null).sesion;
+    const candado = tomar(almacen, activa.id, PLAZO_LARGO_MS);
     avanzar(TTL_MS + 1);
-    almacen.guardar({ id: "sesion-99", turnos: 0 });
-    expect(almacen.ocupar(nueva.id)).toBe(false);
-    expect(almacen.ocupar("sesion-99")).toBe(true);
+    expect(almacen.guardar({ ...activa, turnos: 1 }, candado)).toBe(true);
+    expect(almacen.ocupar(nueva.id, PLAZO_MS)).toBeNull();
+    expect(almacen.abrir(activa.id)).toMatchObject({ nueva: false, sesion: { turnos: 1 } });
   });
 
   test("cada almacén es independiente", () => {
     const a = crearBanco();
     const b = crearBanco();
     const { sesion } = a.almacen.abrir(null);
-    expect(b.almacen.ocupar(sesion.id)).toBe(false);
+    expect(b.almacen.ocupar(sesion.id, PLAZO_MS)).toBeNull();
     expect(b.almacen.abrir(sesion.id)).toMatchObject({ nueva: true });
+  });
+});
+
+describe("el candado de sesión es un plazo con ficha (AGT-04, WR-03)", () => {
+  test("un candado vence al pasar su plazo y se retoma con otra ficha", () => {
+    const { almacen, avanzar } = crearBanco();
+    const { sesion } = almacen.abrir(null);
+    const viejo = tomar(almacen, sesion.id);
+    avanzar(PLAZO_MS);
+    expect(almacen.ocupar(sesion.id, PLAZO_MS)).toBeNull();
+    avanzar(1);
+    expect(almacen.abrir(sesion.id)).toMatchObject({ nueva: false, expirada: false });
+    const nuevo = tomar(almacen, sesion.id);
+    expect(nuevo).not.toBe(viejo);
+  });
+
+  test("el titular vencido no puede liberar el candado del nuevo titular", () => {
+    const { almacen, avanzar } = crearBanco();
+    const { sesion } = almacen.abrir(null);
+    const viejo = tomar(almacen, sesion.id);
+    avanzar(PLAZO_MS + 1);
+    tomar(almacen, sesion.id);
+    almacen.liberar(sesion.id, viejo);
+    expect(almacen.ocupar(sesion.id, PLAZO_MS)).toBeNull();
+  });
+
+  test("el titular vencido no puede pisar la sesión; el nuevo titular sí guarda", () => {
+    const { almacen, avanzar } = crearBanco();
+    const { sesion } = almacen.abrir(null);
+    const viejo = tomar(almacen, sesion.id);
+    avanzar(PLAZO_MS + 1);
+    const nuevo = tomar(almacen, sesion.id);
+    expect(almacen.guardar({ ...sesion, turnos: 7 }, viejo)).toBe(false);
+    expect(almacen.abrir(sesion.id).sesion).toBe(sesion);
+    expect(almacen.guardar({ ...sesion, turnos: 2 }, nuevo)).toBe(true);
+    expect(almacen.abrir(sesion.id).sesion.turnos).toBe(2);
+    almacen.liberar(sesion.id, nuevo);
+    expect(tomar(almacen, sesion.id)).not.toBe(nuevo);
+  });
+
+  test("un candado vigente no se barre por TTL; uno vencido ya no protege la sesión", () => {
+    const { almacen, avanzar } = crearBanco();
+    const { sesion } = almacen.abrir(null);
+    tomar(almacen, sesion.id, PLAZO_LARGO_MS);
+    avanzar(TTL_MS + 1);
+    almacen.abrir(null);
+    expect(almacen.abrir(sesion.id)).toMatchObject({ nueva: false, expirada: false });
+    avanzar(PLAZO_LARGO_MS);
+    expect(almacen.abrir(sesion.id)).toMatchObject({ nueva: true, expirada: true });
+  });
+
+  test("un candado vencido ya no impide el desalojo por capacidad", () => {
+    const { almacen, avanzar } = crearBanco(2);
+    const primera = almacen.abrir(null).sesion;
+    tomar(almacen, primera.id);
+    const segunda = almacen.abrir(null).sesion;
+    avanzar(PLAZO_MS + 1);
+    almacen.abrir(null);
+    expect(almacen.ocupar(primera.id, PLAZO_MS)).toBeNull();
+    expect(almacen.abrir(segunda.id)).toMatchObject({ nueva: false });
+    expect(almacen.abrir(primera.id)).toMatchObject({ nueva: true, expirada: true });
   });
 });
