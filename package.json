@@ -16,7 +16,8 @@
   "dependencies": {
     "zod": "4.6.5",
     "exceljs": "4.4.0",
-    "pdf-lib": "1.17.1"
+    "pdf-lib": "1.17.1",
+    "pino": "10.3.1"
   },
   "devDependencies": {
     "typescript": "7.0.2",
