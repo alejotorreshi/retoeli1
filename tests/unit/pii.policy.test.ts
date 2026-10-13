@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { VARIABLES_NOTA_PERMITIDAS } from "@/config/constants/mapping.constants.ts";
-import { presentarCampo } from "@/domain/builders/campo-presentado.builder.ts";
+import { construirCampoPresentado } from "@/domain/builders/campo-presentado.builder.ts";
 import { construirIndiceGlosario } from "@/domain/builders/glosario.builder.ts";
 import { mapearEtiquetas } from "@/domain/engines/mapeo.engine.ts";
 import { enmascarar, POLITICA_PII } from "@/domain/policies/pii.policy.ts";
@@ -94,7 +94,7 @@ describe("enmascarar (D-06, D-07)", () => {
   });
 });
 
-describe("presentarCampo (MAP-05)", () => {
+describe("construirCampoPresentado (MAP-05)", () => {
   const lleno: CampoMapeado = {
     etiqueta: "NIT",
     ruta: "nit",
@@ -107,7 +107,7 @@ describe("presentarCampo (MAP-05)", () => {
   };
 
   test("devuelve exactamente las claves del contrato y nunca valor", () => {
-    const presentado = presentarCampo(lleno);
+    const presentado = construirCampoPresentado(lleno);
     expect(Object.keys(presentado).sort()).toEqual(
       ["confianza", "estado", "etiqueta", "nota", "propuesta", "regla", "ruta", "valor_enmascarado"].sort(),
     );
@@ -125,7 +125,7 @@ describe("presentarCampo (MAP-05)", () => {
       confianza: 0,
       valor: null,
     };
-    expect(presentarCampo(faltante).valor_enmascarado).toBeNull();
+    expect(construirCampoPresentado(faltante).valor_enmascarado).toBeNull();
   });
 
   test("en los cuatro casos reales ningún valor no público sale entero", async () => {
@@ -153,7 +153,7 @@ describe("presentarCampo (MAP-05)", () => {
       });
       if (!mapeo.ok) throw new Error(mapeo.error);
       for (const item of mapeo.data) {
-        const presentado = presentarCampo(item);
+        const presentado = construirCampoPresentado(item);
         expect(JSON.stringify(presentado)).not.toContain('"valor"');
         if (item.ruta === null || item.valor === null || PUBLICAS.includes(item.ruta)) continue;
         expect(presentado.valor_enmascarado ?? "").not.toContain(item.valor);

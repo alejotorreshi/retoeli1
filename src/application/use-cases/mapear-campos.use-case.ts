@@ -4,7 +4,7 @@ import type { ArgsMapearCampos, DatosMapeo } from "@/application/types/mapear-ca
 import type { Entorno } from "@/application/types/puertos.type.ts";
 import { CODIGO_ERROR } from "@/config/constants/errors.constants.ts";
 import { ESTADO_CAMPO } from "@/config/constants/mapping.constants.ts";
-import { presentarCampo } from "@/domain/builders/campo-presentado.builder.ts";
+import { construirCampoPresentado } from "@/domain/builders/campo-presentado.builder.ts";
 import { contarEstados } from "@/domain/engines/mapeo.engine.ts";
 import type { CampoMapeado } from "@/domain/types/mapeo.type.ts";
 import type { CampoPresentado } from "@/domain/types/pii.type.ts";
@@ -50,7 +50,7 @@ async function mapearBajoCandado(args: ArgsMapearCampos, entorno: Entorno): Prom
 
   const mapeo = await escribirMapeo(contexto.data, canonico.data, entorno);
 
-  const presentados = seleccion.data.map(presentarCampo);
+  const presentados = seleccion.data.map(construirCampoPresentado);
   return exito({
     caso,
     pais: solicitud.pais,

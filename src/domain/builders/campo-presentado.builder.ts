@@ -8,7 +8,7 @@ function valorEnmascarado(campo: CampoMapeado): string | null {
   return enmascarar(campo.ruta, campo.valor);
 }
 
-export function presentarCampo(campo: CampoMapeado): CampoPresentado {
+export function construirCampoPresentado(campo: CampoMapeado): CampoPresentado {
   return {
     etiqueta: campo.etiqueta,
     ruta: campo.ruta,

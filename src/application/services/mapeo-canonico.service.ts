@@ -3,7 +3,7 @@ import type { DocumentoMapeo } from "@/application/types/mapeo-canonico.type.ts"
 import type { Entorno } from "@/application/types/puertos.type.ts";
 import { ARCHIVOS_SALIDA } from "@/config/constants/files.constants.ts";
 import { SANGRIA_JSON } from "@/config/constants/limits.constants.ts";
-import { presentarCampo } from "@/domain/builders/campo-presentado.builder.ts";
+import { construirCampoPresentado } from "@/domain/builders/campo-presentado.builder.ts";
 import { mapearEtiquetas } from "@/domain/engines/mapeo.engine.ts";
 import type { CampoMapeado } from "@/domain/types/mapeo.type.ts";
 import type { Resultado } from "@/domain/types/resultado.type.ts";
@@ -35,7 +35,7 @@ export function escribirMapeo(
       caso: contexto.caso,
       pais: contexto.solicitud.pais,
       fecha_ejecucion: entorno.reloj.hoy(),
-      campos: canonico.map(presentarCampo),
+      campos: canonico.map(construirCampoPresentado),
     }),
   );
 }

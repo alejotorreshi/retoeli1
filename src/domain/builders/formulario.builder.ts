@@ -35,7 +35,7 @@ function emparejar<T extends Ubicable, F>(
   return exito(filas);
 }
 
-export function construirFilas(
+export function construirFormulario(
   plantilla: PlantillaCaso,
   canonico: readonly CampoMapeado[],
 ): Resultado<Formulario> {

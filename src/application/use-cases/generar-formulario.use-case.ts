@@ -12,7 +12,7 @@ import { ARCHIVOS_SALIDA } from "@/config/constants/files.constants.ts";
 import { FORMATO, TIPO_PLANTILLA } from "@/config/constants/forms.constants.ts";
 import { CLAVE_PLANTILLA } from "@/config/constants/knowledge.constants.ts";
 import { TEXTO_PORTAL } from "@/config/strings.ts";
-import { construirFilas } from "@/domain/builders/formulario.builder.ts";
+import { construirFormulario } from "@/domain/builders/formulario.builder.ts";
 import { construirDatosPortal } from "@/domain/builders/portal.builder.ts";
 import { contarEstados } from "@/domain/engines/mapeo.engine.ts";
 import { renderizarPlantilla } from "@/domain/engines/motor-plantillas.engine.ts";
@@ -32,7 +32,7 @@ async function generarXlsx(
   canonico: readonly CampoMapeado[],
   entorno: Entorno,
 ): Promise<Resultado<DatosFormulario>> {
-  const formulario = construirFilas(contexto.plantilla, canonico);
+  const formulario = construirFormulario(contexto.plantilla, canonico);
   if (!formulario.ok) return formulario;
   if (formulario.data.tipo !== TIPO_PLANTILLA.CELDAS) return fallo(CODIGO_ERROR.PLANTILLA_INVALIDA);
   const bytes = await entorno.formularios.xlsx(formulario.data.filas, entorno.reloj.hoy());
@@ -45,7 +45,7 @@ async function generarPdf(
   canonico: readonly CampoMapeado[],
   entorno: Entorno,
 ): Promise<Resultado<DatosFormulario>> {
-  const formulario = construirFilas(contexto.plantilla, canonico);
+  const formulario = construirFormulario(contexto.plantilla, canonico);
   if (!formulario.ok) return formulario;
   const entrada = { caso: contexto.caso, cliente: contexto.solicitud.cliente, filas: formulario.data.filas };
   const bytes = await entorno.formularios.pdf(entrada, entorno.reloj.hoy());
