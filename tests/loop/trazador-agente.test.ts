@@ -9,6 +9,7 @@ import {
   CODIGO_AGENTE,
   MAX_ITERACIONES_POR_DEFECTO,
   MOTIVO_FIN,
+  PRESUPUESTO_TOKENS_SESION_POR_DEFECTO,
   TIPO_EVENTO,
 } from "@/config/constants/agent.constants.ts";
 import { FECHA_DEMO } from "@/config/constants/demo.constants.ts";
@@ -110,6 +111,7 @@ function crearDependencias(fetch: FetchLike): DependenciasTurno {
     registrar: createAuditLog(proyecto.raiz, reloj),
     directorio: proyecto.raiz,
     maxIteraciones: MAX_ITERACIONES_POR_DEFECTO,
+    presupuestoTokens: PRESUPUESTO_TOKENS_SESION_POR_DEFECTO,
     nuevoId,
   };
 }

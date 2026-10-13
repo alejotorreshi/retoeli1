@@ -4,7 +4,11 @@ import type {
   ExtraTurno,
   OpcionesAgentePrueba,
 } from "@tests/helpers/types/agente-prueba.type.ts";
-import { MAX_ITERACIONES_POR_DEFECTO, TIPO_EVENTO } from "@/config/constants/agent.constants.ts";
+import {
+  MAX_ITERACIONES_POR_DEFECTO,
+  PRESUPUESTO_TOKENS_SESION_POR_DEFECTO,
+  TIPO_EVENTO,
+} from "@/config/constants/agent.constants.ts";
 import { FECHA_DEMO } from "@/config/constants/demo.constants.ts";
 import { fixedClock } from "@/infra/clock/clock.adapter.ts";
 import { createInstructionsLoader } from "@/infra/knowledge/instructions-loader.adapter.ts";
@@ -50,6 +54,7 @@ export function crearAgentePrueba(opciones: OpcionesAgentePrueba): AgentePrueba 
     reloj,
     directorio: raiz,
     maxIteraciones: MAX_ITERACIONES_POR_DEFECTO,
+    presupuestoTokens: PRESUPUESTO_TOKENS_SESION_POR_DEFECTO,
     nuevoId,
     registrar: createAuditLog(raiz, reloj),
     ...sobrescritas,

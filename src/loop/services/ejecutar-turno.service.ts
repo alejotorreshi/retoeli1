@@ -8,9 +8,12 @@ import {
 } from "@/config/constants/agent.constants.ts";
 import { DECISION_CONFIRMACION, ESTADO_COMPUERTA } from "@/config/constants/confirmacion.constants.ts";
 import { ROL_MENSAJE } from "@/config/constants/llm.constants.ts";
+import { HERRAMIENTA, PREFIJO_HERRAMIENTA } from "@/config/constants/tools.constants.ts";
 import { MENSAJE_AGENTE, TEXTO_CONTEXTO, TEXTO_SESION } from "@/config/strings.ts";
+import type { ValorDe } from "@/config/types/valor-de.type.ts";
 import { abrirTurno, casosPendientes, estadoLibre } from "@/domain/policies/compuerta.policy.ts";
 import { clasificarConfirmacion } from "@/domain/policies/confirmacion.policy.ts";
+import type { LlamadaResumida } from "@/domain/types/cierre-turno.type.ts";
 import type {
   AperturaTurno,
   AutorizacionTurno,
@@ -19,9 +22,14 @@ import type {
   EventoCompuerta,
 } from "@/domain/types/compuerta.type.ts";
 import type { DecisionConfirmacion } from "@/domain/types/confirmacion.type.ts";
-import type { Mensaje, MensajeAsistente, RespuestaLlm } from "@/llm/types/llm.type.ts";
+import type { LlamadaHerramienta, Mensaje, MensajeAsistente, RespuestaLlm } from "@/llm/types/llm.type.ts";
 import { cerrarTurnoConCompuerta } from "@/loop/services/cierre-turno.service.ts";
-import { despacharLlamada } from "@/loop/services/despacho-llamada.service.ts";
+import { casoDeLlamada, despacharLlamada } from "@/loop/services/despacho-llamada.service.ts";
+import {
+  acumularUso,
+  cierrePorPresupuesto,
+  presupuestoAgotado,
+} from "@/loop/services/presupuesto.service.ts";
 import { argumentosDeLlamada } from "@/loop/services/registro-herramientas.service.ts";
 import type { CodigoAgente, EventoAgente, EventoInicioTurno, MotivoFin } from "@/loop/types/evento.type.ts";
 import type {
@@ -29,21 +37,27 @@ import type {
   DependenciasTurno,
   EntradaTurno,
   PaquetesConocidos,
+  ResultadoLlamada,
   Sesion,
 } from "@/loop/types/turno.type.ts";
 
-type Cierre = { readonly motivo: MotivoFin; readonly texto: string; readonly razonamiento: string | null };
+type Cierre = {
+  readonly motivo: MotivoFin;
+  readonly texto: string;
+  readonly razonamiento: string | null;
+  readonly porError: boolean;
+};
 
 type Turno = {
   readonly turnoId: string;
-  readonly sesion: Sesion;
+  sesion: Sesion;
   readonly usuario: Mensaje;
   readonly pasos: Mensaje[];
   readonly signal: AbortSignal;
   readonly deps: DependenciasTurno;
   readonly arrastrados: readonly CasoPendiente[];
   readonly eventosCompuerta: EventoCompuerta[];
-  tokensUsados: number;
+  readonly llamadas: LlamadaResumida[];
   autorizacion: AutorizacionTurno;
   conocidos: PaquetesConocidos;
 };
@@ -95,7 +109,33 @@ async function* fallar(
 ): Ejecucion<Cierre> {
   const mensaje = MENSAJE_AGENTE[codigo];
   yield { tipo: TIPO_EVENTO.ERROR, turnoId: turno.turnoId, codigo, mensaje };
-  return { motivo, texto: mensaje, razonamiento: null };
+  return { motivo, texto: mensaje, razonamiento: null, porError: true };
+}
+
+function cerrarSinError(motivo: MotivoFin, texto: string, razonamiento: string | null = null): Cierre {
+  return { motivo, texto, razonamiento, porError: false };
+}
+
+function herramientaDe(nombre: string): ValorDe<typeof HERRAMIENTA> | undefined {
+  return Object.values(HERRAMIENTA).find((herramienta) => `${PREFIJO_HERRAMIENTA}${herramienta}` === nombre);
+}
+
+function resumida(llamada: LlamadaHerramienta, resultado: ResultadoLlamada): readonly LlamadaResumida[] {
+  const herramienta = herramientaDe(llamada.nombre);
+  if (herramienta === undefined) return [];
+  return [{ herramienta, caso: casoDeLlamada(llamada), ok: resultado.ok, resumen: resultado.resumen }];
+}
+
+async function* contarUso(turno: Turno, respuesta: RespuestaLlm): Ejecucion<void> {
+  turno.sesion = acumularUso(turno.sesion, respuesta.uso);
+  yield {
+    tipo: TIPO_EVENTO.USO,
+    turnoId: turno.turnoId,
+    ...respuesta.uso,
+    totalSesion: turno.sesion.tokensUsados,
+    proveedor: respuesta.proveedor,
+    modelo: respuesta.modelo,
+  };
 }
 
 async function* ejecutarPaso(turno: Turno, respuesta: RespuestaLlm): Ejecucion<readonly Mensaje[]> {
@@ -117,6 +157,7 @@ async function* ejecutarPaso(turno: Turno, respuesta: RespuestaLlm): Ejecucion<r
     });
     const { resultado, evento, paquete } = despacho;
     turno.autorizacion = despacho.autorizacion;
+    turno.llamadas.push(...resumida(llamada, resultado));
     if (evento !== null) turno.eventosCompuerta.push(evento);
     if (paquete !== null) turno.conocidos = { ...turno.conocidos, [paquete.caso]: paquete };
     yield {
@@ -144,6 +185,9 @@ async function* ejecutarPaso(turno: Turno, respuesta: RespuestaLlm): Ejecucion<r
 async function* conversar(turno: Turno, sistema: readonly Mensaje[]): Ejecucion<Cierre> {
   const { deps } = turno;
   for (let iteracion = 0; iteracion < deps.maxIteraciones; iteracion += 1) {
+    if (presupuestoAgotado(turno.sesion, deps.presupuestoTokens)) {
+      return cerrarSinError(MOTIVO_FIN.TOPE_TOKENS, cierrePorPresupuesto(turno.llamadas));
+    }
     const mensajes = [...sistema, ...turno.sesion.historial, turno.usuario, ...turno.pasos];
     const resultado = await deps.llm.enviar(mensajes, deps.herramientas.definiciones, {
       signal: turno.signal,
@@ -151,17 +195,9 @@ async function* conversar(turno: Turno, sistema: readonly Mensaje[]): Ejecucion<
     });
     if (!resultado.ok) return yield* fallar(turno, CODIGO_AGENTE_POR_ERROR_LLM[resultado.error.tipo]);
     const { respuesta } = resultado;
-    turno.tokensUsados += respuesta.uso.entrada + respuesta.uso.salida;
-    yield {
-      tipo: TIPO_EVENTO.USO,
-      turnoId: turno.turnoId,
-      ...respuesta.uso,
-      totalSesion: turno.tokensUsados,
-      proveedor: respuesta.proveedor,
-      modelo: respuesta.modelo,
-    };
+    yield* contarUso(turno, respuesta);
     if (respuesta.llamadas.length === 0) {
-      return { motivo: MOTIVO_FIN.FINAL, texto: respuesta.texto ?? "", razonamiento: respuesta.razonamiento };
+      return cerrarSinError(MOTIVO_FIN.FINAL, respuesta.texto ?? "", respuesta.razonamiento);
     }
     turno.pasos.push(...(yield* ejecutarPaso(turno, respuesta)));
   }
@@ -169,19 +205,18 @@ async function* conversar(turno: Turno, sistema: readonly Mensaje[]): Ejecucion<
 }
 
 async function* resolverTurno(turno: Turno): Ejecucion<Cierre> {
+  if (presupuestoAgotado(turno.sesion, turno.deps.presupuestoTokens)) {
+    return cerrarSinError(MOTIVO_FIN.TOPE_TOKENS, MENSAJE_AGENTE.PRESUPUESTO_AGOTADO);
+  }
   const lectura = await turno.deps.instrucciones();
   if (!lectura.ok) return yield* fallar(turno, CODIGO_AGENTE.INSTRUCCIONES_NO_DISPONIBLES);
   return yield* conversar(turno, mensajesSistema(lectura.instrucciones, turno.deps.reloj.hoy()));
 }
 
-function esFinal(cierre: Cierre): boolean {
-  return cierre.motivo === MOTIVO_FIN.FINAL;
-}
-
 function cerrarCompuerta(turno: Turno, cierre: Cierre): CierreTurnoCompuerta {
   return cerrarTurnoConCompuerta({
     turnoId: turno.turnoId,
-    texto: esFinal(cierre) ? cierre.texto : "",
+    texto: cierre.porError ? "" : cierre.texto,
     arrastrados: turno.arrastrados,
     eventos: turno.eventosCompuerta,
     conocidos: turno.conocidos,
@@ -190,7 +225,7 @@ function cerrarCompuerta(turno: Turno, cierre: Cierre): CierreTurnoCompuerta {
 }
 
 function textoGuardado(cierre: Cierre, compuerta: CierreTurnoCompuerta): string {
-  if (esFinal(cierre)) return compuerta.texto;
+  if (!cierre.porError) return compuerta.texto;
   return compuerta.texto === "" ? cierre.texto : `${cierre.texto}${SEPARADOR_PARRAFOS}${compuerta.texto}`;
 }
 
@@ -199,14 +234,13 @@ function guardarSesion(turno: Turno, cierre: Cierre, compuerta: CierreTurnoCompu
   turno.deps.sesiones.guardar({
     ...turno.sesion,
     historial: [...turno.sesion.historial, turno.usuario, ...turno.pasos, asistente],
-    tokensUsados: turno.tokensUsados,
     compuerta: compuerta.estado,
     paquetesConocidos: turno.conocidos,
   });
 }
 
 async function* emitirCierre(turno: Turno, cierre: Cierre, compuerta: CierreTurnoCompuerta): Ejecucion<void> {
-  if (esFinal(cierre) || compuerta.texto !== "") {
+  if (!cierre.porError || compuerta.texto !== "") {
     yield { tipo: TIPO_EVENTO.TEXTO, turnoId: turno.turnoId, texto: compuerta.texto };
   }
   yield* compuerta.eventosConfirmacion;
@@ -261,7 +295,7 @@ export async function* ejecutarTurno(entrada: EntradaTurno, deps: DependenciasTu
     deps,
     arrastrados: arrastradosDe(apertura),
     eventosCompuerta: [],
-    tokensUsados: sesion.tokensUsados,
+    llamadas: [],
     autorizacion: { caso: apertura.autorizado, usada: false },
     conocidos: sesion.paquetesConocidos,
   };

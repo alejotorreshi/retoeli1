@@ -61,6 +61,7 @@ function dependencias(opciones: OpcionesAgente, config: AgentEnv, apiKey: string
     registrar: createAuditLog(resolveRoot(opciones.directorio), reloj),
     directorio: opciones.directorio,
     maxIteraciones: config.maxIterations,
+    presupuestoTokens: config.sessionTokenBudget,
     nuevoId,
   };
 }

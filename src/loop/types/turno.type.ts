@@ -56,6 +56,7 @@ export type DependenciasTurno = {
   readonly registrar: Registrar;
   readonly directorio: string;
   readonly maxIteraciones: number;
+  readonly presupuestoTokens: number;
   nuevoId(): string;
 };
 

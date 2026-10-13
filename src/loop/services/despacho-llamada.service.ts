@@ -19,7 +19,7 @@ const RESUMEN_SIN_CONFIRMACION = RESUMEN_HERRAMIENTA.fallo(HERRAMIENTA.SIMULAR_E
 
 type SoporteArmado = z.output<typeof armarPaqueteSchema>["data"]["checklist"]["soportes"][number];
 
-function casoDe(llamada: LlamadaHerramienta): string | null {
+export function casoDeLlamada(llamada: LlamadaHerramienta): string | null {
   const args = argumentosConCasoSchema.safeParse(argumentosDeLlamada(llamada.argumentos));
   return args.success ? args.data.caso : null;
 }
@@ -73,7 +73,7 @@ async function despacharEnvio(
   llamada: LlamadaHerramienta,
   contexto: ContextoDespacho,
 ): Promise<ResultadoDespacho> {
-  const caso = casoDe(llamada);
+  const caso = casoDeLlamada(llamada);
   if (caso === null) return bloquearEnvio(caso, contexto);
   const evaluacion = evaluarEnvio(contexto.autorizacion, caso);
   if (!evaluacion.permitido) return bloquearEnvio(caso, contexto);
@@ -111,7 +111,7 @@ async function despacharArmado(
   llamada: LlamadaHerramienta,
   contexto: ContextoDespacho,
 ): Promise<ResultadoDespacho> {
-  const caso = casoDe(llamada);
+  const caso = casoDeLlamada(llamada);
   const resultado = await ejecutar(llamada, contexto);
   if (caso === null) return { resultado, autorizacion: contexto.autorizacion, evento: null, paquete: null };
   const paquete = paqueteArmado(caso, resultado);
