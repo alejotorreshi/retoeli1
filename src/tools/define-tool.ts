@@ -85,13 +85,17 @@ export function defineTool<A extends z.ZodRawShape, D>(
     }
   }
 
-  async function desenlazar(crudos: unknown, entorno: Entorno): Promise<Desenlace<D>> {
+  async function resolverArgs(crudos: unknown, entorno: Entorno): Promise<Resultado<D>> {
     const parseado = esquema.safeParse(crudos, { error: mensajesEs });
     if (!parseado.success) {
-      return { resultado: fallo("ARGS_INVALIDOS", { detalle: formatearIssues(parseado.error.issues) }) };
+      return fallo("ARGS_INVALIDOS", { detalle: formatearIssues(parseado.error.issues) });
     }
-    const resultado = await ejecutarProtegido(parseado.data, entorno);
-    const caso = casoValidoDe(parseado.data);
+    return ejecutarProtegido(parseado.data, entorno);
+  }
+
+  async function desenlazar(crudos: unknown, entorno: Entorno): Promise<Desenlace<D>> {
+    const resultado = await resolverArgs(crudos, entorno);
+    const caso = casoValidoDe(crudos);
     if (caso === undefined) return { resultado };
     const resolucion = await entorno.casos.resolver(caso);
     return resolucion.estado === "ok" ? { resultado, caso, casoResuelto: caso } : { resultado, caso };

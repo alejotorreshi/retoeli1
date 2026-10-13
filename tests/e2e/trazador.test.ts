@@ -386,14 +386,26 @@ describe("trazador: bitácora global y por caso", () => {
     expect(typeof delCaso[0]?.ts).toBe("string");
   });
 
-  test("una llave extra deja una línea global con ARGS_INVALIDOS, sin caso y sin log del caso", async () => {
+  test("args inválidos con un caso existente se registran también en el log del caso (RN5, IN-05)", async () => {
     const proyecto = await nuevoProyecto();
     await ejecutarCon({ caso: "co-industrias-delta", extra: 1 }, { directory: proyecto.raiz });
     const global = await logGlobal(proyecto);
+    const delCaso = await logCaso(proyecto, "co-industrias-delta");
     expect(global).toHaveLength(1);
-    expect(global[0]?.codigo).toBe("ARGS_INVALIDOS");
-    expect(global[0]?.ok).toBe(false);
-    expect("caso" in (global[0] ?? {})).toBe(false);
+    expect(global[0]).toMatchObject({ codigo: "ARGS_INVALIDOS", ok: false, caso: "co-industrias-delta" });
+    expect(delCaso).toHaveLength(1);
+    expect(delCaso[0]).toMatchObject({ herramienta: "proveedor_leer_solicitud", codigo: "ARGS_INVALIDOS" });
+  });
+
+  test("args inválidos sin un caso válido dejan solo la línea global, sin caso", async () => {
+    const proyecto = await nuevoProyecto();
+    for (const args of [{ caso: "../x", extra: 1 }, { caso: 7 }, { extra: 1 }]) {
+      await ejecutarCon(args, { directory: proyecto.raiz });
+    }
+    const global = await logGlobal(proyecto);
+    expect(global).toHaveLength(3);
+    for (const linea of global) expect(linea).toMatchObject({ codigo: "ARGS_INVALIDOS", ok: false });
+    expect(global.filter((linea) => "caso" in linea)).toEqual([]);
     expect(existsSync(join(proyecto.raiz, "out", "co-industrias-delta"))).toBe(false);
   });
 
