@@ -3,6 +3,7 @@ import { generarFormulario } from "@/application/generar-formulario.ts";
 import { leerSolicitud } from "@/application/leer-solicitud.ts";
 import { mapearCamposCaso } from "@/application/mapear-campos.ts";
 import { simularEnvio } from "@/application/simular-envio.ts";
+import { HERRAMIENTA } from "@/config/constants/tools.constants.ts";
 import {
   argsArmarPaquete,
   argsGenerarFormulario,
@@ -18,7 +19,7 @@ export type OpcionesHerramientas = OpcionesEntorno;
 export function crearHerramientas(opciones: OpcionesHerramientas = {}) {
   const leer_solicitud = defineTool(
     {
-      nombre: "leer_solicitud",
+      nombre: HERRAMIENTA.LEER_SOLICITUD,
       description:
         "Lee la solicitud de un caso y devuelve país, cliente, formato pedido, plantilla, campos en el orden de la plantilla y soportes exigidos.",
       args: argsLeerSolicitud,
@@ -32,7 +33,7 @@ export function crearHerramientas(opciones: OpcionesHerramientas = {}) {
 
   const mapear_campos = defineTool(
     {
-      nombre: "mapear_campos",
+      nombre: HERRAMIENTA.MAPEAR_CAMPOS,
       description:
         "Mapea las etiquetas de la plantilla de un caso contra el maestro y devuelve cada campo con su estado, ruta, regla, confianza y valor enmascarado.",
       args: argsMapearCampos,
@@ -46,7 +47,7 @@ export function crearHerramientas(opciones: OpcionesHerramientas = {}) {
 
   const generar_formulario = defineTool(
     {
-      nombre: "generar_formulario",
+      nombre: HERRAMIENTA.GENERAR_FORMULARIO,
       description:
         "Genera el formulario del caso en el formato pedido releyendo cada valor del maestro, y su mapeo lleva solo las etiquetas, estados y rutas que devolvió proveedor_mapear_campos.",
       args: argsGenerarFormulario,
@@ -65,7 +66,7 @@ export function crearHerramientas(opciones: OpcionesHerramientas = {}) {
 
   const armar_paquete = defineTool(
     {
-      nombre: "armar_paquete",
+      nombre: HERRAMIENTA.ARMAR_PAQUETE,
       description:
         "Arma el paquete para firma de un caso ya generado con el formulario, las copias de los soportes exigidos y el checklist, e indica si queda listo para firma y por qué.",
       args: argsArmarPaquete,
@@ -85,7 +86,7 @@ export function crearHerramientas(opciones: OpcionesHerramientas = {}) {
 
   const simular_envio = defineTool(
     {
-      nombre: "simular_envio",
+      nombre: HERRAMIENTA.SIMULAR_ENVIO,
       description:
         "Registra un envío simulado del paquete armado de un caso escribiendo solo ENVIO-SIMULADO.md con los bloqueos vigentes, sin enviar ningún correo real, y exige la confirmación explícita de la analista.",
       args: argsSimularEnvio,

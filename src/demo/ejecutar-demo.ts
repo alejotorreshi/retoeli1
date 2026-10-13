@@ -5,6 +5,7 @@ import { CODIGO_ERROR } from "@/config/constants/errors.constants.ts";
 import { ARCHIVO_PROYECTO, OUT_DIR } from "@/config/constants/files.constants.ts";
 import { ESTADO_CAMPO } from "@/config/constants/mapping.constants.ts";
 import { ESTADO_SOPORTE } from "@/config/constants/supports.constants.ts";
+import { HERRAMIENTA } from "@/config/constants/tools.constants.ts";
 import { pinExecutionDate } from "@/config/env.ts";
 import {
   armar_paquete,
@@ -156,19 +157,25 @@ async function procesarCaso(sesion: Sesion, caso: string): Promise<FilaResumen> 
   const { ctx, invocar } = sesion;
   sesion.escribir("");
   sesion.escribir(`== ${caso} ==`);
-  const leida = await invocar("leer_solicitud", leer_solicitud.execute({ caso }, ctx));
+  const leida = await invocar(HERRAMIENTA.LEER_SOLICITUD, leer_solicitud.execute({ caso }, ctx));
   if (!exitosa(leida)) return fallar(sesion, caso, leida);
-  const mapeada = await invocar("mapear_campos", mapear_campos.execute({ caso, campos: [] }, ctx));
+  const mapeada = await invocar(HERRAMIENTA.MAPEAR_CAMPOS, mapear_campos.execute({ caso, campos: [] }, ctx));
   if (!exitosa(mapeada)) return fallar(sesion, caso, mapeada);
   const mapeo = proyectarMapeo(mapeada.data);
-  const generada = await invocar("generar_formulario", generar_formulario.execute({ caso, mapeo }, ctx));
+  const generada = await invocar(
+    HERRAMIENTA.GENERAR_FORMULARIO,
+    generar_formulario.execute({ caso, mapeo }, ctx),
+  );
   if (!exitosa(generada)) return fallar(sesion, caso, generada);
   const conteo = registroDe(mapeada.data, "conteo");
   escribirFormulario(sesion, generada.data, conteo);
-  const armado = await invocar("armar_paquete", armar_paquete.execute({ caso }, ctx));
+  const armado = await invocar(HERRAMIENTA.ARMAR_PAQUETE, armar_paquete.execute({ caso }, ctx));
   if (!exitosa(armado)) return fallar(sesion, caso, armado);
   const estado = escribirPaquete(sesion, armado.data);
-  const envio = await invocar("simular_envio", simular_envio.execute({ caso, confirmado: false }, ctx));
+  const envio = await invocar(
+    HERRAMIENTA.SIMULAR_ENVIO,
+    simular_envio.execute({ caso, confirmado: false }, ctx),
+  );
   if (envio.codigo !== CODIGO_ERROR.CONFIRMACION_REQUERIDA) return fallar(sesion, caso, envio);
   sesion.escribir(`Envío: ${textoDe(envio, "error")} (no se envía nada)`);
   return {
@@ -213,7 +220,10 @@ function crearSesion(opciones: OpcionesDemo, ctx: Contexto): Sesion {
 async function correrCasos(opciones: OpcionesDemo, raiz: string): Promise<ResultadoDemo> {
   opciones.escribir(`Fecha de ejecución efectiva: ${FECHA_DEMO}`);
   const sesion = crearSesion(opciones, { directory: raiz, sessionId: SESION_DEMO });
-  const listado = await sesion.invocar("leer_solicitud", leer_solicitud.execute({ caso: "" }, sesion.ctx));
+  const listado = await sesion.invocar(
+    HERRAMIENTA.LEER_SOLICITUD,
+    leer_solicitud.execute({ caso: "" }, sesion.ctx),
+  );
   const casos = casosDisponibles(listado);
   if (casos.length === 0) {
     opciones.escribir(`No se pudieron listar los casos: ${textoDe(listado, "error")}`);
