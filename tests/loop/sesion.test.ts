@@ -1,16 +1,27 @@
 import { afterAll, afterEach, beforeAll, describe, expect, setSystemTime, test } from "bun:test";
+import { capturarLogs } from "@tests/helpers/bitacora.helper.ts";
 import {
   crearFetchFalso,
+  cuerpoConHerramientas,
   cuerpoConTexto,
   diferido,
   esperarPedidos,
 } from "@tests/helpers/fetch-falso.helper.ts";
 import { crearProyectoTemporal } from "@tests/helpers/proyecto-temporal.helper.ts";
-import type { MensajeWire, PedidoRegistrado } from "@tests/helpers/types/fetch-falso.type.ts";
+import type { FetchFalso, MensajeWire, PedidoRegistrado } from "@tests/helpers/types/fetch-falso.type.ts";
 import type { ProyectoTemporal } from "@tests/helpers/types/proyecto-temporal.type.ts";
-import { CODIGO_AGENTE, MOTIVO_FIN, TIPO_EVENTO } from "@/config/constants/agent.constants.ts";
+import {
+  CODIGO_AGENTE,
+  DEADLINE_TURNO_MS_POR_DEFECTO,
+  EVENTO_BITACORA,
+  MARGEN_CANDADO_SESION_MS,
+  MOTIVO_FIN,
+  TIPO_EVENTO,
+} from "@/config/constants/agent.constants.ts";
 import { FECHA_DEMO } from "@/config/constants/demo.constants.ts";
 import { PRESET_DEEPSEEK, PROVEEDOR_DEEPSEEK } from "@/config/constants/llm.constants.ts";
+import { NIVELES_LOG } from "@/config/constants/logging.constants.ts";
+import { HERRAMIENTA, PREFIJO_HERRAMIENTA } from "@/config/constants/tools.constants.ts";
 import { pinExecutionDate } from "@/config/env.ts";
 import { MENSAJE_AGENTE, TEXTO_CONTEXTO, TEXTO_ENV, TEXTO_SESION } from "@/config/strings.ts";
 import type { FetchLike } from "@/llm/types/provider.type.ts";
@@ -23,6 +34,9 @@ const MARCA_CLAVE = "Zq9X";
 const FUENTE = { LLM_API_KEY: CLAVE, LOG_LEVEL: "silent" };
 const INSTANTE_BASE = new Date("2026-09-03T15:00:00.000Z");
 const DOS_MINUTOS_MS = 2 * 60_000;
+const PLAZO_POR_DEFECTO_MS = DEADLINE_TURNO_MS_POR_DEFECTO + MARGEN_CANDADO_SESION_MS;
+const DEADLINE_CORTO_MS = 1_000;
+const CASO = "co-industrias-delta";
 
 let proyecto: ProyectoTemporal;
 let restaurarFecha: () => void;
@@ -74,6 +88,44 @@ function mensajesDe(pedido: PedidoRegistrado | undefined): readonly MensajeWire[
 
 function tipos(eventos: readonly EventoAgente[]): string[] {
   return eventos.map((evento) => evento.tipo);
+}
+
+function guionConHerramientaPendiente(...despues: readonly string[]): FetchFalso {
+  return crearFetchFalso([
+    {
+      cuerpo: cuerpoConHerramientas({
+        nombre: `${PREFIJO_HERRAMIENTA}${HERRAMIENTA.LEER_SOLICITUD}`,
+        argumentos: { caso: CASO },
+      }),
+    },
+    ...despues.map((texto) => ({ cuerpo: cuerpoConTexto(texto) })),
+  ]);
+}
+
+function contenidosDe(pedido: PedidoRegistrado | undefined): readonly string[] {
+  return mensajesDe(pedido).map((mensaje) => mensaje.content);
+}
+
+function enInstante(desplazamientoMs: number): void {
+  setSystemTime(new Date(INSTANTE_BASE.getTime() + desplazamientoMs));
+}
+
+async function avanzarHasta(
+  turno: AsyncGenerator<EventoAgente, void, undefined>,
+  tipo: EventoAgente["tipo"],
+): Promise<readonly EventoAgente[]> {
+  const vistos: EventoAgente[] = [];
+  for (;;) {
+    const paso = await turno.next();
+    if (paso.done) throw new Error(`el turno terminó antes de ${tipo}`);
+    vistos.push(paso.value);
+    if (paso.value.tipo === tipo) return vistos;
+  }
+}
+
+function esOcupada(eventos: readonly EventoAgente[]): void {
+  expect(tipos(eventos)).toEqual(["turn_start", "error", "turn_end"]);
+  expect(eventos[1]).toMatchObject({ codigo: CODIGO_AGENTE.SESION_OCUPADA });
 }
 
 describe("crearAgente compone el agente desde el entorno (LLM-01)", () => {
@@ -226,5 +278,133 @@ describe("dos turnos nunca se intercalan sobre una sesión (AGT-04)", () => {
     expect(siguiente[0]).toMatchObject({ sesionId, sesionNueva: false, sesionExpirada: false });
     expect(tipos(siguiente)).toEqual(["turn_start", "usage", "text", "turn_end"]);
     expect(pedidos).toHaveLength(1);
+  });
+});
+
+describe("un turno abandonado o vencido nunca bloquea ni pisa la sesión (AGT-04, WR-03)", () => {
+  test("un consumidor que deja de iterar sin return() bloquea la sesión solo mientras dura el plazo", async () => {
+    setSystemTime(INSTANTE_BASE);
+    const { fetch, pedidos } = crearFetchFalso([
+      { cuerpo: cuerpoConTexto("respuesta A") },
+      { cuerpo: cuerpoConTexto("respuesta B") },
+      { cuerpo: cuerpoConTexto("respuesta C") },
+    ]);
+    const agente = agenteCon(fetch);
+    const turnoA = agente.turno({ sesionId: null, mensaje: "turno A" });
+    const vistosA = await avanzarHasta(turnoA, TIPO_EVENTO.TEXTO);
+    const sesionId = sesionDe(vistosA);
+
+    esOcupada(await turnar(agente, "turno B", sesionId));
+    expect(pedidos).toHaveLength(1);
+
+    enInstante(PLAZO_POR_DEFECTO_MS + 1);
+    const turnoB = await turnar(agente, "turno B", sesionId);
+    expect(tipos(turnoB)).toEqual(["turn_start", "usage", "text", "turn_end"]);
+    expect(turnoB[0]).toMatchObject({ sesionId, sesionNueva: false, sesionExpirada: false });
+    expect(contenidosDe(pedidos[1]).slice(2)).toEqual(["turno A", "respuesta A", "turno B"]);
+
+    expect((await recoger(turnoA)).at(-1)).toMatchObject({ tipo: TIPO_EVENTO.FIN_TURNO });
+    const turnoC = await turnar(agente, "turno C", sesionId);
+    expect(turnoC.at(-1)).toMatchObject({ motivo: MOTIVO_FIN.FINAL });
+    expect(contenidosDe(pedidos[2]).slice(2)).toEqual([
+      "turno A",
+      "respuesta A",
+      "turno B",
+      "respuesta B",
+      "turno C",
+    ]);
+  });
+
+  test("el plazo del candado sigue a AGENT_TURN_DEADLINE_MS", async () => {
+    setSystemTime(INSTANTE_BASE);
+    const { fetch, pedidos } = crearFetchFalso([
+      { cuerpo: cuerpoConTexto("respuesta A") },
+      { cuerpo: cuerpoConTexto("respuesta B") },
+    ]);
+    const agente = agenteCon(fetch, { AGENT_TURN_DEADLINE_MS: String(DEADLINE_CORTO_MS) });
+    const turnoA = agente.turno({ sesionId: null, mensaje: "turno A" });
+    const sesionId = sesionDe(await avanzarHasta(turnoA, TIPO_EVENTO.TEXTO));
+
+    enInstante(DEADLINE_CORTO_MS + MARGEN_CANDADO_SESION_MS);
+    esOcupada(await turnar(agente, "turno B", sesionId));
+    expect(pedidos).toHaveLength(1);
+
+    enInstante(DEADLINE_CORTO_MS + MARGEN_CANDADO_SESION_MS + 1);
+    const turnoB = await turnar(agente, "turno B", sesionId);
+    expect(turnoB[0]).toMatchObject({ sesionId, sesionNueva: false, sesionExpirada: false });
+    expect(turnoB.at(-1)).toMatchObject({ motivo: MOTIVO_FIN.FINAL });
+    await recoger(turnoA);
+  });
+
+  test("un titular vencido que se reanuda no libera ni pisa la sesión del nuevo titular", async () => {
+    setSystemTime(INSTANTE_BASE);
+    const espera = diferido();
+    const { fetch, pedidos } = crearFetchFalso([
+      {
+        cuerpo: cuerpoConHerramientas({
+          nombre: `${PREFIJO_HERRAMIENTA}${HERRAMIENTA.LEER_SOLICITUD}`,
+          argumentos: { caso: CASO },
+        }),
+      },
+      { cuerpo: cuerpoConTexto("respuesta B"), demora: espera.promesa },
+      { cuerpo: cuerpoConTexto("respuesta A tarde") },
+      { cuerpo: cuerpoConTexto("respuesta C") },
+    ]);
+    const agente = agenteCon(fetch);
+    const turnoA = agente.turno({ sesionId: null, mensaje: "turno A" });
+    const sesionId = sesionDe(await avanzarHasta(turnoA, TIPO_EVENTO.INICIO_HERRAMIENTA));
+
+    enInstante(PLAZO_POR_DEFECTO_MS + 1);
+    const restoB = turnar(agente, "turno B", sesionId);
+    await esperarPedidos(pedidos, 2);
+    expect(contenidosDe(pedidos[1]).slice(2)).toEqual(["turno B"]);
+
+    const restoA = await recoger(turnoA);
+    expect(tipos(restoA)).toEqual(["tool_end", "usage", "text", "turn_end"]);
+    expect(restoA).toContainEqual(expect.objectContaining({ texto: "respuesta A tarde" }));
+    expect(pedidos).toHaveLength(3);
+
+    esOcupada(await turnar(agente, "turno C", sesionId));
+    expect(pedidos).toHaveLength(3);
+
+    espera.soltar();
+    expect((await restoB).at(-1)).toMatchObject({ motivo: MOTIVO_FIN.FINAL });
+
+    const turnoC = await turnar(agente, "turno C", sesionId);
+    expect(turnoC.at(-1)).toMatchObject({ motivo: MOTIVO_FIN.FINAL });
+    const historial = contenidosDe(pedidos[3]);
+    expect(historial.slice(2)).toEqual(["turno B", "respuesta B", "turno C"]);
+    expect(historial).not.toContain("turno A");
+    expect(historial).not.toContain("respuesta A tarde");
+  });
+
+  test("un titular vencido que termina después del nuevo titular no recupera su historial", async () => {
+    setSystemTime(INSTANTE_BASE);
+    const captura = capturarLogs();
+    const { fetch, pedidos } = guionConHerramientaPendiente(
+      "respuesta B",
+      "respuesta A tarde",
+      "respuesta C",
+    );
+    const creacion = crearAgente({
+      directorio: proyecto.raiz,
+      fetch,
+      fuenteEntorno: { ...FUENTE, LOG_LEVEL: NIVELES_LOG.INFO },
+      destinoLogs: captura.destino,
+    });
+    if (!creacion.ok) throw new Error(creacion.mensaje);
+    const agente = creacion.agente;
+    const turnoA = agente.turno({ sesionId: null, mensaje: "turno A" });
+    const sesionId = sesionDe(await avanzarHasta(turnoA, TIPO_EVENTO.INICIO_HERRAMIENTA));
+
+    enInstante(PLAZO_POR_DEFECTO_MS + 1);
+    expect((await turnar(agente, "turno B", sesionId)).at(-1)).toMatchObject({ motivo: MOTIVO_FIN.FINAL });
+    expect((await recoger(turnoA)).at(-1)).toMatchObject({ motivo: MOTIVO_FIN.FINAL });
+
+    const turnoC = await turnar(agente, "turno C", sesionId);
+    expect(turnoC.at(-1)).toMatchObject({ motivo: MOTIVO_FIN.FINAL });
+    expect(contenidosDe(pedidos[3]).slice(2)).toEqual(["turno B", "respuesta B", "turno C"]);
+    const fines = captura.lineas().filter((linea) => linea.msg === EVENTO_BITACORA.TURNO_FIN);
+    expect(fines.map((linea) => linea.sesionGuardada)).toEqual([true, false, true]);
   });
 });
