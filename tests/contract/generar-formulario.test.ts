@@ -205,3 +205,17 @@ describe("contrato: reprocesar limpia el paquete previo y conserva la bitácora 
     expect(respuesta.ok).toBe(true);
   });
 });
+
+describe("contrato: una plantilla que el xlsx no puede escribir se rechaza antes de borrar nada (WR-08)", () => {
+  test("una hoja llamada History da PLANTILLA_INVALIDA y conserva el formulario anterior", async () => {
+    const proyecto = await nuevoProyecto();
+    expect(JSON.parse(await generarCrudo(proyecto.raiz, CO, mapeoCo)).ok).toBe(true);
+    const rutaPlantilla = join(proyecto.casosDir, CO, "plantilla-celdas.json");
+    const plantilla: { hoja: string }[] = JSON.parse(await readFile(rutaPlantilla, "utf8"));
+    await writeFile(rutaPlantilla, JSON.stringify(plantilla.map((campo) => ({ ...campo, hoja: "History" }))));
+    const respuesta: RespuestaGenerar = JSON.parse(await generarCrudo(proyecto.raiz, CO, mapeoCo));
+    expect(respuesta.ok).toBe(false);
+    expect(respuesta.codigo).toBe("PLANTILLA_INVALIDA");
+    expect(existsSync(salida(proyecto.raiz, CO, "formulario.xlsx"))).toBe(true);
+  });
+});
