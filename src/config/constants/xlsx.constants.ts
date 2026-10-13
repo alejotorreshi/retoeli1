@@ -11,10 +11,6 @@ export const RELLENO_XLSX = {
   POR_CONFIRMAR: "FFFFEB9C",
 } as const;
 
-export const MARCAS_XLSX = {
-  notaFaltante: "Faltante: no existe en el maestro",
-} as const;
-
 export const FORMATO_CELDA_TEXTO = "@";
 
 export const LETRAS_DEL_ALFABETO = 26;

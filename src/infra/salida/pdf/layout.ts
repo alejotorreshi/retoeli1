@@ -1,7 +1,8 @@
 import type { EntradaFormularioPdf } from "@/application/puertos.ts";
 import { ESTADO_CAMPO } from "@/config/constants/mapping.constants.ts";
 import { PATRON_ESPACIOS } from "@/config/constants/patterns.constants.ts";
-import { COLOR_TRAZO, DISENO_PDF, TEXTOS_PDF } from "@/config/constants/pdf.constants.ts";
+import { COLOR_TRAZO, DISENO_PDF } from "@/config/constants/pdf.constants.ts";
+import { TEXTO_COMUN, TEXTO_PDF } from "@/config/strings.ts";
 import type { ValorDe } from "@/config/types/valor-de.type.ts";
 import type { FilaFormulario } from "@/domain/formulario.ts";
 import type { FechaISO } from "@/domain/tipos.ts";
@@ -91,25 +92,25 @@ function conMarca(valor: string, marca: string, medir: Medir): string[] {
 }
 
 function trozosDeValor(fila: FilaFormulario, medir: Medir): Trozo[] {
-  if (fila.estado === ESTADO_CAMPO.FALTANTE) return trozos([TEXTOS_PDF.faltante], FALTANTE);
+  if (fila.estado === ESTADO_CAMPO.FALTANTE) return trozos([TEXTO_PDF.faltante], FALTANTE);
   const valor = fila.valor ?? "";
   if (fila.estado === ESTADO_CAMPO.REQUIERE_CONFIRMACION) {
-    return trozos(conMarca(valor, TEXTOS_PDF.porConfirmar, medir), POR_CONFIRMAR);
+    return trozos(conMarca(valor, TEXTO_PDF.porConfirmar, medir), POR_CONFIRMAR);
   }
   return trozos(envolver(valor, ANCHO_VALOR, TEXTO, medir), TEXTO);
 }
 
 function etiquetaDe(fila: FilaFormulario): string {
-  return fila.obligatorio === true ? `${fila.etiqueta}${TEXTOS_PDF.obligatorio}` : fila.etiqueta;
+  return fila.obligatorio === true ? `${fila.etiqueta}${TEXTO_PDF.obligatorio}` : fila.etiqueta;
 }
 
 function motivoDe(fila: FilaFormulario): string | null {
   if (fila.estado === ESTADO_CAMPO.FALTANTE) {
     return fila.nota === null
-      ? TEXTOS_PDF.motivoFaltante
-      : `${TEXTOS_PDF.motivoFaltante}${TEXTOS_PDF.separadorNotas}${fila.nota}`;
+      ? TEXTO_PDF.motivoFaltante
+      : `${TEXTO_PDF.motivoFaltante}${TEXTO_COMUN.separadorNotas}${fila.nota}`;
   }
-  if (fila.estado === ESTADO_CAMPO.REQUIERE_CONFIRMACION) return fila.nota ?? TEXTOS_PDF.motivoPorConfirmar;
+  if (fila.estado === ESTADO_CAMPO.REQUIERE_CONFIRMACION) return fila.nota ?? TEXTO_PDF.motivoPorConfirmar;
   return fila.nota;
 }
 
@@ -151,10 +152,10 @@ function parrafo(lienzo: Lienzo, texto: string, estilo: Estilo, medir: Medir): v
 }
 
 function encabezado(lienzo: Lienzo, entrada: EntradaLayoutPdf, medir: Medir): void {
-  parrafo(lienzo, TEXTOS_PDF.titulo, TITULO, medir);
-  parrafo(lienzo, `${TEXTOS_PDF.caso}${entrada.caso}`, TEXTO, medir);
-  parrafo(lienzo, `${TEXTOS_PDF.cliente}${entrada.cliente}`, TEXTO, medir);
-  parrafo(lienzo, `${TEXTOS_PDF.fecha}${entrada.fecha}`, TEXTO, medir);
+  parrafo(lienzo, TEXTO_PDF.titulo, TITULO, medir);
+  parrafo(lienzo, `${TEXTO_PDF.caso}${entrada.caso}`, TEXTO, medir);
+  parrafo(lienzo, `${TEXTO_PDF.cliente}${entrada.cliente}`, TEXTO, medir);
+  parrafo(lienzo, `${TEXTO_PDF.fecha}${entrada.fecha}`, TEXTO, medir);
   avanzar(lienzo, DISENO_PDF.interlineado);
 }
 
@@ -169,12 +170,12 @@ function campos(lienzo: Lienzo, filas: readonly FilaFormulario[], medir: Medir):
 function notas(lienzo: Lienzo, filas: readonly FilaFormulario[], medir: Medir): void {
   avanzar(lienzo, DISENO_PDF.interlineado);
   reservar(lienzo, 2);
-  parrafo(lienzo, TEXTOS_PDF.notas, TITULO, medir);
+  parrafo(lienzo, TEXTO_PDF.notas, TITULO, medir);
   const lineas = filas.flatMap((fila) => {
     const motivo = motivoDe(fila);
     return motivo === null ? [] : [`${fila.etiqueta}: ${motivo}`];
   });
-  if (lineas.length === 0) parrafo(lienzo, TEXTOS_PDF.sinNotas, TEXTO, medir);
+  if (lineas.length === 0) parrafo(lienzo, TEXTO_PDF.sinNotas, TEXTO, medir);
   for (const linea of lineas) parrafo(lienzo, linea, TEXTO, medir);
 }
 

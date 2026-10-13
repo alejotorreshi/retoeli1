@@ -1,7 +1,8 @@
 import { type Cell, type Fill, Workbook, type Worksheet } from "exceljs";
 import { ESTADO_CAMPO } from "@/config/constants/mapping.constants.ts";
 import { AUTOR_DOCUMENTOS } from "@/config/constants/runtime.constants.ts";
-import { FORMATO_CELDA_TEXTO, MARCAS_XLSX, RELLENO_XLSX } from "@/config/constants/xlsx.constants.ts";
+import { FORMATO_CELDA_TEXTO, RELLENO_XLSX } from "@/config/constants/xlsx.constants.ts";
+import { TEXTO_XLSX } from "@/config/strings.ts";
 import type { FilaCelda } from "@/domain/formulario.ts";
 import type { FechaISO } from "@/domain/tipos.ts";
 
@@ -22,7 +23,7 @@ function marcarValor(celda: Cell, fila: FilaCelda): void {
   if (fila.estado === ESTADO_CAMPO.FALTANTE) {
     celda.value = null;
     celda.fill = relleno(RELLENO_XLSX.FALTANTE);
-    celda.note = MARCAS_XLSX.notaFaltante;
+    celda.note = TEXTO_XLSX.notaFaltante;
     return;
   }
   celda.value = fila.valor;

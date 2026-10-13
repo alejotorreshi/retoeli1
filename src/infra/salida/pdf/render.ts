@@ -2,8 +2,9 @@ import { PDFDocument, type PDFFont, type PDFPage, rgb, StandardFonts } from "pdf
 import type { EntradaFormularioPdf } from "@/application/puertos.ts";
 import { ESTADO_CAMPO } from "@/config/constants/mapping.constants.ts";
 import { PATRON_SEPARADORES_DE_LINEA } from "@/config/constants/patterns.constants.ts";
-import { DISENO_PDF, TEXTOS_PDF } from "@/config/constants/pdf.constants.ts";
+import { DISENO_PDF } from "@/config/constants/pdf.constants.ts";
 import { AUTOR_DOCUMENTOS } from "@/config/constants/runtime.constants.ts";
+import { TEXTO_COMUN, TEXTO_PDF } from "@/config/strings.ts";
 import type { FilaFormulario } from "@/domain/formulario.ts";
 import type { FechaISO } from "@/domain/tipos.ts";
 import { componerPdf, type LineaPdf, type Medir } from "@/infra/salida/pdf/layout.ts";
@@ -22,7 +23,7 @@ function esRepresentable(caracter: string, caracteres: ReadonlySet<number>): boo
 
 export function sanearWinAnsi(texto: string, caracteres: ReadonlySet<number>): string {
   return caracteresVisibles(texto)
-    .map((caracter) => (esRepresentable(caracter, caracteres) ? caracter : TEXTOS_PDF.reemplazo))
+    .map((caracter) => (esRepresentable(caracter, caracteres) ? caracter : TEXTO_PDF.reemplazo))
     .join("");
 }
 
@@ -32,11 +33,11 @@ function valorRepresentable(fila: FilaFormulario, caracteres: ReadonlySet<number
 }
 
 function conMotivoNoRepresentable(fila: FilaFormulario): FilaFormulario {
-  const motivo = TEXTOS_PDF.motivoNoRepresentable;
+  const motivo = TEXTO_PDF.motivoNoRepresentable;
   return {
     ...fila,
     estado: ESTADO_CAMPO.REQUIERE_CONFIRMACION,
-    nota: fila.nota === null ? motivo : `${fila.nota}${TEXTOS_PDF.separadorNotas}${motivo}`,
+    nota: fila.nota === null ? motivo : `${fila.nota}${TEXTO_COMUN.separadorNotas}${motivo}`,
   };
 }
 

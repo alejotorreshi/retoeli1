@@ -24,3 +24,31 @@ export const MENSAJE_ERROR = {
 export const TEXTO_ERROR = {
   conDetalle: (mensaje: string, detalle: string): string => `${mensaje} Detalle: ${detalle}`,
 } as const;
+
+const MOTIVO_FALTANTE = "no existe en el maestro";
+
+export const TEXTO_COMUN = {
+  separadorNotas: ". ",
+  porConfirmar: "confirmar con el cliente",
+} as const;
+
+export const TEXTO_PDF = {
+  titulo: "Formulario de registro como proveedor",
+  caso: "Caso: ",
+  cliente: "Cliente: ",
+  fecha: "Fecha de ejecución: ",
+  obligatorio: " *",
+  faltante: "[FALTANTE]",
+  porConfirmar: "[POR CONFIRMAR]",
+  notas: "Notas",
+  sinNotas: "Sin observaciones.",
+  motivoFaltante: MOTIVO_FALTANTE,
+  motivoPorConfirmar: TEXTO_COMUN.porConfirmar,
+  motivoNoRepresentable:
+    "el valor tiene caracteres que el PDF no puede mostrar y salen como ?; revisarlo contra el maestro",
+  reemplazo: "?",
+} as const;
+
+export const TEXTO_XLSX = {
+  notaFaltante: `Faltante: ${MOTIVO_FALTANTE}`,
+} as const;
