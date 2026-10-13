@@ -28,6 +28,22 @@ const BLOQUEOS_CRUDOS: Readonly<Record<string, readonly string[]>> = {
   [PA]: [],
 };
 const IDS_SNAKE = Object.keys(NOMBRE_SOPORTE).filter((tipo) => tipo.includes("_"));
+const TODOS_LOS_IDS = Object.keys(NOMBRE_SOPORTE);
+
+function formasRenderizadas(tipo: string): readonly string[] {
+  return [
+    `ausente: ${tipo}`,
+    `vencido: ${tipo} (`,
+    `| ${tipo} |`,
+    `- ${tipo}\n`,
+    `- ${tipo} (`,
+    `soporte ${tipo}`,
+  ];
+}
+
+function idsRenderizadosEn(texto: string): readonly string[] {
+  return TODOS_LOS_IDS.flatMap((tipo) => formasRenderizadas(tipo).filter((forma) => texto.includes(forma)));
+}
 
 type Respuesta = {
   readonly ok: boolean;
@@ -122,12 +138,31 @@ describe("guardián de nombres de soporte en salidas legibles (GC-2, G-01-H4c)",
     for (const tipo of IDS_SNAKE) expect(Object.hasOwn(NOMBRE_SOPORTE, tipo)).toBe(true);
   });
 
+  test("el guardián vigila también rut y parafiscales (WR-04)", () => {
+    expect(TODOS_LOS_IDS).toContain("rut");
+    expect(TODOS_LOS_IDS).toContain("parafiscales");
+  });
+
+  test("el detector muerde con ids sin guion bajo y deja pasar los nombres de archivo (WR-04)", () => {
+    expect(idsRenderizadosEn("- ausente: rut\n")).toEqual(["ausente: rut"]);
+    expect(idsRenderizadosEn("- vencido: parafiscales (2026-08-31)\n")).toEqual(["vencido: parafiscales ("]);
+    expect(idsRenderizadosEn("| rut | rut-2026.txt |")).toEqual(["| rut |"]);
+    expect(idsRenderizadosEn("Quedan pendientes estos soportes:\n- parafiscales\n")).toEqual([
+      "- parafiscales\n",
+    ]);
+    expect(idsRenderizadosEn("- Conseguir el soporte rut y agregarlo")).toEqual(["soporte rut"]);
+    expect(
+      idsRenderizadosEn("- Registro Único Tributario (rut-2026.txt)\n- paquete/parafiscales-2026-07.txt\n"),
+    ).toEqual([]);
+  });
+
   for (const caso of CASOS) {
     for (const archivo of SALIDAS_LEGIBLES) {
-      test(`${caso}: ${archivo} no contiene ningún id snake_case de soporte`, async () => {
+      test(`${caso}: ${archivo} no contiene ids de soporte, ni snake_case ni en las formas renderizadas`, async () => {
         const texto = await leerSalida(caso, archivo);
         expect(texto.length).toBeGreaterThan(0);
         expect(IDS_SNAKE.filter((tipo) => texto.includes(tipo))).toEqual([]);
+        expect(idsRenderizadosEn(texto)).toEqual([]);
       });
     }
   }
