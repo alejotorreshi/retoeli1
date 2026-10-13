@@ -6,12 +6,31 @@ import {
   SEPARADOR_PARRAFOS,
   TIPO_EVENTO,
 } from "@/config/constants/agent.constants.ts";
+import { DECISION_CONFIRMACION, ESTADO_COMPUERTA } from "@/config/constants/confirmacion.constants.ts";
 import { ROL_MENSAJE } from "@/config/constants/llm.constants.ts";
 import { MENSAJE_AGENTE, TEXTO_CONTEXTO, TEXTO_SESION } from "@/config/strings.ts";
+import { abrirTurno, casosPendientes, estadoLibre } from "@/domain/policies/compuerta.policy.ts";
+import { clasificarConfirmacion } from "@/domain/policies/confirmacion.policy.ts";
+import type {
+  AperturaTurno,
+  AutorizacionTurno,
+  CasoPendiente,
+  EstadoCompuerta,
+  EventoCompuerta,
+} from "@/domain/types/compuerta.type.ts";
+import type { DecisionConfirmacion } from "@/domain/types/confirmacion.type.ts";
 import type { Mensaje, MensajeAsistente, RespuestaLlm } from "@/llm/types/llm.type.ts";
+import { cerrarTurnoConCompuerta } from "@/loop/services/cierre-turno.service.ts";
+import { despacharLlamada } from "@/loop/services/despacho-llamada.service.ts";
 import { argumentosDeLlamada } from "@/loop/services/registro-herramientas.service.ts";
 import type { CodigoAgente, EventoAgente, EventoInicioTurno, MotivoFin } from "@/loop/types/evento.type.ts";
-import type { DependenciasTurno, EntradaTurno, Sesion } from "@/loop/types/turno.type.ts";
+import type {
+  CierreTurnoCompuerta,
+  DependenciasTurno,
+  EntradaTurno,
+  PaquetesConocidos,
+  Sesion,
+} from "@/loop/types/turno.type.ts";
 
 type Cierre = { readonly motivo: MotivoFin; readonly texto: string; readonly razonamiento: string | null };
 
@@ -22,13 +41,32 @@ type Turno = {
   readonly pasos: Mensaje[];
   readonly signal: AbortSignal;
   readonly deps: DependenciasTurno;
+  readonly arrastrados: readonly CasoPendiente[];
+  readonly eventosCompuerta: EventoCompuerta[];
   tokensUsados: number;
+  autorizacion: AutorizacionTurno;
+  conocidos: PaquetesConocidos;
 };
 
 type Ejecucion<R> = AsyncGenerator<EventoAgente, R>;
 
 export function sesionVacia(id: string): Sesion {
-  return { id, historial: [], tokensUsados: 0 };
+  return { id, historial: [], tokensUsados: 0, compuerta: estadoLibre(), paquetesConocidos: {} };
+}
+
+function arrastradosDe(apertura: AperturaTurno): readonly CasoPendiente[] {
+  const { siguiente } = apertura;
+  return apertura.preguntarCual && siguiente.tipo === ESTADO_COMPUERTA.PENDIENTE ? siguiente.casos : [];
+}
+
+function decisionDe(entrada: EntradaTurno, compuerta: EstadoCompuerta): DecisionConfirmacion {
+  const { confirmacion } = entrada;
+  if (confirmacion === undefined) {
+    return clasificarConfirmacion(entrada.mensaje, casosPendientes(compuerta));
+  }
+  return confirmacion.aprobada
+    ? { decision: DECISION_CONFIRMACION.CONFIRMA, caso: confirmacion.caso }
+    : { decision: DECISION_CONFIRMACION.RECHAZA };
 }
 
 function mensajesSistema(instrucciones: Instrucciones, fecha: string): readonly Mensaje[] {
@@ -69,10 +107,18 @@ async function* ejecutarPaso(turno: Turno, respuesta: RespuestaLlm): Ejecucion<r
       ...base,
       argumentos: argumentosDeLlamada(llamada.argumentos),
     };
-    const resultado = await turno.deps.herramientas.ejecutar(llamada, {
-      directory: turno.deps.directorio,
-      sessionId: turno.sesion.id,
+    const despacho = await despacharLlamada(llamada, {
+      registro: turno.deps.herramientas,
+      registrar: turno.deps.registrar,
+      directorio: turno.deps.directorio,
+      sesionId: turno.sesion.id,
+      autorizacion: turno.autorizacion,
+      conocidos: turno.conocidos,
     });
+    const { resultado, evento, paquete } = despacho;
+    turno.autorizacion = despacho.autorizacion;
+    if (evento !== null) turno.eventosCompuerta.push(evento);
+    if (paquete !== null) turno.conocidos = { ...turno.conocidos, [paquete.caso]: paquete };
     yield {
       tipo: TIPO_EVENTO.FIN_HERRAMIENTA,
       ...base,
@@ -115,9 +161,7 @@ async function* conversar(turno: Turno, sistema: readonly Mensaje[]): Ejecucion<
       modelo: respuesta.modelo,
     };
     if (respuesta.llamadas.length === 0) {
-      const texto = respuesta.texto ?? "";
-      yield { tipo: TIPO_EVENTO.TEXTO, turnoId: turno.turnoId, texto };
-      return { motivo: MOTIVO_FIN.FINAL, texto, razonamiento: respuesta.razonamiento };
+      return { motivo: MOTIVO_FIN.FINAL, texto: respuesta.texto ?? "", razonamiento: respuesta.razonamiento };
     }
     turno.pasos.push(...(yield* ejecutarPaso(turno, respuesta)));
   }
@@ -130,12 +174,42 @@ async function* resolverTurno(turno: Turno): Ejecucion<Cierre> {
   return yield* conversar(turno, mensajesSistema(lectura.instrucciones, turno.deps.reloj.hoy()));
 }
 
-function guardarSesion(turno: Turno, cierre: Cierre): void {
+function esFinal(cierre: Cierre): boolean {
+  return cierre.motivo === MOTIVO_FIN.FINAL;
+}
+
+function cerrarCompuerta(turno: Turno, cierre: Cierre): CierreTurnoCompuerta {
+  return cerrarTurnoConCompuerta({
+    turnoId: turno.turnoId,
+    texto: esFinal(cierre) ? cierre.texto : "",
+    arrastrados: turno.arrastrados,
+    eventos: turno.eventosCompuerta,
+    conocidos: turno.conocidos,
+    abortado: cierre.motivo === MOTIVO_FIN.ABORTADO,
+  });
+}
+
+function textoGuardado(cierre: Cierre, compuerta: CierreTurnoCompuerta): string {
+  if (esFinal(cierre)) return compuerta.texto;
+  return compuerta.texto === "" ? cierre.texto : `${cierre.texto}${SEPARADOR_PARRAFOS}${compuerta.texto}`;
+}
+
+function guardarSesion(turno: Turno, cierre: Cierre, compuerta: CierreTurnoCompuerta): void {
+  const asistente = mensajeAsistente({ ...cierre, texto: textoGuardado(cierre, compuerta) });
   turno.deps.sesiones.guardar({
     ...turno.sesion,
-    historial: [...turno.sesion.historial, turno.usuario, ...turno.pasos, mensajeAsistente(cierre)],
+    historial: [...turno.sesion.historial, turno.usuario, ...turno.pasos, asistente],
     tokensUsados: turno.tokensUsados,
+    compuerta: compuerta.estado,
+    paquetesConocidos: turno.conocidos,
   });
+}
+
+async function* emitirCierre(turno: Turno, cierre: Cierre, compuerta: CierreTurnoCompuerta): Ejecucion<void> {
+  if (esFinal(cierre) || compuerta.texto !== "") {
+    yield { tipo: TIPO_EVENTO.TEXTO, turnoId: turno.turnoId, texto: compuerta.texto };
+  }
+  yield* compuerta.eventosConfirmacion;
 }
 
 async function* rechazarOcupada(inicio: EventoInicioTurno): Ejecucion<void> {
@@ -150,14 +224,18 @@ async function* rechazarOcupada(inicio: EventoInicioTurno): Ejecucion<void> {
   };
 }
 
-async function* atender(turno: Turno, inicio: EventoInicioTurno): Ejecucion<Cierre> {
+type Desenlace = { readonly motivo: MotivoFin; readonly needsConfirmation: boolean };
+
+async function* atender(turno: Turno, inicio: EventoInicioTurno): Ejecucion<Desenlace> {
   yield inicio;
   if (inicio.sesionExpirada) {
     yield { tipo: TIPO_EVENTO.TEXTO, turnoId: turno.turnoId, texto: TEXTO_SESION.expirada };
   }
   const cierre = yield* resolverTurno(turno);
-  guardarSesion(turno, cierre);
-  return cierre;
+  const compuerta = cerrarCompuerta(turno, cierre);
+  guardarSesion(turno, cierre, compuerta);
+  yield* emitirCierre(turno, cierre, compuerta);
+  return { motivo: cierre.motivo, needsConfirmation: compuerta.needsConfirmation };
 }
 
 export async function* ejecutarTurno(entrada: EntradaTurno, deps: DependenciasTurno): Ejecucion<void> {
@@ -172,20 +250,26 @@ export async function* ejecutarTurno(entrada: EntradaTurno, deps: DependenciasTu
     sesionExpirada: abierta.expirada,
   };
   if (!deps.sesiones.ocupar(sesionId)) return yield* rechazarOcupada(inicio);
+  const { sesion } = abierta;
+  const apertura = abrirTurno(sesion.compuerta, decisionDe(entrada, sesion.compuerta));
   const turno: Turno = {
     turnoId,
-    sesion: abierta.sesion,
+    sesion,
     usuario: { rol: ROL_MENSAJE.USUARIO, contenido: entrada.mensaje },
     pasos: [],
     signal: entrada.signal ?? new AbortController().signal,
     deps,
-    tokensUsados: abierta.sesion.tokensUsados,
+    arrastrados: arrastradosDe(apertura),
+    eventosCompuerta: [],
+    tokensUsados: sesion.tokensUsados,
+    autorizacion: { caso: apertura.autorizado, usada: false },
+    conocidos: sesion.paquetesConocidos,
   };
-  let cierre: Cierre;
+  let desenlace: Desenlace;
   try {
-    cierre = yield* atender(turno, inicio);
+    desenlace = yield* atender(turno, inicio);
   } finally {
     deps.sesiones.liberar(sesionId);
   }
-  yield { tipo: TIPO_EVENTO.FIN_TURNO, turnoId, motivo: cierre.motivo, needsConfirmation: false };
+  yield { tipo: TIPO_EVENTO.FIN_TURNO, turnoId, ...desenlace };
 }

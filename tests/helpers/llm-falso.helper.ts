@@ -3,7 +3,7 @@ import type { LlmFalso, PasoLlmFalso, PedidoLlmFalso } from "@tests/helpers/type
 import { FIN_LLM, ROL_MENSAJE } from "@/config/constants/llm.constants.ts";
 import { HERRAMIENTA, PREFIJO_HERRAMIENTA } from "@/config/constants/tools.constants.ts";
 import type { ValorDe } from "@/config/types/valor-de.type.ts";
-import type { LlamadaHerramienta, Mensaje, RespuestaLlm } from "@/llm/types/llm.type.ts";
+import type { LlamadaHerramienta, Mensaje, MensajeHerramienta, RespuestaLlm } from "@/llm/types/llm.type.ts";
 
 export const PROVEEDOR_FALSO = "falso";
 export const MODELO_FALSO = "modelo-falso";
@@ -70,7 +70,8 @@ function ultimoResultadoDe(mensajes: readonly Mensaje[], nombre: string): string
     ),
   );
   const resultado = mensajes
-    .filter((mensaje) => mensaje.rol === ROL_MENSAJE.HERRAMIENTA && ids.has(mensaje.llamadaId))
+    .filter((mensaje): mensaje is MensajeHerramienta => mensaje.rol === ROL_MENSAJE.HERRAMIENTA)
+    .filter((mensaje) => ids.has(mensaje.llamadaId))
     .at(-1);
   if (resultado === undefined) throw new Error(`no hay resultado de ${nombre}`);
   return resultado.contenido;

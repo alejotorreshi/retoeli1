@@ -26,6 +26,7 @@ import {
   createInstructionsLoader,
   DEFAULT_AGENT_DIRECTORY,
 } from "@/infra/knowledge/instructions-loader.adapter.ts";
+import { createAuditLog } from "@/infra/logging/audit-log.adapter.ts";
 import { createMemorySessionStore } from "@/infra/sessions/memory-session-store.adapter.ts";
 import { createOpenAICompatibleAdapter } from "@/llm/adapters/openai-compatible.adapter.ts";
 import type { FetchLike, ProviderSlot } from "@/llm/types/provider.type.ts";
@@ -93,6 +94,7 @@ afterAll(async () => {
 
 function crearDependencias(fetch: FetchLike): DependenciasTurno {
   const nuevoId = () => crypto.randomUUID();
+  const reloj = fixedClock(FECHA_DEMO);
   return {
     llm: createOpenAICompatibleAdapter(SLOT, { fetch }),
     herramientas: crearRegistroHerramientas(proveedor),
@@ -104,7 +106,8 @@ function crearDependencias(fetch: FetchLike): DependenciasTurno {
       maxSessions: MAX_SESIONES_PRUEBA,
       now: () => Date.now(),
     }),
-    reloj: fixedClock(FECHA_DEMO),
+    reloj,
+    registrar: createAuditLog(proyecto.raiz, reloj),
     directorio: proyecto.raiz,
     maxIteraciones: MAX_ITERACIONES_POR_DEFECTO,
     nuevoId,

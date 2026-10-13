@@ -6,11 +6,13 @@ import { type AgentEnv, parseAgentEnv, readAgentEnv, readToolEnv } from "@/confi
 import { MENSAJE_AGENTE, TEXTO_AGENTE } from "@/config/strings.ts";
 import { formatearIssues } from "@/domain/utils/formatear-issues.util.ts";
 import { clockFromToolEnv, systemClock } from "@/infra/clock/clock.adapter.ts";
+import { resolveRoot } from "@/infra/fixtures/fixtures-reader.adapter.ts";
 import {
   createInstructionsLoader,
   DEFAULT_AGENT_DIRECTORY,
 } from "@/infra/knowledge/instructions-loader.adapter.ts";
 import { DEFAULT_KNOWLEDGE_DIRECTORY } from "@/infra/knowledge/rules-loader.adapter.ts";
+import { createAuditLog } from "@/infra/logging/audit-log.adapter.ts";
 import { createMemorySessionStore } from "@/infra/sessions/memory-session-store.adapter.ts";
 import { createOpenAICompatibleAdapter } from "@/llm/adapters/openai-compatible.adapter.ts";
 import { ejecutarTurno, sesionVacia } from "@/loop/services/ejecutar-turno.service.ts";
@@ -40,6 +42,7 @@ function leerConfiguracion(opciones: OpcionesAgente) {
 }
 
 function dependencias(opciones: OpcionesAgente, config: AgentEnv, apiKey: string): DependenciasTurno {
+  const reloj = relojCompartidoConHerramientas();
   return {
     llm: createOpenAICompatibleAdapter({ ...config.primary, apiKey }, { fetch: opciones.fetch }),
     herramientas: crearRegistroHerramientas(proveedor),
@@ -54,7 +57,8 @@ function dependencias(opciones: OpcionesAgente, config: AgentEnv, apiKey: string
       maxSessions: config.maxSessions,
       now: () => Date.now(),
     }),
-    reloj: relojCompartidoConHerramientas(),
+    reloj,
+    registrar: createAuditLog(resolveRoot(opciones.directorio), reloj),
     directorio: opciones.directorio,
     maxIteraciones: config.maxIterations,
     nuevoId,
