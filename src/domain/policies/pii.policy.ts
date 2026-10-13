@@ -1,9 +1,7 @@
-import { ESTADO_CAMPO } from "@/config/constants/mapping.constants.ts";
 import { PATRON_ESPACIOS } from "@/config/constants/patterns.constants.ts";
 import { LARGO_VISIBLE, RUTAS_POR_MASCARA, TIPO_MASCARA } from "@/config/constants/pii.constants.ts";
 import { TEXTO_MASCARA } from "@/config/strings.ts";
-import type { CampoMapeado } from "@/domain/types/mapeo.type.ts";
-import type { CampoPresentado, TipoMascara } from "@/domain/types/pii.type.ts";
+import type { TipoMascara } from "@/domain/types/pii.type.ts";
 
 function politica(
   entradas: readonly (readonly [TipoMascara, readonly string[]])[],
@@ -57,22 +55,4 @@ const MASCARAS: Readonly<Record<TipoMascara, (valor: string) => string>> = {
 
 export function enmascarar(ruta: string, valor: string): string {
   return MASCARAS[POLITICA_PII.get(ruta) ?? TIPO_MASCARA.OCULTO](valor);
-}
-
-function valorEnmascarado(campo: CampoMapeado): string | null {
-  if (campo.estado === ESTADO_CAMPO.FALTANTE || campo.ruta === null || campo.valor === null) return null;
-  return enmascarar(campo.ruta, campo.valor);
-}
-
-export function presentarCampo(campo: CampoMapeado): CampoPresentado {
-  return {
-    etiqueta: campo.etiqueta,
-    ruta: campo.ruta,
-    estado: campo.estado,
-    regla: campo.regla,
-    confianza: campo.confianza,
-    valor_enmascarado: valorEnmascarado(campo),
-    nota: campo.nota,
-    propuesta: campo.propuesta,
-  };
 }

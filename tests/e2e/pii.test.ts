@@ -10,7 +10,7 @@ import { celdaEn, leerCeldasXlsx } from "@tests/helpers/xlsx-leer.helper.ts";
 import { FECHA_DEMO, SESION_DEMO } from "@/config/constants/demo.constants.ts";
 import { FIXTURES_DIR, OUT_DIR } from "@/config/constants/files.constants.ts";
 import { RUTAS_BORRADOR, VARIABLES_NOTA_DEL_MAESTRO } from "@/config/constants/maestro.constants.ts";
-import { POLITICA_PII } from "@/domain/pii.ts";
+import { POLITICA_PII } from "@/domain/policies/pii.policy.ts";
 import { simular_envio } from "@/tools/proveedor.ts";
 
 const CASO_CONFIRMADO = "ec-corp-andina";
