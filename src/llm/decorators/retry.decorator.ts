@@ -25,28 +25,21 @@ async function waitUnlessAborted(ms: number, retry: RetryOptions, signal: AbortS
   return !signal.aborted;
 }
 
-async function sendWithRetries(
-  base: AdaptadorLlm,
-  retry: RetryOptions,
-  messages: readonly Mensaje[],
-  tools: readonly DefinicionHerramienta[],
-  options: OpcionesEnvio,
-): Promise<ResultadoEnvio> {
-  let result = await base.enviar(messages, tools, options);
-  for (let attempt = 0; attempt < retry.maxRetries; attempt += 1) {
-    if (result.ok || !result.error.reintentable) return result;
-    if (options.signal.aborted) return ABORTED;
-    const delay = delayFor(result.error, attempt, retry);
-    if (!(await waitUnlessAborted(delay, retry, options.signal))) return ABORTED;
-    result = await base.enviar(messages, tools, options);
-  }
-  return result;
-}
-
 export function withRetry(base: AdaptadorLlm, retry: RetryOptions): AdaptadorLlm {
-  return {
-    proveedor: base.proveedor,
-    modelo: base.modelo,
-    enviar: (messages, tools, options) => sendWithRetries(base, retry, messages, tools, options),
-  };
+  async function sendWithRetries(
+    messages: readonly Mensaje[],
+    tools: readonly DefinicionHerramienta[],
+    options: OpcionesEnvio,
+  ): Promise<ResultadoEnvio> {
+    let result = await base.enviar(messages, tools, options);
+    for (let attempt = 0; attempt < retry.maxRetries; attempt += 1) {
+      if (result.ok || !result.error.reintentable) return result;
+      if (options.signal.aborted) return ABORTED;
+      const delay = delayFor(result.error, attempt, retry);
+      if (!(await waitUnlessAborted(delay, retry, options.signal))) return ABORTED;
+      result = await base.enviar(messages, tools, options);
+    }
+    return result;
+  }
+  return { proveedor: base.proveedor, modelo: base.modelo, enviar: sendWithRetries };
 }

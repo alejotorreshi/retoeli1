@@ -4,7 +4,7 @@ import { paqueteConocido } from "@/domain/policies/compuerta.policy.ts";
 import type { PaquetesConocidos } from "@/domain/types/compuerta.type.ts";
 import type { LlamadaHerramienta, ObservadorLlm, RespuestaLlm } from "@/llm/types/llm.type.ts";
 import { casoDeLlamada } from "@/loop/services/despacho-llamada.service.ts";
-import type { ResultadoDespacho } from "@/loop/types/turno.type.ts";
+import type { HerramientaAnotada } from "@/loop/types/turno.type.ts";
 
 export function bitacoraDelTurno(
   bitacora: BitacoraEstructurada,
@@ -49,13 +49,8 @@ function casoConocido(llamada: LlamadaHerramienta, conocidos: PaquetesConocidos)
   return caso !== null && paqueteConocido(conocidos, caso) !== undefined ? caso : null;
 }
 
-export function anotarHerramienta(
-  bitacora: BitacoraEstructurada,
-  llamada: LlamadaHerramienta,
-  despacho: ResultadoDespacho,
-  conocidos: PaquetesConocidos,
-  duracionMs: number,
-): void {
+export function anotarHerramienta(bitacora: BitacoraEstructurada, anotada: HerramientaAnotada): void {
+  const { llamada, despacho, conocidos, duracionMs } = anotada;
   const hija = bitacora.hijo({ llamadaId: llamada.id, herramienta: llamada.nombre });
   const { ok, codigo } = despacho.resultado;
   hija.info(EVENTO_BITACORA.HERRAMIENTA, { ok, codigo, duracionMs });

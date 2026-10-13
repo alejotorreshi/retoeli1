@@ -38,20 +38,24 @@ export function paqueteConocido(conocidos: PaquetesConocidos, caso: string): Cas
   return Object.hasOwn(conocidos, caso) ? conocidos[caso] : undefined;
 }
 
-function sinAutorizacion(siguiente: EstadoCompuerta, preguntarCual: boolean): AperturaTurno {
-  return { autorizado: null, siguiente, preguntarCual };
+function sinAutorizacion(): AperturaTurno {
+  return { autorizado: null, siguiente: estadoLibre(), preguntarCual: false };
+}
+
+function preguntarCual(estado: EstadoCompuerta): AperturaTurno {
+  return { autorizado: null, siguiente: estado, preguntarCual: true };
 }
 
 export function abrirTurno(estado: EstadoCompuerta, decision: DecisionConfirmacion): AperturaTurno {
-  if (estado.tipo === ESTADO_COMPUERTA.LIBRE) return sinAutorizacion(estadoLibre(), false);
-  if (decision.decision === DECISION_CONFIRMACION.FALTA_CASO) return sinAutorizacion(estado, true);
+  if (estado.tipo === ESTADO_COMPUERTA.LIBRE) return sinAutorizacion();
+  if (decision.decision === DECISION_CONFIRMACION.FALTA_CASO) return preguntarCual(estado);
   if (
     decision.decision === DECISION_CONFIRMACION.CONFIRMA &&
     casosPendientes(estado).includes(decision.caso)
   ) {
     return { autorizado: decision.caso, siguiente: estadoLibre(), preguntarCual: false };
   }
-  return sinAutorizacion(estadoLibre(), false);
+  return sinAutorizacion();
 }
 
 export function evaluarEnvio(autorizacion: AutorizacionTurno, caso: string): EvaluacionEnvio {

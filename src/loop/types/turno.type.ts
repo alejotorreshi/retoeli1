@@ -92,6 +92,13 @@ export type ResultadoDespacho = {
   readonly envioPermitido: boolean | null;
 };
 
+export type HerramientaAnotada = {
+  readonly llamada: LlamadaHerramienta;
+  readonly despacho: ResultadoDespacho;
+  readonly conocidos: PaquetesConocidos;
+  readonly duracionMs: number;
+};
+
 export type EntradaCierreTurno = EntradaCierreCompuerta & {
   readonly turnoId: string;
   readonly texto: string;

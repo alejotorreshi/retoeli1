@@ -38,11 +38,11 @@ type ToolPart = Pick<ChatCompletionRequest, "tools" | "tool_choice">;
 function toolPart(
   slot: ProviderSlot,
   definitions: readonly DefinicionHerramienta[],
-  toolsDisabled: boolean,
+  options: OpcionesEnvio,
 ): ToolPart {
   if (definitions.length === 0) return {};
   const tools: readonly WireTool[] = toWireTools(definitions);
-  if (!toolsDisabled) return { tools, tool_choice: TOOL_CHOICE.AUTO };
+  if (!options.herramientasDesactivadas) return { tools, tool_choice: TOOL_CHOICE.AUTO };
   return slot.capabilities.toolChoiceNone ? { tools, tool_choice: TOOL_CHOICE.NINGUNA } : {};
 }
 
@@ -50,7 +50,7 @@ function buildRequest(
   slot: ProviderSlot,
   messages: readonly Mensaje[],
   definitions: readonly DefinicionHerramienta[],
-  toolsDisabled: boolean,
+  options: OpcionesEnvio,
 ): ChatCompletionRequest {
   const { capabilities } = slot;
   return {
@@ -60,7 +60,7 @@ function buildRequest(
     [capabilities.maxTokensParam]: slot.maxOutputTokens,
     ...(capabilities.temperature === null ? {} : { temperature: capabilities.temperature }),
     ...(capabilities.thinking === null ? {} : { thinking: { type: capabilities.thinking } }),
-    ...toolPart(slot, definitions, toolsDisabled),
+    ...toolPart(slot, definitions, options),
   };
 }
 
@@ -138,11 +138,6 @@ export function createOpenAICompatibleAdapter(
     proveedor: slot.provider,
     modelo: slot.model,
     enviar: (messages, tools, options) =>
-      send(
-        slot,
-        dependencies,
-        buildRequest(slot, messages, tools, options.herramientasDesactivadas),
-        options,
-      ),
+      send(slot, dependencies, buildRequest(slot, messages, tools, options), options),
   };
 }

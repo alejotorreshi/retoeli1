@@ -62,7 +62,12 @@ async function* ejecutarPaso(turno: Turno, respuesta: RespuestaLlm): Ejecucion<r
     turno.llamadas.push(...resumida(llamada, resultado));
     if (evento !== null) turno.eventosCompuerta.push(evento);
     if (paquete !== null) turno.conocidos = { ...turno.conocidos, [paquete.caso]: paquete };
-    anotarHerramienta(turno.bitacora, llamada, despacho, turno.conocidos, Date.now() - desde);
+    anotarHerramienta(turno.bitacora, {
+      llamada,
+      despacho,
+      conocidos: turno.conocidos,
+      duracionMs: Date.now() - desde,
+    });
     yield {
       tipo: TIPO_EVENTO.FIN_HERRAMIENTA,
       ...base,
