@@ -49,24 +49,24 @@ Fuente vinculante: `reto-01/PRD.md`, sin modificar. Fixtures: `reto-01/fixtures/
 ### Confirmación y envío simulado (CA3, RN4)
 
 - [x] **ENV-01**: Si `simular_envio` se llama sin confirmación válida, devuelve `{ ok: false, error: "requiere confirmación explícita" }`. Con confirmación, escribe solo `out/<caso>/ENVIO-SIMULADO.md` y deja registrados los bloqueos vigentes. No exige `listo_para_firma`. Si `paquete/` no coincide con lo que se armaría hoy (archivos faltantes, sobrantes o borrador desactualizado), rechaza con `PAQUETE_DESACTUALIZADO` y no escribe nada.
-- [x] **ENV-02**: El servidor hace cumplir la compuerta de confirmación. La sesión guarda la confirmación pendiente `{ caso, accion }`, y la autorización vale una sola vez, para ese caso y solo si llega en el mensaje inmediatamente siguiente del usuario. La decide un clasificador determinista que entiende negaciones ("No envíes nada todavía" no confirma) o el botón de la UI. El servidor nunca confía solo en `confirmado: true` del modelo.
-- [x] **ENV-03**: Cuando una acción requiere confirmación, el turno termina con una pregunta explícita que lista los bloqueos. El servidor calcula `needsConfirmation`.
+- [ ] **ENV-02**: El servidor hace cumplir la compuerta de confirmación. La sesión guarda la confirmación pendiente `{ caso, accion }`, y la autorización vale una sola vez, para ese caso y solo si llega en el mensaje inmediatamente siguiente del usuario. La decide un clasificador determinista que entiende negaciones ("No envíes nada todavía" no confirma) o el botón de la UI. El servidor nunca confía solo en `confirmado: true` del modelo.
+- [ ] **ENV-03**: Cuando una acción requiere confirmación, el turno termina con una pregunta explícita que lista los bloqueos. El servidor calcula `needsConfirmation`.
 
 ### Ciclo del agente (§6.1, §6.3)
 
-- [x] **AGT-01**: El ciclo es propio: prompt → modelo → herramientas → respuesta. Las herramientas se ejecutan en secuencia y hay un tope configurable de iteraciones por turno (25 por defecto). Al alcanzarlo, el agente responde con lo que tiene y lo que falta.
-- [x] **AGT-02**: El system prompt vive en `agent/prompt.md` y el conocimiento del proceso en `src/knowledge/registro-proveedor.md`, separados de la ejecución en `src/tools/`. Un cambio de reglas de negocio no toca el servidor.
-- [x] **AGT-03**: El prompt prohíbe afirmar valores que no hayan salido de una herramienta (CA2).
-- [x] **AGT-04**: La sesión vive en un store en memoria detrás de una interfaz, con TTL. El historial queda íntegro: cada tool call tiene su resultado y un paso abortado se descarta. La sesión sobrevive a errores de herramienta o del proveedor (CA5).
-- [x] **AGT-05**: Los errores de herramienta y de proveedor se traducen a lenguaje claro en español, a partir de un catálogo centralizado de errores.
+- [ ] **AGT-01**: El ciclo es propio: prompt → modelo → herramientas → respuesta. Las herramientas se ejecutan en secuencia y hay un tope configurable de iteraciones por turno (25 por defecto). Al alcanzarlo, el agente responde con lo que tiene y lo que falta.
+- [ ] **AGT-02**: El system prompt vive en `agent/prompt.md` y el conocimiento del proceso en `src/knowledge/registro-proveedor.md`, separados de la ejecución en `src/tools/`. Un cambio de reglas de negocio no toca el servidor.
+- [ ] **AGT-03**: El prompt prohíbe afirmar valores que no hayan salido de una herramienta (CA2).
+- [ ] **AGT-04**: La sesión vive en un store en memoria detrás de una interfaz, con TTL. El historial queda íntegro: cada tool call tiene su resultado y un paso abortado se descarta. La sesión sobrevive a errores de herramienta o del proveedor (CA5).
+- [ ] **AGT-05**: Los errores de herramienta y de proveedor se traducen a lenguaje claro en español, a partir de un catálogo centralizado de errores.
 
 ### Adaptador LLM y resiliencia (§6.1, §8)
 
-- [x] **LLM-01**: Hay un puerto propio `enviar(mensajes, herramientas) → respuesta` con un modelo de mensajes neutral, y un adaptador genérico compatible con OpenAI lo implementa. Cambiar de proveedor o de modelo solo cambia variables de entorno; el ciclo nunca cambia.
-- [x] **LLM-02**: El adaptador usa `fetch` directo contra un `/chat/completions` compatible con OpenAI, con DeepSeek como preset por defecto. Proveedor, URL, modelo y clave salen de env (`LLM_PROVIDER`, `LLM_BASE_URL`, `LLM_MODEL`, `LLM_API_KEY`, con `DEEPSEEK_API_KEY` como alias; `deepseek-flash` por defecto). El preset desactiva el modo thinking, `max_tokens` es explícito y `reasoning_content` se conserva en el tipo. Las diferencias entre proveedores son flags de capacidad en config, nunca ramas en el ciclo.
-- [x] **LLM-03**: Hay timeout al proveedor con mensaje claro. Se reintenta con backoff y jitter solo ante errores transitorios (429, 500, 503 y red). Los errores 400, 401 y 422 no se reintentan, y el 402 se informa como "saldo agotado".
-- [x] **LLM-04**: Un decorador de fallback pasa a la segunda ranura (`LLM_FALLBACK_*`, `deepseek-v4-pro` por defecto) solo cuando el primario agotó sus reintentos ante errores transitorios. La ranura de respaldo hereda la clave del primario solo si la URL base es idéntica.
-- [x] **LLM-05**: El tope de tokens por sesión y el tope de iteraciones por turno son configurables. Al superarlos, el usuario recibe un mensaje claro, no un 500.
+- [ ] **LLM-01**: Hay un puerto propio `enviar(mensajes, herramientas) → respuesta` con un modelo de mensajes neutral, y un adaptador genérico compatible con OpenAI lo implementa. Cambiar de proveedor o de modelo solo cambia variables de entorno; el ciclo nunca cambia.
+- [ ] **LLM-02**: El adaptador usa `fetch` directo contra un `/chat/completions` compatible con OpenAI, con DeepSeek como preset por defecto. Proveedor, URL, modelo y clave salen de env (`LLM_PROVIDER`, `LLM_BASE_URL`, `LLM_MODEL`, `LLM_API_KEY`, con `DEEPSEEK_API_KEY` como alias; `deepseek-flash` por defecto). El preset desactiva el modo thinking, `max_tokens` es explícito y `reasoning_content` se conserva en el tipo. Las diferencias entre proveedores son flags de capacidad en config, nunca ramas en el ciclo.
+- [ ] **LLM-03**: Hay timeout al proveedor con mensaje claro. Se reintenta con backoff y jitter solo ante errores transitorios (429, 500, 503 y red). Los errores 400, 401 y 422 no se reintentan, y el 402 se informa como "saldo agotado".
+- [ ] **LLM-04**: Un decorador de fallback pasa a la segunda ranura (`LLM_FALLBACK_*`, `deepseek-v4-pro` por defecto) solo cuando el primario agotó sus reintentos ante errores transitorios. La ranura de respaldo hereda la clave del primario solo si la URL base es idéntica.
+- [ ] **LLM-05**: El tope de tokens por sesión y el tope de iteraciones por turno son configurables. Al superarlos, el usuario recibe un mensaje claro, no un 500.
 - [ ] **LLM-06**: Existe un modo degradado sin LLM. Si no hay clave, se agotó el saldo o el proveedor cayó, `/api/health` lo reporta y la UI permite correr el flujo determinista de un caso con las mismas herramientas que `demo.ts`.
 
 ### API HTTP (§6.4)
@@ -93,14 +93,14 @@ Fuente vinculante: `reto-01/PRD.md`, sin modificar. Fixtures: `reto-01/fixtures/
 
 - [ ] **SEG-01**: La clave del LLM vive solo en una env var del backend y nunca aparece en el front (sin el prefijo `VITE_`), los logs, las respuestas de la API ni el repo. Existe un `.env.example` sin valores y un test verifica que la clave no esté en `web/dist` ni en las respuestas.
 - [ ] **SEG-02**: Una única función `redactar()`, basada en una política de rutas sensibles, se aplica a los logs, la API, el SSE y los resúmenes de tool calls. Un test busca con grep valores PII conocidos y verifica que no aparezcan fuera de los archivos de salida.
-- [x] **SEG-03**: Los logs son JSON estructurados, con IDs de correlación por sesión, turno y tool call, y nunca registran la clave ni PII.
+- [ ] **SEG-03**: Los logs son JSON estructurados, con IDs de correlación por sesión, turno y tool call, y nunca registran la clave ni PII.
 - [x] **SEG-04**: Cada tool call queda registrada en `out/log.jsonl` (CA4) y en `out/<caso>/log.jsonl` (RN5) con `{ ts, herramienta, ok, resumen }`, con el resumen redactado.
 
 ### Demo y pruebas (§6.6, §8)
 
 - [x] **DEMO-01**: `bun run demo.ts` ejecuta los 4 casos llamando directamente a las herramientas, sin clave LLM. Limpia `out/` al inicio, fija `FECHA_EJECUCION=2026-09-03`, la imprime y muestra un resumen por caso. El resultado es igual entre ejecuciones, salvo timestamps.
 - [x] **DEMO-02**: Hay tests golden por caso con la tabla de verdad: co 17/0/0 y listo; ec 13/1/1 y bloqueado por soporte ausente; hn 9/1/1 y bloqueado por parafiscales vencidos; pa 8/0/1 y listo por la vía del portal.
-- [x] **DEMO-03**: Hay tests unitarios de dominio (mapeo, RN1, vigencias, clasificador de confirmación, redacción), tests de contrato de herramientas (`{ok,data}`, nunca lanzan) y tests del ciclo con un LLM falso: tope de iteraciones, compuerta (incluido "No envíes…" y el guion §11), CA5 tras timeout o 503 e intento de inyección.
+- [ ] **DEMO-03**: Hay tests unitarios de dominio (mapeo, RN1, vigencias, clasificador de confirmación, redacción), tests de contrato de herramientas (`{ok,data}`, nunca lanzan) y tests del ciclo con un LLM falso: tope de iteraciones, compuerta (incluido "No envíes…" y el guion §11), CA5 tras timeout o 503 e intento de inyección.
 - [x] **DEMO-04**: Hay fixtures sintéticos propios en `tests/fixtures/` para la etiqueta ambigua (HU-1), una plantilla corrupta y un caso inexistente (HU-5).
 - [ ] **DEMO-05**: GitHub Actions corre `bun test`, `bun run demo.ts`, `tsc --noEmit` y lint, y el README muestra un badge.
 
@@ -200,18 +200,18 @@ Cada requisito v1 está asignado a exactamente una fase del roadmap (`.planning/
 | PAQ-04 | Phase 1 | Complete |
 | PAQ-05 | Phase 1 | Complete |
 | ENV-01 | Phase 1 | Complete |
-| ENV-02 | Phase 2 | Complete |
-| ENV-03 | Phase 2 | Complete |
-| AGT-01 | Phase 2 | Complete |
-| AGT-02 | Phase 2 | Complete |
-| AGT-03 | Phase 2 | Complete |
-| AGT-04 | Phase 2 | Complete |
-| AGT-05 | Phase 2 | Complete |
-| LLM-01 | Phase 2 | Complete |
-| LLM-02 | Phase 2 | Complete |
-| LLM-03 | Phase 2 | Complete |
-| LLM-04 | Phase 2 | Complete |
-| LLM-05 | Phase 2 | Complete |
+| ENV-02 | Phase 2 | Gaps Found |
+| ENV-03 | Phase 2 | Gaps Found |
+| AGT-01 | Phase 2 | Gaps Found |
+| AGT-02 | Phase 2 | Gaps Found |
+| AGT-03 | Phase 2 | Gaps Found |
+| AGT-04 | Phase 2 | Gaps Found |
+| AGT-05 | Phase 2 | Gaps Found |
+| LLM-01 | Phase 2 | Gaps Found |
+| LLM-02 | Phase 2 | Gaps Found |
+| LLM-03 | Phase 2 | Gaps Found |
+| LLM-04 | Phase 2 | Gaps Found |
+| LLM-05 | Phase 2 | Gaps Found |
 | LLM-06 | Phase 3 | Pending |
 | API-01 | Phase 3 | Pending |
 | API-02 | Phase 3 | Pending |
@@ -229,11 +229,11 @@ Cada requisito v1 está asignado a exactamente una fase del roadmap (`.planning/
 | UI-09 | Phase 3 | Pending |
 | SEG-01 | Phase 3 | Pending |
 | SEG-02 | Phase 1 | Partial — política de rutas PII, test grep y redactar() única para logs y resúmenes de tool calls (Fase 2) listos; falta aplicarla a API/SSE (Fase 3) |
-| SEG-03 | Phase 2 | Complete |
+| SEG-03 | Phase 2 | Gaps Found |
 | SEG-04 | Phase 1 | Complete |
 | DEMO-01 | Phase 1 | Complete |
 | DEMO-02 | Phase 1 | Complete |
-| DEMO-03 | Phase 2 | Complete |
+| DEMO-03 | Phase 2 | Gaps Found |
 | DEMO-04 | Phase 1 | Complete |
 | DEMO-05 | Phase 4 | Pending |
 | CAL-01 | Phase 1 | Complete |
