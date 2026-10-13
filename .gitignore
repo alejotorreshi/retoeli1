@@ -6,3 +6,8 @@ out/
 .DS_Store
 *.log
 web/dist/
+
+.playwright-mcp/
+.qa/logs/
+.qa/evidence/**/screenshots/
+.qa/*.token

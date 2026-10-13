@@ -1,7 +1,9 @@
 {
   "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
   "vcs": { "enabled": true, "clientKind": "git", "useIgnoreFile": true },
-  "files": { "includes": ["**", "!reto-01", "!out", "!web/dist", "!.planning", "!.claude"] },
+  "files": {
+    "includes": ["**", "!reto-01", "!out", "!web/dist", "!.planning", "!.claude", "!.agents", "!.qa"]
+  },
   "formatter": { "enabled": true, "indentStyle": "space", "indentWidth": 2, "lineWidth": 110 },
   "linter": {
     "enabled": true,
