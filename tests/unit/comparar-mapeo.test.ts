@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { compararMapeo } from "@/domain/comparar-mapeo.ts";
+import { compararMapeo } from "@/domain/policies/comparar-mapeo.policy.ts";
 import type { ItemMapeo } from "@/domain/types/comparar-mapeo.type.ts";
 import type { CampoMapeado } from "@/domain/types/mapeo.type.ts";
 import type { EstadoCampo } from "@/domain/types/reglas.type.ts";

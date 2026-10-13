@@ -11,7 +11,7 @@ import {
 import { PATRON_ESPACIO } from "@/config/constants/patterns.constants.ts";
 import { TEXTO_COMUN, TEXTO_MAPEO } from "@/config/strings.ts";
 import { renderizarTextoPlano } from "@/domain/engines/motor-plantillas.engine.ts";
-import { leerHoja, leerRuta, segmentoValido } from "@/domain/maestro.ts";
+import { leerHoja, leerRuta, segmentoValido } from "@/domain/selectors/maestro.selector.ts";
 import type { CampoMapeado, ConteoEstados, EntradaMapeo, IndiceGlosario } from "@/domain/types/mapeo.type.ts";
 import type {
   EscalaConfianza,

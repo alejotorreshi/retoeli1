@@ -7,7 +7,7 @@ import type { ItemProyectado } from "@tests/helpers/types/flujo.type.ts";
 import type { ProyectoTemporal } from "@tests/helpers/types/proyecto-temporal.type.ts";
 import { celdaEn, leerCeldasXlsx, leerMetadatosXlsx } from "@tests/helpers/xlsx-leer.helper.ts";
 import { FIXTURES_DIR } from "@/config/constants/files.constants.ts";
-import { leerRuta } from "@/domain/maestro.ts";
+import { leerRuta } from "@/domain/selectors/maestro.selector.ts";
 import type { FilaCelda } from "@/domain/types/formulario.type.ts";
 import type { Maestro } from "@/domain/types/maestro.type.ts";
 import type { CampoCelda } from "@/domain/types/plantilla-caso.type.ts";

@@ -1,6 +1,6 @@
 import { beforeAll, describe, expect, test } from "bun:test";
+import { validarTextosDeReglas } from "@/domain/policies/validar-reglas.policy.ts";
 import type { Reglas } from "@/domain/types/reglas.type.ts";
-import { validarTextosDeReglas } from "@/domain/validar-reglas.ts";
 import { DEFAULT_KNOWLEDGE_DIRECTORY, loadRules } from "@/infra/knowledge/rules-loader.adapter.ts";
 
 let reglas: Reglas;

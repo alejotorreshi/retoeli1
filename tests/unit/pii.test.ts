@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import { VARIABLES_NOTA_PERMITIDAS } from "@/config/constants/mapping.constants.ts";
+import { construirIndiceGlosario } from "@/domain/builders/glosario.builder.ts";
 import { mapearEtiquetas } from "@/domain/engines/mapeo.engine.ts";
-import { construirIndiceGlosario } from "@/domain/glosario.ts";
 import { enmascarar, POLITICA_PII, presentarCampo } from "@/domain/pii.ts";
 import type { Maestro } from "@/domain/types/maestro.type.ts";
 import type { CampoMapeado, Glosario } from "@/domain/types/mapeo.type.ts";

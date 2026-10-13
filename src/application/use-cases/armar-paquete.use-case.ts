@@ -11,7 +11,7 @@ import { CODIGO_ERROR } from "@/config/constants/errors.constants.ts";
 import { ARCHIVO_FORMULARIO, ARCHIVOS_PAQUETE } from "@/config/constants/files.constants.ts";
 import { ORIGEN_COPIA } from "@/config/constants/io.constants.ts";
 import { CLAVE_PLANTILLA } from "@/config/constants/knowledge.constants.ts";
-import { construirDatosBorrador } from "@/domain/borrador.ts";
+import { construirDatosBorrador } from "@/domain/builders/borrador.builder.ts";
 import { construirDatosChecklist } from "@/domain/checklist.ts";
 import { renderizarPlantilla, renderizarTextoPlano } from "@/domain/engines/motor-plantillas.engine.ts";
 import type { Checklist, SoporteEvaluado } from "@/domain/types/checklist.type.ts";

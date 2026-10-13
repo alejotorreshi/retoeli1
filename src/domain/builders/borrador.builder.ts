@@ -2,7 +2,7 @@ import { RUTA_MAESTRO } from "@/config/constants/maestro.constants.ts";
 import { ESTADO_SOPORTE } from "@/config/constants/supports.constants.ts";
 import { TEXTO_BORRADOR, TEXTO_COMUN } from "@/config/strings.ts";
 import { seccionSi } from "@/domain/engines/motor-plantillas.engine.ts";
-import { leerRuta } from "@/domain/maestro.ts";
+import { leerRuta } from "@/domain/selectors/maestro.selector.ts";
 import type { DatosBorradorCorreo, DatosEnvioSimulado, RutaBorrador } from "@/domain/types/borrador.type.ts";
 import type { Checklist, SoporteEvaluado } from "@/domain/types/checklist.type.ts";
 import type { Maestro } from "@/domain/types/maestro.type.ts";

@@ -5,7 +5,7 @@ import type { ArgsSimularEnvio, DatosEnvio } from "@/application/types/simular-e
 import { CODIGO_ERROR } from "@/config/constants/errors.constants.ts";
 import { ARCHIVOS_PAQUETE, ARCHIVOS_SALIDA } from "@/config/constants/files.constants.ts";
 import { CLAVE_PLANTILLA } from "@/config/constants/knowledge.constants.ts";
-import { construirDatosEnvio } from "@/domain/borrador.ts";
+import { construirDatosEnvio } from "@/domain/builders/borrador.builder.ts";
 import { renderizarPlantilla } from "@/domain/engines/motor-plantillas.engine.ts";
 import type { Resultado } from "@/domain/types/resultado.type.ts";
 import { exito, fallo } from "@/domain/utils/resultado.util.ts";

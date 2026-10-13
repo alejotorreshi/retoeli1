@@ -7,7 +7,7 @@ import { copiarConocimiento, crearProyectoTemporal } from "@tests/helpers/proyec
 import type { RespuestaGenerar } from "@tests/helpers/types/flujo.type.ts";
 import type { ConocimientoTemporal, ProyectoTemporal } from "@tests/helpers/types/proyecto-temporal.type.ts";
 import { FIXTURES_DIR } from "@/config/constants/files.constants.ts";
-import { leerRuta } from "@/domain/maestro.ts";
+import { leerRuta } from "@/domain/selectors/maestro.selector.ts";
 import type { Maestro } from "@/domain/types/maestro.type.ts";
 import type { CampoLista } from "@/domain/types/plantilla-caso.type.ts";
 import { crearHerramientas } from "@/tools/herramientas.factory.ts";
