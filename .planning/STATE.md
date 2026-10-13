@@ -3,16 +3,16 @@ gsd_state_version: "1.0"
 current_phase: 01
 current_phase_name: Núcleo determinista
 status: executing
-stopped_at: Completed 01-12-PLAN.md
-last_updated: "2026-10-13T04:01:10.010Z"
+stopped_at: Completed 01-13-PLAN.md
+last_updated: "2026-10-13T04:07:23.502Z"
 last_activity: 2026-10-12
 last_activity_desc: Phase 01 execution started
-state_head: 14fcdf26adffdaf4c52d4bc79325fe93887d3452
+state_head: 919d4ea02dbf9a62c883988ea94f6a2791c71a7e
 progress:
   total_phases: 4
   completed_phases: 0
   total_plans: 15
-  completed_plans: 12
+  completed_plans: 13
   percent: 0
 ---
 
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-10-12)
 ## Current Position
 
 Phase: 01 (Núcleo determinista) — EXECUTING
-Plan: 2 of 15
+Plan: 3 of 15
 Status: Ready to execute
 Last activity: 2026-10-12 — Phase 01 execution started
 
@@ -68,6 +68,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 01 P10 | 4min | 2 tasks | 16 files |
 | Phase 01 P11 | 5min | 2 tasks | 7 files |
 | Phase 01 P12 | 4min | 2 tasks | 6 files |
+| Phase 01 P13 | 4min | 2 tasks | 8 files |
 
 ## Accumulated Context
 
@@ -114,6 +115,10 @@ Recent decisions affecting current work:
 - [Phase 01]: A failed demo case still gets a Resumen row with ERROR (<codigo>) as estado
 - [Phase 01]: Determinism compares xlsx semantically, jsonl without ts and every other output by bytes; the PII scan has a minimum corpus size and a positive control in the formularios
 - [Phase 01]: xlsx: ANCHO_COLUMNA_XLSX {minimo 10, maximo 60, margen 2}; ancho por columna usada = clamp(largo en puntos de código + margen); wrapText solo si largo + margen > maximo (GC-4, G-01-H1)
+- [Phase 01]: 01-13: Borrador firma state from the checklist alone: firma_lista (listo y nada por confirmar), firma_tras_confirmar (listo con por confirmar), firma_bloqueada (no listo); no signed claim (GC-1, G-01-H4b)
+- [Phase 01]: 01-13: Portal: valores-portal.md is the analyst's guide, never attached in the borrador nor listed as sent in ENVIO-SIMULADO.md
+- [Phase 01]: 01-13: ENVIO-SIMULADO sent list = formulario xlsx/pdf + presente soportes intersected with the real paquete/ listing; checklist.md and borrador-correo.md never listed (GC-3, G-01-H4a)
+- [Phase 01]: 01-13: PAQ-04 wording 'lista el formulario firmado' superseded by GC-1; requirement text left for orchestrator to reconcile
 
 ### Pending Todos
 
@@ -136,6 +141,6 @@ Items acknowledged and deferred at milestone close, most recent first:
 
 ## Session Continuity
 
-Last session: 2026-10-13T04:01:09.984Z
-Stopped at: Completed 01-12-PLAN.md
+Last session: 2026-10-13T04:07:23.475Z
+Stopped at: Completed 01-13-PLAN.md
 Resume file: None

@@ -92,7 +92,7 @@ Fuente vinculante: `reto-01/PRD.md`, sin modificar. Fixtures: `reto-01/fixtures/
 ### Seguridad, PII y observabilidad (§8, RN5, CA4)
 
 - [ ] **SEG-01**: La clave del LLM vive solo en una env var del backend y nunca aparece en el front (sin el prefijo `VITE_`), los logs, las respuestas de la API ni el repo. Existe un `.env.example` sin valores y un test verifica que la clave no esté en `web/dist` ni en las respuestas.
-- [ ] **SEG-02**: Una única función `redactar()`, basada en una política de rutas sensibles, se aplica a los logs, la API, el SSE y los resúmenes de tool calls. Un test busca con grep valores PII conocidos y verifica que no aparezcan fuera de los archivos de salida.
+- [x] **SEG-02**: Una única función `redactar()`, basada en una política de rutas sensibles, se aplica a los logs, la API, el SSE y los resúmenes de tool calls. Un test busca con grep valores PII conocidos y verifica que no aparezcan fuera de los archivos de salida.
 - [ ] **SEG-03**: Los logs son JSON estructurados, con IDs de correlación por sesión, turno y tool call, y nunca registran la clave ni PII.
 - [ ] **SEG-04**: Cada tool call queda registrada en `out/log.jsonl` (CA4) y en `out/<caso>/log.jsonl` (RN5) con `{ ts, herramienta, ok, resumen }`, con el resumen redactado.
 
@@ -228,7 +228,7 @@ Cada requisito v1 está asignado a exactamente una fase del roadmap (`.planning/
 | UI-08 | Phase 3 | Pending |
 | UI-09 | Phase 3 | Pending |
 | SEG-01 | Phase 3 | Pending |
-| SEG-02 | Phase 1 | Gaps Found |
+| SEG-02 | Phase 1 | Complete |
 | SEG-03 | Phase 2 | Pending |
 | SEG-04 | Phase 1 | Gaps Found |
 | DEMO-01 | Phase 1 | Gaps Found |
