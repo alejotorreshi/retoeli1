@@ -42,6 +42,7 @@ function soporteAusente(tipo: string): SoporteEvaluado {
     vigencia_hasta: null,
     archivo: null,
     aviso: null,
+    pais_emisor: null,
     aviso_emisor: null,
   };
 }
@@ -77,6 +78,7 @@ function evaluarSoporte(tipo: string, evaluacion: EntradaEvaluacionSoportes): Re
     vigencia_hasta: entrada.vigencia_hasta,
     archivo: entrada.archivo,
     aviso: vigencia.aviso,
+    pais_emisor: entrada.pais_emisor,
     aviso_emisor: emisor.data,
   });
 }
@@ -132,7 +134,8 @@ function filaSoporte(soporte: SoporteEvaluado): FilaSoporteChecklist {
     vigencia: vigenciaVisible(soporte),
     estado: soporte.estado,
     aviso: soporte.aviso ?? TEXTO_COMUN.celdaVacia,
-    pais_emisor: soporte.aviso_emisor ?? TEXTO_COMUN.celdaVacia,
+    pais_emisor: soporte.pais_emisor ?? TEXTO_COMUN.celdaVacia,
+    aviso_emisor: soporte.aviso_emisor ?? TEXTO_COMUN.celdaVacia,
   };
 }
 

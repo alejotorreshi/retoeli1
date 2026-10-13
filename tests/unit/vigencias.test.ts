@@ -127,6 +127,7 @@ describe("evaluarSoportes (PAQ-03, D-22)", () => {
       vigencia_hasta: "2026-08-31",
       archivo: "parafiscales-2026-07.txt",
       aviso: null,
+      pais_emisor: "CO",
       aviso_emisor: AVISO_CO,
     });
     expect(porTipo(soportes, "camara_comercio")).toEqual({
@@ -135,6 +136,7 @@ describe("evaluarSoportes (PAQ-03, D-22)", () => {
       vigencia_hasta: "2026-09-30",
       archivo: "camara-comercio-2026-08.txt",
       aviso: "vence en 27 días",
+      pais_emisor: "CO",
       aviso_emisor: AVISO_CO,
     });
     expect(porTipo(soportes, "rut")).toEqual({
@@ -143,6 +145,7 @@ describe("evaluarSoportes (PAQ-03, D-22)", () => {
       vigencia_hasta: null,
       archivo: "rut-2026.txt",
       aviso: null,
+      pais_emisor: "CO",
       aviso_emisor: AVISO_CO,
     });
   });
@@ -179,6 +182,7 @@ describe("evaluarSoportes (PAQ-03, D-22)", () => {
       vigencia_hasta: null,
       archivo: null,
       aviso: null,
+      pais_emisor: null,
       aviso_emisor: null,
     });
   });

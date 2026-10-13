@@ -39,6 +39,7 @@ type SoporteRespuesta = {
   readonly vigencia_hasta: string | null;
   readonly archivo: string | null;
   readonly aviso: string | null;
+  readonly pais_emisor: string | null;
   readonly aviso_emisor: string | null;
 };
 
@@ -174,6 +175,7 @@ describe("golden: proveedor_armar_paquete (PAQ-01, PAQ-02, PAQ-03, D-21)", () =>
       vigencia_hasta: "2026-09-30",
       archivo: "camara-comercio-2026-08.txt",
       aviso: "vence en 27 días",
+      pais_emisor: "CO",
       aviso_emisor: AVISO_CO,
     });
     expect(soportes.find((soporte) => soporte.tipo === "parafiscales")?.estado).toBe("vencido");
@@ -197,7 +199,21 @@ describe("golden: proveedor_armar_paquete (PAQ-01, PAQ-02, PAQ-03, D-21)", () =>
     expect(checklist).toContain(`- RUC: ${NOTA_RUC}`);
     expect(checklist).toContain(AVISO_CO);
     expect(checklist.split("\n").filter((linea) => linea.startsWith("- [ ]")).length).toBeGreaterThan(1);
-    expect(checklist).toContain("| Tipo | Archivo | Vigencia | Estado | Aviso | País emisor |");
+    expect(checklist).toContain(
+      "| Tipo | Archivo | Vigencia | Estado | Aviso | País emisor | Aviso de emisor |",
+    );
+  });
+
+  test("la columna País emisor muestra el país y el aviso va en su propia columna (WR-17)", async () => {
+    expect(await checklistDe(compartido.raiz, CO)).toContain(
+      "| rut | rut-2026.txt | no aplica | presente | — | CO | — |",
+    );
+    expect(await checklistDe(compartido.raiz, HN)).toContain(
+      `| parafiscales | parafiscales-2026-07.txt | 2026-08-31 | vencido | — | CO | ${AVISO_CO} |`,
+    );
+    expect(await checklistDe(compartido.raiz, EC)).toContain(
+      "| certificado_cumplimiento_tributario | — | — | ausente | — | — | — |",
+    );
   });
 
   test("hn checklist.md marca parafiscales vencido y pide renovarlo", async () => {

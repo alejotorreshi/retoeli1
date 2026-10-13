@@ -19,6 +19,7 @@ export type SoporteEvaluado = {
   readonly vigencia_hasta: string | null;
   readonly archivo: string | null;
   readonly aviso: string | null;
+  readonly pais_emisor: string | null;
   readonly aviso_emisor: string | null;
 };
 
@@ -40,6 +41,7 @@ export type FilaSoporteChecklist = {
   readonly estado: EstadoSoporte;
   readonly aviso: string;
   readonly pais_emisor: string;
+  readonly aviso_emisor: string;
 };
 
 export type DatosChecklist = {

@@ -7,9 +7,9 @@ Estado: {{estado}}
 {{/motivos}}
 ## Soportes
 
-| Tipo | Archivo | Vigencia | Estado | Aviso | País emisor |
-|------|---------|----------|--------|-------|-------------|
-{{#soportes}}| {{tipo}} | {{archivo}} | {{vigencia}} | {{estado}} | {{aviso}} | {{pais_emisor}} |
+| Tipo | Archivo | Vigencia | Estado | Aviso | País emisor | Aviso de emisor |
+|------|---------|----------|--------|-------|-------------|-----------------|
+{{#soportes}}| {{tipo}} | {{archivo}} | {{vigencia}} | {{estado}} | {{aviso}} | {{pais_emisor}} | {{aviso_emisor}} |
 {{/soportes}}
 ## Campos faltantes
 
