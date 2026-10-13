@@ -22,7 +22,7 @@ status: partial
 
 **Verificación:** se corrió `bun run check` (tsc, Biome y `bun audit`) y `bun test` después de cada commit en el worktree aislado `.claude/worktrees/rf-01-21141-1791867610`, que tenía su propio `bun install --frozen-lockfile`. Después del fast-forward de `main`, se repitieron en el checkout principal: 546 pruebas en verde en 39 archivos y `check` limpio. `bun run demo.ts` se corrió dos veces seguidas y dio salidas idénticas byte a byte. Su stdout no cambió frente a la corrida anterior, que fija `tests/e2e/demo.test.ts`. El contrato v1 de datos de herramienta no cambia: `data.bloqueos`, `resumen` y `log.jsonl` siguen con ids crudos, y `armar_paquete` devuelve el mismo `checklist`. La única adición al contrato es el código de error nuevo `PAQUETE_DESACTUALIZADO`.
 
-## Hallazgos corregidos
+## Fixed Issues
 
 ### CR-01: El registro de envío omite en silencio los archivos que faltan en `paquete/` y declara "Sin bloqueos"
 
@@ -94,7 +94,7 @@ status: partial
 **Corrección aplicada:** el golden fija los anchos literales de cada columna de los fixtures CO y HN, y se eliminó `anchoEsperado`. `TIPO_CELDA` es un objeto `as const` en su propio helper, para que no haya ciclo entre el helper y el archivo de tipos, y `TipoCelda` es `ValorDe<typeof TIPO_CELDA>`.
 **Estado:** fixed
 
-## Hallazgos omitidos
+## Skipped Issues
 
 ### WR-03: G-01-H4c no queda cerrado: la salida de `demo.ts` sigue mostrando ids crudos
 
