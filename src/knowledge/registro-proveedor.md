@@ -1,53 +1,63 @@
 # Proceso de registro como proveedor
 
-Este conocimiento explica cómo procesar una solicitud de registro como proveedor con las cinco herramientas. Las reglas de cada país, los umbrales y los avisos no se repiten aquí: llegan en las notas de los resultados de las herramientas, que son la única fuente.
+Este conocimiento explica cómo procesar una solicitud de registro como proveedor con las cinco herramientas. Las reglas de cada país, los umbrales de confianza y los avisos de vencimiento no se repiten aquí: viven en la configuración de las herramientas y llegan en las notas de sus resultados, que son la única fuente.
 
-## Las herramientas, en orden
+## Las cinco herramientas, en orden
 
-1. proveedor_leer_solicitud recibe el caso y devuelve el país, el cliente, el formato pedido, la plantilla, los campos en el orden de la plantilla y los soportes exigidos.
-2. proveedor_mapear_campos recibe el caso (y, si se quiere, solo algunas etiquetas) y devuelve cada campo con su estado, su ruta en el maestro, su regla, su confianza y su valor enmascarado.
-3. proveedor_generar_formulario recibe el caso y el mapeo completo que devolvió proveedor_mapear_campos, solo con etiqueta, estado y ruta de cada campo. Genera el formulario en el formato pedido releyendo cada valor del maestro.
-4. proveedor_armar_paquete recibe el caso y arma el paquete para firma con el formulario, las copias de los soportes exigidos y el checklist. Indica si queda LISTO o BLOQUEADO y por qué.
+1. proveedor_leer_solicitud recibe el caso y devuelve el país, el cliente, el formato pedido, la plantilla, los campos en el orden de la plantilla, los campos ambiguos y los soportes exigidos. Es siempre el primer paso de un caso.
+2. proveedor_mapear_campos recibe el caso y una lista de etiquetas. Con la lista vacía mapea toda la plantilla; con algunas etiquetas responde solo esas, para preguntas puntuales como "¿cuál es el NIT?". Devuelve cada campo con su estado, su ruta en el maestro, su regla, su confianza, su nota y su valor enmascarado.
+3. proveedor_generar_formulario recibe el caso y el mapeo completo que devolvió proveedor_mapear_campos sobre toda la plantilla, solo con la etiqueta, el estado y la ruta de cada campo. Nunca le pases valores: la herramienta relee cada valor del maestro y genera el formulario en el formato pedido.
+4. proveedor_armar_paquete recibe el caso y arma el paquete para firma con el formulario, las copias de los soportes exigidos, el checklist y el borrador del correo. Indica si queda LISTO o BLOQUEADO y por qué.
 5. proveedor_simular_envio recibe el caso y registra un envío simulado del paquete armado. Solo se usa después de que la analista confirme de forma explícita en su mensaje siguiente.
 
-Para procesar un caso completo se usan las herramientas en ese orden. Ninguna herramienta ejecuta los pasos de otra.
+Para procesar un caso completo se usan las cuatro primeras herramientas en ese orden, y proveedor_simular_envio solo tras la confirmación. Ninguna herramienta ejecuta los pasos de otra.
 
 ## Cómo listar los casos
 
-Si la analista no sabe qué casos hay, o pide un caso que no existe, llama a proveedor_leer_solicitud con el caso pedido. Si no existe, la respuesta trae el código CASO_NO_ENCONTRADO y la lista casos_disponibles; muéstrala a la analista.
+Si la analista no sabe qué casos hay, o pide un caso que no existe, llama a proveedor_leer_solicitud con el caso pedido. Si no existe, la respuesta trae el código CASO_NO_ENCONTRADO y la lista casos_disponibles; muéstrala a la analista y pregúntale cuál quiere procesar.
 
 ## Estados de un campo
 
 - lleno: el maestro tiene el dato y el formulario lo trae.
-- faltante: el maestro no tiene el dato. El formulario lo deja vacío y marcado, y el checklist lo lista. Un faltante no bloquea el paquete.
-- requiere_confirmacion: el dato existe pero hay una duda que confirmar con el cliente o internamente. La nota del campo explica la duda.
+- faltante: el maestro no tiene el dato. El formulario lo deja vacío y marcado, y el checklist lo lista como acción pendiente. Nunca se completa a mano.
+- requiere_confirmacion: el dato existe pero hay una duda que confirmar con el cliente o internamente. La nota del campo explica la duda; repítela tal cual.
+- La confianza dice qué tan seguro es el emparejamiento entre la etiqueta de la plantilla y el maestro, y la regla dice cómo se encontró. Cuando la confianza no alcanza, la herramienta ya marca el campo por confirmar; no recalcules nada.
 
-## Cómo leer el paquete
+## Soportes y bloqueos
 
+- Cada soporte exigido aparece como presente, vencido o ausente. Los avisos de "vence en N días" llegan en los resultados; menciónalos tal cual.
 - El paquete queda BLOQUEADO si falta un soporte exigido o si un soporte está vencido. Cada bloqueo dice si el soporte está ausente o vencido.
 - Los campos faltantes y por confirmar no bloquean el paquete, pero aparecen en el checklist como acciones pendientes.
-- Un paquete BLOQUEADO también se puede enviar con la confirmación de la analista; el envío simulado registra los bloqueos vigentes.
+
+## Formatos
+
+- xlsx y pdf: proveedor_generar_formulario escribe el formulario en out/<caso>/ y devuelve su ruta.
+- portal: la herramienta devuelve ok con el aviso "formato no soportado" y deja los valores para que la analista los cargue en el portal del cliente. El flujo sigue igual hasta armar el paquete.
 
 ## Reglas del negocio
 
-- El identificador tributario cambia por país. Periferia solo tiene NIT colombiano, así que en otros países el campo se llena con el NIT y queda por confirmar; la nota del resultado lo explica.
-- Los datos bancarios solo se llenan si la plantilla los pide y nunca van en el borrador del correo.
-- Un soporte vencido o un soporte exigido ausente bloquea el paquete; un campo faltante no lo bloquea.
-- Ninguna acción externa ocurre sin una confirmación explícita de la analista en el mensaje inmediatamente anterior.
-- Cada herramienta deja su registro en out/log.jsonl y en out/<caso>/log.jsonl.
+- RN1: el identificador tributario cambia por país. Periferia solo tiene NIT colombiano, así que en otros países el campo se llena con el NIT y queda por confirmar como identificador extranjero; la nota del resultado lo explica.
+- RN2: los datos bancarios solo se llenan si la plantilla los pide y nunca van en el borrador del correo.
+- RN3: un soporte vencido o un soporte exigido ausente bloquea el paquete; un campo faltante no lo bloquea, pero aparece en el checklist.
+- RN4: ninguna acción externa (envío, firma o carga a un portal) ocurre sin una confirmación explícita de la analista en el mensaje inmediatamente anterior. El servidor lo hace cumplir.
+- RN5: cada herramienta deja su registro en out/log.jsonl y en out/<caso>/log.jsonl.
 
-## Qué hacer ante cada error
+## Qué hacer ante cada código
 
-- CASO_NO_ENCONTRADO: muestra los casos disponibles que trae la respuesta.
-- CASO_INVALIDO: pide un identificador en minúsculas, dígitos y guiones.
+- CASO_NO_ENCONTRADO: muestra los casos disponibles que trae la respuesta y pregunta cuál procesar.
+- CASO_INVALIDO: pide un identificador de caso en minúsculas, dígitos y guiones.
 - ARGS_INVALIDOS: corrige los argumentos según el detalle y vuelve a llamar a la herramienta.
-- MAPEO_INCONSISTENTE: vuelve a pasar a proveedor_generar_formulario el mapeo completo que devolvió proveedor_mapear_campos.
-- CAMPOS_FUERA_DE_PLANTILLA: usa solo las etiquetas de la plantilla del caso.
-- FORMULARIO_NO_GENERADO: primero genera el formulario con proveedor_generar_formulario.
-- PAQUETE_NO_ARMADO: primero arma el paquete con proveedor_armar_paquete.
-- PAQUETE_DESACTUALIZADO: vuelve a generar el formulario si hace falta, vuelve a armar el paquete, muestra el estado nuevo y pide confirmación de nuevo.
-- CONFIRMACION_REQUERIDA: el envío se bloqueó porque la analista no lo confirmó; pregúntale si quiere registrarlo.
-- PLANTILLA_INVALIDA, REGLAS_INVALIDAS, DATOS_INVALIDOS y CONFIGURACION_INVALIDA: explica que los datos o la configuración del caso no son válidos y que hay que revisarlos.
+- MAPEO_INCONSISTENTE: vuelve a ejecutar proveedor_mapear_campos sobre toda la plantilla y pasa su resultado completo a proveedor_generar_formulario.
+- CAMPOS_FUERA_DE_PLANTILLA: usa solo las etiquetas esperadas que trae la respuesta.
+- FORMULARIO_NO_GENERADO: primero genera el formulario con proveedor_generar_formulario y después vuelve a armar el paquete.
+- PAQUETE_NO_ARMADO: primero arma el paquete con proveedor_armar_paquete y pide confirmación antes de enviar.
+- PAQUETE_DESACTUALIZADO: el paquete ya no coincide con el repositorio. Si el maestro cambió, vuelve a generar el formulario con proveedor_mapear_campos y proveedor_generar_formulario; después vuelve a armar el paquete con proveedor_armar_paquete, muestra el estado nuevo y pide confirmación de nuevo. La confirmación anterior ya no vale.
+- CONFIRMACION_REQUERIDA: el envío se bloqueó porque la analista no lo confirmó en su último mensaje. No reintentes; pregúntale si quiere registrarlo.
+- PLANTILLA_INVALIDA, REGLAS_INVALIDAS, DATOS_INVALIDOS y CONFIGURACION_INVALIDA: explica que la plantilla, las reglas, los datos o la configuración del caso no son válidos y que hay que revisarlos; no intentes completar nada por tu cuenta.
 - ERROR_INTERNO: explica que la herramienta falló y propone intentarlo de nuevo.
-- HERRAMIENTA_DESCONOCIDA: usa solo las cinco herramientas de esta lista.
-- ARGUMENTOS_TRUNCADOS: vuelve a llamar a la herramienta con argumentos completos.
+- HERRAMIENTA_DESCONOCIDA: usa solo las cinco herramientas de este proceso.
+- ARGUMENTOS_TRUNCADOS: la respuesta se cortó antes de completar los argumentos; vuelve a llamar a la herramienta con argumentos completos y más cortos.
+
+## Varios casos
+
+Si la analista pide varios casos, procesa cada caso completo, de proveedor_leer_solicitud a proveedor_armar_paquete, antes de pasar al siguiente. Después da un resumen por caso y una sola pregunta de cierre que nombre cada paquete pendiente de confirmación.
