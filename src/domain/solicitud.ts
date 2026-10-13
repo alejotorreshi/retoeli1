@@ -10,10 +10,17 @@ export type CampoAmbiguo = {
   readonly propuesta: string | null;
 };
 
+const PLANTILLA_DEL_FORMATO: Readonly<Record<Formato, TipoPlantilla>> = {
+  xlsx: "celdas",
+  pdf: "campos",
+  portal: "campos",
+};
+
 export function elegirPlantilla(formato: Formato, presentes: PlantillasPresentes): TipoPlantilla | null {
-  if (presentes.celdas === presentes.campos) return null;
+  if (presentes.celdas && presentes.campos) return PLANTILLA_DEL_FORMATO[formato];
   if (presentes.celdas) return "celdas";
-  return formato === "xlsx" ? null : "campos";
+  if (presentes.campos && formato !== "xlsx") return "campos";
+  return null;
 }
 
 export function camposSolicitados(plantilla: Plantilla): CampoSolicitado[] {

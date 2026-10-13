@@ -31,17 +31,22 @@ const MATRIZ: readonly Fila[] = [
     casos: [["pdf", SOLO_CELDAS, "celdas"]],
   },
   {
-    nombre: "ambos archivos o ninguno no es válida con cualquier formato",
-    casos: FORMATOS.flatMap((formato) => [
-      [formato, AMBAS, null] as const,
-      [formato, NINGUNA, null] as const,
-    ]),
+    nombre: "con ambos archivos decide el formato: xlsx usa celdas, pdf y portal usan campos (IN-07)",
+    casos: [
+      ["xlsx", AMBAS, "celdas"],
+      ["pdf", AMBAS, "campos"],
+      ["portal", AMBAS, "campos"],
+    ],
+  },
+  {
+    nombre: "sin ningún archivo no es válida con cualquier formato",
+    casos: FORMATOS.map((formato) => [formato, NINGUNA, null] as const),
   },
 ];
 
 describe("elegirPlantilla: matriz de selección de plantilla (SOLI-01)", () => {
-  test("la matriz tiene las seis filas fijadas en 01-02", () => {
-    expect(MATRIZ).toHaveLength(6);
+  test("la matriz tiene las seis filas de 01-02 con la fila de ambos archivos separada", () => {
+    expect(MATRIZ).toHaveLength(7);
   });
 
   for (const fila of MATRIZ) {

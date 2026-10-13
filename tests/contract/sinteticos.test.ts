@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
-import { readFile } from "node:fs/promises";
+import { copyFile, readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { generar_formulario, leer_solicitud, mapear_campos } from "../../src/tools/proveedor.ts";
 import { generarCaso } from "../helpers/flujo.ts";
@@ -28,7 +28,13 @@ type DatosMapeo = {
 
 type Ambiguo = { etiqueta: string; estado: string; propuesta: string | null };
 
-type DatosSolicitud = { caso: string; pais: string; campos: { etiqueta: string }[]; ambiguos: Ambiguo[] };
+type DatosSolicitud = {
+  caso: string;
+  pais: string;
+  plantilla: string;
+  campos: { etiqueta: string }[];
+  ambiguos: Ambiguo[];
+};
 
 type Respuesta<D> = {
   ok: boolean;
@@ -164,6 +170,23 @@ describe("sintéticos: mapear_campos ejercita las reglas que los casos reales no
     });
     expect(generica.nota).toContain("Identificador extranjero");
     expect(item(datos, "Nombre de la empresa")).toMatchObject({ estado: "lleno", regla: "glosario_exacto" });
+  });
+});
+
+describe("sintéticos: un caso con las dos plantillas elige por formato (HU-1, IN-07)", () => {
+  test("co (xlsx) usa plantilla-celdas.json y ec (pdf) usa plantilla-campos.json", async () => {
+    const aislado = await crearProyectoTemporal();
+    adicionales.push(aislado);
+    const co = join(aislado.casosDir, "co-industrias-delta");
+    const ec = join(aislado.casosDir, "ec-corp-andina");
+    await copyFile(join(ec, "plantilla-campos.json"), join(co, "plantilla-campos.json"));
+    await copyFile(join(co, "plantilla-celdas.json"), join(ec, "plantilla-celdas.json"));
+    const leidaCo = await leer("co-industrias-delta", aislado.raiz);
+    const leidaEc = await leer("ec-corp-andina", aislado.raiz);
+    expect(leidaCo.data).toMatchObject({ plantilla: "plantilla-celdas.json" });
+    expect(leidaCo.data?.campos).toHaveLength(17);
+    expect(leidaEc.data).toMatchObject({ plantilla: "plantilla-campos.json" });
+    expect(leidaEc.data?.campos).toHaveLength(15);
   });
 });
 
