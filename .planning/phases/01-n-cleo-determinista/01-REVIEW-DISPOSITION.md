@@ -5,35 +5,35 @@ titles: json
 findings:
   - id: CR-01
     severity: critical
-    disposition: open
+    disposition: fixed
     title: "`PAQUETE_DESACTUALIZADO` solo detecta archivos faltantes; un paquete con el estado cambiado pasa el envío y el borrador viejo promete adjuntos que no salen"
   - id: WR-01
     severity: warning
-    disposition: open
+    disposition: fixed
     title: "Regresión de WR-02: si los únicos campos por confirmar son bancarios, el borrador declara el formulario \"listo para la firma\" y el checklist pide confirmarlos con el cliente"
   - id: WR-02
     severity: warning
-    disposition: open
+    disposition: fixed
     title: "El checklist pide confirmar con el cliente el emisor de un soporte vencido que el borrador no pregunta"
   - id: WR-03
     severity: warning
-    disposition: open
+    disposition: fixed
     title: "La prueba de cobertura de nombres falla con cualquier archivo suelto en `casos/` (hoy, `.DS_Store`)"
   - id: IN-01
     severity: info
-    disposition: open
+    disposition: fixed
     title: "`archivosEsperados` duplica la regla de qué copia `armar_paquete` a `paquete/`"
   - id: IN-02
     severity: info
-    disposition: open
+    disposition: fixed
     title: "El respaldo `sinVigencia` produce un texto que se contradice y está en un camino inalcanzable"
   - id: IN-03
     severity: info
-    disposition: open
+    disposition: fixed
     title: "`docs/plantillas.md` cita un archivo que no existe"
   - id: IN-04
     severity: info
-    disposition: open
+    disposition: fixed
     title: "El fixture de la prueba unitaria de la política se contradice a sí mismo"
   - id: WR-04
     severity: warning
@@ -191,23 +191,23 @@ findings:
     severity: info
     disposition: fixed
     title: "`sessionId` has no length bound before it is written to every log line"
-open: 8
+open: 0
 total: 47
-recorded: 2026-10-13T15:17:54.565Z
+recorded: 2026-10-13T15:53:12.004Z
 ---
 
 # Phase 01: Code Review Disposition
 
 | Finding | Severity | Disposition | Source |
 |---------|----------|-------------|--------|
-| CR-01 | critical | open | - |
-| WR-01 | warning | open | - |
-| WR-02 | warning | open | - |
-| WR-03 | warning | open | - |
-| IN-01 | info | open | - |
-| IN-02 | info | open | - |
-| IN-03 | info | open | - |
-| IN-04 | info | open | - |
+| CR-01 | critical | fixed | 01-REVIEW-FIX.md |
+| WR-01 | warning | fixed | 01-REVIEW-FIX.md |
+| WR-02 | warning | fixed | 01-REVIEW-FIX.md |
+| WR-03 | warning | fixed | 01-REVIEW-FIX.md |
+| IN-01 | info | fixed | 01-REVIEW-FIX.md |
+| IN-02 | info | fixed | 01-REVIEW-FIX.md |
+| IN-03 | info | fixed | 01-REVIEW-FIX.md |
+| IN-04 | info | fixed | 01-REVIEW-FIX.md |
 | WR-04 | warning | fixed | 01-REVIEW-FIX.md (not in the current review) |
 | IN-05 | info | fixed | 01-REVIEW-FIX.md (not in the current review) |
 | IN-06 | info | fixed | 01-REVIEW-FIX.md (not in the current review) |
