@@ -94,8 +94,11 @@ describe("contrato: un dato del maestro en blanco es faltante en todo el flujo (
     expect(checklist).not.toMatch(/## Campos faltantes\n\nNinguno\./);
   });
 
-  test("el borrador lo menciona entre los pendientes", async () => {
+  test("el borrador lo pregunta como campo sin dato y no promete enviarlo (WR-01)", async () => {
     const borrador = await leerPaquete("borrador-correo.md");
-    expect(borrador).toContain("Quedan pendientes:\n- Ciudad\n- Código CIIU\n");
+    expect(borrador).toContain(
+      "les agradecemos indicarnos si aplican para su registro:\n- Ciudad\n- Código CIIU\n",
+    );
+    expect(borrador).not.toContain("Quedan pendientes estos soportes:\n- Ciudad");
   });
 });

@@ -19,7 +19,10 @@ const FIRMA_LISTA = "El formulario queda listo para la firma de nuestro represen
 const FIRMA_TRAS_CONFIRMAR =
   "Con su confirmación pasaremos el formulario a la firma de nuestro representante legal.";
 const FIRMA_BLOQUEADA =
-  "El formulario todavía no está listo para la firma de nuestro representante legal: falta completar los pendientes indicados.";
+  "El formulario todavía no está listo para la firma de nuestro representante legal: faltan los soportes pendientes indicados.";
+const CAMPOS_SIN_DATO =
+  "Estos campos del formulario quedan en blanco porque no contamos con el dato; les agradecemos indicarnos si aplican para su registro:";
+const SOPORTES_PENDIENTES = "Quedan pendientes estos soportes:";
 const PROHIBIDOS = ["Bancolombia", "Ahorros", "03100012345", "COLOCOBM", "900123456", "71555123"];
 
 type Respuesta = {
@@ -119,14 +122,26 @@ describe("golden: borrador-correo.md y ENVIO-SIMULADO.md (PAQ-04, ENV-01, D-25, 
     }
   });
 
-  test("ec lista los pendientes y no anuncia como adjunto el certificado ausente", async () => {
+  test("ec lista los soportes pendientes y no anuncia como adjunto el certificado ausente", async () => {
     const borrador = await leerPaquete(compartido.raiz, EC, "borrador-correo.md");
-    expect(borrador).toContain("Quedan pendientes:");
-    expect(borrador).toContain("- Certificado de cumplimiento tributario\n");
-    expect(borrador).toContain("- Número de contribuyente especial\n");
-    expect(borrador).toContain("Los enviaremos por separado.");
+    const [, pendientes = ""] = borrador.split(SOPORTES_PENDIENTES);
+    expect(pendientes).toContain("- Certificado de cumplimiento tributario\n");
+    expect(pendientes).toContain("Los enviaremos por separado.");
     expect(borrador).toContain("formulario.pdf");
     expect(borrador).not.toContain("Certificado de cumplimiento tributario (");
+  });
+
+  test("ec separa el dato que no existe en el maestro de los soportes y no promete enviarlo (WR-01)", async () => {
+    const borrador = await leerPaquete(compartido.raiz, EC, "borrador-correo.md");
+    const [antes = "", despues = ""] = borrador.split(SOPORTES_PENDIENTES);
+    expect(antes).toContain(`${CAMPOS_SIN_DATO}\n- Número de contribuyente especial\n`);
+    expect(despues).not.toContain("Número de contribuyente especial");
+  });
+
+  test("ningún borrador sin campos faltantes pregunta por datos que no existen en el maestro", async () => {
+    for (const caso of [CO, PA]) {
+      expect(await leerPaquete(compartido.raiz, caso, "borrador-correo.md")).not.toContain(CAMPOS_SIN_DATO);
+    }
   });
 
   test("hn anuncia el soporte vencido como pendiente y no como adjunto", async () => {

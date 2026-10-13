@@ -40,11 +40,10 @@ function archivosAlCliente(
   return new Set(adjuntaFormulario(solicitud.formato) ? [formulario, ...soportes] : soportes);
 }
 
-function pendientesDe(checklist: Checklist): readonly string[] {
+function soportesPendientesDe(checklist: Checklist): readonly string[] {
   const ausentes = checklist.soportes.filter((soporte) => soporte.estado === ESTADO_SOPORTE.AUSENTE);
   const vencidos = checklist.soportes.filter((soporte) => soporte.estado === ESTADO_SOPORTE.VENCIDO);
   return [
-    ...checklist.faltantes,
     ...ausentes.map((soporte) => TEXTO_SOPORTE.nombre(soporte.tipo)),
     ...vencidos.map((soporte) => TEXTO_BORRADOR.pendienteVencido(TEXTO_SOPORTE.nombre(soporte.tipo))),
   ];
@@ -56,8 +55,10 @@ export function construirDatosBorrador(
   checklist: Checklist,
   nombreFormulario: string,
 ): DatosBorradorCorreo {
-  const pendientes = pendientesDe(checklist);
+  const soportesPendientes = soportesPendientesDe(checklist);
   const hayPorConfirmar = checklist.requiere_confirmacion.length > 0;
+  const hayCamposSinDato = checklist.faltantes.length > 0;
+  const hayPreguntas = hayPorConfirmar || hayCamposSinDato;
   return {
     para: solicitud.de,
     asunto: asuntoRespuesta(solicitud),
@@ -70,10 +71,12 @@ export function construirDatosBorrador(
     soportes_adjuntos: adjuntos(checklist.soportes),
     por_confirmar: checklist.requiere_confirmacion.map(({ etiqueta, nota }) => ({ etiqueta, nota })),
     hay_por_confirmar: seccionSi(hayPorConfirmar),
-    pendientes: pendientes.map((texto) => ({ texto })),
-    hay_pendientes: seccionSi(pendientes.length > 0),
-    firma_lista: seccionSi(checklist.listo_para_firma && !hayPorConfirmar),
-    firma_tras_confirmar: seccionSi(checklist.listo_para_firma && hayPorConfirmar),
+    campos_sin_dato: checklist.faltantes.map((etiqueta) => ({ etiqueta })),
+    hay_campos_sin_dato: seccionSi(hayCamposSinDato),
+    soportes_pendientes: soportesPendientes.map((texto) => ({ texto })),
+    hay_soportes_pendientes: seccionSi(soportesPendientes.length > 0),
+    firma_lista: seccionSi(checklist.listo_para_firma && !hayPreguntas),
+    firma_tras_confirmar: seccionSi(checklist.listo_para_firma && hayPreguntas),
     firma_bloqueada: seccionSi(!checklist.listo_para_firma),
   };
 }

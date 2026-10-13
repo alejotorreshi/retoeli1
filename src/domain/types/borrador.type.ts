@@ -16,8 +16,10 @@ export type DatosBorradorCorreo = {
   readonly soportes_adjuntos: readonly { readonly nombre: string; readonly archivo: string }[];
   readonly por_confirmar: readonly CampoPorConfirmar[];
   readonly hay_por_confirmar: SeccionCondicional;
-  readonly pendientes: readonly { readonly texto: string }[];
-  readonly hay_pendientes: SeccionCondicional;
+  readonly campos_sin_dato: readonly { readonly etiqueta: string }[];
+  readonly hay_campos_sin_dato: SeccionCondicional;
+  readonly soportes_pendientes: readonly { readonly texto: string }[];
+  readonly hay_soportes_pendientes: SeccionCondicional;
   readonly firma_lista: SeccionCondicional;
   readonly firma_tras_confirmar: SeccionCondicional;
   readonly firma_bloqueada: SeccionCondicional;

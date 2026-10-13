@@ -16,6 +16,7 @@ const POR_CONFIRMAR: readonly CampoPorConfirmar[] = [
   { etiqueta: "Identificador ficticio", nota: "Nota ficticia uno" },
   { etiqueta: "Otro campo ficticio", nota: "Nota ficticia dos" },
 ];
+const FALTANTES = ["Dato ficticio sin fuente"];
 const CLAVES_BORRADOR = [
   "para",
   "asunto",
@@ -28,8 +29,10 @@ const CLAVES_BORRADOR = [
   "soportes_adjuntos",
   "por_confirmar",
   "hay_por_confirmar",
-  "pendientes",
-  "hay_pendientes",
+  "campos_sin_dato",
+  "hay_campos_sin_dato",
+  "soportes_pendientes",
+  "hay_soportes_pendientes",
   "firma_lista",
   "firma_tras_confirmar",
   "firma_bloqueada",
@@ -76,13 +79,17 @@ function solicitud(formato: Formato): Solicitud {
   };
 }
 
-function checklist(listo: boolean, porConfirmar: readonly CampoPorConfirmar[]): Checklist {
+function checklist(
+  listo: boolean,
+  porConfirmar: readonly CampoPorConfirmar[],
+  faltantes: readonly string[] = [],
+): Checklist {
   return {
     fecha_ejecucion: "2026-09-03",
     listo_para_firma: listo,
     bloqueos: listo ? [] : ["vencido: parafiscales"],
     soportes: SOPORTES,
-    faltantes: [],
+    faltantes,
     requiere_confirmacion: porConfirmar,
   };
 }
@@ -91,8 +98,14 @@ function borrador(
   listo: boolean,
   porConfirmar: readonly CampoPorConfirmar[],
   formato: Formato = FORMATO.XLSX,
+  faltantes: readonly string[] = [],
 ) {
-  return construirDatosBorrador(solicitud(formato), MAESTRO, checklist(listo, porConfirmar), FORMULARIO_XLSX);
+  return construirDatosBorrador(
+    solicitud(formato),
+    MAESTRO,
+    checklist(listo, porConfirmar, faltantes),
+    FORMULARIO_XLSX,
+  );
 }
 
 describe("construirDatosBorrador: estado de firma (GC-1, G-01-H4b)", () => {
@@ -133,16 +146,52 @@ describe("construirDatosBorrador: estado de firma (GC-1, G-01-H4b)", () => {
     expect(datos.por_confirmar).toHaveLength(POR_CONFIRMAR.length);
   });
 
-  test("en las cuatro combinaciones hay exactamente una bandera de firma activa", () => {
+  test("en las ocho combinaciones hay exactamente una bandera de firma activa", () => {
     for (const listo of [true, false]) {
       for (const porConfirmar of [[], POR_CONFIRMAR]) {
-        const datos = borrador(listo, porConfirmar);
-        const activas = [datos.firma_lista, datos.firma_tras_confirmar, datos.firma_bloqueada].filter(
-          (bandera) => bandera.length > 0,
-        );
-        expect(activas).toHaveLength(1);
+        for (const faltantes of [[], FALTANTES]) {
+          const datos = borrador(listo, porConfirmar, FORMATO.XLSX, faltantes);
+          const activas = [datos.firma_lista, datos.firma_tras_confirmar, datos.firma_bloqueada].filter(
+            (bandera) => bandera.length > 0,
+          );
+          expect(activas).toHaveLength(1);
+        }
       }
     }
+  });
+});
+
+describe("construirDatosBorrador: campos sin dato separados de los soportes pendientes (WR-01)", () => {
+  test("listo con campos faltantes no declara el formulario listo y pide confirmar antes de la firma", () => {
+    const datos = borrador(true, [], FORMATO.XLSX, FALTANTES);
+    expect(datos.firma_lista).toEqual([]);
+    expect(datos.firma_tras_confirmar).toEqual([{}]);
+    expect(datos.firma_bloqueada).toEqual([]);
+    expect(datos.hay_campos_sin_dato).toEqual([{}]);
+    expect(datos.campos_sin_dato).toEqual([{ etiqueta: "Dato ficticio sin fuente" }]);
+  });
+
+  test("los campos faltantes nunca entran en los soportes pendientes", () => {
+    for (const listo of [true, false]) {
+      const datos = borrador(listo, POR_CONFIRMAR, FORMATO.XLSX, FALTANTES);
+      const textos = datos.soportes_pendientes.map((pendiente) => pendiente.texto);
+      expect(textos).not.toContain("Dato ficticio sin fuente");
+      expect(datos.campos_sin_dato).toEqual([{ etiqueta: "Dato ficticio sin fuente" }]);
+    }
+  });
+
+  test("sin campos faltantes la sección de campos sin dato queda apagada", () => {
+    const datos = borrador(false, []);
+    expect(datos.hay_campos_sin_dato).toEqual([]);
+    expect(datos.campos_sin_dato).toEqual([]);
+    expect(datos.hay_soportes_pendientes).toEqual([{}]);
+  });
+
+  test("bloqueado con campos faltantes activa solo firma_bloqueada", () => {
+    const datos = borrador(false, [], FORMATO.XLSX, FALTANTES);
+    expect(datos.firma_lista).toEqual([]);
+    expect(datos.firma_tras_confirmar).toEqual([]);
+    expect(datos.firma_bloqueada).toEqual([{}]);
   });
 });
 
@@ -299,7 +348,10 @@ describe("nombres de soporte con tipos desconocidos (GC-2, G-01-H4c)", () => {
         FORMULARIO_XLSX,
       );
       expect(datos.soportes_adjuntos).toEqual([{ nombre: tipo, archivo: "adjunto-ficticio.txt" }]);
-      expect(datos.pendientes).toEqual([{ texto: tipo }, { texto: TEXTO_BORRADOR.pendienteVencido(tipo) }]);
+      expect(datos.soportes_pendientes).toEqual([
+        { texto: tipo },
+        { texto: TEXTO_BORRADOR.pendienteVencido(tipo) },
+      ]);
     }
   });
 
@@ -317,7 +369,7 @@ describe("nombres de soporte con tipos desconocidos (GC-2, G-01-H4c)", () => {
     expect(datos.soportes_adjuntos).toEqual([
       { nombre: "Registro Único Tributario", archivo: "rut-ficticio.txt" },
     ]);
-    expect(datos.pendientes).toEqual([
+    expect(datos.soportes_pendientes).toEqual([
       { texto: "Certificado de cumplimiento tributario" },
       { texto: TEXTO_BORRADOR.pendienteVencido("Certificación de aportes parafiscales") },
     ]);

@@ -12,15 +12,18 @@ Buenos días, equipo de {{cliente}}:
 {{#hay_por_confirmar}}Antes de la firma necesitamos que nos confirmen estos campos:
 {{/hay_por_confirmar}}{{#por_confirmar}}- {{etiqueta}}: {{nota}}
 {{/por_confirmar}}{{#hay_por_confirmar}}
-{{/hay_por_confirmar}}{{#hay_pendientes}}Quedan pendientes:
-{{/hay_pendientes}}{{#pendientes}}- {{texto}}
-{{/pendientes}}{{#hay_pendientes}}Los enviaremos por separado.
+{{/hay_por_confirmar}}{{#hay_campos_sin_dato}}Estos campos del formulario quedan en blanco porque no contamos con el dato; les agradecemos indicarnos si aplican para su registro:
+{{/hay_campos_sin_dato}}{{#campos_sin_dato}}- {{etiqueta}}
+{{/campos_sin_dato}}{{#hay_campos_sin_dato}}
+{{/hay_campos_sin_dato}}{{#hay_soportes_pendientes}}Quedan pendientes estos soportes:
+{{/hay_soportes_pendientes}}{{#soportes_pendientes}}- {{texto}}
+{{/soportes_pendientes}}{{#hay_soportes_pendientes}}Los enviaremos por separado.
 
-{{/hay_pendientes}}{{#firma_lista}}El formulario queda listo para la firma de nuestro representante legal.
+{{/hay_soportes_pendientes}}{{#firma_lista}}El formulario queda listo para la firma de nuestro representante legal.
 
 {{/firma_lista}}{{#firma_tras_confirmar}}Con su confirmación pasaremos el formulario a la firma de nuestro representante legal.
 
-{{/firma_tras_confirmar}}{{#firma_bloqueada}}El formulario todavía no está listo para la firma de nuestro representante legal: falta completar los pendientes indicados.
+{{/firma_tras_confirmar}}{{#firma_bloqueada}}El formulario todavía no está listo para la firma de nuestro representante legal: faltan los soportes pendientes indicados.
 
 {{/firma_bloqueada}}Quedamos atentos a cualquier comentario.
 
