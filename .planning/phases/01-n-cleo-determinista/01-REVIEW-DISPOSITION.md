@@ -5,75 +5,75 @@ titles: json
 findings:
   - id: WR-10
     severity: warning
-    disposition: open
+    disposition: fixed
     title: "Exported types live in logic files (rule 1)"
   - id: WR-11
     severity: warning
-    disposition: open
+    disposition: fixed
     title: "Magic strings for codes and states, and enums built from arrays instead of `as const` objects (rule 2)"
   - id: WR-12
     severity: warning
-    disposition: open
+    disposition: fixed
     title: "File names do not encode their role, and roles are not separated by folder (rule 3)"
   - id: WR-13
     severity: warning
-    disposition: open
+    disposition: fixed
     title: "One `constantes.ts` for everything, plus about 40 scattered constants (rule 4)"
   - id: WR-14
     severity: warning
-    disposition: open
+    disposition: fixed
     title: "User-facing text is hardcoded in 22 files, with copies of the same sentence (rule 5)"
   - id: WR-15
     severity: warning
-    disposition: open
+    disposition: fixed
     title: "Config is not split into pure and env parts, and layering workarounds follow from that (rule 6)"
   - id: WR-16
     severity: warning
-    disposition: open
+    disposition: fixed
     title: "227 relative parent imports; adopt one `@/*` alias (rule 7)"
   - id: WR-17
     severity: warning
-    disposition: open
+    disposition: fixed
     title: "The checklist column \"País emisor\" shows the issuer warning, never the country"
   - id: WR-18
     severity: warning
-    disposition: open
+    disposition: fixed
     title: "Model-facing text names the tools inconsistently (`generar_formulario` vs `proveedor_mapear_campos`)"
   - id: WR-19
     severity: warning
-    disposition: open
+    disposition: fixed
     title: "Path-containment and FS-error helpers are duplicated across infra, with diverging semantics"
   - id: WR-20
     severity: warning
-    disposition: open
+    disposition: fixed
     title: "Infra and tools naming language contradicts CLAUDE.md"
   - id: IN-13
     severity: info
-    disposition: open
+    disposition: fixed
     title: "Exported constants are re-hardcoded instead of imported, and summary phrases are duplicated"
   - id: IN-14
     severity: info
-    disposition: open
+    disposition: fixed
     title: "Small helper duplicates"
   - id: IN-15
     severity: info
-    disposition: open
+    disposition: fixed
     title: "Port fields and exports with no consumer"
   - id: IN-16
     severity: info
-    disposition: open
+    disposition: fixed
     title: "Overloaded names: \"plantilla\" means three things, \"reglas\" two"
   - id: IN-17
     severity: info
-    disposition: open
+    disposition: fixed
     title: "Function shape and naming"
   - id: IN-18
     severity: info
-    disposition: open
+    disposition: fixed
     title: "Use cases import other use cases"
   - id: IN-19
     severity: info
-    disposition: open
+    disposition: fixed
     title: "`ARCHIVOS_SALIDA` mixes names and `paquete/` paths, and the write whitelist is wider than its callers"
   - id: CR-01
     severity: critical
@@ -163,33 +163,33 @@ findings:
     severity: info
     disposition: fixed
     title: "`sessionId` has no length bound before it is written to every log line"
-open: 18
+open: 0
 total: 40
-recorded: 2026-10-13T00:30:36.486Z
+recorded: 2026-10-13T01:16:19.756Z
 ---
 
 # Phase 01: Code Review Disposition
 
 | Finding | Severity | Disposition | Source |
 |---------|----------|-------------|--------|
-| WR-10 | warning | open | - |
-| WR-11 | warning | open | - |
-| WR-12 | warning | open | - |
-| WR-13 | warning | open | - |
-| WR-14 | warning | open | - |
-| WR-15 | warning | open | - |
-| WR-16 | warning | open | - |
-| WR-17 | warning | open | - |
-| WR-18 | warning | open | - |
-| WR-19 | warning | open | - |
-| WR-20 | warning | open | - |
-| IN-13 | info | open | - |
-| IN-14 | info | open | - |
-| IN-15 | info | open | - |
-| IN-16 | info | open | - |
-| IN-17 | info | open | - |
-| IN-18 | info | open | - |
-| IN-19 | info | open | - |
+| WR-10 | warning | fixed | 01-REVIEW-FIX.md |
+| WR-11 | warning | fixed | 01-REVIEW-FIX.md |
+| WR-12 | warning | fixed | 01-REVIEW-FIX.md |
+| WR-13 | warning | fixed | 01-REVIEW-FIX.md |
+| WR-14 | warning | fixed | 01-REVIEW-FIX.md |
+| WR-15 | warning | fixed | 01-REVIEW-FIX.md |
+| WR-16 | warning | fixed | 01-REVIEW-FIX.md |
+| WR-17 | warning | fixed | 01-REVIEW-FIX.md |
+| WR-18 | warning | fixed | 01-REVIEW-FIX.md |
+| WR-19 | warning | fixed | 01-REVIEW-FIX.md |
+| WR-20 | warning | fixed | 01-REVIEW-FIX.md |
+| IN-13 | info | fixed | 01-REVIEW-FIX.md |
+| IN-14 | info | fixed | 01-REVIEW-FIX.md |
+| IN-15 | info | fixed | 01-REVIEW-FIX.md |
+| IN-16 | info | fixed | 01-REVIEW-FIX.md |
+| IN-17 | info | fixed | 01-REVIEW-FIX.md |
+| IN-18 | info | fixed | 01-REVIEW-FIX.md |
+| IN-19 | info | fixed | 01-REVIEW-FIX.md |
 | CR-01 | critical | fixed | 01-REVIEW-FIX.md (not in the current review) |
 | WR-01 | warning | fixed | 01-REVIEW-FIX.md (not in the current review) |
 | WR-02 | warning | fixed | 01-REVIEW-FIX.md (not in the current review) |
