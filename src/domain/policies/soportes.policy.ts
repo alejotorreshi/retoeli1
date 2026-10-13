@@ -65,15 +65,11 @@ function evaluarSoporte(tipo: string, evaluacion: EntradaEvaluacionSoportes): Re
   const vigencia = evaluarVigencia(entrada.vigencia_hasta, hoy, reglas.dias_aviso_vencimiento);
   const emisor = avisoEmisor(entrada, paisCliente, reglas);
   if (!emisor.ok) return emisor;
-  return exito({
-    tipo,
-    estado: vigencia.estado === ESTADO_VIGENCIA.VENCIDO ? ESTADO_SOPORTE.VENCIDO : ESTADO_SOPORTE.PRESENTE,
-    vigencia_hasta: entrada.vigencia_hasta,
-    archivo: entrada.archivo,
-    aviso: vigencia.aviso,
-    pais_emisor: entrada.pais_emisor,
-    aviso_emisor: emisor.data,
-  });
+  const datos = { aviso: vigencia.aviso, pais_emisor: entrada.pais_emisor, aviso_emisor: emisor.data };
+  const { archivo, vigencia_hasta } = entrada;
+  if (vigencia.estado === ESTADO_VIGENCIA.VENCIDO && vigencia_hasta !== null)
+    return exito({ tipo, estado: ESTADO_SOPORTE.VENCIDO, vigencia_hasta, archivo, ...datos });
+  return exito({ tipo, estado: ESTADO_SOPORTE.PRESENTE, vigencia_hasta, archivo, ...datos });
 }
 
 export function evaluarSoportes(

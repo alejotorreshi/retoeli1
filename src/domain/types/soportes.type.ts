@@ -13,15 +13,23 @@ export type SoporteIndice = {
 
 export type EstadoSoporte = ValorDe<typeof ESTADO_SOPORTE>;
 
-export type SoporteEvaluado = {
+type DatosSoporteEvaluado = {
   readonly tipo: string;
-  readonly estado: EstadoSoporte;
-  readonly vigencia_hasta: string | null;
   readonly archivo: string | null;
   readonly aviso: string | null;
   readonly pais_emisor: string | null;
   readonly aviso_emisor: string | null;
 };
+
+export type SoporteEvaluado =
+  | (DatosSoporteEvaluado & {
+      readonly estado: typeof ESTADO_SOPORTE.PRESENTE | typeof ESTADO_SOPORTE.AUSENTE;
+      readonly vigencia_hasta: string | null;
+    })
+  | (DatosSoporteEvaluado & {
+      readonly estado: typeof ESTADO_SOPORTE.VENCIDO;
+      readonly vigencia_hasta: string;
+    });
 
 export type EntradaEvaluacionSoportes = {
   readonly exigidos: readonly string[];

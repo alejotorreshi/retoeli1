@@ -52,15 +52,10 @@ const MAESTRO: Maestro = {
 };
 
 function soporte(tipo: string, estado: SoporteEvaluado["estado"], archivo: string | null): SoporteEvaluado {
-  return {
-    tipo,
-    estado,
-    vigencia_hasta: null,
-    archivo,
-    aviso: null,
-    pais_emisor: null,
-    aviso_emisor: null,
-  };
+  const datos = { tipo, archivo, aviso: null, pais_emisor: null, aviso_emisor: null };
+  return estado === ESTADO_SOPORTE.VENCIDO
+    ? { ...datos, estado, vigencia_hasta: "2026-08-31" }
+    : { ...datos, estado, vigencia_hasta: null };
 }
 
 const SOPORTES: readonly SoporteEvaluado[] = [

@@ -20,15 +20,10 @@ function soporte(
   archivo: string | null,
   vigencia: string | null,
 ): SoporteEvaluado {
-  return {
-    tipo,
-    estado,
-    vigencia_hasta: vigencia,
-    archivo,
-    aviso: null,
-    pais_emisor: null,
-    aviso_emisor: null,
-  };
+  const datos = { tipo, archivo, aviso: null, pais_emisor: null, aviso_emisor: null };
+  if (estado !== ESTADO_SOPORTE.VENCIDO) return { ...datos, estado, vigencia_hasta: vigencia };
+  if (vigencia === null) throw new RangeError("un soporte vencido siempre trae su fecha");
+  return { ...datos, estado, vigencia_hasta: vigencia };
 }
 
 const SOPORTES: readonly SoporteEvaluado[] = [
@@ -45,11 +40,21 @@ describe("checklist.builder: nombres legibles solo en la salida para personas (G
     ]);
   });
 
-  test("un vencido sin fecha nunca deja un paréntesis vacío en el bloqueo (IN-02)", () => {
-    const sinFecha = [soporte("parafiscales", ESTADO_SOPORTE.VENCIDO, "parafiscales-ficticio.txt", null)];
-    expect(construirChecklist(sinFecha, [], HOY).bloqueos).toEqual(["vencido: parafiscales (no aplica)"]);
-    const motivos = motivosDeBloqueo(construirChecklist(sinFecha, [], HOY));
-    expect(motivos.every((motivo) => !motivo.includes("()"))).toBe(true);
+  test("un vencido siempre lleva su fecha en el bloqueo y solo un soporte sin vencimiento muestra no aplica (IN-02)", () => {
+    const checklist = construirChecklist(
+      [
+        soporte("parafiscales", ESTADO_SOPORTE.VENCIDO, "parafiscales-ficticio.txt", "2026-08-31"),
+        soporte("rut", ESTADO_SOPORTE.PRESENTE, "rut-ficticio.txt", null),
+      ],
+      [],
+      HOY,
+    );
+    expect(checklist.bloqueos).toEqual(["vencido: parafiscales (2026-08-31)"]);
+    expect(motivosDeBloqueo(checklist).join("\n")).not.toContain("no aplica");
+    expect(construirDatosChecklist(CASO, checklist).soportes.map((fila) => fila.vigencia)).toEqual([
+      "2026-08-31",
+      "no aplica",
+    ]);
   });
 
   test("motivosDeBloqueo da los mismos bloqueos en el mismo orden con el nombre del soporte", () => {

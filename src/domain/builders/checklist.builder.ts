@@ -18,13 +18,7 @@ function motivoDe(soporte: SoporteEvaluado): readonly MotivoBloqueo[] {
   const { tipo } = soporte;
   if (soporte.estado === ESTADO_SOPORTE.AUSENTE) return [{ tipo, causa: ESTADO_SOPORTE.AUSENTE }];
   if (soporte.estado === ESTADO_SOPORTE.VENCIDO)
-    return [
-      {
-        tipo,
-        causa: ESTADO_SOPORTE.VENCIDO,
-        vigencia: soporte.vigencia_hasta ?? TEXTO_CHECKLIST.sinVigencia,
-      },
-    ];
+    return [{ tipo, causa: ESTADO_SOPORTE.VENCIDO, vigencia: soporte.vigencia_hasta }];
   return [];
 }
 
