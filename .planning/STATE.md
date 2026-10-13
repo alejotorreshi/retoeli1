@@ -3,16 +3,16 @@ gsd_state_version: "1.0"
 current_phase: 02
 current_phase_name: Agente y compuerta de confirmación
 status: executing
-stopped_at: Completed 02-11-PLAN.md
-last_updated: "2026-10-13T22:01:39.944Z"
+stopped_at: Completed 02-12-PLAN.md
+last_updated: "2026-10-13T22:09:24.923Z"
 last_activity: 2026-10-13
 last_activity_desc: Phase 02 execution started
-state_head: 1f3c565c4eb5dc8bbd97fcd22cbb02391198ead8
+state_head: 748021602644e133bedbb230d310a330f4bca6aa
 progress:
   total_phases: 4
   completed_phases: 1
   total_plans: 29
-  completed_plans: 26
+  completed_plans: 27
   percent: 25
 ---
 
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-10-13)
 ## Current Position
 
 Phase: 02 (Agente y compuerta de confirmación) — EXECUTING
-Plan: 3 of 14
+Plan: 4 of 14
 Status: Ready to execute
 Last activity: 2026-10-13 — Phase 02 execution started
 
@@ -82,6 +82,7 @@ Progress: [███░░░░░░░] 25%
 | Phase 02 P09 | 6 min | 2 tasks | 8 files |
 | Phase 02 P10 | 4 min | 2 tasks | 8 files |
 | Phase 02 P11 | 4 min | 2 tasks | 7 files |
+| Phase 02 P12 | 5 min | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -175,6 +176,7 @@ Recent decisions affecting current work:
 - [Phase 02]: 02-10: T-02-41 accepted: non-question model lines above the server question remain; carried to SOLUCION.md risks (Phase 4) and the Phase 3 confirmation card
 - [Phase 02]: 02-11: ARGUMENTOS_VACIOS ('{}') lives in llm.constants.ts; pasoTruncado stores cut calls with it and keeps id and nombre so ARGUMENTOS_TRUNCADOS results still pair (CR-03 closed)
 - [Phase 02]: 02-11: toWireToolCall forwards arguments byte for byte only when they parse to a plain JSON object, otherwise ARGUMENTOS_VACIOS; the neutral history of an executed step keeps the raw malformed string, only the wire normalizes it
+- [Phase 02]: Session locks are a fenced lease of AGENT_TURN_DEADLINE_MS + MARGEN_CANDADO_SESION_MS (30 s): an abandoned consumer frees the session after the lease, and a stale holder can neither release nor overwrite it (WR-03)
 
 ### Pending Todos
 
@@ -200,6 +202,6 @@ Items acknowledged and deferred at milestone close, most recent first:
 
 ## Session Continuity
 
-Last session: 2026-10-13T22:01:39.889Z
-Stopped at: Completed 02-11-PLAN.md
+Last session: 2026-10-13T22:09:24.869Z
+Stopped at: Completed 02-12-PLAN.md
 Resume file: None
