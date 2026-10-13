@@ -4,6 +4,7 @@ import { leerSolicitud } from "@/application/leer-solicitud.ts";
 import { mapearCamposCaso } from "@/application/mapear-campos.ts";
 import { simularEnvio } from "@/application/simular-envio.ts";
 import { HERRAMIENTA } from "@/config/constants/tools.constants.ts";
+import { DESCRIPCION_HERRAMIENTA, RESUMEN_HERRAMIENTA } from "@/config/strings.ts";
 import {
   argsArmarPaquete,
   argsGenerarFormulario,
@@ -20,13 +21,18 @@ export function crearHerramientas(opciones: OpcionesHerramientas = {}) {
   const leer_solicitud = defineTool(
     {
       nombre: HERRAMIENTA.LEER_SOLICITUD,
-      description:
-        "Lee la solicitud de un caso y devuelve país, cliente, formato pedido, plantilla, campos en el orden de la plantilla y soportes exigidos.",
+      description: DESCRIPCION_HERRAMIENTA[HERRAMIENTA.LEER_SOLICITUD],
       args: argsLeerSolicitud,
       ejecutar: leerSolicitud,
       presentar: (datos) => datos,
       resumir: (datos) =>
-        `${datos.caso}: ${datos.formato}, ${datos.pais}, ${datos.campos.length} campos, ${datos.soportes.length} soportes exigidos`,
+        RESUMEN_HERRAMIENTA.solicitud(
+          datos.caso,
+          datos.formato,
+          datos.pais,
+          datos.campos.length,
+          datos.soportes.length,
+        ),
     },
     opciones,
   );
@@ -34,13 +40,11 @@ export function crearHerramientas(opciones: OpcionesHerramientas = {}) {
   const mapear_campos = defineTool(
     {
       nombre: HERRAMIENTA.MAPEAR_CAMPOS,
-      description:
-        "Mapea las etiquetas de la plantilla de un caso contra el maestro y devuelve cada campo con su estado, ruta, regla, confianza y valor enmascarado.",
+      description: DESCRIPCION_HERRAMIENTA[HERRAMIENTA.MAPEAR_CAMPOS],
       args: argsMapearCampos,
       ejecutar: mapearCamposCaso,
       presentar: (datos) => datos,
-      resumir: ({ caso, conteo }) =>
-        `${caso}: ${conteo.lleno} llenos, ${conteo.faltante} faltantes, ${conteo.requiere_confirmacion} por confirmar`,
+      resumir: ({ caso, conteo }) => RESUMEN_HERRAMIENTA.mapeo(caso, conteo),
     },
     opciones,
   );
@@ -48,18 +52,15 @@ export function crearHerramientas(opciones: OpcionesHerramientas = {}) {
   const generar_formulario = defineTool(
     {
       nombre: HERRAMIENTA.GENERAR_FORMULARIO,
-      description:
-        "Genera el formulario del caso en el formato pedido releyendo cada valor del maestro, y su mapeo lleva solo las etiquetas, estados y rutas que devolvió proveedor_mapear_campos.",
+      description: DESCRIPCION_HERRAMIENTA[HERRAMIENTA.GENERAR_FORMULARIO],
       args: argsGenerarFormulario,
       ejecutar: generarFormulario,
       presentar: ({ ruta, formato, aviso }) =>
         aviso === null ? { ruta, formato } : { ruta, formato, aviso },
-      resumir: ({ caso, formato, conteo, aviso }) => {
-        const cuenta = `(${conteo.lleno} llenos, ${conteo.faltante} faltantes, ${conteo.requiere_confirmacion} por confirmar)`;
-        return aviso === null
-          ? `${caso}: formulario ${formato} generado ${cuenta}`
-          : `${caso}: valores para ${formato} generados, ${aviso} ${cuenta}`;
-      },
+      resumir: ({ caso, formato, conteo, aviso }) =>
+        aviso === null
+          ? RESUMEN_HERRAMIENTA.formularioGenerado(caso, formato, conteo)
+          : RESUMEN_HERRAMIENTA.valoresGenerados(caso, formato, aviso, conteo),
     },
     opciones,
   );
@@ -67,8 +68,7 @@ export function crearHerramientas(opciones: OpcionesHerramientas = {}) {
   const armar_paquete = defineTool(
     {
       nombre: HERRAMIENTA.ARMAR_PAQUETE,
-      description:
-        "Arma el paquete para firma de un caso ya generado con el formulario, las copias de los soportes exigidos y el checklist, e indica si queda listo para firma y por qué.",
+      description: DESCRIPCION_HERRAMIENTA[HERRAMIENTA.ARMAR_PAQUETE],
       args: argsArmarPaquete,
       ejecutar: armarPaquete,
       presentar: ({ ruta, listo_para_firma, bloqueos, checklist, archivos }) => ({
@@ -79,7 +79,9 @@ export function crearHerramientas(opciones: OpcionesHerramientas = {}) {
         archivos,
       }),
       resumir: ({ caso, listo_para_firma, bloqueos }) =>
-        listo_para_firma ? `${caso}: LISTO` : `${caso}: BLOQUEADO (${bloqueos.join("; ")})`,
+        listo_para_firma
+          ? RESUMEN_HERRAMIENTA.paqueteListo(caso)
+          : RESUMEN_HERRAMIENTA.paqueteBloqueado(caso, bloqueos),
     },
     opciones,
   );
@@ -87,15 +89,14 @@ export function crearHerramientas(opciones: OpcionesHerramientas = {}) {
   const simular_envio = defineTool(
     {
       nombre: HERRAMIENTA.SIMULAR_ENVIO,
-      description:
-        "Registra un envío simulado del paquete armado de un caso escribiendo solo ENVIO-SIMULADO.md con los bloqueos vigentes, sin enviar ningún correo real, y exige la confirmación explícita de la analista.",
+      description: DESCRIPCION_HERRAMIENTA[HERRAMIENTA.SIMULAR_ENVIO],
       args: argsSimularEnvio,
       ejecutar: simularEnvio,
       presentar: ({ ruta, bloqueos }) => ({ ruta, bloqueos }),
       resumir: ({ caso, bloqueos }) =>
         bloqueos.length === 0
-          ? `${caso}: envío simulado registrado sin bloqueos`
-          : `${caso}: envío simulado registrado con bloqueos (${bloqueos.join("; ")})`,
+          ? RESUMEN_HERRAMIENTA.envioSinBloqueos(caso)
+          : RESUMEN_HERRAMIENTA.envioConBloqueos(caso, bloqueos),
     },
     opciones,
   );

@@ -1,6 +1,8 @@
 import { CODIGO_ERROR } from "@/config/constants/errors.constants.ts";
+import { ARCHIVOS_SALIDA } from "@/config/constants/files.constants.ts";
 import { LONGITUD_MAXIMA_CASO } from "@/config/constants/limits.constants.ts";
 import { ESTADO_CAMPO } from "@/config/constants/mapping.constants.ts";
+import { HERRAMIENTA } from "@/config/constants/tools.constants.ts";
 import type { ValorDe } from "@/config/types/valor-de.type.ts";
 
 export const MENSAJE_ERROR = {
@@ -32,6 +34,7 @@ export const TEXTO_COMUN = {
   separadorNotas: ". ",
   porConfirmar: "confirmar con el cliente",
   celdaVacia: "—",
+  raiz: "(raíz)",
 } as const;
 
 export const TEXTO_PDF = {
@@ -107,4 +110,57 @@ export const TEXTO_MOTOR_PLANTILLAS = {
   seccionDesconocida: (nombre: string): string => `usa la sección desconocida ${nombre}`,
   plantillaInvalida: (plantilla: string, problema: string): string =>
     `la plantilla ${plantilla} ${problema}.`,
+} as const;
+
+export const DESCRIPCION_HERRAMIENTA = {
+  [HERRAMIENTA.LEER_SOLICITUD]:
+    "Lee la solicitud de un caso y devuelve país, cliente, formato pedido, plantilla, campos en el orden de la plantilla y soportes exigidos.",
+  [HERRAMIENTA.MAPEAR_CAMPOS]:
+    "Mapea las etiquetas de la plantilla de un caso contra el maestro y devuelve cada campo con su estado, ruta, regla, confianza y valor enmascarado.",
+  [HERRAMIENTA.GENERAR_FORMULARIO]:
+    "Genera el formulario del caso en el formato pedido releyendo cada valor del maestro, y su mapeo lleva solo las etiquetas, estados y rutas que devolvió proveedor_mapear_campos.",
+  [HERRAMIENTA.ARMAR_PAQUETE]:
+    "Arma el paquete para firma de un caso ya generado con el formulario, las copias de los soportes exigidos y el checklist, e indica si queda listo para firma y por qué.",
+  [HERRAMIENTA.SIMULAR_ENVIO]: `Registra un envío simulado del paquete armado de un caso escribiendo solo ${ARCHIVOS_SALIDA.ENVIO_SIMULADO} con los bloqueos vigentes, sin enviar ningún correo real, y exige la confirmación explícita de la analista.`,
+} as const satisfies Record<ValorDe<typeof HERRAMIENTA>, string>;
+
+export const DESCRIPCION_ARG = {
+  caso: "Identificador del caso en minúsculas, dígitos y guiones, por ejemplo co-industrias-delta. Si no existe, la respuesta trae los casos disponibles.",
+  etiquetaMapeo: "Etiqueta exacta de la plantilla, tal como la devolvió mapear_campos.",
+  estadoMapeo: "Estado del campo tal como lo devolvió mapear_campos.",
+  rutaMapeo:
+    "Ruta del dato en el maestro tal como la devolvió mapear_campos, o null si el campo es faltante.",
+  etiquetaCampo: "Etiqueta de la plantilla del caso.",
+  campos: "Etiquetas de la plantilla que se quieren mapear; una lista vacía mapea todas las etiquetas.",
+  mapeo:
+    "Mapeo completo devuelto por mapear_campos, solo con etiqueta, estado y ruta; nunca incluye valores.",
+  confirmado: "true solo si la analista confirmó de forma explícita el envío en esta conversación.",
+} as const;
+
+type ConteoPorEstado = Readonly<Record<ValorDe<typeof ESTADO_CAMPO>, number>>;
+
+function conteo(cuenta: ConteoPorEstado): string {
+  return `${cuenta[ESTADO_CAMPO.LLENO]} llenos, ${cuenta[ESTADO_CAMPO.FALTANTE]} faltantes, ${cuenta[ESTADO_CAMPO.REQUIERE_CONFIRMACION]} por confirmar`;
+}
+
+function listaDeBloqueos(bloqueos: readonly string[]): string {
+  return bloqueos.join("; ");
+}
+
+export const RESUMEN_HERRAMIENTA = {
+  conteo,
+  solicitud: (caso: string, formato: string, pais: string, campos: number, soportes: number): string =>
+    `${caso}: ${formato}, ${pais}, ${campos} campos, ${soportes} soportes exigidos`,
+  mapeo: (caso: string, cuenta: ConteoPorEstado): string => `${caso}: ${conteo(cuenta)}`,
+  formularioGenerado: (caso: string, formato: string, cuenta: ConteoPorEstado): string =>
+    `${caso}: formulario ${formato} generado (${conteo(cuenta)})`,
+  valoresGenerados: (caso: string, formato: string, aviso: string, cuenta: ConteoPorEstado): string =>
+    `${caso}: valores para ${formato} generados, ${aviso} (${conteo(cuenta)})`,
+  paqueteListo: (caso: string): string => `${caso}: ${TEXTO_CHECKLIST.estado.listo}`,
+  paqueteBloqueado: (caso: string, bloqueos: readonly string[]): string =>
+    `${caso}: ${TEXTO_CHECKLIST.estado.bloqueado} (${listaDeBloqueos(bloqueos)})`,
+  envioSinBloqueos: (caso: string): string => `${caso}: envío simulado registrado sin bloqueos`,
+  envioConBloqueos: (caso: string, bloqueos: readonly string[]): string =>
+    `${caso}: envío simulado registrado con bloqueos (${listaDeBloqueos(bloqueos)})`,
+  listaDeBloqueos,
 } as const;
