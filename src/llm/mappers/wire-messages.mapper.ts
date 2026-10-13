@@ -1,4 +1,5 @@
 import {
+  ARGUMENTOS_VACIOS,
   CARACTERES_POR_TOKEN,
   FIN_LLM,
   FINISH_REASON,
@@ -24,11 +25,21 @@ import type {
   WireToolCall,
 } from "@/llm/types/provider.type.ts";
 
+function esObjetoJson(texto: string): boolean {
+  try {
+    const valor: unknown = JSON.parse(texto);
+    return typeof valor === "object" && valor !== null && !Array.isArray(valor);
+  } catch {
+    return false;
+  }
+}
+
 function toWireToolCall(llamada: LlamadaHerramienta): WireToolCall {
+  const argumentos = esObjetoJson(llamada.argumentos) ? llamada.argumentos : ARGUMENTOS_VACIOS;
   return {
     id: llamada.id,
     type: TIPO_HERRAMIENTA_WIRE,
-    function: { name: llamada.nombre, arguments: llamada.argumentos },
+    function: { name: llamada.nombre, arguments: argumentos },
   };
 }
 
