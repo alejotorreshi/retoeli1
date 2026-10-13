@@ -62,10 +62,10 @@ Fuente vinculante: `reto-01/PRD.md`, sin modificar. Fixtures: `reto-01/fixtures/
 
 ### Adaptador LLM y resiliencia (§6.1, §8)
 
-- [x] **LLM-01**: Hay una interfaz propia `enviar(mensajes, herramientas) → respuesta` con un modelo de mensajes neutral. Cambiar de proveedor no toca el ciclo.
-- [ ] **LLM-02**: La implementación DeepSeek usa `fetch` directo contra la API compatible con OpenAI. El modelo se lee de env (`deepseek-flash` por defecto), el modo thinking va desactivado, `max_tokens` es explícito y el campo `reasoning_content` se conserva en el tipo.
+- [x] **LLM-01**: Hay un puerto propio `enviar(mensajes, herramientas) → respuesta` con un modelo de mensajes neutral, y un adaptador genérico compatible con OpenAI lo implementa. Cambiar de proveedor o de modelo solo cambia variables de entorno; el ciclo nunca cambia.
+- [ ] **LLM-02**: El adaptador usa `fetch` directo contra un `/chat/completions` compatible con OpenAI, con DeepSeek como preset por defecto. Proveedor, URL, modelo y clave salen de env (`LLM_PROVIDER`, `LLM_BASE_URL`, `LLM_MODEL`, `LLM_API_KEY`, con `DEEPSEEK_API_KEY` como alias; `deepseek-flash` por defecto). El preset desactiva el modo thinking, `max_tokens` es explícito y `reasoning_content` se conserva en el tipo. Las diferencias entre proveedores son flags de capacidad en config, nunca ramas en el ciclo.
 - [x] **LLM-03**: Hay timeout al proveedor con mensaje claro. Se reintenta con backoff y jitter solo ante errores transitorios (429, 500, 503 y red). Los errores 400, 401 y 422 no se reintentan, y el 402 se informa como "saldo agotado".
-- [ ] **LLM-04**: Un decorador de fallback de proveedor o modelo (por ejemplo `deepseek-flash` → `deepseek-v4-pro`) actúa cuando el primario falla de forma transitoria.
+- [ ] **LLM-04**: Un decorador de fallback pasa a la segunda ranura (`LLM_FALLBACK_*`, `deepseek-v4-pro` por defecto) solo cuando el primario agotó sus reintentos ante errores transitorios. La ranura de respaldo hereda la clave del primario solo si la URL base es idéntica.
 - [x] **LLM-05**: El tope de tokens por sesión y el tope de iteraciones por turno son configurables. Al superarlos, el usuario recibe un mensaje claro, no un 500.
 - [ ] **LLM-06**: Existe un modo degradado sin LLM. Si no hay clave, se agotó el saldo o el proveedor cayó, `/api/health` lo reporta y la UI permite correr el flujo determinista de un caso con las mismas herramientas que `demo.ts`.
 
@@ -228,7 +228,7 @@ Cada requisito v1 está asignado a exactamente una fase del roadmap (`.planning/
 | UI-08 | Phase 3 | Pending |
 | UI-09 | Phase 3 | Pending |
 | SEG-01 | Phase 3 | Pending |
-| SEG-02 | Phase 1 | Partial — política de rutas PII y test grep listos; falta `redactar()` única para logs/API/SSE (Fases 2–3) |
+| SEG-02 | Phase 1 | Partial — política de rutas PII, test grep y redactar() única para logs y resúmenes de tool calls (Fase 2) listos; falta aplicarla a API/SSE (Fase 3) |
 | SEG-03 | Phase 2 | Complete |
 | SEG-04 | Phase 1 | Complete |
 | DEMO-01 | Phase 1 | Complete |
