@@ -3,6 +3,7 @@ import { FORMATO } from "@/config/constants/forms.constants.ts";
 import { ESTADO_SOPORTE } from "@/config/constants/supports.constants.ts";
 import { TEXTO_BORRADOR } from "@/config/strings.ts";
 import { construirDatosBorrador, construirDatosEnvio } from "@/domain/builders/borrador.builder.ts";
+import { construirChecklist } from "@/domain/builders/checklist.builder.ts";
 import type { CampoPorConfirmar, Checklist } from "@/domain/types/checklist.type.ts";
 import type { Maestro } from "@/domain/types/maestro.type.ts";
 import type { Formato, Solicitud } from "@/domain/types/solicitud.type.ts";
@@ -87,7 +88,10 @@ function checklist(
   return {
     fecha_ejecucion: "2026-09-03",
     listo_para_firma: listo,
-    bloqueos: listo ? [] : ["vencido: parafiscales"],
+    bloqueos: listo ? [] : ["vencido: parafiscales (2026-08-31)"],
+    motivos_bloqueo: listo
+      ? []
+      : [{ tipo: "parafiscales", causa: ESTADO_SOPORTE.VENCIDO, vigencia: "2026-08-31" }],
     soportes: SOPORTES,
     faltantes,
     requiere_confirmacion: porConfirmar,
@@ -308,15 +312,7 @@ describe("nombres de soporte con tipos desconocidos (GC-2, G-01-H4c)", () => {
   const DESCONOCIDOS = ["zz_desconocido", "constructor", "__proto__"];
 
   function checklistCon(soportes: readonly SoporteEvaluado[]): Checklist {
-    return {
-      fecha_ejecucion: "2026-09-03",
-      listo_para_firma: false,
-      bloqueos: [],
-      soportes,
-      faltantes: [],
-      requiere_confirmacion: [],
-      confirmaciones_al_cliente: [],
-    };
+    return construirChecklist(soportes, [], "2026-09-03");
   }
 
   function vencido(tipo: string): SoporteEvaluado {

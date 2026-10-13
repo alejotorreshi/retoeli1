@@ -14,6 +14,7 @@ const CHECKLIST: Checklist = {
   fecha_ejecucion: "2026-09-03",
   listo_para_firma: false,
   bloqueos: [],
+  motivos_bloqueo: [],
   soportes: [
     soporte("rut", ESTADO_SOPORTE.PRESENTE, "rut-ficticio.txt"),
     soporte("parafiscales", ESTADO_SOPORTE.VENCIDO, "parafiscales-ficticio.txt"),

@@ -108,6 +108,6 @@ export function construirDatosEnvio(
     formulario_en_portal: seccionSi(!adjuntaFormulario(solicitud.formato)),
     archivos: listado.filter((archivo) => alCliente.has(archivo)).map((archivo) => ({ archivo })),
     retenidos: listado.filter((archivo) => vencidos.has(archivo)).map((archivo) => ({ archivo })),
-    bloqueos: motivosDeBloqueo(checklist.soportes).map((bloqueo) => ({ bloqueo })),
+    bloqueos: motivosDeBloqueo(checklist).map((bloqueo) => ({ bloqueo })),
   };
 }

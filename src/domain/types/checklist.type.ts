@@ -1,12 +1,18 @@
+import type { ESTADO_SOPORTE } from "@/config/constants/supports.constants.ts";
 import type { FechaISO } from "@/domain/types/fecha.type.ts";
 import type { EstadoSoporte, SoporteEvaluado } from "@/domain/types/soportes.type.ts";
 
 export type CampoPorConfirmar = { readonly etiqueta: string; readonly nota: string };
 
+export type MotivoBloqueo =
+  | { readonly tipo: string; readonly causa: typeof ESTADO_SOPORTE.AUSENTE }
+  | { readonly tipo: string; readonly causa: typeof ESTADO_SOPORTE.VENCIDO; readonly vigencia: string };
+
 export type Checklist = {
   readonly fecha_ejecucion: FechaISO;
   readonly listo_para_firma: boolean;
   readonly bloqueos: readonly string[];
+  readonly motivos_bloqueo: readonly MotivoBloqueo[];
   readonly soportes: readonly SoporteEvaluado[];
   readonly faltantes: readonly string[];
   readonly requiere_confirmacion: readonly CampoPorConfirmar[];

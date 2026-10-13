@@ -48,11 +48,12 @@ describe("checklist.builder: nombres legibles solo en la salida para personas (G
   test("un vencido sin fecha nunca deja un paréntesis vacío en el bloqueo (IN-02)", () => {
     const sinFecha = [soporte("parafiscales", ESTADO_SOPORTE.VENCIDO, "parafiscales-ficticio.txt", null)];
     expect(construirChecklist(sinFecha, [], HOY).bloqueos).toEqual(["vencido: parafiscales (no aplica)"]);
-    expect(motivosDeBloqueo(sinFecha).every((motivo) => !motivo.includes("()"))).toBe(true);
+    const motivos = motivosDeBloqueo(construirChecklist(sinFecha, [], HOY));
+    expect(motivos.every((motivo) => !motivo.includes("()"))).toBe(true);
   });
 
   test("motivosDeBloqueo da los mismos bloqueos en el mismo orden con el nombre del soporte", () => {
-    expect(motivosDeBloqueo(SOPORTES)).toEqual([
+    expect(motivosDeBloqueo(construirChecklist(SOPORTES, [], HOY))).toEqual([
       "ausente: Certificado de cumplimiento tributario",
       "vencido: Certificación de aportes parafiscales (2026-08-31)",
     ]);
@@ -99,6 +100,24 @@ describe("checklist.builder: nombres legibles solo en la salida para personas (G
       expect(datos.ausentes).toEqual([{ nombre: tipo }]);
       expect(datos.vencidos).toEqual([{ nombre: tipo, vigencia: "2026-08-31" }]);
     }
+  });
+});
+
+describe("construirChecklist: una sola fuente para los bloqueos crudos y los nombrados (IN-03)", () => {
+  test("bloqueos y motivosDeBloqueo salen de motivos_bloqueo, en el mismo orden y con la misma cantidad", () => {
+    const checklist = construirChecklist(SOPORTES, [], HOY);
+    expect(checklist.motivos_bloqueo).toEqual([
+      { tipo: "certificado_cumplimiento_tributario", causa: ESTADO_SOPORTE.AUSENTE },
+      { tipo: "parafiscales", causa: ESTADO_SOPORTE.VENCIDO, vigencia: "2026-08-31" },
+    ]);
+    expect(checklist.bloqueos).toHaveLength(checklist.motivos_bloqueo.length);
+    expect(motivosDeBloqueo(checklist)).toHaveLength(checklist.motivos_bloqueo.length);
+    expect(checklist.listo_para_firma).toBe(false);
+  });
+
+  test("motivosDeBloqueo renderiza lo que trae el checklist y no vuelve a leer los soportes", () => {
+    const checklist = { motivos_bloqueo: [{ tipo: "rut", causa: ESTADO_SOPORTE.AUSENTE }] } as const;
+    expect(motivosDeBloqueo(checklist)).toEqual(["ausente: Registro Único Tributario"]);
   });
 });
 

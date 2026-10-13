@@ -7,37 +7,37 @@ import type {
   Checklist,
   DatosChecklist,
   FilaSoporteChecklist,
+  MotivoBloqueo,
 } from "@/domain/types/checklist.type.ts";
 import type { FechaISO } from "@/domain/types/fecha.type.ts";
 import type { CampoMapeado } from "@/domain/types/mapeo.type.ts";
 import type { SoporteEvaluado } from "@/domain/types/soportes.type.ts";
 
-function bloqueoDe(soporte: SoporteEvaluado, rotulo: (tipo: string) => string): readonly string[] {
-  if (soporte.estado === ESTADO_SOPORTE.AUSENTE)
-    return [TEXTO_CHECKLIST.bloqueoAusente(rotulo(soporte.tipo))];
+function motivoDe(soporte: SoporteEvaluado): readonly MotivoBloqueo[] {
+  const { tipo } = soporte;
+  if (soporte.estado === ESTADO_SOPORTE.AUSENTE) return [{ tipo, causa: ESTADO_SOPORTE.AUSENTE }];
   if (soporte.estado === ESTADO_SOPORTE.VENCIDO)
     return [
-      TEXTO_CHECKLIST.bloqueoVencido(
-        rotulo(soporte.tipo),
-        soporte.vigencia_hasta ?? TEXTO_CHECKLIST.sinVigencia,
-      ),
+      {
+        tipo,
+        causa: ESTADO_SOPORTE.VENCIDO,
+        vigencia: soporte.vigencia_hasta ?? TEXTO_CHECKLIST.sinVigencia,
+      },
     ];
   return [];
+}
+
+function textoDeBloqueo(motivo: MotivoBloqueo, rotulo: (tipo: string) => string): string {
+  if (motivo.causa === ESTADO_SOPORTE.AUSENTE) return TEXTO_CHECKLIST.bloqueoAusente(rotulo(motivo.tipo));
+  return TEXTO_CHECKLIST.bloqueoVencido(rotulo(motivo.tipo), motivo.vigencia);
 }
 
 function idCrudo(tipo: string): string {
   return tipo;
 }
 
-function bloqueosDe(
-  soportes: readonly SoporteEvaluado[],
-  rotulo: (tipo: string) => string,
-): readonly string[] {
-  return soportes.flatMap((soporte) => bloqueoDe(soporte, rotulo));
-}
-
-export function motivosDeBloqueo(soportes: readonly SoporteEvaluado[]): readonly string[] {
-  return bloqueosDe(soportes, TEXTO_SOPORTE.nombre);
+export function motivosDeBloqueo(checklist: Pick<Checklist, "motivos_bloqueo">): readonly string[] {
+  return checklist.motivos_bloqueo.map((motivo) => textoDeBloqueo(motivo, TEXTO_SOPORTE.nombre));
 }
 
 function esRutaBancaria(ruta: string | null): boolean {
@@ -49,12 +49,13 @@ export function construirChecklist(
   campos: readonly CampoMapeado[],
   hoy: FechaISO,
 ): Checklist {
-  const bloqueos = bloqueosDe(soportes, idCrudo);
+  const motivos = soportes.flatMap(motivoDe);
   const porConfirmar = campos.filter((campo) => campo.estado === ESTADO_CAMPO.REQUIERE_CONFIRMACION);
   return {
     fecha_ejecucion: hoy,
-    listo_para_firma: bloqueos.length === 0,
-    bloqueos,
+    listo_para_firma: motivos.length === 0,
+    bloqueos: motivos.map((motivo) => textoDeBloqueo(motivo, idCrudo)),
+    motivos_bloqueo: motivos,
     soportes,
     faltantes: campos
       .filter((campo) => campo.estado === ESTADO_CAMPO.FALTANTE)
@@ -93,7 +94,7 @@ export function construirDatosChecklist(caso: CasoChecklist, checklist: Checklis
     cliente: caso.cliente,
     fecha_ejecucion: checklist.fecha_ejecucion,
     estado: checklist.listo_para_firma ? TEXTO_CHECKLIST.estado.listo : TEXTO_CHECKLIST.estado.bloqueado,
-    motivos: motivosDeBloqueo(soportes).map((motivo) => ({ motivo })),
+    motivos: motivosDeBloqueo(checklist).map((motivo) => ({ motivo })),
     soportes: soportes.map(filaSoporte),
     faltantes: checklist.faltantes.map((etiqueta) => ({ etiqueta })),
     por_confirmar: checklist.requiere_confirmacion,
