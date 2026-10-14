@@ -3,6 +3,30 @@ phase: 02
 review: 02-REVIEW.md
 titles: json
 findings:
+  - id: CR-06
+    severity: critical
+    disposition: open
+    title: "[BLOCKER] la exención de D-63.10(d) solo mira la primera palabra de la cláusula. \"No, ahora consulta el NIT de co-industrias-delta\" (con dos pendientes), \"No, por favor consulta el NIT de ec-corp-andina\" y \"Todavía no. Por favor revisa el NIT de ec-corp-andina.\" pasan de `otro` a `rechaza` (external: gsd-security-auditor, T-02-83)"
+  - id: WR-26
+    severity: warning
+    disposition: open
+    title: "[WARNING] cualquier palabra con guion cuenta como \"caso que no está pendiente\" y exime la espera: \"Todavía no, falta el e-mail del contacto\" y \"No, espera, falta el pre-registro\" dan `otro`, sin declarar"
+  - id: WR-27
+    severity: warning
+    disposition: open
+    title: "[WARNING] el prompt no describe la exención (d) para el caso pendiente, y RN4 dice \"un caso\" mientras el prompt dice \"otro caso\": para \"No, procesa ec-corp-andina\" el modelo y el servidor pueden contradecirse"
+  - id: IN-34
+    severity: info
+    disposition: open
+    title: "[INFO] los rellenos y cortes nuevos aceptan palabras con contenido: \"no, todo bien con ec-corp-andina\", \"No, de una vez ec-corp-andina\" y \"no lo hagas sin el logo\" cancelan"
+  - id: IN-35
+    severity: info
+    disposition: open
+    title: "[INFO] con dos pendientes, una respuesta por caso (\"envía ec-corp-andina. co-industrias-delta no.\", \"co-industrias-delta sí, ec-corp-andina no\") ahora cancela los dos (en 02-23 daban `otro`)"
+  - id: IN-36
+    severity: info
+    disposition: open
+    title: "[INFO] las pruebas nuevas suman umbrales absolutos de reloj y conteos mágicos (sigue IN-33)"
   - id: CR-05
     severity: critical
     disposition: open
@@ -255,28 +279,34 @@ findings:
     severity: info
     disposition: open
     title: "The agent clock re-parses the environment on every call and silently diverges from the tools when `FECHA_EJECUCION` is invalid"
-open: 35
-total: 63
-recorded: 2026-10-14T16:44:25.973Z
+open: 36
+total: 69
+recorded: 2026-10-14T19:07:46.712Z
 ---
 
 # Phase 02: Code Review Disposition
 
 | Finding | Severity | Disposition | Source |
 |---------|----------|-------------|--------|
-| CR-05 | critical | open | - |
-| WR-23 | warning | open | - |
-| WR-24 | warning | open | - |
-| WR-25 | warning | open | - |
-| IN-31 | info | open | - |
-| IN-32 | info | open | - |
-| IN-33 | info | open | - |
-| CR-04 | critical | fixed | fixed in 02-23 (e0316d7); verified resolved by the 02-23 review |
+| CR-06 | critical | open | - |
+| WR-26 | warning | open | - |
+| WR-27 | warning | open | - |
+| IN-34 | info | open | - |
+| IN-35 | info | open | - |
+| IN-36 | info | open | - |
+| CR-05 | critical | open | - (not in the current review) |
+| WR-23 | warning | open | - (not in the current review) |
+| WR-24 | warning | open | - (not in the current review) |
+| WR-25 | warning | open | - (not in the current review) |
+| IN-31 | info | open | - (not in the current review) |
+| IN-32 | info | open | - (not in the current review) |
+| IN-33 | info | open | - (not in the current review) |
+| CR-04 | critical | fixed | fixed in 02-23 (e0316d7); verified resolved by the 02-23 review (not in the current review) |
 | WR-19 | warning | open | - (not in the current review) |
-| WR-20 | warning | fixed | fixed in 02-23 (e0316d7); verified by the 02-23 review |
-| WR-21 | warning | fixed | fixed in 02-23 (e0316d7); regression tracked as CR-05 |
-| WR-22 | warning | fixed | fixed in 02-23 (ce175da, f5db176); verified by the 02-23 review |
-| IN-28 | info | fixed | fixed in 02-23 (e0316d7, T-02-71 closed); verified by the 02-23 review |
+| WR-20 | warning | fixed | fixed in 02-23 (e0316d7); verified by the 02-23 review (not in the current review) |
+| WR-21 | warning | fixed | fixed in 02-23 (e0316d7); regression tracked as CR-05 (not in the current review) |
+| WR-22 | warning | fixed | fixed in 02-23 (ce175da, f5db176); verified by the 02-23 review (not in the current review) |
+| IN-28 | info | fixed | fixed in 02-23 (e0316d7, T-02-71 closed); verified by the 02-23 review (not in the current review) |
 | IN-29 | info | open | - (not in the current review) |
 | IN-30 | info | open | - (not in the current review) |
 | WR-15 | warning | open | - (not in the current review) |
