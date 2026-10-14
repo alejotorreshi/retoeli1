@@ -1,0 +1,1 @@
+No external API integration: this phase builds its own HTTP API and chat front, deploys to Render through a render.yaml Blueprint that the code never calls, and only observes the LLM provider calls already integrated in Phase 2 (the detector matched the phrase "consume the API", which refers to the project's own /api).
