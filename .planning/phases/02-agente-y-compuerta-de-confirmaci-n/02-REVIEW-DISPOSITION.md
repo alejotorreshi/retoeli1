@@ -33,7 +33,7 @@ findings:
     title: "[INFO] el describe de D-63.8 del contrato quedó duplicado por el de D-63.9 y sigue fijando fragmentos cortos (IN-26)"
   - id: CR-04
     severity: critical
-    disposition: open
+    disposition: fixed
     title: "[BLOCKER] la regla (b) de D-63.8 sigue cancelando el caso pendiente ante preguntas y pedidos comunes: \"Para pe-andes, ¿qué falta?\", \"Luego, ¿qué sigue?\" y \"dame primero el NIT, después el paquete\" dan `rechaza`"
   - id: WR-19
     severity: warning
@@ -41,19 +41,19 @@ findings:
     title: "[WARNING] rechazos claros siguen dando `otro`, y el servidor vuelve a preguntar justo después de un \"no quiero enviarlo todavía\" (resto de WR-15)"
   - id: WR-20
     severity: warning
-    disposition: open
+    disposition: fixed
     title: "[WARNING] al quitar las tildes, el pretérito (\"envié\", \"mandé\", \"despaché\") se confunde con el subjuntivo, y \"No envié el certificado, ¿lo puedo agregar?\" cancela el caso"
   - id: WR-21
     severity: warning
-    disposition: open
+    disposition: fixed
     title: "[WARNING] la forma (a) rechaza con \"hagas\" y \"confirmo\" aunque rijan otro objeto: \"No hagas el PDF, solo el xlsx\" cancela el caso pendiente"
   - id: WR-22
     severity: warning
-    disposition: open
+    disposition: fixed
     title: "[WARNING] RN4 dice lo contrario de la regla: \"Un pedido que solo contiene palabras como \"no\", \"para\", \"luego\" o \"mejor\" no es un rechazo\""
   - id: IN-28
     severity: info
-    disposition: open
+    disposition: fixed
     title: "[INFO] `verboTrasNegador` copia la cola del mensaje por cada negador, lo que da tiempo cuadrático (T-02-71)"
   - id: IN-29
     severity: info
@@ -271,12 +271,12 @@ recorded: 2026-10-14T16:44:25.973Z
 | IN-31 | info | open | - |
 | IN-32 | info | open | - |
 | IN-33 | info | open | - |
-| CR-04 | critical | open | - (not in the current review) |
+| CR-04 | critical | fixed | fixed in 02-23 (e0316d7); verified resolved by the 02-23 review |
 | WR-19 | warning | open | - (not in the current review) |
-| WR-20 | warning | open | - (not in the current review) |
-| WR-21 | warning | open | - (not in the current review) |
-| WR-22 | warning | open | - (not in the current review) |
-| IN-28 | info | open | - (not in the current review) |
+| WR-20 | warning | fixed | fixed in 02-23 (e0316d7); verified by the 02-23 review |
+| WR-21 | warning | fixed | fixed in 02-23 (e0316d7); regression tracked as CR-05 |
+| WR-22 | warning | fixed | fixed in 02-23 (ce175da, f5db176); verified by the 02-23 review |
+| IN-28 | info | fixed | fixed in 02-23 (e0316d7, T-02-71 closed); verified by the 02-23 review |
 | IN-29 | info | open | - (not in the current review) |
 | IN-30 | info | open | - (not in the current review) |
 | WR-15 | warning | open | - (not in the current review) |
