@@ -4,7 +4,7 @@ import { crearFetchFalso } from "@tests/helpers/fetch-falso.helper.ts";
 import { CODIGO_AGENTE } from "@/config/constants/agent.constants.ts";
 import { ESQUEMA_LOOPBACK, ESQUEMA_SEGURO, HOSTS_LOOPBACK } from "@/config/constants/llm.constants.ts";
 import { type EnvSource, parseAgentEnv } from "@/config/env.ts";
-import { TEXTO_ENV } from "@/config/strings.ts";
+import { MENSAJE_AGENTE, TEXTO_AGENTE, TEXTO_ENV } from "@/config/strings.ts";
 import { crearAgente } from "@/loop/wiring/agente.wiring.ts";
 
 const RAIZ_REPO = join(import.meta.dir, "..", "..");
@@ -361,6 +361,10 @@ describe("entorno del agente: topes y registro (D-51, D-58, LLM-04)", () => {
 
 const CLAVE_FICTICIA = "clave-ficticia-Qh3T";
 const SESION_ABIERTA = "La sesión sigue abierta";
+const SESION_ABIERTA_COMPLETA = "La sesión sigue abierta; puedes volver a intentarlo.";
+const MENSAJE_URL_RESPALDO_NO_SEGURA =
+  "La configuración del proveedor del modelo no es válida. Detalle: LLM_FALLBACK_BASE_URL: La URL del proveedor debe usar https; solo estos hosts locales admiten también http: localhost, 127.0.0.1, [::1].";
+const MENSAJE_SIN_CLAVE = "El proveedor del modelo no tiene una clave configurada en el servidor.";
 const MENSAJE_URL_PRINCIPAL_NO_SEGURA =
   "La configuración del proveedor del modelo no es válida. Detalle: LLM_BASE_URL: La URL del proveedor debe usar https; solo estos hosts locales admiten también http: localhost, 127.0.0.1, [::1].";
 
@@ -378,5 +382,38 @@ describe("mensajes de configuración al crear el agente (WR-13, G-02-19)", () =>
     expect(creacion.mensaje).not.toContain("..");
     expect(creacion.mensaje).not.toContain(SESION_ABIERTA);
     expect(creacion.mensaje).not.toContain(CLAVE_FICTICIA);
+  });
+
+  test("una URL de respaldo no segura da el mismo texto con su variable", () => {
+    const creacion = mensajeAlCrear({
+      LLM_API_KEY: CLAVE_FICTICIA,
+      LLM_FALLBACK_BASE_URL: "http://openrouter.ai/api/v1",
+    });
+    expect(creacion.codigo).toBe(CODIGO_AGENTE.CONFIGURACION_LLM_INVALIDA);
+    expect(creacion.mensaje).toBe(MENSAJE_URL_RESPALDO_NO_SEGURA);
+    expect(creacion.mensaje).not.toContain(CLAVE_FICTICIA);
+  });
+
+  test("sin clave da una sola oración, sin prometer una sesión abierta", () => {
+    expect(mensajeAlCrear({})).toEqual({
+      ok: false,
+      codigo: CODIGO_AGENTE.PROVEEDOR_SIN_CLAVE,
+      mensaje: MENSAJE_SIN_CLAVE,
+    });
+  });
+
+  test.each([
+    ["Base.", "x: sin punto", "Base. Detalle: x: sin punto."],
+    ["Base.", "x: con punto.", "Base. Detalle: x: con punto."],
+  ])("conDetalle(%p, %p) termina en un solo punto", (mensaje, detalle, esperado) => {
+    expect(TEXTO_AGENTE.conDetalle(mensaje, detalle)).toBe(esperado);
+  });
+
+  test.each([
+    CODIGO_AGENTE.PROVEEDOR_NO_DISPONIBLE,
+    CODIGO_AGENTE.TIEMPO_TURNO_AGOTADO,
+    CODIGO_AGENTE.INSTRUCCIONES_NO_DISPONIBLES,
+  ])("el error de turno %s conserva la sesión abierta", (codigo) => {
+    expect(MENSAJE_AGENTE[codigo].endsWith(SESION_ABIERTA_COMPLETA)).toBe(true);
   });
 });
