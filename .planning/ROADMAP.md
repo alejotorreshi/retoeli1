@@ -89,7 +89,7 @@ Plans:
   4. Al llegar al tope de iteraciones (25 por defecto) o al de tokens por sesión, el usuario recibe en lenguaje claro lo que se tiene y lo que falta, no un error. Una instrucción inyectada en el cuerpo del correo del cliente no cambia el comportamiento del agente.
   5. Un cambio en `src/knowledge/registro-proveedor.md` o en `agent/prompt.md` cambia el comportamiento del agente sin tocar código del servidor. Los logs JSON llevan IDs de sesión, turno y tool call, sin clave ni PII. `bun test` cubre el ciclo con un LLM falso (tope, compuerta con "No envíes…" y el guion §11, CA5 e inyección) sin gastar tokens.
 
-**Plans:** 23/24 plans executed
+**Plans:** 24/24 plans executed
 
 Plans:
 **Wave 1**
@@ -150,7 +150,7 @@ Plans:
 - [x] 02-23-PLAN.md — El rechazo se busca solo en lo que la analista afirma: las preguntas y los pedidos con "para", "luego", "después", "mejor" o "no" junto a un objeto o un caso ya no cancelan, y "no quiero enviarlo todavía", "espera un momento" y "todavía no qué falta?" sí cancelan; un corpus generado con comparación contra el clasificador anterior fija las clases, y el prompt y RN4 dicen lo mismo (G-02-2, CR-04, WR-19 a WR-22, D-63.9)
 
 **Cierre de brechas de la re-verificación de 02-23, Wave 1** *(gap closure)*
-- [ ] 02-24-PLAN.md — Los rechazos que 02-23 dejó en otro vuelven a cancelar: "no confirmo el envío simulado", "no confirmo porque falta el certificado", "ec-corp-andina no", "todavía no, ec-corp-andina" y "detén el envío"; la exención por nombrar un caso vale solo para un caso no pendiente, el diferencial suma la dirección rechaza → otro, el patrón de slug se ancla para que el clasificador sea lineal, y el prompt y RN4 dicen "otro caso" (G-02-2, CR-05, WR-25, T-02-77, D-63.10)
+- [x] 02-24-PLAN.md — Los rechazos que 02-23 dejó en otro vuelven a cancelar: "no confirmo el envío simulado", "no confirmo porque falta el certificado", "ec-corp-andina no", "todavía no, ec-corp-andina" y "detén el envío"; la exención por nombrar un caso vale solo para un caso no pendiente, el diferencial suma la dirección rechaza → otro, el patrón de slug se ancla para que el clasificador sea lineal, y el prompt y RN4 dicen "otro caso" (G-02-2, CR-05, WR-25, T-02-77, D-63.10)
 
 **Research flag**: Spike en vivo con DeepSeek antes de construir el ciclo: nombre de modelo vigente, thinking desactivado, `tool_choice`, forma de los tool calls y de los errores. La línea de modelos cambió 3 veces en 2026 y `deepseek-chat`/`deepseek-reasoner` se retiraron el 2026-07-24.
 
@@ -193,6 +193,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Núcleo determinista | 15/15 | Complete    | 2026-10-13 |
-| 2. Agente y compuerta de confirmación | 23/24 | In Progress | - |
+| 2. Agente y compuerta de confirmación | 24/24 | In Progress | - |
 | 3. Chat web, API SSE y despliegue | 0/TBD | Not started | - |
 | 4. Módulo, documentación y defensa | 0/TBD | Not started | - |
