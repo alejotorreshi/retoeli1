@@ -50,6 +50,7 @@ const OTRO: DecisionConfirmacion = { decision: DECISION_CONFIRMACION.OTRO };
 const armado = (caso: CasoPendiente): EventoCompuerta => ({ tipo: EVENTO_COMPUERTA.ARMADO, pendiente: caso });
 const bloqueado = (caso: string): EventoCompuerta => ({ tipo: EVENTO_COMPUERTA.BLOQUEADO, caso });
 const enviado = (caso: string): EventoCompuerta => ({ tipo: EVENTO_COMPUERTA.ENVIADO, caso });
+const fallido = (caso: string): EventoCompuerta => ({ tipo: EVENTO_COMPUERTA.FALLIDO, caso });
 
 function cierre(entrada: Partial<EntradaCierreCompuerta>): EntradaCierreCompuerta {
   return { arrastrados: [], eventos: [], conocidos: {}, enviados: [], abortado: false, ...entrada };
@@ -217,6 +218,54 @@ describe("cerrarTurno con casos ya enviados (G-02-3, D-63.4)", () => {
         }),
       ),
     ).toEqual(pendiente(PENDIENTE_CO));
+  });
+});
+
+describe("cerrarTurno con un envío autorizado que falla (WR-02, D-63.7)", () => {
+  const CONOCIDOS = { [EC]: PENDIENTE_EC };
+  const reArmado: CasoPendiente = { caso: EC, bloqueos: [], motivos: [] };
+  const filas: readonly (readonly [string, Partial<EntradaCierreCompuerta>, EstadoCompuerta])[] = [
+    [
+      "un envío fallido de un caso con paquete conocido lo deja pendiente con sus bloqueos conocidos",
+      { eventos: [fallido(EC)], conocidos: CONOCIDOS },
+      pendiente(PENDIENTE_EC),
+    ],
+    ["un envío fallido de un caso sin paquete conocido cierra LIBRE", { eventos: [fallido(EC)] }, LIBRE],
+    [
+      "un envío fallido y un re-armado en el mismo turno dejan los bloqueos nuevos",
+      { eventos: [fallido(EC), armado(reArmado)], conocidos: CONOCIDOS },
+      pendiente(reArmado),
+    ],
+    [
+      "un envío fallido conserva los otros casos arrastrados",
+      { arrastrados: [PENDIENTE_CO], eventos: [fallido(EC)], conocidos: CONOCIDOS },
+      pendiente(PENDIENTE_CO, PENDIENTE_EC),
+    ],
+    [
+      "un aborto del llamante cierra LIBRE aunque el envío haya fallado",
+      { eventos: [fallido(EC)], conocidos: CONOCIDOS, abortado: true },
+      LIBRE,
+    ],
+    [
+      "un envío fallido de un caso ya enviado no lo reabre",
+      { eventos: [fallido(EC)], conocidos: CONOCIDOS, enviados: [EC] },
+      LIBRE,
+    ],
+  ];
+
+  for (const [nombre, entrada, esperado] of filas) {
+    test(nombre, () => {
+      expect(cerrarTurno(cierre(entrada))).toEqual(esperado);
+    });
+  }
+
+  test("un envío fallido nunca marca el caso como enviado ni borra una marca previa", () => {
+    expect(enviadosTrasEventos([], [fallido(EC)])).toEqual([]);
+    expect(enviadosTrasEventos([EC], [fallido(EC)])).toEqual([EC]);
+  });
+
+  test("la autorización usada en el envío fallido no se recupera (D-38)", () => {
+    expect(recuperarAutorizado(MOTIVO_FIN.ERROR, { caso: EC, usada: true }, CONOCIDOS)).toEqual([]);
   });
 });
 

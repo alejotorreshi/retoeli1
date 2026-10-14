@@ -1,5 +1,5 @@
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test } from "bun:test";
-import { readFile } from "node:fs/promises";
+import { readFile, rm } from "node:fs/promises";
 import { join } from "node:path";
 import { crearAgentePrueba } from "@tests/helpers/agente-prueba.helper.ts";
 import { capturarLogs } from "@tests/helpers/bitacora.helper.ts";
@@ -37,7 +37,9 @@ import { CODIGO_ERROR } from "@/config/constants/errors.constants.ts";
 import {
   ARCHIVO_BITACORA,
   ARCHIVO_PROMPT,
+  ARCHIVOS_PAQUETE,
   ARCHIVOS_SALIDA,
+  DIRECTORIO_PAQUETE,
   OUT_DIR,
 } from "@/config/constants/files.constants.ts";
 import { TIPO_ERROR_LLM } from "@/config/constants/llm.constants.ts";
@@ -710,6 +712,58 @@ describe("D-63.6: un pedido ajeno con un caso pendiente se atiende y no secuestr
     const turno3 = await prueba.turno("sí");
     expect(finesDeHerramienta(turno3)).toEqual([bloqueada()]);
     expect(await casosConEnvioSimulado(proyecto.raiz)).toEqual([]);
+    historialSano(prueba);
+  });
+});
+
+async function lineasDeSimularDelCaso(caso: string): Promise<Record<string, unknown>[]> {
+  return (await readFile(join(proyecto.raiz, OUT_DIR, caso, ARCHIVO_BITACORA), "utf8"))
+    .trim()
+    .split("\n")
+    .map((linea): Record<string, unknown> => JSON.parse(linea))
+    .filter((linea) => linea.herramienta === NOMBRE_VISIBLE[HERRAMIENTA.SIMULAR_ENVIO]);
+}
+
+function falloDeEnvio(codigo: string) {
+  return expect.objectContaining({ ok: false, codigo });
+}
+
+async function quitarChecklist(caso: string): Promise<void> {
+  await rm(join(proyecto.raiz, OUT_DIR, caso, DIRECTORIO_PAQUETE, ARCHIVOS_PAQUETE.CHECKLIST));
+}
+
+describe("WR-02 (D-63.7): un envío autorizado que falla vuelve a dejar el caso pendiente", () => {
+  test("PAQUETE_NO_ARMADO tras 'envía' vuelve a preguntar; re-armar y 'sí' envía una vez", async () => {
+    const prueba = agente([
+      ...armarCaso(EC),
+      respuestaHerramientas(simular("simular-1", { caso: EC })),
+      respuestaTexto("No pude registrar el envío simulado."),
+      respuestaHerramientas(llamar("armar-ec-2", HERRAMIENTA.ARMAR_PAQUETE, { caso: EC })),
+      respuestaTexto(`Volví a armar el paquete de ${EC}.`),
+      ...enviar("simular-2", EC),
+    ]);
+    await prueba.turno(`procesa ${EC}`);
+    await quitarChecklist(EC);
+
+    const turno2 = await prueba.turno("envía");
+    expect(finesDeHerramienta(turno2)).toEqual([falloDeEnvio(CODIGO_ERROR.PAQUETE_NO_ARMADO)]);
+    vuelvePreguntandoPorEc(turno2, MOTIVO_FIN.FINAL);
+    expect(await casosConEnvioSimulado(proyecto.raiz)).toEqual([]);
+    expect(prueba.sesionActual().casosEnviados).toEqual([]);
+    expect(
+      (await lineasDeSimularDelCaso(EC)).map(({ ok, codigo }) => ({ ok, codigo: codigo ?? null })),
+    ).toEqual([{ ok: false, codigo: CODIGO_ERROR.PAQUETE_NO_ARMADO }]);
+
+    const turno3 = await prueba.turno(`vuelve a armar el paquete de ${EC}`);
+    expect(casosPorConfirmar(turno3)).toEqual([EC]);
+    terminaPreguntandoPor(textoFinal(turno3), EC);
+    expect(finDeTurno(turno3).needsConfirmation).toBe(true);
+
+    const turno4 = await prueba.turno("sí");
+    expect(finesDeHerramienta(turno4)).toEqual([exitosa()]);
+    expect(await casosConEnvioSimulado(proyecto.raiz)).toEqual([EC]);
+    expect(await enviosOk()).toBe(1);
+    expect(finDeTurno(turno4).needsConfirmation).toBe(false);
     historialSano(prueba);
   });
 });
