@@ -4,7 +4,7 @@ import { ARCHIVO_PROYECTO, ARCHIVOS_SALIDA, OUT_DIR } from "@/config/constants/f
 import { LONGITUD_MAXIMA_CASO } from "@/config/constants/limits.constants.ts";
 import { ESQUEMA_LOOPBACK, ESQUEMA_SEGURO, HOSTS_LOOPBACK } from "@/config/constants/llm.constants.ts";
 import { ESTADO_CAMPO } from "@/config/constants/mapping.constants.ts";
-import { SALTO_DE_LINEA } from "@/config/constants/text.constants.ts";
+import { FIN_DE_ORACION, SALTO_DE_LINEA } from "@/config/constants/text.constants.ts";
 import { HERRAMIENTA, NOMBRE_VISIBLE } from "@/config/constants/tools.constants.ts";
 import type { ValorDe } from "@/config/types/valor-de.type.ts";
 
@@ -26,8 +26,6 @@ export const MENSAJE_ERROR = {
   [CODIGO_ERROR.CONFIGURACION_INVALIDA]: "La configuración de la ejecución no es válida.",
   [CODIGO_ERROR.DATOS_INVALIDOS]: "Los datos del caso no son válidos o superan el tamaño permitido.",
 } as const satisfies Record<ValorDe<typeof CODIGO_ERROR>, string>;
-
-const FIN_DE_ORACION = ".";
 
 function conDetalle(mensaje: string, detalle: string): string {
   return `${mensaje} Detalle: ${detalle}`;
