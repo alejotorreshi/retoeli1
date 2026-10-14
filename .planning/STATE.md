@@ -4,10 +4,10 @@ current_phase: 02
 current_phase_name: Agente y compuerta de confirmación
 status: executing
 stopped_at: Completed 02-18-PLAN.md
-last_updated: "2026-10-14T02:36:48.410Z"
+last_updated: "2026-10-14T02:40:20.475Z"
 last_activity: 2026-10-14
 last_activity_desc: Phase 02 execution started
-state_head: b211cea8f92ae6226b44bb91c049374f18362bb8
+state_head: 882f418d7b064934cc5d8aff38312b6f12ae0fa7
 progress:
   total_phases: 4
   completed_phases: 1
@@ -27,10 +27,10 @@ See: .planning/PROJECT.md (updated 2026-10-13)
 
 ## Current Position
 
-Phase: 02 (Agente y compuerta de confirmación) — READY TO EXECUTE
-Plan: 18 of 18
-Status: Ready for verification
-Last activity: 2026-10-14 — Completed 02-18 (G-02-21; live re-run VIVO PASS)
+Phase: 02 (Agente y compuerta de confirmación) — EXECUTING
+Plan: 1 of 21
+Status: Executing Phase 02
+Last activity: 2026-10-13 — Phase 02 execution started
 
 Progress: [███░░░░░░░] 25%
 
@@ -153,7 +153,7 @@ Recent decisions affecting current work:
 - [Phase 02]: 02-02: el turno libera la sesión tras guardar el historial y antes de emitir turn_end; un turno rechazado por SESION_OCUPADA nunca libera
 - [Phase 02]: 02-02: el reloj del agente relee el entorno de herramientas en cada llamada (clockFromToolEnv), así modelo y herramientas usan la misma fecha
 - [Phase 02]: 02-03: el clasificador de confirmación es una gramática de lista blanca; la negación se evalúa primero y cualquier duda da otro, que nunca autoriza
-- [Phase 02]: 02-03: abrirTurno con confirma de un caso no pendiente no autoriza y cancela a LIBRE; falta_caso conserva los casos
+- [Phase 02]: 02-03: abrirTurno con confirma de un caso no pendiente no autoriza y cancela a LIBRE; falta_caso conserva los casos — SUPERSEDED por 02-19 (D-63.6): solo rechaza cancela; otro, falta_caso y la confirmación de un caso no pendiente conservan los casos
 - [Phase 02]: 02-03: cerrarTurno solo vuelve pendiente un bloqueado si su paquete está en conocidos; el bucle debe registrar cada paquete armado en conocidos
 - [Phase 02]: 02-03: necesitaPreguntaDeterminista exige que el último párrafo termine en ? y nombre cada caso pendiente
 - [Phase 02]: 02-04: Retry-After honored only as a non-negative integer of seconds, capped at BACKOFF_TOPE_MS; HTTP dates fall back to full-jitter backoff
@@ -186,13 +186,14 @@ Recent decisions affecting current work:
 - [Phase 02]: 02-14: weak acknowledgements (ok, okay, vale, listo, claro, correcto) confirm only on their own; with any filler the decision is otro (D-39) — SUPERSEDED by 02-16 (D-63.5)
 - [Phase 02]: 02-14: VERBOS_ENVIO keeps only imperatives; the noun envío, envié and enviar never confirm
 - [Phase 02]: 02-14: the server question quotes EJEMPLOS_CONFIRMACION (envía, sí) and promises only that a reply that is not an explicit confirmation sends nothing
-- [Phase 02]: 02-13: a confirmation turn that ends in error, tope_tokens or tope_iteraciones before using its authorization returns that case to pending and ends with the server question (D-63.2); final and abortado recover nothing
+- [Phase 02]: 02-13: a confirmation turn that ends in error, tope_tokens or tope_iteraciones before using its authorization returns that case to pending and ends with the server question (D-63.2); final and abortado recover nothing — SUPERSEDED in part by 02-19 (D-63.6): final also returns the unused authorized case to pending; only abortado recovers nothing
 - [Phase 02]: 02-13: only the pending state is recovered, never the grant (D-38); revoked, used, unknown and inherited-key cases are never recovered
 - [Phase 02]: 02-13: live run after all gap fixes passed on the first run (VIVO PASS modelo=deepseek-flash llamadas=12 tokens=79292); agent/prompt.md unchanged
 - [Phase 02]: 02-15: D-63.4 — la compuerta recuerda los casos enviados en Sesion.casosEnviados; un simular_envio bloqueado de un caso ya enviado no lo reabre ni en el mismo turno ni después, y un armar_paquete nuevo y exitoso borra la marca y vuelve a pedir confirmación (G-02-3)
 - [Phase 02]: G-02-19: TEXTO_AGENTE.conDetalle adds the final period only when missing (endsWith, no regex); CONFIGURACION_LLM_INVALIDA and PROVEEDOR_SIN_CLAVE drop the open-session sentence because crearAgente raises them before any session exists; turn-time codes keep it
 - [Phase 02]: 02-16: D-63.5 — un acuse suelto (ok, okay, vale, listo, claro, correcto) nunca confirma; hace falta una afirmación fuerte o un verbo de envío. "sí" con tilde (detectado sobre el texto NFC antes de quitar diacríticos) es afirmación fuerte en cualquier posición; "si" sin tilde confirma solo como mensaje entero y en cualquier otra frase nunca basta (G-02-18)
 - [Phase 02]: 02-18: agent/prompt.md y el conocimiento dejan la pregunta de cierre al servidor (cierreConPregunta), acotan el turno de confirmación al resultado del envío simulado, dicen que un "ok" o "listo" suelto no confirma y que un caso ya enviado no se reenvía sin un armado nuevo; cambio solo de texto (AGT-02), fijado por tests/contract/instrucciones-agente.test.ts (G-02-21); corrida en vivo final: VIVO PASS modelo=deepseek-flash llamadas=12 tokens=83531
+- [Phase 02]: 02-19: D-63.6 — con un caso pendiente, una respuesta otro (ok, listo, una pregunta o un pedido distinto) lo conserva y el servidor vuelve a agregar su pregunta con needsConfirmation; solo rechaza cancela; confirmar un caso entre varios deja los demás pendientes; un turno de confirmación que termina sin enviar devuelve el caso a pendiente sin devolver la autorización; fuera del envío, solo un rechazo, un aborto o el fin de la sesión sacan un caso de la compuerta; el prompt ya no le pide al modelo pedir confirmaciones (CR-01)
 
 ### Pending Todos
 
@@ -205,6 +206,7 @@ None yet.
 - [Phase 2]: Hacer un spike en vivo con DeepSeek antes del ciclo (modelo vigente, thinking desactivado, `tool_choice`, forma de los errores).
 - [Phase 3]: Hay que verificar con `curl -N` que el proxy de Render no bufferice el SSE apenas exista el endpoint.
 - [Phase 3]: El servicio en Render free duerme por inactividad y su disco es efímero; hay que calentarlo antes de la defensa.
+- [Phase 3]: Desde D-63.6, mientras un caso esté pendiente cada turno emite confirmation_required: la tarjeta de confirmación sigue visible entre turnos, y Cancelar (aprobada false) cancela todos los casos pendientes.
 - [Phase 4]: modulo/agent.md se genera desde agent/prompt.md, que desde 02-18 deja la pregunta de confirmación al servidor; sin servidor (OpenCode) nadie la escribiría, así que el generador de la Phase 4 debe decidir quién pide la confirmación (nota del generador o párrafo propio del módulo).
 - [Phase 4]: SOLUCION.md debe explicar los ids canónicos en la consola de la demo y el `resumen` (WR-03), mover desde docs/plantillas.md la nota de NOMBRE_SOPORTE (IN-01) y registrar SEG-02 como parcial hasta que exista `redactar()`.
 - [General]: PRD §10 no trae la tabla de puntos de la rúbrica; cada "debe/obligatorio/evaluamos" se trata como ítem y el supuesto va en SOLUCION.md §7.
