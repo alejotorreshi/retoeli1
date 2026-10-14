@@ -129,3 +129,31 @@ describe("el prompt y el conocimiento siguen la compuerta del servidor (G-02-21)
     expect(RETIRADOS.filter((frase) => prompt.includes(frase) || conocimiento.includes(frase))).toEqual([]);
   });
 });
+
+const RETIRADOS_CR01 = [
+  'y pide una confirmación explícita, como "envía" o "sí".',
+  "Si la respuesta no es clara, vuelve a preguntar en lugar de enviar.",
+];
+
+describe("la re-pregunta es del servidor (CR-01, D-63.6)", () => {
+  test("el prompt deja pendiente lo que no confirma, atiende los pedidos ajenos y cancela solo con un rechazo", () => {
+    for (const fragmento of [
+      "el servidor vuelve a agregar su pregunta",
+      "atiéndelo con normalidad",
+      "ese rechazo la cancela",
+    ]) {
+      expect(prompt).toContain(fragmento);
+    }
+  });
+
+  test("el conocimiento deja la re-pregunta al servidor y cancela solo con una negación", () => {
+    expect(conocimiento).toContain("el servidor vuelve a agregar su pregunta");
+    expect(conocimiento).toContain("la cancela");
+  });
+
+  test("ninguna frase que le pedía al modelo pedir la confirmación sigue en los archivos", () => {
+    expect(RETIRADOS_CR01.filter((frase) => prompt.includes(frase) || conocimiento.includes(frase))).toEqual(
+      [],
+    );
+  });
+});
