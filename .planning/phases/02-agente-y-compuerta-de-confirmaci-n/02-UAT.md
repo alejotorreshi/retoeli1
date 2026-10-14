@@ -1,5 +1,5 @@
 ---
-status: complete
+status: diagnosed
 phase: 02-agente-y-compuerta-de-confirmaci-n
 source: [02-01-SUMMARY.md, 02-02-SUMMARY.md, 02-03-SUMMARY.md, 02-04-SUMMARY.md, 02-05-SUMMARY.md, 02-06-SUMMARY.md, 02-07-SUMMARY.md, 02-08-SUMMARY.md, 02-09-SUMMARY.md, 02-10-SUMMARY.md, 02-11-SUMMARY.md, 02-12-SUMMARY.md, 02-13-SUMMARY.md, 02-14-SUMMARY.md, 02-VERIFICATION.md, 02-REVIEW-FIX.md, .qa/suites/02.suite.json]
 started: 2026-10-13T23:51:05Z
@@ -422,29 +422,78 @@ blocked: 0
   reason: "User reported: T03 no-pass (accepted recommendation): OBS-T03-4 — after a successful send, a model retry of simular_envio re-opens the already-sent case as pending and a later 'envía' rewrites ENVIO-SIMULADO.md (2 send lines in the log); contradicts 'una sola vez y solo para ese caso'"
   severity: major
   test: 3
-  artifacts: []
-  missing: []
+  root_cause: "La compuerta no recuerda qué casos ya se enviaron: aplicarEvento promueve a pendiente cualquier caso con evento BLOQUEADO que esté en conocidos, y sesion.paquetesConocidos conserva el caso tras un ENVIADO exitoso (mismo defecto que IN-06 de 02-REVIEW-DISPOSITION)."
+  artifacts:
+    - path: "src/domain/policies/compuerta.policy.ts"
+      issue: "aplicarEvento (caso BLOQUEADO, l.78-93) reabre desde conocidos sin comprobar si el caso ya se envió"
+    - path: "src/loop/services/paso-herramientas.service.ts"
+      issue: "turno.conocidos solo crece (l.64); nada marca el envío exitoso"
+    - path: "src/loop/services/guardado-turno.service.ts"
+      issue: "paquetesConocidos se persiste entre turnos sin registro de envíos (l.46; tipo en src/loop/types/turno.type.ts:37)"
+    - path: "src/loop/services/despacho-llamada.service.ts"
+      issue: "bloquearEnvio emite BLOQUEADO para cualquier caso legible (l.38-59)"
+    - path: "tests/loop/compuerta-casos.test.ts"
+      issue: "AGT-04 (l.286-302) fija la reapertura y nunca prueba un cuarto 'envía'"
+  missing:
+    - "Registrar en la sesión los casos ya enviados (estado aparte o marca), sin borrarlos de conocidos (rompería el ruteo del log por caso y gate_*)"
+    - "En cerrarTurno/aplicarEvento, un BLOQUEADO de un caso ya enviado no lo vuelve pendiente, ni en el mismo pliegue (ENVIADO→BLOQUEADO) ni en turnos posteriores"
+    - "Mantener CONFIRMACION_REQUERIDA, la línea CA4 en out/<caso>/log.jsonl y gate_bloqueo con el caso"
+    - "Decidir y documentar (CONTEXT D-63.4, STATE 02-06): un ARMADO nuevo tras el envío abre ciclo nuevo y borra la marca (D-37/D-42)"
+    - "Reescribir el test AGT-04 (needsConfirmation=false tras el reintento; un 4.º 'envía' bloqueado, 1 sola línea ok) y agregar unitarios de cerrarTurno para [ENVIADO,BLOQUEADO] y BLOQUEADO de turno anterior; control ARMADO reabre"
+  debug_session: .planning/debug/reenvio-caso-ya-enviado.md
 - gap_id: G-02-18
   truth: "A bare acknowledgement or a conditional 'si' never authorizes the simulated send; only strong affirmations or send verbs (D-39 list) confirm"
   status: failed
   reason: "User reported: H2 Endurecer (no-pass): bare acknowledgements ('ok', 'listo', 'vale', 'claro', 'correcto', 'ok ok', 'si todo bien') must not count as explicit confirmation — per RN4, CA3, ENV-02 and D-39 (conservative; doubt gives 'otro' and the agent asks again)"
   severity: major
   test: 18
-  artifacts: []
-  missing: []
+  root_cause: "clasificarConfirmacion acepta dos formas no explícitas: mensajes formados solo por acuses (rama soloAcuses añadida por 02-14 en esConfirmacionClara) y frases con 'si' sin tilde más relleno, porque sinDiacriticos borra la tilde antes de buscar en AFIRMACIONES; ambas contradicen D-39."
+  artifacts:
+    - path: "src/domain/policies/confirmacion.policy.ts"
+      issue: "soloAcuses y '|| soloAcuses(palabras)' en esConfirmacionClara (l.46-55); normalización que pierde la tilde de 'sí' (l.71)"
+    - path: "src/config/constants/confirmation.constants.ts"
+      issue: "'si' en AFIRMACIONES (l.12), conjunto ACUSES (l.25), 'todo'/'bien' en RELLENO"
+    - path: "src/config/constants/patterns.constants.ts"
+      issue: "PATRON_NO_PALABRA (l.24) solo letras ASCII; trata la tilde combinante como separador"
+    - path: "tests/unit/confirmacion.policy.test.ts"
+      issue: "filas :34 'ok', :91 'vale', :92 'listo', :93 'claro, ok' (UNO→confirma) y :96 'ok' (DOS→FALTA_CASO) fijan el comportamiento actual"
+  missing:
+    - "Quitar soloAcuses: confirmar exige al menos una afirmación fuerte o un verbo de envío; los acuses quedan permitidos pero no bastan"
+    - "Detectar 'sí' con tilde antes de sinDiacriticos (NFC + minúsculas, cubre 'SÍ' y NFD); 'si' sin tilde cuenta como fuerte solo si es el mensaje entero (decisión de la usuaria en el plan: esta lectura o la estricta); literal en confirmation.constants.ts y patrón en patterns.constants.ts (G11)"
+    - "Pasar las 5 filas a OTRO y agregar filas OTRO ('okay','correcto','ok ok','vale listo','Listo.','si todo bien','si gracias','si por favor') y confirma ('si','SÍ','sí' NFD,'sí, todo bien','si, envía','OK, envía','listo, envíalo','vale, procede','claro, adelante','ok confirmo')"
+    - "Extender el describe CR-01 de tests/loop/compuerta.test.ts con 'ok','listo','si todo bien' (CONFIRMACION_REQUERIDA, sin ENVIO-SIMULADO.md) y convertir el bloque H2 del seed T04 en asserts"
+    - "Marcar la decisión 02-14 como reemplazada en STATE.md y 02-14-SUMMARY; cerrar WR-01 e IN-04 en 02-REVIEW-DISPOSITION; coordinar con G-02-21 (el modelo vuelve a preguntar tras un 'otro')"
+  debug_session: .planning/debug/acuse-suelto-confirma-envio.md
 - gap_id: G-02-19
   truth: "The insecure-URL configuration message ends with a single period and does not claim an open session at startup"
   status: failed
   reason: "User reported: H3 no-pass (menor): fix the double period at the end of the insecure-URL message and drop 'La sesión sigue abierta; puedes volver a intentarlo' for configuration errors raised at agent creation"
   severity: minor
   test: 19
-  artifacts: []
-  missing: []
+  root_cause: "El mensaje de configuración se arma como TEXTO_AGENTE.conDetalle(MENSAJE_AGENTE[CONFIGURACION_LLM_INVALIDA], detalle): el detalle de zod ya termina en punto y conDetalle agrega otro, y el mensaje base del código asume una sesión abierta aunque el error ocurra en crearAgente (diagnóstico por evidencia T13, sin debugger: minor)."
+  artifacts:
+    - path: "src/config/strings.ts"
+      issue: "TEXTO_ENV.urlNoSegura termina en '.' y TEXTO_AGENTE.conDetalle agrega otro; MENSAJE_AGENTE[CONFIGURACION_LLM_INVALIDA] dice 'La sesión sigue abierta; puedes volver a intentarlo'"
+    - path: "src/loop/wiring/agente.wiring.ts"
+      issue: "crearAgente usa ese mensaje para un error de arranque (l.131-133)"
+  missing:
+    - "Un solo punto final en el mensaje compuesto (no duplicar puntuación al concatenar el detalle)"
+    - "Para errores de configuración al crear el agente, no afirmar que la sesión sigue abierta"
+    - "Fijar el texto exacto en un test de contrato (env-agente)"
 - gap_id: G-02-21
   truth: "prompt.md and the process knowledge match server-owned closing questions, keep the confirmation-turn reply brief, and treat bare acknowledgements as non-confirmations — prompt/knowledge-only change (AGT-02)"
   status: failed
   reason: "User reported: H5 pass con seguimiento + H1 pass con seguimiento: align agent/prompt.md and src/knowledge/registro-proveedor.md with current behavior — the server writes the closing question (CR-02), so the model must not write it; on the confirmation turn reply only with the send result (no repeated case summary, H1); a bare 'ok'/'listo' is not a confirmation (H2)"
   severity: minor
   test: 21
-  artifacts: []
-  missing: []
+  root_cause: "agent/prompt.md y src/knowledge/registro-proveedor.md quedaron escritos antes de CR-02 (02-10) y de la decisión H2: piden al modelo escribir la pregunta de cierre (ahora la escribe el servidor), no acotan la respuesta del turno de confirmación y no dicen que un acuse suelto no confirma (diagnóstico por lectura, sin debugger: minor)."
+  artifacts:
+    - path: "agent/prompt.md"
+      issue: "Formato de respuesta ('Termina con la pregunta de cierre…', 'La pregunta de cierre es la última oración…') y Protocolo de confirmación ('termina el turno con una pregunta…'); sin regla para el turno de confirmación"
+    - path: "src/knowledge/registro-proveedor.md"
+      issue: "Varios casos: 'una sola pregunta de cierre que nombre cada paquete' (ya la escribe el servidor)"
+  missing:
+    - "Decir que el servidor agrega la pregunta de cierre y que el modelo no debe escribirla (también reduce el riesgo de WR-02 sobre las notas '(¿…?)')"
+    - "En el turno de confirmación, responder solo con el resultado del envío, sin repetir el resumen del caso (H1)"
+    - "Indicar que un 'ok' o 'listo' suelto no es confirmación y que hay que volver a preguntar (alinea con G-02-18)"
+    - "Solo texto (AGT-02); mantener verde tests/contract/instrucciones-agente.test.ts y re-correr la prueba en vivo una vez al final"
