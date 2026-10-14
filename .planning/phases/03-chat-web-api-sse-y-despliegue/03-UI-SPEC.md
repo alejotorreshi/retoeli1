@@ -1,7 +1,8 @@
 ---
 phase: "3"
 slug: "chat-web-api-sse-y-despliegue"
-status: draft
+status: approved
+reviewed_at: "2026-10-14"
 shadcn_initialized: false
 preset: none
 created: "2026-10-14"
@@ -34,7 +35,7 @@ created: "2026-10-14"
 
 ## Componentes propios (contrato de esta fase)
 
-Could not enumerate: no hay sistema de diseño instalado (Tool: none, CSS propio por decisión de stack); la tabla lista los componentes que esta fase construye, no los exports de un paquete.
+Could not enumerate: no hay sistema de diseño instalado (Tool: none, CSS propio por decisión de stack); la tabla lista los componentes que esta fase construye, no los exports de un paquete. Es un conjunto de partida, no una lista cerrada: el executor puede agregar un componente que respete los tokens y el contrato sin bloquearse.
 
 | Componente | Elemento base | Responsabilidad |
 |------------|---------------|-----------------|
@@ -181,7 +182,7 @@ Accent reserved for (lista cerrada):
 6. Los enlaces de texto "Ver" y "Descargar" de `ListaArchivos`.
 7. El punto de 8 px de "cambios no vistos" en la pestaña "Casos y archivos" (pantallas angostas).
 
-Ningún otro elemento usa el acento. Los botones secundarios ("Cancelar envío", "Nueva sesión", "Detener respuesta", "Seguir en esta sesión", "Cerrar") son blancos con borde `--borde` y texto `--texto`. Los chips usan el fondo secundario con borde `--borde`.
+Ningún otro elemento usa el acento. Los botones secundarios ("Cancelar envío", "Nueva sesión", "Detener respuesta", "Seguir en esta sesión", "Cerrar vista previa") son blancos con borde `--borde` y texto `--texto`. Los chips usan el fondo secundario con borde `--borde`.
 
 ---
 
@@ -272,7 +273,7 @@ Estados de etapa: pendiente (círculo hueco, `--texto-tenue`), en curso (acento,
 ### PanelCasos y ListaArchivos (UI-06, D-64..D-67)
 - El panel lista los casos con alguna herramienta en la sesión, en orden de primera aparición. El caso con actividad más reciente queda primero y expandido; los demás, colapsados (`<details>`).
 - Por caso: `ProgresoCaso` y `ListaArchivos`. La lista se pide al servidor al terminar cada turno que tocó el caso y al expandir el bloque, y refleja **lo que existe en disco en ese momento** (D-67).
-- Fila de archivo (40 px): nombre en monoespaciada (`formulario.xlsx`, `paquete/checklist.md`…), tipo en texto tenue ("Formulario", "Checklist", "Borrador de correo", "Envío simulado", "Valores para portal", "Soporte") y dos enlaces de acento: "Ver" (abre `DialogoVistaPrevia`) y "Descargar" (`<a href download>`, entrega el archivo real, D-64). Los soportes copiados solo tienen "Descargar".
+- Fila de archivo (40 px): nombre en monoespaciada (`formulario.xlsx`, `paquete/checklist.md`…), tipo en texto tenue ("Formulario", "Checklist", "Borrador de correo", "Envío simulado", "Valores para portal", "Soporte") y dos enlaces de acento: "Ver" (abre `DialogoVistaPrevia`) y "Descargar" (`<a href download>`, entrega el archivo real, D-64). Cada enlace lleva un nombre accesible con el archivo: `aria-label="Ver formulario.xlsx"` y `aria-label="Descargar formulario.xlsx"`. Los soportes copiados solo tienen "Descargar".
 - Nunca aparecen `mapeo.json` ni `log.jsonl` (D-66).
 - Si falta un archivo esperado según el progreso (por ejemplo, la etapa "Generado" está hecha pero no hay formulario), se muestra el aviso de disco efímero (atención) con el chip "Procesar {caso} de nuevo", que manda "procesa el caso {caso}" (D-67). No se regenera nada al vuelo.
 - Pie fijo del panel, en texto tenue: "Los archivos viven en el disco temporal del servidor y se borran si se reinicia."
@@ -333,6 +334,8 @@ Todo en español. Copia propia del front en `web/src/config/strings.ts`. Las fil
 | Cargando historial | "Cargando la conversación…" |
 | Panel vacío: título | "Casos de esta sesión" |
 | Panel vacío: cuerpo | "Todavía no se procesó ningún caso. Aquí verás el avance de cada caso y sus archivos." |
+| Archivos: cargando | "Cargando archivos…" |
+| Archivos: error al listar | "No pudimos traer los archivos de este caso." · botón "Reintentar" |
 | Archivos vacíos | "Todavía no hay archivos de este caso. Aparecen cuando el agente genera el formulario o arma el paquete." |
 | Disco efímero (D-67) | "El servidor se reinició y los archivos se borraron; vuelve a procesar el caso." · chip "Procesar {caso} de nuevo" |
 | Pie del panel | "Los archivos viven en el disco temporal del servidor y se borran si se reinicia." |
@@ -401,7 +404,9 @@ La UI no inventa datos; necesita estos campos del servidor. La forma exacta la d
 
 ## UI Considerations
 
-Applicable state considerations resolved: 22 covered, 4 backstop, 1 unresolved
+Applicable state considerations resolved: 25 covered, 4 backstop, 0 unresolved
+
+Sonda `ui-consideration-probe` (2026-10-14): 11 superficies y 67 categorías propuestas. Las que no figuran en la tabla se descartaron por no aplicar, por ejemplo "loading" en `DialogoNuevaSesion` (acción local, sin red) o "zero-one-many" en `PantallaAcceso`. `AvisoModelo` quedó sin clasificar y se revisó a mano: sus cinco estados están en la fila "Estado del LLM".
 
 | Category | Element(s) | Status | Resolution / Reason |
 |----------|------------|--------|---------------------|
@@ -431,7 +436,9 @@ Applicable state considerations resolved: 22 covered, 4 backstop, 1 unresolved
 | overflow | `<pre>` de argumentos y vista previa `.md` | 🧪 backstop | Alto máximo 240 px (60 vh en el diálogo) con scroll vertical y horizontal; sin desborde del ancho de la tarjeta |
 | long-text | Texto del agente, ids de caso, rutas, bloqueos | 🧪 backstop | `pre-wrap` más `overflow-wrap: anywhere`; ningún texto rompe el ancho de 768 px ni el panel de 384 px |
 | long-text | Resumen en la tarjeta colapsada | 🧪 backstop | Una línea con elipsis (`text-overflow: ellipsis`); el texto completo solo en el cuerpo expandido |
-| overflow | AccionesRapidas en < 640 px | ⚠ unresolved | Se asume una sola fila con scroll horizontal; el planner puede cambiarla a dos filas si el scroll horizontal tapa chips en la prueba manual |
+| overflow | AccionesRapidas en < 640 px | ✅ covered | `flex-wrap: wrap`, con 8 px entre chips: se apilan en varias filas (2 como máximo con 3 chips) y no hay scroll horizontal (decisión de la usuaria, 2026-10-14) |
+| loading | ListaArchivos | ✅ covered | Mientras llega la lista se muestra "Cargando archivos…" en texto tenue; la lista se vuelve a pedir al terminar cada turno |
+| error | ListaArchivos (fallo al listar) | ✅ covered | "No pudimos traer los archivos de este caso." con el botón secundario "Reintentar"; no se confunde con el 404 de un archivo (D-67) |
 
 ---
 
@@ -447,12 +454,12 @@ Dependencias de front permitidas por STACK.md: `react`, `react-dom`, `eventsourc
 
 ## Checker Sign-Off
 
-- [ ] Dimension 1 Copywriting: PASS
-- [ ] Dimension 2 Visuals: PASS
-- [ ] Dimension 3 Color: PASS
-- [ ] Dimension 4 Typography: PASS
-- [ ] Dimension 5 Spacing: PASS
-- [ ] Dimension 6 Registry Safety: PASS
-- [ ] Dimension 7 Inventory Provenance: PASS
+- [x] Dimension 1 Copywriting: PASS
+- [x] Dimension 2 Visuals: PASS
+- [x] Dimension 3 Color: PASS
+- [x] Dimension 4 Typography: PASS
+- [x] Dimension 5 Spacing: PASS
+- [x] Dimension 6 Registry Safety: PASS
+- [x] Dimension 7 Inventory Provenance: PASS
 
-**Approval:** pending
+**Approval:** approved 2026-10-14 (FLAGs de Copywriting e Inventory Provenance aplicados)
