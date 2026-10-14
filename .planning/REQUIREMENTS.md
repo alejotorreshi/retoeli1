@@ -49,13 +49,13 @@ Fuente vinculante: `reto-01/PRD.md`, sin modificar. Fixtures: `reto-01/fixtures/
 ### Confirmación y envío simulado (CA3, RN4)
 
 - [x] **ENV-01**: Si `simular_envio` se llama sin confirmación válida, devuelve `{ ok: false, error: "requiere confirmación explícita" }`. Con confirmación, escribe solo `out/<caso>/ENVIO-SIMULADO.md` y deja registrados los bloqueos vigentes. No exige `listo_para_firma`. Si `paquete/` no coincide con lo que se armaría hoy (archivos faltantes, sobrantes o borrador desactualizado), rechaza con `PAQUETE_DESACTUALIZADO` y no escribe nada.
-- [ ] **ENV-02**: El servidor hace cumplir la compuerta de confirmación. La sesión guarda la confirmación pendiente `{ caso, accion }`, y la autorización vale una sola vez, para ese caso y solo si llega en el mensaje inmediatamente siguiente del usuario. La decide un clasificador determinista que entiende negaciones ("No envíes nada todavía" no confirma) o el botón de la UI. El servidor nunca confía solo en `confirmado: true` del modelo.
-- [ ] **ENV-03**: Cuando una acción requiere confirmación, el turno termina con una pregunta explícita que lista los bloqueos. El servidor calcula `needsConfirmation`.
+- [x] **ENV-02**: El servidor hace cumplir la compuerta de confirmación. La sesión guarda la confirmación pendiente `{ caso, accion }`, y la autorización vale una sola vez, para ese caso y solo si llega en el mensaje inmediatamente siguiente del usuario. La decide un clasificador determinista que entiende negaciones ("No envíes nada todavía" no confirma) o el botón de la UI. El servidor nunca confía solo en `confirmado: true` del modelo.
+- [x] **ENV-03**: Cuando una acción requiere confirmación, el turno termina con una pregunta explícita que lista los bloqueos. El servidor calcula `needsConfirmation`.
 
 ### Ciclo del agente (§6.1, §6.3)
 
 - [ ] **AGT-01**: El ciclo es propio: prompt → modelo → herramientas → respuesta. Las herramientas se ejecutan en secuencia y hay un tope configurable de iteraciones por turno (25 por defecto). Al alcanzarlo, el agente responde con lo que tiene y lo que falta.
-- [ ] **AGT-02**: El system prompt vive en `agent/prompt.md` y el conocimiento del proceso en `src/knowledge/registro-proveedor.md`, separados de la ejecución en `src/tools/`. Un cambio de reglas de negocio no toca el servidor.
+- [x] **AGT-02**: El system prompt vive en `agent/prompt.md` y el conocimiento del proceso en `src/knowledge/registro-proveedor.md`, separados de la ejecución en `src/tools/`. Un cambio de reglas de negocio no toca el servidor.
 - [ ] **AGT-03**: El prompt prohíbe afirmar valores que no hayan salido de una herramienta (CA2).
 - [ ] **AGT-04**: La sesión vive en un store en memoria detrás de una interfaz, con TTL. El historial queda íntegro: cada tool call tiene su resultado y un paso abortado se descarta. La sesión sobrevive a errores de herramienta o del proveedor (CA5).
 - [ ] **AGT-05**: Los errores de herramienta y de proveedor se traducen a lenguaje claro en español, a partir de un catálogo centralizado de errores.
@@ -100,7 +100,7 @@ Fuente vinculante: `reto-01/PRD.md`, sin modificar. Fixtures: `reto-01/fixtures/
 
 - [x] **DEMO-01**: `bun run demo.ts` ejecuta los 4 casos llamando directamente a las herramientas, sin clave LLM. Limpia `out/` al inicio, fija `FECHA_EJECUCION=2026-09-03`, la imprime y muestra un resumen por caso. El resultado es igual entre ejecuciones, salvo timestamps.
 - [x] **DEMO-02**: Hay tests golden por caso con la tabla de verdad: co 17/0/0 y listo; ec 13/1/1 y bloqueado por soporte ausente; hn 9/1/1 y bloqueado por parafiscales vencidos; pa 8/0/1 y listo por la vía del portal.
-- [ ] **DEMO-03**: Hay tests unitarios de dominio (mapeo, RN1, vigencias, clasificador de confirmación, redacción), tests de contrato de herramientas (`{ok,data}`, nunca lanzan) y tests del ciclo con un LLM falso: tope de iteraciones, compuerta (incluido "No envíes…" y el guion §11), CA5 tras timeout o 503 e intento de inyección.
+- [x] **DEMO-03**: Hay tests unitarios de dominio (mapeo, RN1, vigencias, clasificador de confirmación, redacción), tests de contrato de herramientas (`{ok,data}`, nunca lanzan) y tests del ciclo con un LLM falso: tope de iteraciones, compuerta (incluido "No envíes…" y el guion §11), CA5 tras timeout o 503 e intento de inyección.
 - [x] **DEMO-04**: Hay fixtures sintéticos propios en `tests/fixtures/` para la etiqueta ambigua (HU-1), una plantilla corrupta y un caso inexistente (HU-5).
 - [ ] **DEMO-05**: GitHub Actions corre `bun test`, `bun run demo.ts`, `tsc --noEmit` y lint, y el README muestra un badge.
 
@@ -200,10 +200,10 @@ Cada requisito v1 está asignado a exactamente una fase del roadmap (`.planning/
 | PAQ-04 | Phase 1 | Complete |
 | PAQ-05 | Phase 1 | Complete |
 | ENV-01 | Phase 1 | Complete |
-| ENV-02 | Phase 2 | Gaps Found |
-| ENV-03 | Phase 2 | Gaps Found |
+| ENV-02 | Phase 2 | Complete |
+| ENV-03 | Phase 2 | Complete |
 | AGT-01 | Phase 2 | Gaps Found |
-| AGT-02 | Phase 2 | Gaps Found |
+| AGT-02 | Phase 2 | Complete |
 | AGT-03 | Phase 2 | Gaps Found |
 | AGT-04 | Phase 2 | Gaps Found |
 | AGT-05 | Phase 2 | Gaps Found |
@@ -233,7 +233,7 @@ Cada requisito v1 está asignado a exactamente una fase del roadmap (`.planning/
 | SEG-04 | Phase 1 | Complete |
 | DEMO-01 | Phase 1 | Complete |
 | DEMO-02 | Phase 1 | Complete |
-| DEMO-03 | Phase 2 | Gaps Found |
+| DEMO-03 | Phase 2 | Complete |
 | DEMO-04 | Phase 1 | Complete |
 | DEMO-05 | Phase 4 | Pending |
 | CAL-01 | Phase 1 | Complete |
