@@ -1,43 +1,43 @@
 ---
 gsd_state_version: "1.0"
-current_phase: 02
-current_phase_name: Agente y compuerta de confirmación
-status: executing
-stopped_at: Completed 02-24-PLAN.md
-last_updated: "2026-10-14T19:39:06.459Z"
+current_phase: 3
+current_phase_name: Chat web, API SSE y despliegue
+status: planning
+stopped_at: Phase 02 complete, ready to plan Phase 3
+last_updated: "2026-10-14T20:06:28.076Z"
 last_activity: 2026-10-14
-last_activity_desc: Completed 02-24 (CR-05 closed, D-63.10)
-state_head: 7b5ed7db1113170a6e32f97b1d503e1f671cedd7
+last_activity_desc: Phase 02 complete, transitioned to Phase 3
+state_head: 6e2c700e4d791cde6e621542d01bd63db3385aff
 progress:
   total_phases: 4
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 39
   completed_plans: 39
-  percent: 25
+  percent: 50
 ---
 
 # Project State
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-10-13)
+See: .planning/PROJECT.md (updated 2026-10-14)
 
 **Core value:** El agente nunca inventa un dato: cada valor sale de una herramienta tipada que lo lee del maestro, y ninguna acción externa ocurre sin confirmación humana explícita.
-**Current focus:** Phase 02 — Agente y compuerta de confirmación
+**Current focus:** Phase 3 — Chat web, API SSE y despliegue
 
 ## Current Position
 
-Phase: 02 (Agente y compuerta de confirmación) — READY TO VERIFY
-Plan: 24 of 24
-Status: Ready to verify (gap closure 02-24 complete)
-Last activity: 2026-10-14 - Completed quick task 261014-jz4: aceptar la regla de primera palabra (D-63.11) para CR-06
+Phase: 3 — Chat web, API SSE y despliegue
+Plan: Not started
+Status: Ready to plan
+Last activity: 2026-10-14 — Phase 02 complete, transitioned to Phase 3
 
-Progress: [███░░░░░░░] 25%
+Progress: [█████░░░░░] 50%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 15
+- Total plans completed: 39
 - Average duration: -
 - Total execution time: 0.0 hours
 
@@ -46,6 +46,7 @@ Progress: [███░░░░░░░] 25%
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 01 | 15 | - | - |
+| 02 | 24 | - | - |
 
 **Recent Trend:**
 - Last 5 plans: -
@@ -215,8 +216,7 @@ None yet.
 
 - [Phase 2]: El prompt del agente debe responder a `PAQUETE_DESACTUALIZADO` re-ejecutando `proveedor_armar_paquete`, mostrando el nuevo estado y pidiendo confirmación de nuevo (CR-01).
 - [Phase 2]: Al enviar no se compara el contenido del formulario en `paquete/`; si el maestro cambia tras armar, el agente debe regenerar el formulario y re-armar antes de enviar.
-- [Phase 2]: Hacer un spike en vivo con DeepSeek antes del ciclo (modelo vigente, thinking desactivado, `tool_choice`, forma de los errores).
-- [Phase 2]: En la corrida en vivo de 02-21, la respuesta A2 ("ok") no escribió una segunda pregunta con "¿", pero sí un pedido de confirmación propio ("dime de forma explícita algo como …") antes de la pregunta del servidor. Las aserciones pasan, pero el punto de la revisión humana "sin pregunta ni pedido de confirmación del modelo" queda observado para la UAT de fin de fase. Un ajuste posible, solo del prompt, necesita otro visto bueno para una segunda corrida.
+- [Phase 3]: Pendientes abiertos de la Fase 2 que tocan la API o el chat: WR-03 (sesión agotada que sigue pidiendo confirmación), IN-22 (nota "(¿…?)" recortada), WR-17 (el rechazo por botón de un caso cancela todos) y el aviso de cancelación silenciosa de D-63.11 (el botón D-39 lo evita).
 - [Phase 3]: Hay que verificar con `curl -N` que el proxy de Render no bufferice el SSE apenas exista el endpoint.
 - [Phase 3]: El servicio en Render free duerme por inactividad y su disco es efímero; hay que calentarlo antes de la defensa.
 - [Phase 3]: Desde D-63.6, mientras un caso esté pendiente cada turno emite confirmation_required: la tarjeta de confirmación sigue visible entre turnos, y Cancelar (aprobada false) cancela todos los casos pendientes.
@@ -241,6 +241,6 @@ Items acknowledged and deferred at milestone close, most recent first:
 
 ## Session Continuity
 
-Last session: 2026-10-14T18:52:05.569Z
-Stopped at: Completed 02-24-PLAN.md
+Last session: 2026-10-14T20:45:00Z
+Stopped at: Phase 02 complete, ready to plan Phase 3
 Resume file: None

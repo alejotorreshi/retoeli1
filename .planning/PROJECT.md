@@ -27,17 +27,17 @@ El agente **nunca inventa un dato**. Cada valor de un formulario sale de una her
 - ✓ HU-5: manejo de errores claro sin trazas crudas. Un caso malo no impide los demás y la sesión no muere. — Phase 1 (herramientas; la sesión del agente, Fase 2)
 - ✓ Reglas de negocio RN1 a RN5 del PRD: identificador tributario por país, datos bancarios nunca en el correo, bloqueo por soportes, confirmación antes de acciones externas y `out/<caso>/log.jsonl`. — Phase 1 (en herramientas; RN4 también en la compuerta del agente, Fase 2)
 - ✓ `demo.ts` ejecuta los 4 casos llamando directamente a las herramientas, sin clave LLM y de forma determinista. Limpia `out/` al inicio. — Phase 1
+- ✓ Ciclo del agente con reglas CA1 a CA5: tope de iteraciones (25), sin valores fuera de herramientas, confirmación humana decidida por el servidor, tool calls registradas en `out/log.jsonl` y errores en lenguaje claro. — Phase 2 (la visibilidad en el chat, Fase 3)
+- ✓ Adaptador LLM propio `enviar(mensajes, herramientas) → respuesta`, con implementación DeepSeek (`deepseek-flash`, thinking desactivado), reintentos, respaldo y mensajes 402 claros. Cambiar de proveedor no toca el ciclo. — Phase 2
+- ✓ System prompt en `agent/prompt.md` y conocimiento del proceso en `src/knowledge/registro-proveedor.md`, separados de la ejecución en `src/tools/`; editarlos cambia la conducta sin tocar el servidor. — Phase 2
+- ✓ Observabilidad y resiliencia: logs estructurados JSON con correlación sesión/turno/tool, timeouts, reintentos con backoff ante errores transitorios del LLM y degradación elegante. — Phase 2
 
 ### Active
 
-- [ ] Ciclo del agente con reglas CA1 a CA5: tope de iteraciones (25), sin valores fuera de herramientas, confirmación humana, tool calls visibles y registradas en `out/log.jsonl`, y errores mostrados en lenguaje claro.
-- [ ] Adaptador LLM propio `enviar(mensajes, herramientas) → respuesta`, con implementación DeepSeek. Cambiar de proveedor no toca el ciclo.
 - [ ] Front de chat en React + Vite: historial, indicador de "pensando", cada tool call visible (nombre, args y resultado resumido) y resaltado del estado de confirmación. Usa streaming SSE.
 - [ ] API documentada: `POST /api/chat` (stream SSE), `GET /api/sessions/:id` y `GET /api/health` (`{ ok, provider, model }` sin claves).
-- [ ] System prompt en `agent/prompt.md` y conocimiento del proceso en `src/knowledge/registro-proveedor.md`, separados de la ejecución en `src/tools/`.
 - [ ] Protección de PII: redacción en logs, API y resúmenes de tool calls, más minimización hacia el LLM (el modelo ve rutas y valores enmascarados; las herramientas escriben el valor real solo en los archivos de salida).
 - [ ] Seguridad y costo: la clave de DeepSeek solo vive en una env var del backend, el link público lleva código de acceso, y hay rate limit, tope de tokens por sesión y timeout al proveedor.
-- [ ] Observabilidad y resiliencia: logs estructurados JSON con correlación sesión/turno/tool, timeouts, reintentos con backoff ante errores transitorios del LLM y degradación elegante.
 - [ ] Bonus `modulo/`: `agent.md`, `tools/proveedor.ts` y `skill/registro-proveedor/SKILL.md` como la **misma fuente** que consume la app (generados o enlazados, no copias divergentes).
 - [ ] Despliegue público en Render (free) con Dockerfile portable como plan B, y `.env.example` sin valores.
 - [ ] Tests: unitarios de dominio (mapeo, reglas de país, vigencias), contrato de herramientas, ciclo del agente con LLM falso y `demo.ts` como e2e determinista.
@@ -84,19 +84,20 @@ El agente **nunca inventa un dato**. Cada valor de un formulario sale de una her
 
 | Decision | Rationale | Outcome |
 |----------|-----------|---------|
-| DeepSeek como proveedor LLM detrás de un adaptador propio | Elección de la usuaria. Es compatible con OpenAI y económico, y el adaptador permite cambiarlo sin tocar el ciclo | — Pending |
+| DeepSeek como proveedor LLM detrás de un adaptador propio | Elección de la usuaria. Es compatible con OpenAI y económico, y el adaptador permite cambiarlo sin tocar el ciclo | ✓ Good — Fase 2: `deepseek-flash` con thinking desactivado; corridas en vivo de ~100k tokens pasan (02-21, QA ronda 3) |
 | Bun como runtime | El PRD usa `bun run demo.ts`. Trae TS nativo y test runner incluido | ✓ Good — Fase 1 sobre Bun 1.4.3, `bun run check` y `bun test` verdes |
 | React + Vite con SSE streaming | Hace visible en vivo cada tool call, el texto y el estado de confirmación. Mejor UX y observabilidad | — Pending |
-| Minimizar la PII hacia el LLM (rutas y valores enmascarados; las herramientas escriben los valores reales) | Máxima protección de datos. Refuerza CA2: el modelo no puede afirmar valores que no vio | — Pending |
+| Minimizar la PII hacia el LLM (rutas y valores enmascarados; las herramientas escriben los valores reales) | Máxima protección de datos. Refuerza CA2: el modelo no puede afirmar valores que no vio | ✓ Good — Fase 2: las corridas en vivo y los escaneos PII no muestran valores del maestro sin máscara |
 | Render free con código de acceso, más Dockerfile portable como plan B | Opción gratuita con secrets en el panel. Docker permite migrar a Koyeb, HF o Fly | — Pending |
 | Bonus `modulo/` diseñado desde el inicio como fuente única | +10 puntos. Obliga a separar bien prompt, conocimiento y herramientas | — Pending |
 | Código en la raíz del repo y `reto-01/` intacto | Decisión de la usuaria. Los fixtures no se modifican | ✓ Good — los fixtures se leen desde una constante; las pruebas sintéticas usan copias |
 | Identificadores de dominio en español y de infraestructura en inglés; docs en español | Respeta el contrato del PRD y mantiene un vocabulario técnico estándar | ✓ Good — vigilado por los guardianes G1–G14 de `tests/architecture.test.ts` |
 | Reloj inyectable para las vigencias | Determinismo de `demo.ts` y de los tests | ✓ Good — la demo es idéntica byte a byte entre corridas salvo `ts` |
-| Tests: unitarios + contrato + ciclo con LLM falso + demo e2e | Calidad verificable sin gastar tokens | — Pending |
+| Tests: unitarios + contrato + ciclo con LLM falso + demo e2e | Calidad verificable sin gastar tokens | ✓ Good — 1551 pruebas al cierre de la Fase 2, sin tokens; la prueba en vivo es opcional |
 | El borrador nunca afirma que el formulario esté firmado; el cierre depende del estado del paquete (GC-1) | La UAT detectó un borrador que decía "firmado" con el paquete BLOQUEADO | ✓ Good — Fase 1 (01-13), aprobado en UAT |
 | `simular_envio` rechaza con `PAQUETE_DESACTUALIZADO` si `paquete/` no coincide con lo que se armaría hoy (faltantes, sobrantes, borrador distinto); ignora archivos basura del SO | El registro de una acción confirmada no puede quedar incompleto | ✓ Good — Fase 1 (revisión CR-01); la Fase 2 debe responder re-armando el paquete y pidiendo confirmación de nuevo |
 | Ids canónicos de soporte en datos de herramientas y en la consola de la demo; nombres en español solo en checklist, borrador y ENVIO | Contrato v1 estable; el PRD §6.6 solo pide "un resumen por caso" | ✓ Good — decisión humana en UAT (WR-03); documentar en SOLUCION.md |
+| La compuerta de confirmación la decide el servidor; el rechazo por texto libre se acota con la regla de primera palabra (D-63.11) y se deja de iterar la gramática | Los planes 02-22 a 02-24 corregían un lado y abrían el otro; la propiedad de seguridad (nunca enviar sin confirmación explícita) se mantuvo siempre | ✓ Good — Fase 2, aceptado en UAT (HV3, D5); los casos límite van a SOLUCION.md y el botón de la Fase 3 (D-39) los evita |
 
 ## Evolution
 
@@ -116,4 +117,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-10-13 after Phase 1*
+*Last updated: 2026-10-14 after Phase 2*
