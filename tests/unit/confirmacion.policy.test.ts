@@ -113,7 +113,7 @@ const FILAS_EXTRA: readonly Fila[] = [
   ["si!", UNO, confirma(EC)],
   ["¡si!", UNO, confirma(EC)],
   ["SÍ", UNO, confirma(EC)],
-  ["sí", UNO, confirma(EC)],
+  ["si\u0301", UNO, confirma(EC)],
   ["sí, todo bien", UNO, confirma(EC)],
   ["sí, ok", UNO, confirma(EC)],
   ["si, envía", UNO, confirma(EC)],

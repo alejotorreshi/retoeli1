@@ -6,10 +6,13 @@ import {
   MAX_PALABRAS_CONFIRMACION,
   NEGACIONES,
   RELLENO,
+  SI_CON_TILDE,
+  SI_SIN_TILDE,
   VERBOS_ENVIO,
 } from "@/config/constants/confirmation.constants.ts";
 import {
   PATRON_NO_PALABRA,
+  PATRON_NO_PALABRA_UNICODE,
   PATRON_PREGUNTA,
   PATRON_SLUG_EN_TEXTO,
 } from "@/config/constants/patterns.constants.ts";
@@ -40,18 +43,27 @@ function esAcuse(palabra: string): boolean {
 }
 
 function esPermitida(palabra: string): boolean {
-  return esAfirmacionFuerte(palabra) || esAcuse(palabra) || RELLENO.has(palabra);
+  return esAfirmacionFuerte(palabra) || esAcuse(palabra) || RELLENO.has(palabra) || palabra === SI_SIN_TILDE;
 }
 
-function soloAcuses(palabras: readonly string[]): boolean {
-  return palabras.length > 0 && palabras.every(esAcuse);
+function tieneSiConTilde(texto: string): boolean {
+  return texto.normalize("NFC").toLowerCase().split(PATRON_NO_PALABRA_UNICODE).includes(SI_CON_TILDE);
 }
 
-function esConfirmacionClara(palabras: readonly string[]): boolean {
+function esSiSuelto({ slugs, palabras }: Frase): boolean {
+  return slugs.length === 0 && palabras.length === 1 && palabras[0] === SI_SIN_TILDE;
+}
+
+function tieneFuerza(texto: string, frase: Frase): boolean {
+  return frase.palabras.some(esAfirmacionFuerte) || tieneSiConTilde(texto) || esSiSuelto(frase);
+}
+
+function esConfirmacionClara(texto: string, frase: Frase): boolean {
+  const { palabras } = frase;
   if (palabras.length > MAX_PALABRAS_CONFIRMACION) return false;
   if (palabras.some((palabra) => CONDICIONALES.has(palabra))) return false;
   if (!palabras.every(esPermitida)) return false;
-  return palabras.some(esAfirmacionFuerte) || soloAcuses(palabras);
+  return tieneFuerza(texto, frase);
 }
 
 function casoConfirmado(slugs: readonly string[], pendientes: readonly string[]): DecisionConfirmacion {
@@ -70,8 +82,8 @@ function casoConfirmado(slugs: readonly string[], pendientes: readonly string[])
 export function clasificarConfirmacion(texto: string, pendientes: readonly string[]): DecisionConfirmacion {
   const normalizado = sinDiacriticos(texto).toLowerCase().trim();
   if (normalizado === "" || PATRON_PREGUNTA.test(texto)) return OTRO;
-  const { slugs, palabras } = separar(normalizado);
-  if (palabras.some((palabra) => NEGACIONES.has(palabra))) return RECHAZA;
-  if (!esConfirmacionClara(palabras)) return OTRO;
-  return casoConfirmado(slugs, pendientes);
+  const frase = separar(normalizado);
+  if (frase.palabras.some((palabra) => NEGACIONES.has(palabra))) return RECHAZA;
+  if (!esConfirmacionClara(texto, frase)) return OTRO;
+  return casoConfirmado(frase.slugs, pendientes);
 }
