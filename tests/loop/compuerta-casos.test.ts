@@ -2,6 +2,7 @@ import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test } fr
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { crearAgentePrueba } from "@tests/helpers/agente-prueba.helper.ts";
+import { capturarLogs } from "@tests/helpers/bitacora.helper.ts";
 import {
   casosConEnvioSimulado,
   confirmaciones,
@@ -23,11 +24,24 @@ import type { AgentePrueba } from "@tests/helpers/types/agente-prueba.type.ts";
 import type { PasoLlmFalso } from "@tests/helpers/types/llm-falso.type.ts";
 import type { ProyectoTemporal } from "@tests/helpers/types/proyecto-temporal.type.ts";
 import type { CargarInstrucciones } from "@/application/types/puertos-agente.type.ts";
-import { ACCION, CODIGO_AGENTE, MOTIVO_FIN, TIPO_EVENTO } from "@/config/constants/agent.constants.ts";
+import {
+  ACCION,
+  CODIGO_AGENTE,
+  EVENTO_BITACORA,
+  MOTIVO_FIN,
+  TIPO_EVENTO,
+} from "@/config/constants/agent.constants.ts";
+import { ESTADO_COMPUERTA } from "@/config/constants/confirmation.constants.ts";
 import { FECHA_DEMO } from "@/config/constants/demo.constants.ts";
 import { CODIGO_ERROR } from "@/config/constants/errors.constants.ts";
-import { ARCHIVO_PROMPT, ARCHIVOS_SALIDA, OUT_DIR } from "@/config/constants/files.constants.ts";
+import {
+  ARCHIVO_BITACORA,
+  ARCHIVO_PROMPT,
+  ARCHIVOS_SALIDA,
+  OUT_DIR,
+} from "@/config/constants/files.constants.ts";
 import { TIPO_ERROR_LLM } from "@/config/constants/llm.constants.ts";
+import { NIVELES_LOG } from "@/config/constants/logging.constants.ts";
 import { ESTADO_SOPORTE } from "@/config/constants/supports.constants.ts";
 import { SEPARADOR_PARRAFOS } from "@/config/constants/text.constants.ts";
 import { HERRAMIENTA, NOMBRE_VISIBLE } from "@/config/constants/tools.constants.ts";
@@ -36,6 +50,7 @@ import { MENSAJE_AGENTE } from "@/config/strings.ts";
 import { cierreConPregunta } from "@/domain/builders/cierre-turno.builder.ts";
 import type { CasoPendiente } from "@/domain/types/compuerta.type.ts";
 import { createInstructionsLoader } from "@/infra/knowledge/instructions-loader.adapter.ts";
+import { createLogger } from "@/infra/logging/logger.adapter.ts";
 import type { ErrorLlm, RespuestaLlm } from "@/llm/types/llm.type.ts";
 import { respuestaDeTurno } from "@/loop/services/respuesta-turno.service.ts";
 import type { EventoAgente } from "@/loop/types/evento.type.ts";
@@ -283,20 +298,58 @@ describe("D-38: la autorización vale una vez, para un caso y en el turno siguie
   });
 });
 
-describe("AGT-04: repetir 'envía' tras un envío no escribe un segundo envío", () => {
-  test("el reintento del modelo queda bloqueado, vuelve a preguntar y sigue habiendo una sola línea ok", async () => {
-    const prueba = agente([...armarCaso(EC), ...enviar("simular-1", EC), ...enviar("simular-2", EC)]);
+describe("AGT-04 (G-02-3, D-63.4): un caso ya enviado no se reabre ni se envía dos veces", () => {
+  test("los reintentos tras el envío quedan bloqueados, no vuelven a preguntar y dejan una sola línea ok", async () => {
+    const captura = capturarLogs();
+    const prueba = crearAgentePrueba({
+      raiz: proyecto.raiz,
+      guion: [
+        ...armarCaso(EC),
+        ...enviar("simular-1", EC),
+        ...enviar("simular-2", EC),
+        ...enviar("simular-3", EC),
+      ],
+      bitacora: createLogger({ level: NIVELES_LOG.INFO, secrets: [], destination: captura.destino }),
+    });
     await prueba.turno(`procesa ${EC}`);
-    await prueba.turno("envía");
+    const turno2 = await prueba.turno("envía");
+    expect(finesDeHerramienta(turno2)).toEqual([exitosa()]);
     const ruta = join(proyecto.raiz, OUT_DIR, EC, ARCHIVOS_SALIDA.ENVIO_SIMULADO);
     const primero = await readFile(ruta, "utf8");
 
     const turno3 = await prueba.turno("envía");
     expect(finesDeHerramienta(turno3)).toEqual([bloqueada()]);
+    expect(confirmaciones(turno3)).toEqual([]);
+    expect(finDeTurno(turno3).needsConfirmation).toBe(false);
+    expect(textoFinal(turno3)).toBe("Hecho.");
     expect(await enviosOk()).toBe(1);
     expect(await readFile(ruta, "utf8")).toBe(primero);
-    terminaPreguntandoPor(textoFinal(turno3), EC);
-    expect(finDeTurno(turno3).needsConfirmation).toBe(true);
+    const sesion = prueba.sesionActual();
+    expect(sesion.casosEnviados).toEqual([EC]);
+    expect(Object.hasOwn(sesion.paquetesConocidos, EC)).toBe(true);
+    expect(sesion.compuerta).toEqual({ tipo: ESTADO_COMPUERTA.LIBRE });
+
+    const turno4 = await prueba.turno("envía");
+    expect(finesDeHerramienta(turno4)).toEqual([bloqueada()]);
+    expect(finDeTurno(turno4).needsConfirmation).toBe(false);
+    expect(await enviosOk()).toBe(1);
+    expect(await readFile(ruta, "utf8")).toBe(primero);
+
+    const lineasCaso = (await readFile(join(proyecto.raiz, OUT_DIR, EC, ARCHIVO_BITACORA), "utf8"))
+      .trim()
+      .split("\n")
+      .map((linea): Record<string, unknown> => JSON.parse(linea))
+      .filter((linea) => linea.herramienta === NOMBRE_VISIBLE[HERRAMIENTA.SIMULAR_ENVIO]);
+    expect(lineasCaso.map(({ ok, codigo }) => ({ ok, codigo: codigo ?? null }))).toEqual([
+      { ok: true, codigo: null },
+      { ok: false, codigo: CODIGO_ERROR.CONFIRMACION_REQUERIDA },
+      { ok: false, codigo: CODIGO_ERROR.CONFIRMACION_REQUERIDA },
+    ]);
+    const bloqueos = captura.lineas().filter((linea) => linea.msg === EVENTO_BITACORA.COMPUERTA_BLOQUEO);
+    expect(bloqueos.map(({ llamadaId, caso }) => ({ llamadaId, caso }))).toEqual([
+      { llamadaId: "simular-2", caso: EC },
+      { llamadaId: "simular-3", caso: EC },
+    ]);
     historialSano(prueba);
   });
 });

@@ -9,6 +9,7 @@ import type {
   AperturaTurno,
   AutorizacionTurno,
   CasoPendiente,
+  CasosEnviados,
   EntradaCierreCompuerta,
   EstadoCompuerta,
   EvaluacionEnvio,
@@ -77,26 +78,48 @@ function conocido(
 
 function aplicarEvento(
   pendientes: Map<string, CasoPendiente>,
+  enviados: Set<string>,
   evento: EventoCompuerta,
   conocidos: PaquetesConocidos,
 ): void {
   if (evento.tipo === EVENTO_COMPUERTA.ARMADO) {
     pendientes.set(evento.pendiente.caso, evento.pendiente);
+    enviados.delete(evento.pendiente.caso);
     return;
   }
   if (evento.tipo === EVENTO_COMPUERTA.ENVIADO) {
     pendientes.delete(evento.caso);
+    enviados.add(evento.caso);
     return;
   }
+  if (enviados.has(evento.caso)) return;
   const paquete = conocido(evento.caso, conocidos, pendientes);
   if (paquete !== undefined) pendientes.set(evento.caso, paquete);
+}
+
+function plegarEventos(
+  pendientes: Map<string, CasoPendiente>,
+  enviados: CasosEnviados,
+  eventos: readonly EventoCompuerta[],
+  conocidos: PaquetesConocidos,
+): ReadonlySet<string> {
+  const enviadosTrasPliegue = new Set(enviados);
+  for (const evento of eventos) aplicarEvento(pendientes, enviadosTrasPliegue, evento, conocidos);
+  return enviadosTrasPliegue;
 }
 
 export function cerrarTurno(entrada: EntradaCierreCompuerta): EstadoCompuerta {
   if (entrada.abortado) return estadoLibre();
   const pendientes = new Map(entrada.arrastrados.map((pendiente) => [pendiente.caso, pendiente] as const));
-  for (const evento of entrada.eventos) aplicarEvento(pendientes, evento, entrada.conocidos);
+  plegarEventos(pendientes, entrada.enviados, entrada.eventos, entrada.conocidos);
   return estadoCon([...pendientes.values()]);
+}
+
+export function enviadosTrasEventos(
+  enviados: CasosEnviados,
+  eventos: readonly EventoCompuerta[],
+): CasosEnviados {
+  return [...plegarEventos(new Map(), enviados, eventos, {})];
 }
 
 export function recuperarAutorizado(

@@ -34,7 +34,14 @@ import type {
 } from "@/loop/types/turno.type.ts";
 
 export function sesionVacia(id: string): Sesion {
-  return { id, historial: [], tokensUsados: 0, compuerta: estadoLibre(), paquetesConocidos: {} };
+  return {
+    id,
+    historial: [],
+    tokensUsados: 0,
+    compuerta: estadoLibre(),
+    paquetesConocidos: {},
+    casosEnviados: [],
+  };
 }
 
 function arrastradosDe(apertura: AperturaTurno): readonly CasoPendiente[] {

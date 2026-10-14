@@ -1,7 +1,7 @@
 import { EVENTO_BITACORA, MOTIVO_FIN } from "@/config/constants/agent.constants.ts";
 import { ROL_MENSAJE } from "@/config/constants/llm.constants.ts";
 import { SEPARADOR_PARRAFOS } from "@/config/constants/text.constants.ts";
-import { recuperarAutorizado } from "@/domain/policies/compuerta.policy.ts";
+import { enviadosTrasEventos, recuperarAutorizado } from "@/domain/policies/compuerta.policy.ts";
 import type { MensajeAsistente } from "@/llm/types/llm.type.ts";
 import { interrumpido } from "@/loop/services/cierre-error.service.ts";
 import { cerrarTurnoConCompuerta } from "@/loop/services/cierre-turno.service.ts";
@@ -26,6 +26,7 @@ export function cerrarCompuerta(turno: Turno, cierre: Cierre): CierreTurnoCompue
     ],
     eventos: turno.eventosCompuerta,
     conocidos: turno.conocidos,
+    enviados: turno.sesion.casosEnviados,
     abortado: cierre.motivo === MOTIVO_FIN.ABORTADO,
   });
 }
@@ -44,6 +45,7 @@ export function guardarSesion(turno: Turno, cierre: Cierre, compuerta: CierreTur
       historial: [...turno.sesion.historial, turno.usuario, ...turno.pasos, asistente],
       compuerta: compuerta.estado,
       paquetesConocidos: turno.conocidos,
+      casosEnviados: enviadosTrasEventos(turno.sesion.casosEnviados, turno.eventosCompuerta),
     },
     turno.candado,
   );

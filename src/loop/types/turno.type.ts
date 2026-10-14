@@ -8,6 +8,7 @@ import type { LlamadaResumida } from "@/domain/types/cierre-turno.type.ts";
 import type {
   AutorizacionTurno,
   CasoPendiente,
+  CasosEnviados,
   EntradaCierreCompuerta,
   EstadoCompuerta,
   EventoCompuerta,
@@ -35,6 +36,7 @@ export type Sesion = {
   readonly tokensUsados: number;
   readonly compuerta: EstadoCompuerta;
   readonly paquetesConocidos: PaquetesConocidos;
+  readonly casosEnviados: CasosEnviados;
 };
 
 export type ConfirmacionEstructurada = { readonly aprobada: boolean; readonly caso: string };

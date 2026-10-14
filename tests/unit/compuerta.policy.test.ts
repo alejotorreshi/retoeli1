@@ -10,6 +10,7 @@ import {
   abrirTurno,
   casosPendientes,
   cerrarTurno,
+  enviadosTrasEventos,
   estadoLibre,
   evaluarEnvio,
   paqueteConocido,
@@ -51,7 +52,7 @@ const bloqueado = (caso: string): EventoCompuerta => ({ tipo: EVENTO_COMPUERTA.B
 const enviado = (caso: string): EventoCompuerta => ({ tipo: EVENTO_COMPUERTA.ENVIADO, caso });
 
 function cierre(entrada: Partial<EntradaCierreCompuerta>): EntradaCierreCompuerta {
-  return { arrastrados: [], eventos: [], conocidos: {}, abortado: false, ...entrada };
+  return { arrastrados: [], eventos: [], conocidos: {}, enviados: [], abortado: false, ...entrada };
 }
 
 describe("estado inicial y casos pendientes", () => {
@@ -178,6 +179,70 @@ describe("cerrarTurno (D-37, D-63.1, D-63.2)", () => {
 
   test("un turno abortado cierra LIBRE", () => {
     expect(cerrarTurno(cierre({ eventos: [armado(PENDIENTE_EC)], abortado: true }))).toEqual(LIBRE);
+  });
+});
+
+describe("cerrarTurno con casos ya enviados (G-02-3, D-63.4)", () => {
+  test("un reintento bloqueado en el mismo turno del envío no reabre el caso", () => {
+    expect(
+      cerrarTurno(cierre({ eventos: [enviado(EC), bloqueado(EC)], conocidos: { [EC]: PENDIENTE_EC } })),
+    ).toEqual(LIBRE);
+  });
+
+  test("un reintento bloqueado en un turno posterior no reabre un caso ya enviado", () => {
+    expect(
+      cerrarTurno(cierre({ eventos: [bloqueado(EC)], conocidos: { [EC]: PENDIENTE_EC }, enviados: [EC] })),
+    ).toEqual(LIBRE);
+  });
+
+  test("un armado nuevo y luego un bloqueado abren otro ciclo", () => {
+    expect(cerrarTurno(cierre({ eventos: [armado(PENDIENTE_EC), bloqueado(EC)], enviados: [EC] }))).toEqual(
+      pendiente(PENDIENTE_EC),
+    );
+  });
+
+  test("un bloqueado y luego un armado nuevo abren otro ciclo", () => {
+    expect(cerrarTurno(cierre({ eventos: [bloqueado(EC), armado(PENDIENTE_EC)], enviados: [EC] }))).toEqual(
+      pendiente(PENDIENTE_EC),
+    );
+  });
+
+  test("un caso conocido que nunca se envió sigue reabriéndose (D-63.1)", () => {
+    expect(
+      cerrarTurno(
+        cierre({
+          eventos: [bloqueado(EC), bloqueado(CO)],
+          conocidos: { [EC]: PENDIENTE_EC, [CO]: PENDIENTE_CO },
+          enviados: [EC],
+        }),
+      ),
+    ).toEqual(pendiente(PENDIENTE_CO));
+  });
+});
+
+describe("enviadosTrasEventos (G-02-3, D-63.4)", () => {
+  test.each([
+    ["un envío registra el caso", [], [enviado(EC)], [EC]],
+    ["un segundo envío del mismo caso no lo duplica", [EC], [enviado(EC)], [EC]],
+    ["un armado nuevo borra la marca de enviado", [EC], [armado(PENDIENTE_EC)], []],
+    ["un bloqueado no cambia los enviados", [EC], [bloqueado(EC)], [EC]],
+    [
+      "enviado y luego armado en el mismo turno deja el caso sin marca",
+      [],
+      [enviado(EC), armado(PENDIENTE_EC)],
+      [],
+    ],
+    ["armar otro caso no toca la marca", [EC], [armado(PENDIENTE_CO)], [EC]],
+    ["armar un caso solo borra la marca de ese caso", [EC, CO], [armado(PENDIENTE_EC)], [CO]],
+    ["conserva el orden del primer envío", [], [enviado(CO), enviado(EC), enviado(CO)], [CO, EC]],
+  ] as const)("%s", (_nombre, enviados, eventos, esperado) => {
+    expect(enviadosTrasEventos(enviados, eventos)).toEqual(esperado);
+  });
+
+  test("no muta los casos enviados que recibe", () => {
+    const enviados = [EC];
+    enviadosTrasEventos(enviados, [armado(PENDIENTE_EC), enviado(CO)]);
+    expect(enviados).toEqual([EC]);
   });
 });
 
