@@ -89,7 +89,7 @@ Plans:
   4. Al llegar al tope de iteraciones (25 por defecto) o al de tokens por sesión, el usuario recibe en lenguaje claro lo que se tiene y lo que falta, no un error. Una instrucción inyectada en el cuerpo del correo del cliente no cambia el comportamiento del agente.
   5. Un cambio en `src/knowledge/registro-proveedor.md` o en `agent/prompt.md` cambia el comportamiento del agente sin tocar código del servidor. Los logs JSON llevan IDs de sesión, turno y tool call, sin clave ni PII. `bun test` cubre el ciclo con un LLM falso (tope, compuerta con "No envíes…" y el guion §11, CA5 e inyección) sin gastar tokens.
 
-**Plans:** 14/18 plans executed
+**Plans:** 15/18 plans executed
 
 Plans:
 **Wave 1**
@@ -125,7 +125,7 @@ Plans:
 - [x] 02-13-PLAN.md — Un turno de confirmación que falla antes de enviar conserva el caso pendiente y termina con la pregunta del servidor; nueva corrida en vivo con línea VIVO PASS (WR-02)
 
 **Cierre de brechas de la UAT, Wave 1** *(gap closure)*
-- [ ] 02-15-PLAN.md — Un caso ya enviado no se reabre con un reintento bloqueado del modelo; solo un armado nuevo abre otro ciclo y vuelve a pedir confirmación (G-02-3, D-63.4)
+- [x] 02-15-PLAN.md — Un caso ya enviado no se reabre con un reintento bloqueado del modelo; solo un armado nuevo abre otro ciclo y vuelve a pedir confirmación (G-02-3, D-63.4)
 - [ ] 02-17-PLAN.md — Los errores de configuración al crear el agente terminan en un solo punto y no prometen una sesión abierta (G-02-19)
 
 **Cierre de brechas de la UAT, Wave 2** *(blocked on 02-15)*
@@ -175,6 +175,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Núcleo determinista | 15/15 | Complete    | 2026-10-13 |
-| 2. Agente y compuerta de confirmación | 14/14 | In Progress | - |
+| 2. Agente y compuerta de confirmación | 15/18 | In Progress | - |
 | 3. Chat web, API SSE y despliegue | 0/TBD | Not started | - |
 | 4. Módulo, documentación y defensa | 0/TBD | Not started | - |
