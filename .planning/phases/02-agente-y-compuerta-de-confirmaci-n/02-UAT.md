@@ -1,5 +1,5 @@
 ---
-status: complete
+status: diagnosed
 phase: 02-agente-y-compuerta-de-confirmaci-n
 source: [02-VERIFICATION.md, 02-19-SUMMARY.md, 02-20-SUMMARY.md, 02-21-SUMMARY.md, 02-REVIEW.md, .qa/suites/02.suite.json]
 started: 2026-10-14T03:45:00Z
@@ -159,6 +159,22 @@ blocked: 0
   severity: major
   test: 2
   evidence: ".qa/evidence/02-agente-y-compuerta-de-confirmaci-n/02-QA-EVIDENCE-2026-10-14T03-51-47Z.md (T09 P01: WR-16, WR-15 reproductions); 02-REVIEW.md WR-15, WR-16"
-  artifacts: []  # Filled by diagnosis
-  missing: []    # Filled by diagnosis
+  root_cause: "clasificarConfirmacion has no notion of what a negation applies to: the question check (confirmacion.policy.ts:84) returns 'otro' before negations are checked, and the negation check (:86) returns 'rechaza' if ANY word is in NEGACIONES, a list that mixes real stop words with common connectors ('para', 'luego', 'después', 'mejor', 'momento', 'aún', 'ni', 'nada'). Inherited from 02-03 (Pattern 7) when otro and rechaza had the same effect (D-37); D-63.6 made rechaza cancel every pending case but never redefined a rejection (02-19-PLAN.md:405). Swapping the order alone is wrong: 7 of 8 ordinary questions would become rejections"
+  artifacts:
+    - path: "src/domain/policies/confirmacion.policy.ts"
+      issue: "lines 84-86: question check before negation check; negation matched as any word anywhere in the message"
+    - path: "src/config/constants/confirmation.constants.ts"
+      issue: "lines 63-89: NEGACIONES mixes stop words with prepositions/connectors"
+    - path: "src/domain/policies/compuerta.policy.ts"
+      issue: "lines 47-48: correct for D-63.6, but turns each false 'rechaza' into cancelling every pending case"
+    - path: "agent/prompt.md"
+      issue: "lines 51,53 and src/knowledge/registro-proveedor.md:42 (RN4 wording) must stay consistent with the new rejection definition"
+  missing:
+    - "Narrower rejection rule (single-word sets, G8-safe): a negation word applied to a send verb ('no envíes', 'no lo mandes'), or a message made only of stop words ('no', 'todavía no', 'espera', 'cancela', 'mejor no')"
+    - "Evaluate that rule before the question check, so 'No envíes nada todavía, ¿qué falta?' is rechaza while '¿para qué…?' and '¿no hay nada más?' stay otro"
+    - "Classifier rows for the reported phrases and the 8 ordinary questions; loop tests: '…para tenerlo a mano' keeps the case pending with the server question and the next 'sí' sends once; 'No envíes nada todavía, ¿qué falta?' cancels with no server question"
+    - "Keep TABLA_INVESTIGACION rejection rows (45-53) rechaza, question rows (54-56) otro, FILAS_EXTRA:78 rechaza, and the 'dos respuestas seguidas…' loop test"
+    - "Record the new rejection definition in D-63.5/D-63.6 (02-CONTEXT.md), align RN4 wording and fix the STATE.md 02-03 line ('la negación se evalúa primero')"
+    - "Out of scope (separate): WR-17 button rejection of one case cancels all; IN-01(a) esSiSuelto"
+  debug_session: .planning/debug/g-02-2-negaciones-amplias.md
 
