@@ -2,7 +2,9 @@ import {
   ACUSES,
   AFIRMACIONES,
   CANCELACIONES,
+  COMPLEMENTOS_DE_ENVIO,
   CONDICIONALES,
+  CORTES_DE_COMPLEMENTO,
   DECISION_CONFIRMACION,
   ENLACES_MODALES,
   INFINITIVOS_NEGABLES,
@@ -17,7 +19,9 @@ import {
   RELLENO_DE_ESPERA,
   SI_CON_TILDE,
   SI_SIN_TILDE,
+  SIGNO_DE_MOTIVO,
   SUFIJO_PRETERITO,
+  VERBOS_DE_PEDIDO,
   VERBOS_ENVIO,
   VERBOS_GENERICOS_NEGABLES,
   VERBOS_NEGABLES,
@@ -40,7 +44,12 @@ const RECHAZA: DecisionConfirmacion = { decision: DECISION_CONFIRMACION.RECHAZA 
 const FALTA_CASO: DecisionConfirmacion = { decision: DECISION_CONFIRMACION.FALTA_CASO };
 
 type Frase = { readonly slugs: readonly string[]; readonly palabras: readonly string[] };
-type Token = { readonly crudo: string; readonly base: string; readonly caso: boolean };
+type Token = {
+  readonly crudo: string;
+  readonly base: string;
+  readonly caso: boolean;
+  readonly trasMotivo: boolean;
+};
 type Clausula = { readonly tokens: readonly Token[]; readonly pregunta: boolean };
 
 function separar(normalizado: string): Frase {
@@ -97,12 +106,21 @@ function casoConfirmado(slugs: readonly string[], pendientes: readonly string[])
   return pendientes.length === 1 ? { decision: DECISION_CONFIRMACION.CONFIRMA, caso: unico } : FALTA_CASO;
 }
 
-function aToken(crudo: string): Token {
-  return { crudo, base: sinDiacriticos(crudo), caso: PATRON_SLUG_COMPLETO.test(crudo) };
+function tokensDe(segmento: string): readonly Token[] {
+  const tokens: Token[] = [];
+  let finAnterior = 0;
+  for (const coincidencia of segmento.matchAll(PATRON_PALABRA_O_CASO)) {
+    const [crudo] = coincidencia;
+    const inicio = coincidencia.index;
+    const trasMotivo = tokens.length > 0 && segmento.slice(finAnterior, inicio).includes(SIGNO_DE_MOTIVO);
+    tokens.push({ crudo, base: sinDiacriticos(crudo), caso: PATRON_SLUG_COMPLETO.test(crudo), trasMotivo });
+    finAnterior = inicio + crudo.length;
+  }
+  return tokens;
 }
 
 function clausulasDe(segmento: string): readonly Clausula[] {
-  const tokens = (segmento.match(PATRON_PALABRA_O_CASO) ?? []).map(aToken);
+  const tokens = tokensDe(segmento);
   if (!PATRON_PREGUNTA.test(segmento)) return [{ tokens, pregunta: false }];
   if (PATRON_APERTURA_PREGUNTA.test(segmento)) return [{ tokens, pregunta: true }];
   const interrogativo = tokens.findIndex((token) => INTERROGATIVOS.has(token.base));
@@ -123,14 +141,24 @@ function esPreterito(token: Token): boolean {
 }
 
 function esComplementoDeEnvio(token: Token): boolean {
-  return token.caso || NEGACIONES.has(token.base) || RELLENO.has(token.base);
+  return (
+    token.caso ||
+    NEGACIONES.has(token.base) ||
+    RELLENO.has(token.base) ||
+    COMPLEMENTOS_DE_ENVIO.has(token.base)
+  );
+}
+
+function cortaElComplemento(token: Token): boolean {
+  return token.trasMotivo || CORTES_DE_COMPLEMENTO.has(token.base);
 }
 
 function colasDeComplemento(tokens: readonly Token[]): readonly boolean[] {
   const colas = new Array<boolean>(tokens.length + 1).fill(true);
   for (let indice = tokens.length - 1; indice >= 0; indice -= 1) {
     const token = tokens[indice];
-    colas[indice] = token !== undefined && esComplementoDeEnvio(token) && colas[indice + 1] === true;
+    if (token === undefined) continue;
+    colas[indice] = cortaElComplemento(token) || (esComplementoDeEnvio(token) && colas[indice + 1] === true);
   }
   return colas;
 }
@@ -165,45 +193,100 @@ function niegaDesde(tokens: readonly Token[], negador: number, colas: readonly b
   return false;
 }
 
-function niegaElEnvio({ tokens }: Clausula): boolean {
-  const colas = colasDeComplemento(tokens);
+function niegaElEnvio(tokens: readonly Token[], colas: readonly boolean[]): boolean {
   return tokens.some((token, indice) => NEGADORES.has(token.base) && niegaDesde(tokens, indice, colas));
 }
 
-function esCancelacion({ tokens }: Clausula): boolean {
-  return tokens.some((token) => CANCELACIONES.has(token.base)) && tokens.every(esComplementoDeEnvio);
+function esCancelacion(tokens: readonly Token[], colas: readonly boolean[]): boolean {
+  let prefijoDeComplementos = true;
+  for (let indice = 0; indice < tokens.length && prefijoDeComplementos; indice += 1) {
+    const token = tokens[indice];
+    if (token === undefined) return false;
+    if (CANCELACIONES.has(token.base) && colas[indice + 1] === true) return true;
+    prefijoDeComplementos = esComplementoDeEnvio(token);
+  }
+  return false;
+}
+
+function rechazaLaClausula({ tokens }: Clausula): boolean {
+  const colas = colasDeComplemento(tokens);
+  return niegaElEnvio(tokens, colas) || esCancelacion(tokens, colas);
 }
 
 function esPalabraDeEspera(token: Token): boolean {
   return !token.caso && (NEGACIONES.has(token.base) || RELLENO_DE_ESPERA.has(token.base));
 }
 
-function esClausulaDeEspera({ tokens }: Clausula): boolean {
-  return tokens.some((token) => NUCLEOS_DE_RECHAZO.has(token.base)) && tokens.every(esPalabraDeEspera);
+function esCasoPendiente(token: Token, pendientes: readonly string[]): boolean {
+  return token.caso && pendientes.includes(token.crudo);
 }
 
-function nombraCaso({ tokens }: Clausula): boolean {
-  return tokens.some((token) => token.caso);
+function nombraPendiente(tokens: readonly Token[], pendientes: readonly string[]): boolean {
+  return tokens.some((token) => esCasoPendiente(token, pendientes));
 }
 
-function esEsperaCompleta(texto: string, clausulas: readonly Clausula[]): boolean {
+function admiteEnEspera(pendientes: readonly string[], conRelleno: boolean): (token: Token) => boolean {
+  return (token) =>
+    esPalabraDeEspera(token) ||
+    esCasoPendiente(token, pendientes) ||
+    (conRelleno && !token.caso && RELLENO.has(token.base));
+}
+
+function abreContraposicion(tokens: readonly Token[], indice: number): boolean {
+  const anterior = tokens[indice - 1];
+  if (anterior === undefined || !NEGADORES.has(anterior.base)) return false;
+  const previo = tokens[indice - 2];
+  return previo === undefined || !esPalabraDeEspera(previo);
+}
+
+function tieneNucleo(tokens: readonly Token[]): boolean {
+  return tokens.some((token) => NUCLEOS_DE_RECHAZO.has(token.base));
+}
+
+function esClausulaDeEspera(pendientes: readonly string[]): (clausula: Clausula) => boolean {
+  return ({ tokens }) => {
+    if (!tieneNucleo(tokens)) return false;
+    const admitido = admiteEnEspera(pendientes, nombraPendiente(tokens, pendientes));
+    return tokens.every(
+      (token, indice) => esPalabraDeEspera(token) || (admitido(token) && !abreContraposicion(tokens, indice)),
+    );
+  };
+}
+
+function eximeLaEspera(pendientes: readonly string[]): (clausula: Clausula) => boolean {
+  return ({ tokens }) => {
+    const casos = tokens.filter((token) => token.caso);
+    if (casos.some((token) => !pendientes.includes(token.crudo))) return true;
+    return casos.length > 0 && VERBOS_DE_PEDIDO.has(tokens[0]?.base ?? "");
+  };
+}
+
+function esEsperaCompleta(
+  texto: string,
+  clausulas: readonly Clausula[],
+  pendientes: readonly string[],
+): boolean {
   if (PATRON_PREGUNTA.test(texto)) return false;
   const tokens = clausulas.flatMap((clausula) => clausula.tokens);
-  return tokens.some((token) => NEGACIONES.has(token.base)) && tokens.every(esPalabraDeEspera);
+  const conPendiente = nombraPendiente(tokens, pendientes);
+  if (!tokens.every(admiteEnEspera(pendientes, conPendiente))) return false;
+  if (!tokens.some((token) => NEGACIONES.has(token.base))) return false;
+  return !conPendiente || tieneNucleo(tokens);
 }
 
-function esRechazoExplicito(texto: string): boolean {
+function esRechazoExplicito(texto: string, pendientes: readonly string[]): boolean {
   const clausulas = segmentar(texto);
   const afirmadas = clausulas.filter((clausula) => !clausula.pregunta);
-  if (afirmadas.some((clausula) => niegaElEnvio(clausula) || esCancelacion(clausula))) return true;
-  if (!afirmadas.some(nombraCaso) && afirmadas.some(esClausulaDeEspera)) return true;
-  return esEsperaCompleta(texto, clausulas);
+  if (afirmadas.some(rechazaLaClausula)) return true;
+  const exenta = afirmadas.some(eximeLaEspera(pendientes));
+  if (!exenta && afirmadas.some(esClausulaDeEspera(pendientes))) return true;
+  return esEsperaCompleta(texto, clausulas, pendientes);
 }
 
 export function clasificarConfirmacion(texto: string, pendientes: readonly string[]): DecisionConfirmacion {
   const normalizado = sinDiacriticos(texto).toLowerCase().trim();
   if (normalizado === "") return OTRO;
-  if (esRechazoExplicito(texto)) return RECHAZA;
+  if (esRechazoExplicito(texto, pendientes)) return RECHAZA;
   if (PATRON_PREGUNTA.test(texto)) return OTRO;
   const frase = separar(normalizado);
   if (!esConfirmacionClara(texto, frase)) return OTRO;

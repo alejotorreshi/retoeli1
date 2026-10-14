@@ -180,7 +180,47 @@ export const NUCLEOS_DE_RECHAZO: ReadonlySet<string> = new Set([
   "aguarda",
 ]);
 
-export const CANCELACIONES: ReadonlySet<string> = new Set(["cancela", "cancelar", "cancelo", "cancelado"]);
+export const CANCELACIONES: ReadonlySet<string> = new Set([
+  "cancela",
+  "cancelar",
+  "cancelo",
+  "cancelado",
+  "deten",
+  "detente",
+]);
+
+export const COMPLEMENTOS_DE_ENVIO: ReadonlySet<string> = new Set(["simulado", "confirmacion"]);
+
+export const SIGNO_DE_MOTIVO = ":";
+
+export const CORTES_DE_COMPLEMENTO: ReadonlySet<string> = new Set([
+  "porque",
+  "hasta",
+  "pues",
+  "sin",
+  "mientras",
+]);
+
+export const VERBOS_DE_PEDIDO: ReadonlySet<string> = new Set([
+  "procesa",
+  "consulta",
+  "lee",
+  "revisa",
+  "dame",
+  "dime",
+  "muestrame",
+  "muestra",
+  "genera",
+  "arma",
+  "mapea",
+  "corrige",
+  "cambia",
+  "busca",
+  "verifica",
+  "valida",
+  "explica",
+  "explicame",
+]);
 
 export const RELLENO_DE_ESPERA: ReadonlySet<string> = new Set([
   "por",
@@ -191,6 +231,7 @@ export const RELLENO_DE_ESPERA: ReadonlySet<string> = new Set([
   "gracias",
   "entonces",
   "un",
+  "hoy",
 ]);
 
 export const INTERROGATIVOS: ReadonlySet<string> = new Set([
