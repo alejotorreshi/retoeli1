@@ -73,25 +73,36 @@ function conocido(
   return paqueteConocido(conocidos, caso) ?? pendientes.get(caso);
 }
 
+function reabrirConocido(
+  pendientes: Map<string, CasoPendiente>,
+  enviados: ReadonlySet<string>,
+  caso: string,
+  conocidos: PaquetesConocidos,
+): void {
+  if (enviados.has(caso)) return;
+  const paquete = conocido(caso, conocidos, pendientes);
+  if (paquete !== undefined) pendientes.set(caso, paquete);
+}
+
 function aplicarEvento(
   pendientes: Map<string, CasoPendiente>,
   enviados: Set<string>,
   evento: EventoCompuerta,
   conocidos: PaquetesConocidos,
 ): void {
-  if (evento.tipo === EVENTO_COMPUERTA.ARMADO) {
-    pendientes.set(evento.pendiente.caso, evento.pendiente);
-    enviados.delete(evento.pendiente.caso);
-    return;
+  switch (evento.tipo) {
+    case EVENTO_COMPUERTA.ARMADO:
+      pendientes.set(evento.pendiente.caso, evento.pendiente);
+      enviados.delete(evento.pendiente.caso);
+      return;
+    case EVENTO_COMPUERTA.ENVIADO:
+      pendientes.delete(evento.caso);
+      enviados.add(evento.caso);
+      return;
+    case EVENTO_COMPUERTA.BLOQUEADO:
+    case EVENTO_COMPUERTA.FALLIDO:
+      reabrirConocido(pendientes, enviados, evento.caso, conocidos);
   }
-  if (evento.tipo === EVENTO_COMPUERTA.ENVIADO) {
-    pendientes.delete(evento.caso);
-    enviados.add(evento.caso);
-    return;
-  }
-  if (enviados.has(evento.caso)) return;
-  const paquete = conocido(evento.caso, conocidos, pendientes);
-  if (paquete !== undefined) pendientes.set(evento.caso, paquete);
 }
 
 function plegarEventos(

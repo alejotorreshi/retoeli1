@@ -32,7 +32,8 @@ export type EvaluacionEnvio = { readonly permitido: boolean; readonly siguiente:
 export type EventoCompuerta =
   | { readonly tipo: typeof EVENTO_COMPUERTA.ARMADO; readonly pendiente: CasoPendiente }
   | { readonly tipo: typeof EVENTO_COMPUERTA.BLOQUEADO; readonly caso: string }
-  | { readonly tipo: typeof EVENTO_COMPUERTA.ENVIADO; readonly caso: string };
+  | { readonly tipo: typeof EVENTO_COMPUERTA.ENVIADO; readonly caso: string }
+  | { readonly tipo: typeof EVENTO_COMPUERTA.FALLIDO; readonly caso: string };
 
 export type EntradaCierreCompuerta = {
   readonly arrastrados: readonly CasoPendiente[];

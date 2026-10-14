@@ -111,4 +111,5 @@ export const EVENTO_COMPUERTA = {
   ARMADO: "armado",
   BLOQUEADO: "bloqueado",
   ENVIADO: "enviado",
+  FALLIDO: "fallido",
 } as const;

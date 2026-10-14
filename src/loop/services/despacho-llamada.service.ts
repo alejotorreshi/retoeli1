@@ -75,7 +75,7 @@ async function despacharEnvio(
   return {
     resultado,
     autorizacion: evaluacion.siguiente,
-    evento: resultado.ok ? { tipo: EVENTO_COMPUERTA.ENVIADO, caso } : null,
+    evento: { tipo: resultado.ok ? EVENTO_COMPUERTA.ENVIADO : EVENTO_COMPUERTA.FALLIDO, caso },
     paquete: null,
     envioPermitido: true,
   };
