@@ -48,8 +48,11 @@ chequear(
 );
 
 const acuses = tabla(["ok", "listo", "vale", "claro", "correcto", "ok ok", "si todo bien"]);
-const acusesE2e = [await e2e("ok"), await e2e("si todo bien")].map(({ preguntaServidor, ...r }) => r);
-informe("T04", {
-  H2_registro: { acuses, acusesE2e, preguntaServidor: extremo[0]?.preguntaServidor },
-  ms: Math.round(performance.now() - t0),
-});
+chequear("acuses sueltos y 'si todo bien' -> otro", acuses.every((r) => r.decision === "otro"), acuses);
+const acusesE2e = [await e2e("ok"), await e2e("si todo bien")];
+chequear(
+  "e2e: 'ok' y 'si todo bien' dejan simular_envio bloqueado, sin ENVIO-SIMULADO.md",
+  acusesE2e.every((r) => r.pendienteTrasT1 && r.simular.length === 1 && r.simular[0]?.ok === false && r.simular[0]?.codigo === "CONFIRMACION_REQUERIDA" && r.casosConEnvio.length === 0),
+  acusesE2e.map(({ preguntaServidor, ...resto }) => resto),
+);
+informe("T04", { ms: Math.round(performance.now() - t0) });
