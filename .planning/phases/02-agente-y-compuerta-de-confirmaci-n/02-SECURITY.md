@@ -101,6 +101,12 @@ created: "2026-10-13"
 | T-02-63 | Info disclosure | live run request bodies | high | mitigate | agente-en-vivo.test.ts:230-231,255-259 (commit 87fabe7); closes audit note 1 | closed |
 | T-02-64 | DoS (cost) | extra live turns | low | mitigate | agente-en-vivo.test.ts:54-55,129,147-148; single run after the user's "correr" (02-21-SUMMARY.md) | closed |
 | T-02-65 | Repudiation | live evidence | medium | mitigate | no assertion relaxed in 87fabe7; VIVO PASS copied verbatim in 02-21-SUMMARY.md and STATE.md | closed |
+| T-02-66 | Elevation of privilege | clasificarConfirmacion (rejection before question) | high | mitigate | confirmacion.policy.ts:108-120 (esRechazoExplicito only returns RECHAZA; confirma only via unchanged esConfirmacionClara); allow-list disjoint from NEGACIONES/NEGADORES (confirmation.constants.ts:14-91); confirmacion.policy.test.ts:240-259; old-vs-new sweep of 555,900 messages: 0 changes to confirma/falta_caso | closed |
+| T-02-67 | Repudiation | unrelated request with connector word while pending (WR-16) | medium | mitigate | compuerta.test.ts:291-333 (5 phrasings stay pending, one confirmation_required, next "sí" sends exactly once) | closed |
+| T-02-68 | Repudiation | negation followed by a question (WR-15) | medium | mitigate | confirmacion.policy.ts:90-106,118-119; compuerta.test.ts:335-369 (5 phrasings cancel, later "sí" blocked with CONFIRMACION_REQUERIDA) | closed |
+| T-02-69 | Spoofing | model text vs gate state | low | mitigate | agent/prompt.md:51,53; registro-proveedor.md:42 (RN4); instrucciones-agente.test.ts:163-235 classifies every quoted example; residual covered by AR-02-01 | closed |
+| T-02-70 | DoS | PATRON_CLAUSULA on analyst text | low | accept | patterns.constants.ts:23 has no nested quantifier and a single split; 1 MB adversarial inputs ≤ 18 ms; AR-02-05 | closed |
+| T-02-71 | DoS | esRechazoExplicito `palabras.slice` per negator (unregistered, found by the 02-22 audit) | low | pending decision | confirmacion.policy.ts:86-95 is quadratic: 60 KB "no lo …" takes 58 ms, 300 KB takes 1,073 ms; runs before any LLM call or budget; no message-size limit until API-04 (Phase 3). Fix: index loop, or accept with API-04 as a dependency | open — below high threshold (non-blocking) |
 | T-02-SC | Tampering | npm installs | high | mitigate (02-05) / accept (other plans) | pino pinned 10.3.1; bun.lock committed; `bun audit` clean; AR-02-03 | closed |
 
 *Status: open · closed · open — below high threshold (non-blocking)*
@@ -115,8 +121,9 @@ created: "2026-10-13"
 |---------|------------|-----------|-------------|------|
 | AR-02-01 | T-02-41 | Non-question model lines above the server question stay in the reply. The gate still authorizes only the pending case, and the last paragraph is always the server question naming the case and its bloqueos. Carried to SOLUCION.md in Phase 4. | plan 02-10 | 2026-10-13 |
 | AR-02-02 | T-02-45 | `Sesion.casosEnviados` lives only in the in-memory store behind the fenced lease; the client cannot write it. A lost session loses the mark together with the packages, so a new armado is required before any send. | plan 02-15 | 2026-10-13 |
-| AR-02-03 | T-02-SC | 20 of 21 plans installed no package; package.json and bun.lock changed only in the pino commit (46fe7ba) plus one script line (9dadd1d). `git diff 882f418..HEAD` of the manifests is empty for 02-19..02-21. | plans 02-01..02-21 | 2026-10-13 |
+| AR-02-03 | T-02-SC | 20 of 21 plans installed no package; package.json and bun.lock changed only in the pino commit (46fe7ba) plus one script line (9dadd1d). `git diff 882f418..HEAD` of the manifests is empty for 02-19..02-21, and `git diff 10a43ad..696e2bb` is empty for 02-22. | plans 02-01..02-22 | 2026-10-13 |
 | AR-02-04 | T-02-57 | A pending case persists across turns until a send, an explicit rejection, a caller abort or the session TTL clears it. While pending, every turn re-appends one server paragraph and one event per case, with no extra LLM call (compuerta.test.ts:234). | plan 02-19 | 2026-10-13 |
+| AR-02-05 | T-02-70 | `PATRON_CLAUSULA` is one negated character class between optional single marks, so it can split only one way and runs in linear time (1 MB adversarial inputs ≤ 18 ms). The rationale's message-size bound (API-04) is still pending in Phase 3. | plan 02-22 | 2026-10-14 |
 
 ---
 
@@ -126,6 +133,7 @@ created: "2026-10-13"
 |------------|---------------|--------|------|--------|
 | 2026-10-13 | 54 | 54 | 0 | gsd-security-auditor |
 | 2026-10-13 | 66 | 66 | 0 | gsd-security-auditor (gap closure 02-19..02-21) |
+| 2026-10-14 | 72 | 71 | 0 (1 low open, non-blocking: T-02-71) | gsd-security-auditor (gap closure 02-22) |
 
 ### Audit notes (non-blocking)
 
@@ -133,14 +141,15 @@ created: "2026-10-13"
 2. **T-02-52:** the latest reading of live replies (after 02-18) was done by the executor; the human UAT reading (H1) predates 02-18.
 3. **Review ledger:** 02-REVIEW-DISPOSITION.md still lists WR-01 as open; 02-16 fixed it (T-02-46).
 4. **Phase 3:** `EntradaTurno.confirmacion` (button) skips the text classifier by design (D-39) and must stay behind auth once exposed over HTTP; R1-WR-04 (per-session budget sidestepped by new sessions) also lands in the Phase 3 HTTP layer.
+5. **T-02-71 (open, low, non-blocking):** the 02-22 audit found that the new rejection check is quadratic in message length. It needs a decision: fix it with an index loop, or accept it with the Phase 3 API-04 message limit as a dependency (an 8 KB limit costs about 2 ms).
 
 ---
 
 ## Sign-Off
 
-- [x] All threats have a disposition (mitigate / accept / transfer)
+- [x] All threats have a disposition (mitigate / accept / transfer), except T-02-71 (low, below the high threshold), which awaits a fix-or-accept decision
 - [x] Accepted risks documented in Accepted Risks Log
 - [x] `threats_open: 0` confirmed
 - [x] `status: verified` set in frontmatter
 
-**Approval:** verified 2026-10-13
+**Approval:** verified 2026-10-13; re-verified 2026-10-14 after 02-22
