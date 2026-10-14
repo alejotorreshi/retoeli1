@@ -106,7 +106,13 @@ created: "2026-10-13"
 | T-02-68 | Repudiation | negation followed by a question (WR-15) | medium | mitigate | confirmacion.policy.ts:90-106,118-119; compuerta.test.ts:335-369 (5 phrasings cancel, later "sí" blocked with CONFIRMACION_REQUERIDA) | closed |
 | T-02-69 | Spoofing | model text vs gate state | low | mitigate | agent/prompt.md:51,53; registro-proveedor.md:42 (RN4); instrucciones-agente.test.ts:163-235 classifies every quoted example; residual covered by AR-02-01 | closed |
 | T-02-70 | DoS | PATRON_CLAUSULA on analyst text | low | accept | patterns.constants.ts:23 has no nested quantifier and a single split; 1 MB adversarial inputs ≤ 18 ms; AR-02-05 | closed |
-| T-02-71 | DoS | esRechazoExplicito `palabras.slice` per negator (unregistered, found by the 02-22 audit) | low | pending decision | confirmacion.policy.ts:86-95 is quadratic: 60 KB "no lo …" takes 58 ms, 300 KB takes 1,073 ms; runs before any LLM call or budget; no message-size limit until API-04 (Phase 3). Fix: index loop, or accept with API-04 as a dependency | open — below high threshold (non-blocking) |
+| T-02-71 | DoS | esRechazoExplicito `palabras.slice` per negator (found by the 02-22 audit) | low | mitigate (02-23) | confirmacion.policy.ts:129-171 (tail copy removed; colasDeComplemento one suffix pass per clause, saltarPronombres stops at first non-pronoun); confirmacion.policy.test.ts:467-483; probe: "no "×200000 42 ms, "no lo "×100000 43 ms, 1 MB 69 ms | closed |
+| T-02-72 | Elevation of privilege | clasificarConfirmacion (D-63.9 rejection, new vocabularies, modal path) | high | mitigate | confirmacion.policy.ts:206 (new logic only returns RECHAZA); confirma only at 208-210 via unchanged separar/esConfirmacionClara/casoConfirmado (46-98); confirmacion.policy.test.ts:442-459 (vocabulary invariants), 398-440 (differential vs 10a43ad), 324-345, 45-209; auditor fuzz vs 732644a: 3.6M evals, 0 gained confirma/falta_caso | closed |
+| T-02-73 | Repudiation | false cancel on a question or request (CR-04, WR-20, WR-21) | medium | mitigate | confirmacion.policy.ts:181-199 (affirmed clauses only, core words, connectors only as whole message, named case blocks wait clause), 121-123,145; confirmation.constants.ts:164-181; confirmacion.policy.test.ts:211-255,384-389; compuerta.test.ts:297-336; compuerta-casos.test.ts:769-799 | closed |
+| T-02-74 | Repudiation | explicit rejection answered with the server question (WR-19) | medium | mitigate | confirmacion.policy.ts:104-114,149-166; confirmation.constants.ts:118-162,193; confirmacion.policy.test.ts:256-280,391-395; compuerta.test.ts:349-378; compuerta-casos.test.ts:801-826 | closed |
+| T-02-75 | Spoofing | prompt prose broader than the server (WR-22, IN-29) | low | mitigate | agent/prompt.md:51,52,54; registro-proveedor.md:42 (RN4a, RN4b); instrucciones-agente.test.ts:257-400 (verbatim pins, every quotation classified in its direction, quoted words expanded via generated corpus, retired 02-22 sentences absent); residual AR-02-01 | closed |
+| T-02-76 | DoS | PATRON_PALABRA_O_CASO, PATRON_CLAUSULA, clause scans | low | mitigate | patterns.constants.ts:23-30 (the slug branch `(?:-[a-z0-9]+)+` is a nested quantifier, but each repetition starts with a literal "-", so it is unambiguous and linear); index scans confirmacion.policy.ts:129-142; confirmacion.policy.test.ts:467-483; 600 KB adversarial ≤ 22 ms per pattern, ≤ 80 ms end to end; API-04 still pending (Phase 3) | closed |
+| T-02-77 | DoS | `separar` with unanchored PATRON_SLUG_EN_TEXTO on long letter/digit runs (unregistered, found by the 02-23 audit; code from 02-03, f15a8c7) | low | pending decision | patterns.constants.ts:25 `/[a-z0-9]+(?:-[a-z0-9]+)+/g` has no left boundary; confirmacion.policy.ts:47-49 `.match`/`.replace` re-scan the run from every start: 8 KB 88 ms, 16 KB 349 ms, 40 KB 2.2 s; reached by any non-rejection, non-question message before any LLM call; 02-23 narrowed exposure. Fix: left boundary `(?<![a-z0-9])`, or accept with API-04 sized for Render 0.1 CPU | open — below high threshold (non-blocking) |
 | T-02-SC | Tampering | npm installs | high | mitigate (02-05) / accept (other plans) | pino pinned 10.3.1; bun.lock committed; `bun audit` clean; AR-02-03 | closed |
 
 *Status: open · closed · open — below high threshold (non-blocking)*
@@ -121,7 +127,7 @@ created: "2026-10-13"
 |---------|------------|-----------|-------------|------|
 | AR-02-01 | T-02-41 | Non-question model lines above the server question stay in the reply. The gate still authorizes only the pending case, and the last paragraph is always the server question naming the case and its bloqueos. Carried to SOLUCION.md in Phase 4. | plan 02-10 | 2026-10-13 |
 | AR-02-02 | T-02-45 | `Sesion.casosEnviados` lives only in the in-memory store behind the fenced lease; the client cannot write it. A lost session loses the mark together with the packages, so a new armado is required before any send. | plan 02-15 | 2026-10-13 |
-| AR-02-03 | T-02-SC | 20 of 21 plans installed no package; package.json and bun.lock changed only in the pino commit (46fe7ba) plus one script line (9dadd1d). `git diff 882f418..HEAD` of the manifests is empty for 02-19..02-21, and `git diff 10a43ad..696e2bb` is empty for 02-22. | plans 02-01..02-22 | 2026-10-13 |
+| AR-02-03 | T-02-SC | 20 of 21 plans installed no package; package.json and bun.lock changed only in the pino commit (46fe7ba) plus one script line (9dadd1d). `git diff 882f418..HEAD` of the manifests is empty for 02-19..02-21, and `git diff 10a43ad..696e2bb` is empty for 02-22. | plans 02-01..02-23 | 2026-10-13 |
 | AR-02-04 | T-02-57 | A pending case persists across turns until a send, an explicit rejection, a caller abort or the session TTL clears it. While pending, every turn re-appends one server paragraph and one event per case, with no extra LLM call (compuerta.test.ts:234). | plan 02-19 | 2026-10-13 |
 | AR-02-05 | T-02-70 | `PATRON_CLAUSULA` is one negated character class between optional single marks, so it can split only one way and runs in linear time (1 MB adversarial inputs ≤ 18 ms). The rationale's message-size bound (API-04) is still pending in Phase 3. | plan 02-22 | 2026-10-14 |
 
@@ -134,6 +140,7 @@ created: "2026-10-13"
 | 2026-10-13 | 54 | 54 | 0 | gsd-security-auditor |
 | 2026-10-13 | 66 | 66 | 0 | gsd-security-auditor (gap closure 02-19..02-21) |
 | 2026-10-14 | 72 | 71 | 0 (1 low open, non-blocking: T-02-71) | gsd-security-auditor (gap closure 02-22) |
+| 2026-10-14 | 78 | 77 | 0 (1 low open, non-blocking: T-02-77) | gsd-security-auditor (gap closure 02-23) |
 
 ### Audit notes (non-blocking)
 
@@ -141,15 +148,17 @@ created: "2026-10-13"
 2. **T-02-52:** the latest reading of live replies (after 02-18) was done by the executor; the human UAT reading (H1) predates 02-18.
 3. **Review ledger:** 02-REVIEW-DISPOSITION.md still lists WR-01 as open; 02-16 fixed it (T-02-46).
 4. **Phase 3:** `EntradaTurno.confirmacion` (button) skips the text classifier by design (D-39) and must stay behind auth once exposed over HTTP; R1-WR-04 (per-session budget sidestepped by new sessions) also lands in the Phase 3 HTTP layer.
-5. **T-02-71 (open, low, non-blocking):** the 02-22 audit found that the new rejection check is quadratic in message length. It needs a decision: fix it with an index loop, or accept it with the Phase 3 API-04 message limit as a dependency (an 8 KB limit costs about 2 ms).
+5. **T-02-71 (closed by 02-23):** the per-negator tail copy is gone and the scans run by index; the linear-time test pins it (confirmacion.policy.test.ts:467-483).
+6. **T-02-77 (open, low, non-blocking):** the 02-23 audit found that the unchanged `separar` (02-03) is quadratic on long letter/digit runs because `PATRON_SLUG_EN_TEXTO` has no left boundary (40 KB takes 2.2 s). It needs a decision: fix with `(?<![a-z0-9])` (same matches, linear), or accept with the Phase 3 API-04 message limit as a dependency. The existing linear-time tests use short words and cannot catch it.
+7. **AR-02-03:** `git diff 732644a..a92ecf2 -- package.json bun.lock` is empty and `bun audit` is clean (220 packages), so the accepted supply-chain risk extends unchanged to 02-23.
 
 ---
 
 ## Sign-Off
 
-- [x] All threats have a disposition (mitigate / accept / transfer), except T-02-71 (low, below the high threshold), which awaits a fix-or-accept decision
+- [x] All threats have a disposition (mitigate / accept / transfer), except T-02-77 (low, below the high threshold), which awaits a fix-or-accept decision
 - [x] Accepted risks documented in Accepted Risks Log
 - [x] `threats_open: 0` confirmed
 - [x] `status: verified` set in frontmatter
 
-**Approval:** verified 2026-10-13; re-verified 2026-10-14 after 02-22
+**Approval:** verified 2026-10-13; re-verified 2026-10-14 after 02-22 and after 02-23
