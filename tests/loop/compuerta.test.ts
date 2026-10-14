@@ -284,6 +284,79 @@ describe("CR-01 (D-63.6): una respuesta que no confirma deja el caso pendiente y
   });
 });
 
+describe("G-02-2 (D-63.8): un pedido con 'para' no cancela y una negación con pregunta sí cancela", () => {
+  const TEXTO_CONSULTA = "Consulté el NIT de co-industrias-delta: viene de maestro.nit.";
+  const TEXTO_RECHAZO = "Entendido, no envío nada. Falta el certificado de cumplimiento tributario.";
+
+  test.each(["Consulta el valor del NIT de co-industrias-delta para tenerlo a mano"])(
+    "%p deja el caso pendiente con la pregunta del servidor y el 'sí' siguiente envía una vez",
+    async (frase) => {
+      const prueba = agente([
+        ...GUION_TURNO_1,
+        respuestaTexto(TEXTO_CONSULTA),
+        ...intentoDeEnvio("simular-2"),
+      ]);
+      const turno1 = await prueba.turno(MENSAJE_TURNO_1);
+      expect(finDeTurno(turno1).needsConfirmation).toBe(true);
+
+      const pedidosTurno1 = prueba.llm.pedidos.length;
+      const turno2 = await prueba.turno(frase);
+      expect(prueba.llm.pedidos.length - pedidosTurno1).toBe(1);
+      expect(finesDeHerramienta(turno2)).toEqual([]);
+      expect(finDeTurno(turno2)).toEqual(
+        expect.objectContaining({ motivo: MOTIVO_FIN.FINAL, needsConfirmation: true }),
+      );
+      expect(confirmaciones(turno2)).toEqual([
+        expect.objectContaining({ caso: EC, accion: ACCION.ENVIO, bloqueos: [BLOQUEO_EC] }),
+      ]);
+      expect(textoFinal(turno2)).toBe(
+        `${TEXTO_CONSULTA}${SEPARADOR_PARRAFOS}${cierreConPregunta("", [PENDIENTE_EC])}`,
+      );
+      expect(respuestaDeTurno(turno2).needsConfirmation).toBe(true);
+      expect(await casosConEnvioSimulado(proyecto.raiz)).toEqual([]);
+      expect((await lineasDeEnvio(proyecto.raiz)).filter((linea) => linea.ok)).toHaveLength(0);
+
+      const turno3 = await prueba.turno("sí");
+      expect(finesDeHerramienta(turno3)).toEqual([expect.objectContaining({ ok: true })]);
+      expect(await casosConEnvioSimulado(proyecto.raiz)).toEqual([EC]);
+      expect((await lineasDeEnvio(proyecto.raiz)).filter((linea) => linea.ok)).toHaveLength(1);
+      expect(confirmaciones(turno3)).toEqual([]);
+      expect(finDeTurno(turno3).needsConfirmation).toBe(false);
+      historialSano(prueba);
+    },
+  );
+
+  test.each(["No envíes nada todavía, ¿qué falta?"])(
+    "%p cancela lo pendiente sin la pregunta del servidor y el 'sí' siguiente no autoriza",
+    async (frase) => {
+      const prueba = agente([
+        ...GUION_TURNO_1,
+        respuestaTexto(TEXTO_RECHAZO),
+        ...intentoDeEnvio("simular-2"),
+      ]);
+      const turno1 = await prueba.turno(MENSAJE_TURNO_1);
+      expect(finDeTurno(turno1).needsConfirmation).toBe(true);
+
+      const turno2 = await prueba.turno(frase);
+      expect(finesDeHerramienta(turno2)).toEqual([]);
+      expect(finDeTurno(turno2)).toEqual(
+        expect.objectContaining({ motivo: MOTIVO_FIN.FINAL, needsConfirmation: false }),
+      );
+      expect(confirmaciones(turno2)).toEqual([]);
+      expect(textoFinal(turno2)).toBe(TEXTO_RECHAZO);
+      expect(respuestaDeTurno(turno2).needsConfirmation).toBe(false);
+
+      const turno3 = await prueba.turno("sí");
+      expect(finesDeHerramienta(turno3)).toEqual([
+        expect.objectContaining({ ok: false, codigo: CODIGO_ERROR.CONFIRMACION_REQUERIDA }),
+      ]);
+      expect(await casosConEnvioSimulado(proyecto.raiz)).toEqual([]);
+      expect((await lineasDeEnvio(proyecto.raiz)).filter((linea) => linea.ok)).toHaveLength(0);
+      historialSano(prueba);
+    },
+  );
+});
+
 describe("red de seguridad (D-63.6): si el modelo desobedece el prompt y llama a simular_envio tras una frase dudosa, el envío queda bloqueado y el caso sigue pendiente", () => {
   test.each(["y el envío", "ok, gracias", "ok", "listo", "si todo bien"])(
     "%p en el turno 2 deja bloqueado el envío del modelo",

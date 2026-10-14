@@ -127,6 +127,11 @@ const FILAS_EXTRA: readonly Fila[] = [
   ["si", DOS, FALTA_CASO],
 ];
 
+const FILAS_RECHAZO_ACOTADO: readonly Fila[] = [
+  ["Consulta el valor del NIT de co-industrias-delta para tenerlo a mano", UNO, OTRO],
+  ["No envíes nada todavía, ¿qué falta?", UNO, RECHAZA],
+];
+
 describe("clasificarConfirmacion: tabla del Patrón 7 (ENV-02, D-39, D-40)", () => {
   test("la tabla de la investigación tiene al menos 43 filas", () => {
     expect(TABLA_INVESTIGACION.length).toBeGreaterThanOrEqual(43);
@@ -139,6 +144,12 @@ describe("clasificarConfirmacion: tabla del Patrón 7 (ENV-02, D-39, D-40)", () 
 
 describe("clasificarConfirmacion: filas adicionales", () => {
   test.each(FILAS_EXTRA)("%p con pendientes %p", (texto, pendientes, esperado) => {
+    expect(clasificarConfirmacion(texto, pendientes)).toEqual(esperado);
+  });
+});
+
+describe("clasificarConfirmacion: rechazo explícito acotado (G-02-2, D-63.8)", () => {
+  test.each(FILAS_RECHAZO_ACOTADO)("%p con pendientes %p", (texto, pendientes, esperado) => {
     expect(clasificarConfirmacion(texto, pendientes)).toEqual(esperado);
   });
 });
