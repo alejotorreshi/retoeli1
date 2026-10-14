@@ -166,35 +166,77 @@ Plans:
   4. Desde el panel de artefactos, la analista descarga o previsualiza los archivos generados del caso; solo se sirven nombres en lista blanca y detrás del código de acceso. Si no hay clave, se agotó el saldo o el proveedor cayó, `/api/health` lo reporta y la UI deja correr el flujo determinista de un caso.
   5. Sin código de acceso, la API rechaza toda petición salvo `/api/health`. El rate limit por IP y el límite de tamaño de mensaje responden con un mensaje claro. Un test verifica que la clave del LLM no aparece en `web/dist`, en las respuestas de la API ni en el stream SSE.
 
-**Plans:** 9 plans
+**Plans:** 27 plans
 
 Plans:
 **Wave 1**
-- [ ] 03-01-PLAN.md — Compuerta de dependencias (hono, React, Vite, eventsource-parser) y trazador: un mensaje llega al agente por HTTP y vuelve como SSE en vivo, con fallback JSON, health y la capa `src/http` declarada en los guardianes
+- [ ] 03-01-PLAN.md — Compuerta de dependencias (hono, React, Vite, eventsource-parser), capa `src/http` declarada en los guardianes y trazador: `bun src/server.ts` responde `/api/health` por un socket real
 
 **Wave 2** *(blocked on Wave 1 completion)*
-- [ ] 03-02-PLAN.md — El chat en el navegador con `bun run dev` (un comando), el SPA servido por la API y el guardián de `web/`
+- [ ] 03-02-PLAN.md — Trazador del chat: un mensaje llega al agente por HTTP y vuelve como SSE en vivo, con latido, timeout desactivado, aborto, fallback JSON y el helper de pruebas compartido
 
 **Wave 3** *(blocked on Wave 2 completion)*
-- [ ] 03-03-PLAN.md — Acceso con código una sola vez y cookie HMAC (D-72), fecha efectiva en el encabezado, tope de intentos por IP real y bordes de la API (JSON, tamaño, CSP)
+- [ ] 03-03-PLAN.md — El chat en el navegador con `bun run dev` (un comando): Vite, cliente SSE y reducer puro
+- [ ] 03-04-PLAN.md — Acceso con código una sola vez y cookie HMAC firmada (D-72), Bearer para curl y cierre de toda ruta protegida
 
 **Wave 4** *(blocked on Wave 3 completion)*
-- [ ] 03-04-PLAN.md — Dockerfile y `render.yaml`, prueba de que la clave nunca sale del backend (SEG-01) y link público en Render con SSE y X-Forwarded-For verificados
+- [ ] 03-05-PLAN.md — Guardián de `web/`, tokens del UI-SPEC, íconos y avisos (AvisoError con los errores del turno)
 
 **Wave 5** *(blocked on Wave 4 completion)*
-- [ ] 03-05-PLAN.md — Estado del modelo en health y banner (D-70, D-71), tope diario global y topes por IP, sesiones nuevas y turnos simultáneos (D-73)
+- [ ] 03-06-PLAN.md — Tope de intentos fallidos por IP real (D-73.2) con la IP desde la derecha de X-Forwarded-For
+- [ ] 03-07-PLAN.md — Pantalla base del chat del UI-SPEC: encabezado, línea de tiempo, burbujas, "Pensando…" y compositor
 
 **Wave 6** *(blocked on Wave 5 completion)*
-- [ ] 03-06-PLAN.md — Tarjetas de tool call, tarjeta de resultado y progreso por caso desde los datos de las herramientas, y chips de acción rápida
+- [ ] 03-08-PLAN.md — `GET /api/config` con la fecha efectiva (UI-09), secretos de acceso en la redacción del agente y variables en `.env.example`
 
 **Wave 7** *(blocked on Wave 6 completion)*
-- [ ] 03-07-PLAN.md — Tarjetas de confirmación por caso con Confirmar y Cancelar estructurados (D-68, D-69)
+- [ ] 03-09-PLAN.md — El SPA servido por la API y los bordes de la API: JSON, tamaño de body y de mensaje, CSP (D-73.4)
 
 **Wave 8** *(blocked on Wave 7 completion)*
-- [ ] 03-08-PLAN.md — Historial desde `GET /api/sessions/:id` al recargar, Nueva sesión, Detener y recuperación de cortes
+- [ ] 03-10-PLAN.md — Pantalla de acceso, fecha de ejecución en el encabezado, vuelta al acceso ante un 401 y contador del compositor
 
 **Wave 9** *(blocked on Wave 8 completion)*
-- [ ] 03-09-PLAN.md — Panel de archivos con descarga real y vista previa enmascarada (D-64 a D-67, D-74)
+- [ ] 03-11-PLAN.md — Dockerfile y `render.yaml`, prueba de que la clave nunca sale del backend (SEG-01) y link público en Render con SSE y X-Forwarded-For verificados
+
+**Wave 10** *(blocked on Wave 9 completion)*
+- [ ] 03-12-PLAN.md — Estado del modelo en `/api/health` (D-71) y arranque sin clave (`sin_clave`)
+
+**Wave 11** *(blocked on Wave 10 completion)*
+- [ ] 03-13-PLAN.md — Tope diario global de tokens dentro del adaptador (D-73.6)
+
+**Wave 12** *(blocked on Wave 11 completion)*
+- [ ] 03-14-PLAN.md — Mensajes por minuto por IP, tres turnos simultáneos y un turno por sesión (D-73.1, D-73.3)
+
+**Wave 13** *(blocked on Wave 12 completion)*
+- [ ] 03-15-PLAN.md — Sesiones nuevas por hora por IP (D-73.5) con lectura de sesión que no la crea
+- [ ] 03-16-PLAN.md — `caso` y resultado estructurado en los eventos de herramienta y bloqueos legibles en la confirmación
+
+**Wave 14** *(blocked on Wave 13 completion)*
+- [ ] 03-17-PLAN.md — Banner y estado del modelo en la UI (D-70), avisos de los topes y reformulación de LLM-06
+- [ ] 03-18-PLAN.md — `accion` estructurada en `POST /api/chat`: Confirmar autoriza ese caso y Cancelar quita solo ese caso (D-68, D-69)
+
+**Wave 15** *(blocked on Wave 14 completion)*
+- [ ] 03-19-PLAN.md — Tarjetas de tool call en vivo e indicador con la herramienta y el caso en curso
+- [ ] 03-20-PLAN.md — `GET /api/sessions/:id` con el historial redactado y los pendientes vigentes
+
+**Wave 16** *(blocked on Wave 15 completion)*
+- [ ] 03-21-PLAN.md — Tarjeta de resultado por caso desde los datos de las herramientas y chips de acción rápida
+- [ ] 03-24-PLAN.md — Artefactos en la API: lista blanca, descarga real y vista previa enmascarada (D-64 a D-66, D-74)
+
+**Wave 17** *(blocked on Wave 16 completion)*
+- [ ] 03-22-PLAN.md — Panel de casos con el progreso por etapas y pantallas angostas
+
+**Wave 18** *(blocked on Wave 17 completion)*
+- [ ] 03-23-PLAN.md — Tarjetas de confirmación por caso con Confirmar y Cancelar (D-68, D-69)
+
+**Wave 19** *(blocked on Wave 18 completion)*
+- [ ] 03-25-PLAN.md — Historial al recargar desde `GET /api/sessions/:id` con las confirmaciones abiertas
+
+**Wave 20** *(blocked on Wave 19 completion)*
+- [ ] 03-26-PLAN.md — Nueva sesión, Detener, recuperación de cortes, sesión expirada y uso de la sesión
+
+**Wave 21** *(blocked on Wave 20 completion)*
+- [ ] 03-27-PLAN.md — Panel de archivos con descarga, vista previa y aviso de disco efímero (D-64 a D-67, D-74)
 
 **UI hint**: yes
 **Research flag**: SSE a través del proxy de Render (los reportes de la comunidad se contradicen) y comportamiento de Bun cuando el cliente se desconecta. Desplegar apenas exista el endpoint SSE y probar con `curl -N`. Si bufferiza, usar el fallback JSON y luego Koyeb o Fly con el mismo Dockerfile.
