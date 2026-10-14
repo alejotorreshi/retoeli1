@@ -3,6 +3,34 @@ phase: 02
 review: 02-REVIEW.md
 titles: json
 findings:
+  - id: CR-05
+    severity: critical
+    disposition: open
+    title: "[BLOCKER] D-63.9 convierte en `otro` rechazos explícitos que antes cancelaban: \"no confirmo el envío simulado\", \"no confirmo porque falta el certificado\", \"ec-corp-andina no\" y \"detén el envío\". El servidor vuelve a pedir confirmación justo después del \"no\""
+  - id: WR-23
+    severity: warning
+    disposition: open
+    title: "[WARNING] la clase de WR-19 sigue abierta: \"espérate\", \"cancélalo\", \"hoy no\" y \"no quiero enviarlo sin el certificado\" dan `otro`, y el servidor vuelve a preguntar"
+  - id: WR-24
+    severity: warning
+    disposition: open
+    title: "[WARNING] un subjuntivo de envío con cualquier objeto cancela pedidos sobre el chat o el borrador: \"no me envíes tantas preguntas\" y \"en el borrador no envíes la cuenta bancaria\" dan `rechaza`"
+  - id: WR-25
+    severity: warning
+    disposition: open
+    title: "[WARNING] `clasificarConfirmacion` sigue siendo cuadrática por `separar`: 100 KB de letras tardan 13,8 s en cada turno, aunque la prueba nueva se llama \"tiempo lineal\" (T-02-77)"
+  - id: IN-31
+    severity: info
+    disposition: open
+    title: "[INFO] una pregunta que nombra un caso cancela, pero un pedido que nombra el mismo caso no: \"No, ¿qué falta en pe-andes?\" da `rechaza` y \"No, dime qué falta en pe-andes\" da `otro`"
+  - id: IN-32
+    severity: info
+    disposition: open
+    title: "[INFO] el discurso citado sigue cancelando cuando trae un subjuntivo de envío: \"el cliente respondió: no envíes nada\" da `rechaza` (resto de IN-30(a))"
+  - id: IN-33
+    severity: info
+    disposition: open
+    title: "[INFO] el describe de D-63.8 del contrato quedó duplicado por el de D-63.9 y sigue fijando fragmentos cortos (IN-26)"
   - id: CR-04
     severity: critical
     disposition: open
@@ -227,23 +255,30 @@ findings:
     severity: info
     disposition: open
     title: "The agent clock re-parses the environment on every call and silently diverges from the tools when `FECHA_EJECUCION` is invalid"
-open: 28
-total: 56
-recorded: 2026-10-14T05:08:38.034Z
+open: 35
+total: 63
+recorded: 2026-10-14T16:44:25.973Z
 ---
 
 # Phase 02: Code Review Disposition
 
 | Finding | Severity | Disposition | Source |
 |---------|----------|-------------|--------|
-| CR-04 | critical | open | - |
-| WR-19 | warning | open | - |
-| WR-20 | warning | open | - |
-| WR-21 | warning | open | - |
-| WR-22 | warning | open | - |
-| IN-28 | info | open | - |
-| IN-29 | info | open | - |
-| IN-30 | info | open | - |
+| CR-05 | critical | open | - |
+| WR-23 | warning | open | - |
+| WR-24 | warning | open | - |
+| WR-25 | warning | open | - |
+| IN-31 | info | open | - |
+| IN-32 | info | open | - |
+| IN-33 | info | open | - |
+| CR-04 | critical | open | - (not in the current review) |
+| WR-19 | warning | open | - (not in the current review) |
+| WR-20 | warning | open | - (not in the current review) |
+| WR-21 | warning | open | - (not in the current review) |
+| WR-22 | warning | open | - (not in the current review) |
+| IN-28 | info | open | - (not in the current review) |
+| IN-29 | info | open | - (not in the current review) |
+| IN-30 | info | open | - (not in the current review) |
 | WR-15 | warning | open | - (not in the current review) |
 | WR-16 | warning | open | - (not in the current review) |
 | WR-17 | warning | open | - (not in the current review) |
