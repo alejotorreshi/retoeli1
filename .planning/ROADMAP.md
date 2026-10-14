@@ -89,7 +89,7 @@ Plans:
   4. Al llegar al tope de iteraciones (25 por defecto) o al de tokens por sesión, el usuario recibe en lenguaje claro lo que se tiene y lo que falta, no un error. Una instrucción inyectada en el cuerpo del correo del cliente no cambia el comportamiento del agente.
   5. Un cambio en `src/knowledge/registro-proveedor.md` o en `agent/prompt.md` cambia el comportamiento del agente sin tocar código del servidor. Los logs JSON llevan IDs de sesión, turno y tool call, sin clave ni PII. `bun test` cubre el ciclo con un LLM falso (tope, compuerta con "No envíes…" y el guion §11, CA5 e inyección) sin gastar tokens.
 
-**Plans:** 20/21 plans executed
+**Plans:** 21/21 plans executed
 
 Plans:
 **Wave 1**
@@ -141,7 +141,7 @@ Plans:
 - [x] 02-20-PLAN.md — Un envío autorizado que falla vuelve a dejar el caso pendiente con la pregunta del servidor (WR-02, D-63.7), y el mensaje de arranque con varios errores de configuración termina en un solo punto (WR-01)
 
 **Cierre de brechas de la re-verificación, Wave 3** *(blocked on 02-19 and 02-20)*
-- [ ] 02-21-PLAN.md — La prueba en vivo revisa la clave también en los cuerpos de los pedidos y recorre "ok" → "sí"; una corrida en vivo final con línea VIVO PASS (nota 1 de SECURITY)
+- [x] 02-21-PLAN.md — La prueba en vivo revisa la clave también en los cuerpos de los pedidos y recorre "ok" → "sí"; una corrida en vivo final con línea VIVO PASS (nota 1 de SECURITY)
 
 **Research flag**: Spike en vivo con DeepSeek antes de construir el ciclo: nombre de modelo vigente, thinking desactivado, `tool_choice`, forma de los tool calls y de los errores. La línea de modelos cambió 3 veces en 2026 y `deepseek-chat`/`deepseek-reasoner` se retiraron el 2026-07-24.
 
@@ -184,6 +184,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Núcleo determinista | 15/15 | Complete    | 2026-10-13 |
-| 2. Agente y compuerta de confirmación | 20/21 | In Progress | - |
+| 2. Agente y compuerta de confirmación | 21/21 | In Progress | - |
 | 3. Chat web, API SSE y despliegue | 0/TBD | Not started | - |
 | 4. Módulo, documentación y defensa | 0/TBD | Not started | - |
