@@ -181,7 +181,7 @@ Recent decisions affecting current work:
 - [Phase 02]: 02-11: ARGUMENTOS_VACIOS ('{}') lives in llm.constants.ts; pasoTruncado stores cut calls with it and keeps id and nombre so ARGUMENTOS_TRUNCADOS results still pair (CR-03 closed)
 - [Phase 02]: 02-11: toWireToolCall forwards arguments byte for byte only when they parse to a plain JSON object, otherwise ARGUMENTOS_VACIOS; the neutral history of an executed step keeps the raw malformed string, only the wire normalizes it
 - [Phase 02]: Session locks are a fenced lease of AGENT_TURN_DEADLINE_MS + MARGEN_CANDADO_SESION_MS (30 s): an abandoned consumer frees the session after the lease, and a stale holder can neither release nor overwrite it (WR-03)
-- [Phase 02]: 02-14: weak acknowledgements (ok, okay, vale, listo, claro, correcto) confirm only on their own; with any filler the decision is otro (D-39)
+- [Phase 02]: 02-14: weak acknowledgements (ok, okay, vale, listo, claro, correcto) confirm only on their own; with any filler the decision is otro (D-39) — SUPERSEDED by 02-16 (D-63.5)
 - [Phase 02]: 02-14: VERBOS_ENVIO keeps only imperatives; the noun envío, envié and enviar never confirm
 - [Phase 02]: 02-14: the server question quotes EJEMPLOS_CONFIRMACION (envía, sí) and promises only that a reply that is not an explicit confirmation sends nothing
 - [Phase 02]: 02-13: a confirmation turn that ends in error, tope_tokens or tope_iteraciones before using its authorization returns that case to pending and ends with the server question (D-63.2); final and abortado recover nothing
@@ -189,6 +189,7 @@ Recent decisions affecting current work:
 - [Phase 02]: 02-13: live run after all gap fixes passed on the first run (VIVO PASS modelo=deepseek-flash llamadas=12 tokens=79292); agent/prompt.md unchanged
 - [Phase 02]: 02-15: D-63.4 — la compuerta recuerda los casos enviados en Sesion.casosEnviados; un simular_envio bloqueado de un caso ya enviado no lo reabre ni en el mismo turno ni después, y un armar_paquete nuevo y exitoso borra la marca y vuelve a pedir confirmación (G-02-3)
 - [Phase 02]: G-02-19: TEXTO_AGENTE.conDetalle adds the final period only when missing (endsWith, no regex); CONFIGURACION_LLM_INVALIDA and PROVEEDOR_SIN_CLAVE drop the open-session sentence because crearAgente raises them before any session exists; turn-time codes keep it
+- [Phase 02]: 02-16: D-63.5 — un acuse suelto (ok, okay, vale, listo, claro, correcto) nunca confirma; hace falta una afirmación fuerte o un verbo de envío. "sí" con tilde (detectado sobre el texto NFC antes de quitar diacríticos) es afirmación fuerte en cualquier posición; "si" sin tilde confirma solo como mensaje entero y en cualquier otra frase nunca basta (G-02-18)
 
 ### Pending Todos
 

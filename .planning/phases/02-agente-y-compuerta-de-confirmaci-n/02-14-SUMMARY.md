@@ -153,3 +153,7 @@ None. No external service configuration is required.
 *Completed: 2026-10-13*
 
 ## Self-Check: PASSED
+
+## Nota posterior (02-16, UAT H2)
+
+La decisión clave de este plan según la cual los acuses débiles (ok, okay, vale, listo, claro, correcto) confirman cuando forman el mensaje entero queda reemplazada por D-63.5 (plan 02-16, G-02-18). Desde 02-16 un acuse suelto nunca confirma: hace falta una afirmación fuerte, un verbo de envío, un "sí" con tilde o un "si" sin tilde que sea el mensaje entero.
