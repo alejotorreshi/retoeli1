@@ -219,7 +219,8 @@ issues_resolved: 1 (G-02-2, resolved by 02-22..02-24 + 261014-jz4)
 - gap_id: G-02-2
   truth: "With a pending case, only an explicit rejection cancels it: an unrelated request that merely contains a word like 'para', 'no', 'luego', 'mejor' or 'después' keeps the case pending (prompt.md:53, D-63.6, RN4), and a negation followed by a question ('No envíes nada todavía, ¿qué falta?') is a rejection, not a re-ask"
   status: resolved
-  resolved_by: 02-24-PLAN.md (with 02-22, 02-23 and quick task 261014-jz4, D-63.11)
+  resolved_by: 02-24-PLAN.md
+  resolved_note: "with 02-22-PLAN.md, 02-23-PLAN.md and quick task 261014-jz4 (D-63.11); accepted by the user in HV3 (test 27)"
   resolved_at: 2026-10-14
   reason: "User reported: no-pass → plan de cierre: acotar NEGACIONES y que la negación gane a la pregunta, con pruebas de bucle ('…para tenerlo a mano', 'No envíes nada todavía, ¿qué falta?'). Mismo síntoma que hizo bloqueante a CR-01."
   severity: major
