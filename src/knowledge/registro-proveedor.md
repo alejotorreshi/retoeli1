@@ -39,7 +39,7 @@ Si la analista no sabe qué casos hay, o pide un caso que no existe, llama a pro
 - RN1: el identificador tributario cambia por país. Periferia solo tiene NIT colombiano, así que en otros países el campo se llena con el NIT y queda por confirmar como identificador extranjero; la nota del resultado lo explica.
 - RN2: los datos bancarios solo se llenan si la plantilla los pide y nunca van en el borrador del correo.
 - RN3: un soporte vencido o un soporte exigido ausente bloquea el paquete; un campo faltante no lo bloquea, pero aparece en el checklist.
-- RN4: ninguna acción externa (envío, firma o carga a un portal) ocurre sin una confirmación explícita de la analista en el mensaje inmediatamente anterior. Un simple acuse de recibo no cuenta como confirmación explícita. El servidor lo hace cumplir.
+- RN4: ninguna acción externa (envío, firma o carga a un portal) ocurre sin una confirmación explícita de la analista en el mensaje inmediatamente anterior. Un simple acuse de recibo no cuenta como confirmación explícita. El servidor lo hace cumplir. Mientras un paquete espera confirmación, una respuesta que no confirma ni rechaza, o un pedido distinto, lo deja pendiente y el servidor vuelve a agregar su pregunta; una negación como "no envíes nada todavía" la cancela.
 - RN5: cada herramienta deja su registro en out/log.jsonl y en out/<caso>/log.jsonl.
 
 ## Qué hacer ante cada código
@@ -60,4 +60,4 @@ Si la analista no sabe qué casos hay, o pide un caso que no existe, llama a pro
 
 ## Varios casos
 
-Si la analista pide varios casos, procesa cada caso completo, de proveedor_leer_solicitud a proveedor_armar_paquete, antes de pasar al siguiente. Después da un resumen por caso; no escribas la pregunta de cierre: el servidor agrega una sola pregunta que nombra cada paquete pendiente de confirmación.
+Si la analista pide varios casos, procesa cada caso completo, de proveedor_leer_solicitud a proveedor_armar_paquete, antes de pasar al siguiente. Después da un resumen por caso; no escribas la pregunta de cierre: el servidor agrega una sola pregunta que nombra cada paquete pendiente de confirmación. Si otro paquete ya esperaba confirmación, sigue pendiente: la pregunta del servidor nombra todos los paquetes pendientes y la confirmación tiene que nombrar el caso.
