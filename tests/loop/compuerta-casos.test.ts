@@ -147,7 +147,7 @@ function terminaPreguntandoPor(texto: string, caso: string): void {
 }
 
 describe("D-40: varios paquetes en un turno se confirman de a uno y nombrando el caso", () => {
-  test("dos paquetes piden cuál; 'envía' a secas no autoriza; 'envía ec-corp-andina' envía solo ec", async () => {
+  test("dos paquetes piden cuál; 'envía' a secas no autoriza; 'envía ec-corp-andina' envía solo ec y co sigue pendiente (D-63.6)", async () => {
     const prueba = agente([
       ...prepararCaso(CO),
       ...prepararCaso(EC),
@@ -175,7 +175,9 @@ describe("D-40: varios paquetes en un turno se confirman de a uno y nombrando el
     const turno3 = await prueba.turno(`envía ${EC}`);
     expect(finesDeHerramienta(turno3)).toEqual([exitosa()]);
     expect(await casosConEnvioSimulado(proyecto.raiz)).toEqual([EC]);
-    expect(finDeTurno(turno3).needsConfirmation).toBe(false);
+    expect(casosPorConfirmar(turno3)).toEqual([CO]);
+    terminaPreguntandoPor(textoFinal(turno3), CO);
+    expect(finDeTurno(turno3).needsConfirmation).toBe(true);
     historialSano(prueba);
   });
 });
@@ -295,13 +297,22 @@ describe("D-38: la autorización vale una vez, para un caso y en el turno siguie
     historialSano(prueba);
   });
 
-  test("una confirmación que llega un turno después ya no autoriza", async () => {
-    const prueba = agente([...armarCaso(EC), respuestaTexto("¿Algo más?"), ...enviar("simular-1", EC)]);
+  test("un mensaje intermedio que no confirma conserva el caso y vuelve a preguntar; el 'envía' siguiente envía una vez (D-63.6)", async () => {
+    const prueba = agente([
+      ...armarCaso(EC),
+      respuestaTexto("Falta el certificado de cumplimiento tributario."),
+      ...enviar("simular-1", EC),
+    ]);
     await prueba.turno(`procesa ${EC}`);
-    await prueba.turno("dime qué falta");
+    const turno2 = await prueba.turno("dime qué falta");
+    expect(finDeTurno(turno2).needsConfirmation).toBe(true);
+    expect(casosPorConfirmar(turno2)).toEqual([EC]);
+    terminaPreguntandoPor(textoFinal(turno2), EC);
+
     const turno3 = await prueba.turno("envía");
-    expect(finesDeHerramienta(turno3)).toEqual([bloqueada()]);
-    expect(await casosConEnvioSimulado(proyecto.raiz)).toEqual([]);
+    expect(finesDeHerramienta(turno3)).toEqual([exitosa()]);
+    expect(await casosConEnvioSimulado(proyecto.raiz)).toEqual([EC]);
+    expect(await enviosOk()).toBe(1);
     historialSano(prueba);
   });
 });
@@ -590,15 +601,32 @@ describe("WR-02 (D-63.2): un turno de confirmación cortado antes de enviar cons
     historialSano(prueba);
   });
 
-  test("control: si el modelo solo responde texto tras 'envía', el turno cierra LIBRE sin preguntar", async () => {
+  test("si el modelo solo responde texto tras 'envía', el turno termina sin usar la autorización y el caso vuelve a quedar pendiente; el 'ok' siguiente no envía y el 'sí' envía una vez (D-63.6)", async () => {
     const texto = "Entendido, todavía no envío nada.";
-    const prueba = agente([...armarCaso(EC), respuestaTexto(texto)]);
+    const prueba = agente([
+      ...armarCaso(EC),
+      respuestaTexto(texto),
+      ...enviar("simular-1", EC),
+      ...enviar("simular-2", EC),
+    ]);
     await prueba.turno(`procesa ${EC}`);
 
     const turno2 = await prueba.turno("envía");
-    expect(confirmaciones(turno2)).toEqual([]);
-    expect(finDeTurno(turno2)).toMatchObject({ motivo: MOTIVO_FIN.FINAL, needsConfirmation: false });
-    expect(textoFinal(turno2)).toBe(texto);
+    expect(finesDeHerramienta(turno2)).toEqual([]);
+    vuelvePreguntandoPorEc(turno2, MOTIVO_FIN.FINAL);
+    expect(textoFinal(turno2)).toBe(`${texto}${SEPARADOR_PARRAFOS}${PREGUNTA_EC}`);
+    expect(await casosConEnvioSimulado(proyecto.raiz)).toEqual([]);
+
+    const turno3 = await prueba.turno("ok");
+    expect(finesDeHerramienta(turno3)).toEqual([bloqueada()]);
+    vuelvePreguntandoPorEc(turno3, MOTIVO_FIN.FINAL);
+    expect(await casosConEnvioSimulado(proyecto.raiz)).toEqual([]);
+
+    const turno4 = await prueba.turno("sí");
+    expect(finesDeHerramienta(turno4)).toEqual([exitosa()]);
+    expect(await casosConEnvioSimulado(proyecto.raiz)).toEqual([EC]);
+    expect(await enviosOk()).toBe(1);
+    expect(finDeTurno(turno4).needsConfirmation).toBe(false);
     historialSano(prueba);
   });
 

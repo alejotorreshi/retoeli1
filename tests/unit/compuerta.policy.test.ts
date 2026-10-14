@@ -66,45 +66,45 @@ describe("estado inicial y casos pendientes", () => {
   });
 });
 
-describe("abrirTurno (D-37, D-40, D-63.3)", () => {
+describe("abrirTurno (D-37, D-40, D-63.3, D-63.6)", () => {
   test.each([confirma(EC), RECHAZA, FALTA_CASO, OTRO])("LIBRE nunca autoriza: %p", (decision) => {
-    expect(abrirTurno(LIBRE, decision)).toEqual({ autorizado: null, siguiente: LIBRE, preguntarCual: false });
+    expect(abrirTurno(LIBRE, decision)).toEqual({ autorizado: null, siguiente: LIBRE });
   });
 
   test("PENDIENTE más confirma de un caso pendiente autoriza solo ese caso y vuelve a LIBRE", () => {
-    expect(abrirTurno(pendiente(PENDIENTE_EC), confirma(EC))).toEqual({
-      autorizado: EC,
-      siguiente: LIBRE,
-      preguntarCual: false,
-    });
+    expect(abrirTurno(pendiente(PENDIENTE_EC), confirma(EC))).toEqual({ autorizado: EC, siguiente: LIBRE });
   });
 
-  test("con dos casos, confirma de uno autoriza solo ese", () => {
-    expect(abrirTurno(pendiente(PENDIENTE_EC, PENDIENTE_CO), confirma(CO)).autorizado).toBe(CO);
+  test("con dos casos, confirma de uno autoriza solo ese y el otro sigue pendiente (D-63.6)", () => {
+    expect(abrirTurno(pendiente(PENDIENTE_EC, PENDIENTE_CO), confirma(CO))).toEqual({
+      autorizado: CO,
+      siguiente: pendiente(PENDIENTE_EC),
+    });
   });
 
   test("falta_caso no autoriza y conserva los mismos casos para preguntar cuál", () => {
     const estado = pendiente(PENDIENTE_EC, PENDIENTE_CO);
-    expect(abrirTurno(estado, FALTA_CASO)).toEqual({
-      autorizado: null,
-      siguiente: estado,
-      preguntarCual: true,
-    });
+    expect(abrirTurno(estado, FALTA_CASO)).toEqual({ autorizado: null, siguiente: estado });
   });
 
-  test.each([RECHAZA, OTRO])("rechaza u otro cancela a LIBRE: %p", (decision) => {
-    expect(abrirTurno(pendiente(PENDIENTE_EC), decision)).toEqual({
-      autorizado: null,
-      siguiente: LIBRE,
-      preguntarCual: false,
-    });
-  });
+  test.each([pendiente(PENDIENTE_EC), pendiente(PENDIENTE_EC, PENDIENTE_CO)])(
+    "rechaza cancela todos los casos pendientes a LIBRE: %p",
+    (estado) => {
+      expect(abrirTurno(estado, RECHAZA)).toEqual({ autorizado: null, siguiente: LIBRE });
+    },
+  );
 
-  test("confirma de un caso que no está pendiente no autoriza nada", () => {
+  test.each([pendiente(PENDIENTE_EC), pendiente(PENDIENTE_EC, PENDIENTE_CO)])(
+    "otro no autoriza y conserva los casos pendientes (D-63.6): %p",
+    (estado) => {
+      expect(abrirTurno(estado, OTRO)).toEqual({ autorizado: null, siguiente: estado });
+    },
+  );
+
+  test("confirma de un caso que no está pendiente no autoriza nada y conserva los pendientes (D-63.6)", () => {
     expect(abrirTurno(pendiente(PENDIENTE_EC), confirma(CO))).toEqual({
       autorizado: null,
-      siguiente: LIBRE,
-      preguntarCual: false,
+      siguiente: pendiente(PENDIENTE_EC),
     });
   });
 });
@@ -246,7 +246,7 @@ describe("enviadosTrasEventos (G-02-3, D-63.4)", () => {
   });
 });
 
-describe("recuperarAutorizado (WR-02, D-63.2, D-38)", () => {
+describe("recuperarAutorizado (WR-02, D-63.2, D-63.6, D-38)", () => {
   const VIGENTE: AutorizacionTurno = { caso: EC, usada: false };
   const CONOCIDOS = { [EC]: PENDIENTE_EC };
   const filas: readonly (readonly [
@@ -275,8 +275,18 @@ describe("recuperarAutorizado (WR-02, D-63.2, D-38)", () => {
       [PENDIENTE_EC],
     ],
     [
-      "un cierre final no recupera nada (el modelo eligió no enviar)",
+      "un cierre final sin usar la autorización devuelve el caso a pendiente (D-63.6)",
       [MOTIVO_FIN.FINAL, VIGENTE, CONOCIDOS],
+      [PENDIENTE_EC],
+    ],
+    [
+      "un cierre final con la autorización ya usada no recupera nada",
+      [MOTIVO_FIN.FINAL, { caso: EC, usada: true }, CONOCIDOS],
+      [],
+    ],
+    [
+      "un cierre final con la autorización revocada al re-armar no recupera nada (D-42)",
+      [MOTIVO_FIN.FINAL, { caso: null, usada: false }, CONOCIDOS],
       [],
     ],
     ["un aborto del llamante no recupera nada", [MOTIVO_FIN.ABORTADO, VIGENTE, CONOCIDOS], []],

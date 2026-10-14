@@ -19,7 +19,7 @@ import { crearProyectoTemporal } from "@tests/helpers/proyecto-temporal.helper.t
 import type { AgentePrueba } from "@tests/helpers/types/agente-prueba.type.ts";
 import type { PasoLlmFalso } from "@tests/helpers/types/llm-falso.type.ts";
 import type { ProyectoTemporal } from "@tests/helpers/types/proyecto-temporal.type.ts";
-import { ACCION } from "@/config/constants/agent.constants.ts";
+import { ACCION, MOTIVO_FIN } from "@/config/constants/agent.constants.ts";
 import { FECHA_DEMO } from "@/config/constants/demo.constants.ts";
 import { CODIGO_ERROR } from "@/config/constants/errors.constants.ts";
 import { ROL_MENSAJE } from "@/config/constants/llm.constants.ts";
@@ -195,6 +195,44 @@ describe("guion PRD §11 de punta a punta con el LLM falso (ENV-02, ENV-03, CA3)
     expect((await lineasDeEnvio(proyecto.raiz)).filter((linea) => linea.ok)).toHaveLength(0);
     historialSano(prueba);
   });
+});
+
+describe("CR-01 (D-63.6): una respuesta que no confirma deja el caso pendiente y el 'sí' siguiente envía una vez", () => {
+  const TEXTO_ACUSE = "Entendido.";
+
+  test.each(["ok", "listo", "si por favor", "si gracias", `si ${EC}`])(
+    "%p en el turno 2 vuelve a preguntar con needsConfirmation y el 'sí' del turno 3 envía una vez",
+    async (frase) => {
+      const prueba = agente([...GUION_TURNO_1, respuestaTexto(TEXTO_ACUSE), ...intentoDeEnvio("simular-2")]);
+      const turno1 = await prueba.turno(MENSAJE_TURNO_1);
+      expect(finDeTurno(turno1).needsConfirmation).toBe(true);
+
+      const pedidosTurno1 = prueba.llm.pedidos.length;
+      const turno2 = await prueba.turno(frase);
+      expect(prueba.llm.pedidos.length - pedidosTurno1).toBe(1);
+      expect(finesDeHerramienta(turno2)).toEqual([]);
+      expect(finDeTurno(turno2)).toEqual(
+        expect.objectContaining({ motivo: MOTIVO_FIN.FINAL, needsConfirmation: true }),
+      );
+      expect(confirmaciones(turno2)).toEqual([
+        expect.objectContaining({ caso: EC, accion: ACCION.ENVIO, bloqueos: [BLOQUEO_EC] }),
+      ]);
+      expect(textoFinal(turno2)).toBe(
+        `${TEXTO_ACUSE}${SEPARADOR_PARRAFOS}${cierreConPregunta("", [PENDIENTE_EC])}`,
+      );
+      expect(respuestaDeTurno(turno2).needsConfirmation).toBe(true);
+      expect(await casosConEnvioSimulado(proyecto.raiz)).toEqual([]);
+      expect((await lineasDeEnvio(proyecto.raiz)).filter((linea) => linea.ok)).toHaveLength(0);
+
+      const turno3 = await prueba.turno("sí");
+      expect(finesDeHerramienta(turno3)).toEqual([expect.objectContaining({ ok: true })]);
+      expect(await casosConEnvioSimulado(proyecto.raiz)).toEqual([EC]);
+      expect((await lineasDeEnvio(proyecto.raiz)).filter((linea) => linea.ok)).toHaveLength(1);
+      expect(confirmaciones(turno3)).toEqual([]);
+      expect(finDeTurno(turno3).needsConfirmation).toBe(false);
+      historialSano(prueba);
+    },
+  );
 });
 
 describe("CR-01: una frase dudosa con un caso pendiente no envía (ENV-02, D-39)", () => {
