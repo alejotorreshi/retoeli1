@@ -348,6 +348,25 @@ const FILAS_D6310: readonly Fila[] = [
   ["y luego ec-corp-andina", UNO, OTRO],
 ];
 
+const FILAS_D6311: readonly Fila[] = [
+  ["No, por favor consulta el NIT de ec-corp-andina", UNO, RECHAZA],
+  ["No, por favor consulta el NIT de ec-corp-andina", DOS, RECHAZA],
+  ["Todavía no. Por favor revisa el NIT de ec-corp-andina.", UNO, RECHAZA],
+  ["Todavía no. Por favor revisa el NIT de ec-corp-andina.", DOS, RECHAZA],
+  ["Todavía no, pero dame el NIT de ec-corp-andina", UNO, RECHAZA],
+  ["Todavía no, pero dame el NIT de ec-corp-andina", DOS, RECHAZA],
+  ["No, quiero el NIT de ec-corp-andina", UNO, RECHAZA],
+  ["No, quiero el NIT de ec-corp-andina", DOS, RECHAZA],
+  ["No, envíame el NIT de ec-corp-andina", UNO, RECHAZA],
+  ["No, mejor procesa ec-corp-andina", UNO, RECHAZA],
+  ["detente, procesa ec-corp-andina", UNO, RECHAZA],
+  ["No, ahora consulta el NIT de co-industrias-delta", DOS, RECHAZA],
+  ["No, ahora consulta el NIT de co-industrias-delta", UNO, OTRO],
+  ["No, consulta el NIT de ec-corp-andina", DOS, OTRO],
+  ["Espera, procesa ec-corp-andina", UNO, OTRO],
+  ["Todavía no, consulta el NIT de ec-corp-andina", UNO, OTRO],
+];
+
 const PALABRAS_DE_RECHAZO: readonly string[] = [...new Set([...NEGACIONES, ...NEGADORES])];
 const VOCABULARIO_DE_CONFIRMACION: ReadonlySet<string> = new Set([
   ...AFIRMACIONES,
@@ -424,6 +443,12 @@ describe("clasificarConfirmacion: la redacción del servidor, un motivo y el cas
   });
 });
 
+describe("clasificarConfirmacion: la regla de primera palabra queda aceptada; un pedido sobre el caso pendiente con otra palabra delante del verbo cancela (CR-06, T-02-83, D-63.11)", () => {
+  test.each(FILAS_D6311)("%p con pendientes %p", (texto, pendientes, esperado) => {
+    expect(clasificarConfirmacion(texto, pendientes)).toEqual(esperado);
+  });
+});
+
 const PENDIENTES_DE_CLASE: readonly (readonly string[])[] = [UNO, DOS];
 const UN_SEGUNDO_MS = 1000;
 type Infraccion = readonly [string, readonly string[], string];
@@ -454,6 +479,7 @@ const TABLAS: readonly Fila[] = [
   ...FILAS_RECHAZO_ACOTADO,
   ...FILAS_D639,
   ...FILAS_D6310,
+  ...FILAS_D6311,
 ];
 
 const CANCELAN_POR_CASO_PENDIENTE: readonly (readonly [string, readonly string[]])[] = [

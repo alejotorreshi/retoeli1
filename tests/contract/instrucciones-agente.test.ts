@@ -246,6 +246,9 @@ const RETIRADOS_G024 = [
   'Un rechazo es una negación del envío, como "no envíes", "no lo mandes", "no lo confirmes", "no lo hagas", "no confirmo" o "no quiero enviarlo todavía", o una respuesta corta de espera, como "no", "todavía no", "espera", "espera un momento", "cancela" o "mejor no", sola o separada del resto por una coma o un punto, aunque después venga una pregunta o un pedido que no nombra un caso ("No, ¿qué falta?", "Espera, dime qué falta", "todavía no, ¿qué falta?").',
   'Ese pedido no es un rechazo aunque traiga palabras como "no", "para", "luego", "mejor" o "después" dentro de la frase o junto al nombre de un caso, por ejemplo "consulta el NIT para tenerlo a mano", "dame el NIT, no el RUC", "procesa co-industrias-delta, no pe-andes" o "No, el de pe-andes": no digas que la confirmación quedó cancelada.',
 ];
+const RETIRADOS_D6311 = [
+  "Ese paquete sigue pendiente y el servidor vuelve a agregar su pregunta; si quedan varios paquetes pendientes, la pregunta los nombra y la analista tiene que nombrar el caso al confirmar.",
+];
 const DOS_PENDIENTES = ["ec-corp-andina", "co-industrias-delta"];
 const CITA_RECTA = /"([^"]*)"/g;
 
@@ -317,6 +320,23 @@ const ORACIONES_D639: readonly OracionD639[] = [
     cabeza: [],
   },
   {
+    nombre: "prompt SCASO",
+    archivo: "prompt",
+    oracion:
+      'Si la analista empieza con una respuesta de espera ("no", "todavía no", "espera") y después pide algo que nombra el caso que espera confirmación, el servidor solo lo deja pendiente cuando el pedido empieza directamente con un verbo de pedido como consulta, procesa o revisa ("No, consulta el NIT de ec-corp-andina"); con otra palabra delante, o sin un verbo de pedido, cancela la confirmación ("No, por favor consulta el NIT de ec-corp-andina", "Todavía no, pero dame el NIT de ec-corp-andina", "No, quiero el NIT de ec-corp-andina").',
+    rechazos: [
+      "no",
+      "todavía no",
+      "espera",
+      "No, por favor consulta el NIT de ec-corp-andina",
+      "Todavía no, pero dame el NIT de ec-corp-andina",
+      "No, quiero el NIT de ec-corp-andina",
+    ],
+    otros: ["No, consulta el NIT de ec-corp-andina"],
+    dentro: [],
+    cabeza: [],
+  },
+  {
     nombre: "conocimiento RN4a",
     archivo: "conocimiento",
     oracion:
@@ -365,9 +385,9 @@ function expandidos({ dentro, cabeza }: OracionD639): readonly string[] {
   );
 }
 
-describe("el prompt y el conocimiento describen el rechazo de D-63.9 y D-63.10 (G-02-2, WR-22, IN-29, CR-05)", () => {
-  test("hay cinco oraciones que definen el rechazo", () => {
-    expect(ORACIONES_D639).toHaveLength(5);
+describe("el prompt y el conocimiento describen el rechazo de D-63.9, D-63.10 y D-63.11 (G-02-2, WR-22, IN-29, CR-05, CR-06)", () => {
+  test("hay seis oraciones que definen el rechazo", () => {
+    expect(ORACIONES_D639).toHaveLength(6);
   });
 
   test.each([...ORACIONES_D639])("$nombre está entera en su archivo", ({ archivo, oracion }) => {
@@ -379,12 +399,20 @@ describe("el prompt y el conocimiento describen el rechazo de D-63.9 y D-63.10 (
     expect(citasRectas(entrada.oracion).sort()).toEqual(clasificadas.sort());
   });
 
-  test.each([...ORACIONES_D639])("cada rechazo citado en $nombre rechaza", ({ rechazos }) => {
-    const fallidos = rechazos.filter(
-      (ejemplo) => clasificarConfirmacion(ejemplo, PENDIENTE_EC).decision !== DECISION_CONFIRMACION.RECHAZA,
-    );
-    expect(fallidos).toEqual([]);
-  });
+  test.each([...ORACIONES_D639])(
+    "cada rechazo citado en $nombre rechaza con uno o dos pendientes",
+    ({ rechazos }) => {
+      const fallidos = rechazos.flatMap((ejemplo) =>
+        [PENDIENTE_EC, DOS_PENDIENTES]
+          .filter(
+            (pendientes) =>
+              clasificarConfirmacion(ejemplo, pendientes).decision !== DECISION_CONFIRMACION.RECHAZA,
+          )
+          .map((pendientes) => [ejemplo, pendientes]),
+      );
+      expect(fallidos).toEqual([]);
+    },
+  );
 
   test.each([...ORACIONES_D639])("cada pedido citado en $nombre deja el caso pendiente", ({ otros }) => {
     const fallidos = otros.flatMap((ejemplo) =>
@@ -409,6 +437,23 @@ describe("el prompt y el conocimiento describen el rechazo de D-63.9 y D-63.10 (
 
   test("ninguna oración retirada de 02-22 sigue en los archivos", () => {
     expect(RETIRADOS_G023.filter((frase) => prompt.includes(frase) || conocimiento.includes(frase))).toEqual(
+      [],
+    );
+  });
+});
+
+describe("el prompt no afirma el estado de la compuerta tras un pedido sobre el caso pendiente (CR-06, WR-27, T-02-83, D-63.11)", () => {
+  test("el prompt condiciona la re-pregunta y pide no afirmar el estado en ese pedido", () => {
+    expect(prompt).toContain(
+      "Si el paquete sigue pendiente, el servidor vuelve a agregar su pregunta al final de tu respuesta",
+    );
+    expect(prompt).toContain(
+      "En ese pedido no digas si el paquete sigue pendiente ni si la confirmación quedó cancelada",
+    );
+  });
+
+  test("ninguna frase retirada por D-63.11 sigue en los archivos", () => {
+    expect(RETIRADOS_D6311.filter((frase) => prompt.includes(frase) || conocimiento.includes(frase))).toEqual(
       [],
     );
   });
