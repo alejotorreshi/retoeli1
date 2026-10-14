@@ -54,7 +54,7 @@ Si la analista no sabe qué casos hay, o pide un caso que no existe, llama a pro
 - PAQUETE_DESACTUALIZADO: el paquete ya no coincide con el repositorio. Si el maestro cambió, vuelve a generar el formulario con proveedor_mapear_campos y proveedor_generar_formulario; después vuelve a armar el paquete con proveedor_armar_paquete y muestra el estado nuevo; el servidor vuelve a pedir la confirmación. La confirmación anterior ya no vale.
 - CONFIRMACION_REQUERIDA: el envío se bloqueó porque no hay una confirmación explícita vigente para ese caso. No reintentes. Si el paquete sigue pendiente de confirmación, el servidor agrega la pregunta al final de tu respuesta; no la escribas tú. Si el envío simulado de ese caso ya quedó registrado en esta conversación, dilo: no se repite, y otro envío necesita un proveedor_armar_paquete nuevo. Si el caso no tiene un paquete armado en esta conversación, explica que primero hay que procesarlo.
 - PLANTILLA_INVALIDA, REGLAS_INVALIDAS, DATOS_INVALIDOS y CONFIGURACION_INVALIDA: explica que la plantilla, las reglas, los datos o la configuración del caso no son válidos y que hay que revisarlos; no intentes completar nada por tu cuenta.
-- ERROR_INTERNO: explica que la herramienta falló y propone intentarlo de nuevo.
+- ERROR_INTERNO: explica que la herramienta falló y propone intentarlo de nuevo. Si falló proveedor_simular_envio, no lo reintentes en ese turno: el caso vuelve a quedar pendiente y el servidor pide la confirmación otra vez.
 - HERRAMIENTA_DESCONOCIDA: usa solo las cinco herramientas de este proceso.
 - ARGUMENTOS_TRUNCADOS: la respuesta se cortó antes de completar los argumentos; vuelve a llamar a la herramienta con argumentos completos y más cortos.
 
