@@ -3,6 +3,38 @@ phase: 02
 review: 02-REVIEW.md
 titles: json
 findings:
+  - id: CR-04
+    severity: critical
+    disposition: open
+    title: "[BLOCKER] la regla (b) de D-63.8 sigue cancelando el caso pendiente ante preguntas y pedidos comunes: \"Para pe-andes, ¿qué falta?\", \"Luego, ¿qué sigue?\" y \"dame primero el NIT, después el paquete\" dan `rechaza`"
+  - id: WR-19
+    severity: warning
+    disposition: open
+    title: "[WARNING] rechazos claros siguen dando `otro`, y el servidor vuelve a preguntar justo después de un \"no quiero enviarlo todavía\" (resto de WR-15)"
+  - id: WR-20
+    severity: warning
+    disposition: open
+    title: "[WARNING] al quitar las tildes, el pretérito (\"envié\", \"mandé\", \"despaché\") se confunde con el subjuntivo, y \"No envié el certificado, ¿lo puedo agregar?\" cancela el caso"
+  - id: WR-21
+    severity: warning
+    disposition: open
+    title: "[WARNING] la forma (a) rechaza con \"hagas\" y \"confirmo\" aunque rijan otro objeto: \"No hagas el PDF, solo el xlsx\" cancela el caso pendiente"
+  - id: WR-22
+    severity: warning
+    disposition: open
+    title: "[WARNING] RN4 dice lo contrario de la regla: \"Un pedido que solo contiene palabras como \"no\", \"para\", \"luego\" o \"mejor\" no es un rechazo\""
+  - id: IN-28
+    severity: info
+    disposition: open
+    title: "[INFO] `verboTrasNegador` copia la cola del mensaje por cada negador, lo que da tiempo cuadrático (T-02-71)"
+  - id: IN-29
+    severity: info
+    disposition: open
+    title: "[INFO] los contratos y las filas nuevas fijan solo los ejemplos citados, no la regla en prosa que el prompt promete, y por eso CR-04 pasa en verde"
+  - id: IN-30
+    severity: info
+    disposition: open
+    title: "[INFO] la segmentación por cláusulas toma el discurso citado como rechazo, y \"no¿\" se trata distinto de \"no ?\""
   - id: WR-15
     severity: warning
     disposition: open
@@ -195,27 +227,35 @@ findings:
     severity: info
     disposition: open
     title: "The agent clock re-parses the environment on every call and silently diverges from the tools when `FECHA_EJECUCION` is invalid"
-open: 20
-total: 48
-recorded: 2026-10-14T03:20:13.827Z
+open: 28
+total: 56
+recorded: 2026-10-14T05:08:38.034Z
 ---
 
 # Phase 02: Code Review Disposition
 
 | Finding | Severity | Disposition | Source |
 |---------|----------|-------------|--------|
-| WR-15 | warning | open | - |
-| WR-16 | warning | open | - |
-| WR-17 | warning | open | - |
-| WR-18 | warning | open | - |
-| IN-23 | info | open | - |
-| IN-24 | info | open | - |
-| IN-25 | info | open | - |
-| IN-26 | info | open | - |
-| IN-27 | info | open | - |
-| CR-01 | critical | fixed | fixed by 02-19 (D-63.6; c8cf640, d585b53); confirmed resolved in the 02-19..02-21 review round |
-| WR-01 | warning | fixed | fixed by 02-20 (63a06b9); confirmed resolved in the 02-19..02-21 review round |
-| WR-02 | warning | fixed | fixed by 02-20 (D-63.7; 803d74c); confirmed resolved in the 02-19..02-21 review round |
+| CR-04 | critical | open | - |
+| WR-19 | warning | open | - |
+| WR-20 | warning | open | - |
+| WR-21 | warning | open | - |
+| WR-22 | warning | open | - |
+| IN-28 | info | open | - |
+| IN-29 | info | open | - |
+| IN-30 | info | open | - |
+| WR-15 | warning | open | - (not in the current review) |
+| WR-16 | warning | open | - (not in the current review) |
+| WR-17 | warning | open | - (not in the current review) |
+| WR-18 | warning | open | - (not in the current review) |
+| IN-23 | info | open | - (not in the current review) |
+| IN-24 | info | open | - (not in the current review) |
+| IN-25 | info | open | - (not in the current review) |
+| IN-26 | info | open | - (not in the current review) |
+| IN-27 | info | open | - (not in the current review) |
+| CR-01 | critical | fixed | fixed by 02-19 (D-63.6; c8cf640, d585b53); confirmed resolved in the 02-19..02-21 review round (not in the current review) |
+| WR-01 | warning | fixed | fixed by 02-20 (63a06b9); confirmed resolved in the 02-19..02-21 review round (not in the current review) |
+| WR-02 | warning | fixed | fixed by 02-20 (D-63.7; 803d74c); confirmed resolved in the 02-19..02-21 review round (not in the current review) |
 | IN-01 | info | open | - (not in the current review) |
 | IN-02 | info | open | - (not in the current review) |
 | IN-03 | info | open | - (not in the current review) |
