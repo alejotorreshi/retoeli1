@@ -198,7 +198,7 @@ describe("guion PRD §11 de punta a punta con el LLM falso (ENV-02, ENV-03, CA3)
 });
 
 describe("CR-01: una frase dudosa con un caso pendiente no envía (ENV-02, D-39)", () => {
-  test.each(["y el envío", "ok, gracias"])(
+  test.each(["y el envío", "ok, gracias", "ok", "listo", "si todo bien"])(
     "%p en el turno 2 deja bloqueado el envío del modelo",
     async (frase) => {
       const prueba = agente([...GUION_TURNO_1, ...intentoDeEnvio("simular-2")]);
@@ -214,6 +214,19 @@ describe("CR-01: una frase dudosa con un caso pendiente no envía (ENV-02, D-39)
       historialSano(prueba);
     },
   );
+
+  test.each(["si", "SÍ"])("%p solo en el turno 2 escribe ENVIO-SIMULADO.md una vez", async (frase) => {
+    const prueba = agente([...GUION_TURNO_1, ...intentoDeEnvio("simular-2")]);
+    const turno1 = await prueba.turno(MENSAJE_TURNO_1);
+    expect(finDeTurno(turno1).needsConfirmation).toBe(true);
+
+    const turno2 = await prueba.turno(frase);
+    expect(finesDeHerramienta(turno2)).toEqual([expect.objectContaining({ ok: true })]);
+    expect(await casosConEnvioSimulado(proyecto.raiz)).toEqual([EC]);
+    expect((await lineasDeEnvio(proyecto.raiz)).filter((linea) => linea.ok)).toHaveLength(1);
+    expect(finDeTurno(turno2).needsConfirmation).toBe(false);
+    historialSano(prueba);
+  });
 });
 
 describe("CR-02: con un caso pendiente la pregunta del servidor cierra el turno (ENV-02, ENV-03, D-44)", () => {
