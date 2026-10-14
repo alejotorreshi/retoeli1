@@ -88,6 +88,36 @@ export const NEGACIONES: ReadonlySet<string> = new Set([
   "aguarda",
 ]);
 
+export const NEGADORES: ReadonlySet<string> = new Set(["no", "nunca", "jamas", "tampoco", "ni"]);
+
+export const PRONOMBRES_ATONOS: ReadonlySet<string> = new Set([
+  "me",
+  "te",
+  "se",
+  "lo",
+  "la",
+  "le",
+  "nos",
+  "los",
+  "las",
+  "les",
+]);
+
+export const VERBOS_NEGABLES: ReadonlySet<string> = new Set([
+  "envies",
+  "envie",
+  "envien",
+  "mandes",
+  "mande",
+  "manden",
+  "despaches",
+  "despache",
+  "despachen",
+  "hagas",
+  "confirmo",
+  "autorizo",
+]);
+
 export const CONDICIONALES: ReadonlySet<string> = new Set([
   "pero",
   "aunque",

@@ -5,12 +5,16 @@ import {
   DECISION_CONFIRMACION,
   MAX_PALABRAS_CONFIRMACION,
   NEGACIONES,
+  NEGADORES,
+  PRONOMBRES_ATONOS,
   RELLENO,
   SI_CON_TILDE,
   SI_SIN_TILDE,
   VERBOS_ENVIO,
+  VERBOS_NEGABLES,
 } from "@/config/constants/confirmation.constants.ts";
 import {
+  PATRON_CLAUSULA,
   PATRON_NO_PALABRA,
   PATRON_NO_PALABRA_UNICODE,
   PATRON_PREGUNTA,
@@ -79,11 +83,40 @@ function casoConfirmado(slugs: readonly string[], pendientes: readonly string[])
   return pendientes.length === 1 ? { decision: DECISION_CONFIRMACION.CONFIRMA, caso: unico } : FALTA_CASO;
 }
 
+function verboTrasNegador(palabras: readonly string[], desde: number): string | undefined {
+  return palabras.slice(desde + 1).find((palabra) => !PRONOMBRES_ATONOS.has(palabra));
+}
+
+function niegaElEnvio(palabras: readonly string[]): boolean {
+  return palabras.some((palabra, indice) => {
+    if (!NEGADORES.has(palabra)) return false;
+    const verbo = verboTrasNegador(palabras, indice);
+    return verbo !== undefined && VERBOS_NEGABLES.has(verbo);
+  });
+}
+
+function esPalabraDeEspera(palabra: string): boolean {
+  return NEGACIONES.has(palabra) || RELLENO.has(palabra);
+}
+
+function esClausulaDeEspera(clausula: string): boolean {
+  if (PATRON_PREGUNTA.test(clausula)) return false;
+  const { palabras } = separar(clausula);
+  return palabras.some((palabra) => NEGACIONES.has(palabra)) && palabras.every(esPalabraDeEspera);
+}
+
+function esRechazoExplicito(normalizado: string, frase: Frase): boolean {
+  if (niegaElEnvio(frase.palabras)) return true;
+  const clausulas = normalizado.match(PATRON_CLAUSULA) ?? [];
+  return clausulas.some(esClausulaDeEspera);
+}
+
 export function clasificarConfirmacion(texto: string, pendientes: readonly string[]): DecisionConfirmacion {
   const normalizado = sinDiacriticos(texto).toLowerCase().trim();
-  if (normalizado === "" || PATRON_PREGUNTA.test(texto)) return OTRO;
+  if (normalizado === "") return OTRO;
   const frase = separar(normalizado);
-  if (frase.palabras.some((palabra) => NEGACIONES.has(palabra))) return RECHAZA;
+  if (esRechazoExplicito(normalizado, frase)) return RECHAZA;
+  if (PATRON_PREGUNTA.test(texto)) return OTRO;
   if (!esConfirmacionClara(texto, frase)) return OTRO;
   return casoConfirmado(frase.slugs, pendientes);
 }
