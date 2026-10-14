@@ -651,3 +651,65 @@ describe("WR-02 (D-63.2): un turno de confirmación cortado antes de enviar cons
     historialSano(prueba);
   });
 });
+
+describe("D-63.6: un pedido ajeno con un caso pendiente se atiende y no secuestra la confirmación", () => {
+  test("procesar co con ec pendiente deja los dos pendientes; un 'sí' a secas no envía; 'envía co' envía solo co y el 'sí' siguiente envía ec", async () => {
+    const prueba = agente([
+      ...armarCaso(EC),
+      ...armarCaso(CO),
+      respuestaTexto("Hay dos paquetes pendientes."),
+      ...enviar("simular-co", CO),
+      ...enviar("simular-ec", EC),
+    ]);
+    await prueba.turno(`procesa ${EC}`);
+
+    const turno2 = await prueba.turno(`procesa el caso ${CO}`);
+    const armados = finesDeHerramienta(turno2, NOMBRE_VISIBLE[HERRAMIENTA.ARMAR_PAQUETE]);
+    expect(armados.length).toBeGreaterThan(0);
+    expect(armados.every(({ ok }) => ok)).toBe(true);
+    expect(casosPorConfirmar(turno2)).toEqual([EC, CO]);
+    expect(textoFinal(turno2).trimEnd().endsWith(PREGUNTA_VARIOS)).toBe(true);
+    expect(finDeTurno(turno2).needsConfirmation).toBe(true);
+    expect(await enviosOk()).toBe(0);
+
+    const turno3 = await prueba.turno("sí");
+    expect(finesDeHerramienta(turno3)).toEqual([]);
+    expect(casosPorConfirmar(turno3)).toEqual([EC, CO]);
+    expect(textoFinal(turno3).trimEnd().endsWith(PREGUNTA_VARIOS)).toBe(true);
+    expect(await enviosOk()).toBe(0);
+
+    const turno4 = await prueba.turno(`envía ${CO}`);
+    expect(finesDeHerramienta(turno4)).toEqual([exitosa()]);
+    expect(await casosConEnvioSimulado(proyecto.raiz)).toEqual([CO]);
+    expect(casosPorConfirmar(turno4)).toEqual([EC]);
+    terminaPreguntandoPor(textoFinal(turno4), EC);
+    expect(finDeTurno(turno4).needsConfirmation).toBe(true);
+
+    const turno5 = await prueba.turno("sí");
+    expect(finesDeHerramienta(turno5)).toEqual([exitosa()]);
+    expect(await casosConEnvioSimulado(proyecto.raiz)).toEqual([CO, EC]);
+    expect(await enviosOk()).toBe(2);
+    expect(finDeTurno(turno5).needsConfirmation).toBe(false);
+    historialSano(prueba);
+  });
+
+  test("un aborto durante un 'ok' cierra LIBRE y el 'sí' siguiente no autoriza (RN4)", async () => {
+    const prueba = agente([...armarCaso(EC), ...enviar("simular-1", EC)]);
+    await prueba.turno(`procesa ${EC}`);
+
+    const controlador = new AbortController();
+    const turno2: EventoAgente[] = [];
+    for await (const evento of prueba.iniciar("ok", { signal: controlador.signal })) {
+      turno2.push(evento);
+      if (evento.tipo === TIPO_EVENTO.INICIO_TURNO) controlador.abort();
+    }
+    expect(finDeTurno(turno2)).toMatchObject({ motivo: MOTIVO_FIN.ABORTADO, needsConfirmation: false });
+    expect(confirmaciones(turno2)).toEqual([]);
+    expect(prueba.sesionActual().compuerta).toEqual({ tipo: ESTADO_COMPUERTA.LIBRE });
+
+    const turno3 = await prueba.turno("sí");
+    expect(finesDeHerramienta(turno3)).toEqual([bloqueada()]);
+    expect(await casosConEnvioSimulado(proyecto.raiz)).toEqual([]);
+    historialSano(prueba);
+  });
+});
