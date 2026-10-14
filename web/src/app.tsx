@@ -21,6 +21,13 @@ function BurbujasDelTurno({ turno }: { readonly turno: TurnoConversacion }) {
           <p style={ESTILO_TEXTO_PLANO}>{texto.texto}</p>
         </li>
       ))}
+      {turno.error === null ? null : (
+        <li>
+          <div role="alert" style={ESTILO_TEXTO_PLANO}>
+            {turno.error.mensaje}
+          </div>
+        </li>
+      )}
     </>
   );
 }
