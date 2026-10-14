@@ -20,7 +20,8 @@
     "noEmit": true,
     "paths": {
       "@/*": ["./src/*"],
-      "@tests/*": ["./tests/*"]
+      "@tests/*": ["./tests/*"],
+      "@web/*": ["./web/src/*"]
     }
   },
   "include": ["src", "tests", "demo.ts"]

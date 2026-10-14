@@ -305,6 +305,7 @@ function nombreDePaquete(especificador: string): string {
 const ALIAS: readonly (readonly [string, string])[] = [
   ["@/", "src/"],
   ["@tests/", "tests/"],
+  ["@web/", "web/src/"],
 ];
 
 function rutaLocal(origen: string, especificador: string): string | null {

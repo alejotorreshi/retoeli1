@@ -6,7 +6,10 @@
     "bun": "1.4.3"
   },
   "scripts": {
+    "dev": "bun run --parallel dev:api dev:web",
     "dev:api": "NODE_ENV=development bun --watch src/server.ts",
+    "dev:web": "bun --bun vite --config web/vite.config.ts --configLoader native",
+    "build:web": "bun --bun vite build --config web/vite.config.ts --configLoader native",
     "start": "bun src/server.ts",
     "demo": "bun run demo.ts",
     "test": "bun test",
@@ -14,7 +17,7 @@
     "typecheck": "tsc --noEmit",
     "lint": "biome check .",
     "audit": "bun audit --audit-level=moderate",
-    "check": "tsc --noEmit && biome check . && bun audit --audit-level=moderate"
+    "check": "tsc --noEmit && tsc --noEmit -p web/tsconfig.json && biome check . && bun audit --audit-level=moderate"
   },
   "dependencies": {
     "exceljs": "4.4.0",
