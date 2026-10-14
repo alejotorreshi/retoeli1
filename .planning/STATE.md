@@ -1,18 +1,18 @@
 ---
 gsd_state_version: "1.0"
-current_phase: 3
+current_phase: 03
 current_phase_name: Chat web, API SSE y despliegue
 status: executing
-stopped_at: Phase 3 UI-SPEC approved
-last_updated: "2026-10-14T23:02:17.339Z"
+stopped_at: Completed 03-01-PLAN.md
+last_updated: "2026-10-14T23:15:27.384Z"
 last_activity: 2026-10-14
-last_activity_desc: Phase 02 complete, transitioned to Phase 3
-state_head: 9269eb9905331abaab3cfa1324e5f23753fd3804
+last_activity_desc: Phase 03 execution started
+state_head: 9088a721f009eaac89f247a27a734e21b27da81a
 progress:
   total_phases: 4
   completed_phases: 2
   total_plans: 66
-  completed_plans: 39
+  completed_plans: 40
   percent: 50
 ---
 
@@ -23,14 +23,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-10-14)
 
 **Core value:** El agente nunca inventa un dato: cada valor sale de una herramienta tipada que lo lee del maestro, y ninguna acción externa ocurre sin confirmación humana explícita.
-**Current focus:** Phase 3 — Chat web, API SSE y despliegue
+**Current focus:** Phase 03 — Chat web, API SSE y despliegue
 
 ## Current Position
 
-Phase: 3 (Chat web, API SSE y despliegue) — READY TO EXECUTE
-Plan: Not started
+Phase: 03 (Chat web, API SSE y despliegue) — EXECUTING
+Plan: 2 of 27
 Status: Ready to execute
-Last activity: 2026-10-14 — Phase 02 complete, transitioned to Phase 3
+Last activity: 2026-10-14 — Phase 03 execution started
 
 Progress: [█████░░░░░] 50%
 
@@ -96,6 +96,7 @@ Progress: [█████░░░░░] 50%
 | Phase 02 P22 | 5 min | 3 tasks | 10 files |
 | Phase 02 P23 | 8 min | 3 tasks | 12 files |
 | Phase 02 P24 | 11 min | 3 tasks | 10 files |
+| Phase 03 P01 | 4 min | 2 tasks | 14 files |
 
 ## Accumulated Context
 
@@ -207,6 +208,8 @@ Recent decisions affecting current work:
 - [Phase 02]: 02-22: D-63.8 — el rechazo explícito es acotado: (a) "no/nunca/jamás/tampoco/ni" más pronombres átonos y una forma de rechazo del envío ("envíes", "mandes", "hagas", "confirmo"…), en cualquier parte y aunque haya pregunta; (b) una cláusula que no es pregunta hecha solo de NEGACIONES y rellenos; se evalúa antes que la pregunta; un pedido o una pregunta que solo contiene esas palabras da otro y deja el caso pendiente con la pregunta del servidor (G-02-2, WR-15, WR-16); WR-17 sigue abierto — ACOTADO por 02-23 (D-63.9): la regla (b) cancelaba preguntas y pedidos con conectores (CR-04) y la forma (a) tomaba pretéritos y verbos genéricos con otro objeto (WR-20, WR-21)
 - [Phase 02]: 02-23: D-63.9 — el rechazo se busca solo en cláusulas afirmadas (la cabeza de una pregunta sin "¿" se separa en su primer interrogativo; ":" ya no corta); (a) negación del envío con subjuntivo de envío, o con verbo genérico, modal más infinitivo o "que" más subjuntivo solo si el resto de la cláusula es caso, espera o relleno, y el pretérito con "é" no cuenta; (b) "cancela…" con caso, espera o relleno; (c) cláusula de espera sin caso con núcleo ("no", "espera", "cancela", "alto"…) salvo que otra cláusula afirmada nombre un caso; los conectores ("para", "luego", "después", "mejor", "momento", "nada", "aún", "todavía", "ni") solo rechazan como mensaje entero; corpus generado y diferencial contra 10a43ad (CR-04, WR-19 a WR-22, IN-28 a IN-30, T-02-71); WR-17 sigue abierto
 - [Phase 02]: 02-24: D-63.10 (enmienda de D-63.9, CR-05, aprobada por la usuaria el 2026-10-14) — una negación del envío con la redacción del servidor ("simulado", "confirmación") o con un motivo ("porque", "hasta", "sin", "pues", "mientras", ":") rechaza; "detén" cancela y "hoy" es relleno de espera; un caso pendiente cuenta como palabra de espera (con rellenos) salvo en la contraposición "no <caso>"; la exención por nombrar un caso vale para un caso no pendiente y para una cláusula encabezada por un verbo de pedido; "No, el de <caso pendiente>" pasa a rechazo (tres pares, aprobados); cuarta dirección del diferencial con mezclas de decisión fija; PATRON_SLUG_EN_TEXTO anclado con lookbehind (WR-25, T-02-77); siguen abiertos WR-17, WR-23 (resto), WR-24, IN-31, IN-32 e IN-33
+- [Phase 03]: 03-01: capa src/http en inglés; solo http/wiring/server.wiring.ts importa infra, config/env.ts y agente.wiring; hono solo en http; src/server.ts solo llega al wiring http y a node:
+- [Phase 03]: 03-01: la usuaria aprobó hono 4.13.13, react/react-dom 19.3.0, vite 8.3.3, @vitejs/plugin-react 6.1.2, eventsource-parser 4.1.1 y @types/react(-dom) 19.3.0 ('aprobado'); instaladas exactas
 
 ### Pending Todos
 
@@ -241,6 +244,6 @@ Items acknowledged and deferred at milestone close, most recent first:
 
 ## Session Continuity
 
-Last session: 2026-10-14T20:37:11.052Z
-Stopped at: Phase 3 UI-SPEC approved
-Resume file: .planning/phases/03-chat-web-api-sse-y-despliegue/03-UI-SPEC.md
+Last session: 2026-10-14T23:15:27.261Z
+Stopped at: Completed 03-01-PLAN.md
+Resume file: None
