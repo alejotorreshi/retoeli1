@@ -113,10 +113,102 @@ export const VERBOS_NEGABLES: ReadonlySet<string> = new Set([
   "despaches",
   "despache",
   "despachen",
-  "hagas",
-  "confirmo",
-  "autorizo",
 ]);
+
+export const VERBOS_GENERICOS_NEGABLES: ReadonlySet<string> = new Set([
+  "hagas",
+  "haga",
+  "confirmo",
+  "confirmes",
+  "confirme",
+  "autorizo",
+  "autorices",
+  "autorice",
+]);
+
+export const INFINITIVOS_NEGABLES: ReadonlySet<string> = new Set([
+  "enviar",
+  "enviarlo",
+  "enviarla",
+  "enviarlos",
+  "enviarlas",
+  "mandar",
+  "mandarlo",
+  "mandarla",
+  "mandarlos",
+  "mandarlas",
+  "despachar",
+  "despacharlo",
+  "despacharla",
+  "confirmar",
+  "confirmarlo",
+  "confirmarla",
+  "autorizar",
+  "autorizarlo",
+  "hacerlo",
+]);
+
+export const MODALES_NEGABLES: ReadonlySet<string> = new Set([
+  "quiero",
+  "queremos",
+  "puedo",
+  "podemos",
+  "vayas",
+  "vaya",
+  "vayan",
+  "ocurra",
+]);
+
+export const ENLACES_MODALES: ReadonlySet<string> = new Set(["a", "que"]);
+
+export const NUCLEOS_DE_RECHAZO: ReadonlySet<string> = new Set([
+  "no",
+  "nunca",
+  "jamas",
+  "tampoco",
+  "espera",
+  "esperes",
+  "esperemos",
+  "espere",
+  "cancela",
+  "cancelar",
+  "cancelo",
+  "cancelado",
+  "detente",
+  "deten",
+  "alto",
+  "aguarda",
+]);
+
+export const CANCELACIONES: ReadonlySet<string> = new Set(["cancela", "cancelar", "cancelo", "cancelado"]);
+
+export const RELLENO_DE_ESPERA: ReadonlySet<string> = new Set([
+  "por",
+  "favor",
+  "porfa",
+  "ya",
+  "ahora",
+  "gracias",
+  "entonces",
+  "un",
+]);
+
+export const INTERROGATIVOS: ReadonlySet<string> = new Set([
+  "que",
+  "cual",
+  "cuales",
+  "cuando",
+  "cuanto",
+  "cuanta",
+  "cuantos",
+  "cuantas",
+  "como",
+  "donde",
+  "quien",
+  "quienes",
+]);
+
+export const SUFIJO_PRETERITO = "é";
 
 export const CONDICIONALES: ReadonlySet<string> = new Set([
   "pero",

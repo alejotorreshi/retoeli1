@@ -8,7 +8,7 @@ import {
   RELLENO,
   SI_SIN_TILDE,
   VERBOS_ENVIO,
-  VERBOS_NEGABLES,
+  VERBOS_GENERICOS_NEGABLES,
 } from "@/config/constants/confirmation.constants.ts";
 import { SEPARADOR_PARRAFOS } from "@/config/constants/text.constants.ts";
 import { HERRAMIENTA } from "@/config/constants/tools.constants.ts";
@@ -264,8 +264,8 @@ describe("clasificarConfirmacion: una palabra de rechazo nunca confirma (D-63.8,
     },
   );
 
-  test("VERBOS_NEGABLES solo rechaza tras un negador", () => {
-    expect(VERBOS_NEGABLES.has("confirmo")).toBe(true);
+  test("un verbo genérico solo rechaza tras un negador", () => {
+    expect(VERBOS_GENERICOS_NEGABLES.has("confirmo")).toBe(true);
     expect(clasificarConfirmacion("confirmo", UNO)).toEqual(confirma(EC));
     expect(clasificarConfirmacion("no confirmo", UNO)).toEqual(RECHAZA);
   });

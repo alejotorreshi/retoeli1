@@ -20,8 +20,14 @@ export const PATRON_SEPARADORES_DE_LINEA: RegExp = /[\t\r\n]+/g;
 export const PATRON_SALTO_DE_LINEA: RegExp = /\r\n|\r|\n/;
 export const PATRON_BARRA_FINAL: RegExp = /\/+$/;
 export const PATRON_PREGUNTA: RegExp = /[?¿]/;
-export const PATRON_CLAUSULA: RegExp = /¿?[^.,;:!?¡¿…\n]+[.,;:!?…]?/g;
+export const PATRON_CLAUSULA: RegExp = /¿?[^.,;!?¡¿…\n]+[.,;!?…]?/g;
+export const PATRON_APERTURA_PREGUNTA: RegExp = /^\s*¿/;
 export const PATRON_SLUG_EN_TEXTO: RegExp = /[a-z0-9]+(?:-[a-z0-9]+)+/g;
+export const PATRON_SLUG_COMPLETO: RegExp = new RegExp(`^(?:${PATRON_SLUG_EN_TEXTO.source})$`);
+export const PATRON_PALABRA_O_CASO: RegExp = new RegExp(
+  `${PATRON_SLUG_EN_TEXTO.source}|[\\p{L}\\p{M}\\p{N}]+`,
+  "gu",
+);
 export const PATRON_NO_PALABRA: RegExp = /[^a-z0-9ñ]+/;
 export const PATRON_NO_PALABRA_UNICODE: RegExp = /[^\p{L}\p{M}\p{N}]+/u;
 export const PATRON_ENTERO_NO_NEGATIVO: RegExp = /^\d+$/;
