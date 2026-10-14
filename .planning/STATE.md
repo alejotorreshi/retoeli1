@@ -198,6 +198,7 @@ Recent decisions affecting current work:
 - [Phase 02]: 02-19: D-63.6 — con un caso pendiente, una respuesta otro (ok, listo, una pregunta o un pedido distinto) lo conserva y el servidor vuelve a agregar su pregunta con needsConfirmation; solo rechaza cancela; confirmar un caso entre varios deja los demás pendientes; un turno de confirmación que termina sin enviar devuelve el caso a pendiente sin devolver la autorización; fuera del envío, solo un rechazo, un aborto o el fin de la sesión sacan un caso de la compuerta; el prompt ya no le pide al modelo pedir confirmaciones (CR-01)
 - [Phase 02]: 02-20: D-63.7 — un envío autorizado que falla emite FALLIDO y el caso vuelve a quedar pendiente con la pregunta del servidor (salvo aborto); la autorización usada no se recupera (WR-02)
 - [Phase 02]: 02-20: formatearIssues quita el punto final de cada issue salvo el último antes de unir con SEPARADOR_ISSUES; FIN_DE_ORACION vive en text.constants.ts y strings.ts lo importa (WR-01)
+- [Phase 02]: 02-21: la prueba en vivo revisa la clave también en los cuerpos de los pedidos (nota 1 de SECURITY) y recorre "ok" → "sí" en co-industrias-delta; corrida en vivo final tras CR-01, WR-01 y WR-02: VIVO PASS modelo=deepseek-flash llamadas=15 tokens=113249
 
 ### Pending Todos
 
@@ -208,6 +209,7 @@ None yet.
 - [Phase 2]: El prompt del agente debe responder a `PAQUETE_DESACTUALIZADO` re-ejecutando `proveedor_armar_paquete`, mostrando el nuevo estado y pidiendo confirmación de nuevo (CR-01).
 - [Phase 2]: Al enviar no se compara el contenido del formulario en `paquete/`; si el maestro cambia tras armar, el agente debe regenerar el formulario y re-armar antes de enviar.
 - [Phase 2]: Hacer un spike en vivo con DeepSeek antes del ciclo (modelo vigente, thinking desactivado, `tool_choice`, forma de los errores).
+- [Phase 2]: En la corrida en vivo de 02-21, la respuesta A2 ("ok") no escribió una segunda pregunta con "¿", pero sí un pedido de confirmación propio ("dime de forma explícita algo como …") antes de la pregunta del servidor. Las aserciones pasan, pero el punto de la revisión humana "sin pregunta ni pedido de confirmación del modelo" queda observado para la UAT de fin de fase. Un ajuste posible, solo del prompt, necesita otro visto bueno para una segunda corrida.
 - [Phase 3]: Hay que verificar con `curl -N` que el proxy de Render no bufferice el SSE apenas exista el endpoint.
 - [Phase 3]: El servicio en Render free duerme por inactividad y su disco es efímero; hay que calentarlo antes de la defensa.
 - [Phase 3]: Desde D-63.6, mientras un caso esté pendiente cada turno emite confirmation_required: la tarjeta de confirmación sigue visible entre turnos, y Cancelar (aprobada false) cancela todos los casos pendientes.
