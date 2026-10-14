@@ -5,11 +5,13 @@ import type {
   OpcionesServidorPrueba,
   ServidorPrueba,
 } from "@tests/helpers/types/servidor-prueba.type.ts";
-import { EventSourceParserStream } from "eventsource-parser/stream";
+import { type EventSourceMessage, EventSourceParserStream } from "eventsource-parser/stream";
+import { TIPO_EVENTO } from "@/config/constants/agent.constants.ts";
 import { TIPO_CONTENIDO } from "@/config/constants/http.constants.ts";
 import { NIVELES_LOG } from "@/config/constants/logging.constants.ts";
 import type { HttpBindings } from "@/http/types/server.type.ts";
 import { createServer } from "@/http/wiring/server.wiring.ts";
+import type { EventoAgente, EventoInicioTurno } from "@/loop/types/evento.type.ts";
 
 export const BINDINGS_PRUEBA: HttpBindings = {
   timeout: () => undefined,
@@ -22,17 +24,42 @@ export function cabecerasPrueba(extra?: RequestInit["headers"]): Headers {
   return cabeceras;
 }
 
+export const MARCA_COMENTARIO = ":";
+
+export function eventosSse(
+  cuerpo: ReadableStream<Uint8Array>,
+  alComentar: (comentario: string) => void = () => undefined,
+): ReadableStream<EventSourceMessage> {
+  return cuerpo
+    .pipeThrough(new TextDecoderStream())
+    .pipeThrough(new EventSourceParserStream({ onComment: (comentario) => alComentar(comentario.trim()) }));
+}
+
 export async function leerSse(respuesta: Response): Promise<LecturaSse> {
   const eventos: FrameSse[] = [];
   const comentarios: string[] = [];
-  if (respuesta.body === null) return { eventos, comentarios };
-  const mensajes = respuesta.body
-    .pipeThrough(new TextDecoderStream())
-    .pipeThrough(
-      new EventSourceParserStream({ onComment: (comentario) => comentarios.push(comentario.trim()) }),
-    );
-  for await (const mensaje of mensajes) eventos.push({ event: mensaje.event ?? "", data: mensaje.data });
-  return { eventos, comentarios };
+  const secuencia: string[] = [];
+  if (respuesta.body === null) return { eventos, comentarios, secuencia };
+  const alComentar = (comentario: string) => {
+    comentarios.push(comentario);
+    secuencia.push(`${MARCA_COMENTARIO}${comentario}`);
+  };
+  for await (const mensaje of eventosSse(respuesta.body, alComentar)) {
+    const frame = { event: mensaje.event ?? "", data: mensaje.data };
+    eventos.push(frame);
+    secuencia.push(frame.event);
+  }
+  return { eventos, comentarios, secuencia };
+}
+
+export function eventoDeFrame(frame: FrameSse): EventoAgente {
+  return JSON.parse(frame.data);
+}
+
+export function inicioDeFrames(frames: readonly FrameSse[]): EventoInicioTurno {
+  const inicio = frames[0] === undefined ? undefined : eventoDeFrame(frames[0]);
+  if (inicio?.tipo !== TIPO_EVENTO.INICIO_TURNO) throw new Error(`falta ${TIPO_EVENTO.INICIO_TURNO}`);
+  return inicio;
 }
 
 export function crearServidorPrueba(opciones: OpcionesServidorPrueba): ServidorPrueba {

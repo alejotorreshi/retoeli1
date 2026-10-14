@@ -17,6 +17,7 @@ export type FrameSse = {
 export type LecturaSse = {
   readonly eventos: FrameSse[];
   readonly comentarios: string[];
+  readonly secuencia: string[];
 };
 
 export type ServidorPrueba = {

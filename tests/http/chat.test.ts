@@ -2,9 +2,8 @@ import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import { CLAVE_PRUEBA } from "@tests/helpers/agente-fetch.helper.ts";
 import { crearFetchFalso, cuerpoConHerramientas, cuerpoConTexto } from "@tests/helpers/fetch-falso.helper.ts";
 import { crearProyectoTemporal } from "@tests/helpers/proyecto-temporal.helper.ts";
-import { crearServidorPrueba } from "@tests/helpers/servidor-prueba.helper.ts";
+import { crearServidorPrueba, eventoDeFrame, inicioDeFrames } from "@tests/helpers/servidor-prueba.helper.ts";
 import type { ProyectoTemporal } from "@tests/helpers/types/proyecto-temporal.type.ts";
-import type { FrameSse } from "@tests/helpers/types/servidor-prueba.type.ts";
 import { TIPO_EVENTO } from "@/config/constants/agent.constants.ts";
 import { FECHA_DEMO } from "@/config/constants/demo.constants.ts";
 import {
@@ -16,7 +15,6 @@ import {
 } from "@/config/constants/http.constants.ts";
 import { HERRAMIENTA, NOMBRE_VISIBLE } from "@/config/constants/tools.constants.ts";
 import { pinExecutionDate } from "@/config/env.ts";
-import type { EventoAgente } from "@/loop/types/evento.type.ts";
 
 const CASO = "co-industrias-delta";
 const LEER = NOMBRE_VISIBLE[HERRAMIENTA.LEER_SOLICITUD];
@@ -36,16 +34,6 @@ afterAll(async () => {
 
 function cuerpoChat(sessionId: string | null, message: string): RequestInit {
   return { method: "POST", body: JSON.stringify({ sessionId, message }) };
-}
-
-function eventoDe(frame: FrameSse): EventoAgente {
-  return JSON.parse(frame.data);
-}
-
-function inicioDe(frames: readonly FrameSse[]) {
-  const inicio = frames[0] === undefined ? undefined : eventoDe(frames[0]);
-  if (inicio?.tipo !== TIPO_EVENTO.INICIO_TURNO) throw new Error(`falta ${TIPO_EVENTO.INICIO_TURNO}`);
-  return inicio;
 }
 
 describe("POST /api/chat por SSE", () => {
@@ -73,17 +61,17 @@ describe("POST /api/chat por SSE", () => {
       TIPO_EVENTO.TEXTO,
       TIPO_EVENTO.FIN_TURNO,
     ]);
-    for (const frame of eventos) expect(frame.event).toBe(eventoDe(frame).tipo);
+    for (const frame of eventos) expect(frame.event).toBe(eventoDeFrame(frame).tipo);
     const finHerramienta = eventos
-      .map(eventoDe)
+      .map(eventoDeFrame)
       .find((evento) => evento.tipo === TIPO_EVENTO.FIN_HERRAMIENTA);
     expect(finHerramienta?.tipo === TIPO_EVENTO.FIN_HERRAMIENTA && finHerramienta.ok).toBe(true);
     expect(JSON.stringify(eventos)).not.toContain(CLAVE_PRUEBA);
 
-    const inicio = inicioDe(eventos);
+    const inicio = inicioDeFrames(eventos);
     expect(inicio.sesionNueva).toBe(true);
     const segunda = await servidor.pedir(RUTA_API.CHAT, cuerpoChat(inicio.sesionId, "¿Sigues ahí?"));
-    const continuacion = inicioDe((await servidor.leerSse(segunda)).eventos);
+    const continuacion = inicioDeFrames((await servidor.leerSse(segunda)).eventos);
     expect(continuacion.sesionId).toBe(inicio.sesionId);
     expect(continuacion.sesionNueva).toBe(false);
   });
