@@ -41,15 +41,15 @@ findings:
     title: "[INFO] `FALLIDO` trata cualquier `ok: false` como \"no se envió\", incluido un fallo posterior a escribir `ENVIO-SIMULADO.md`"
   - id: CR-01
     severity: critical
-    disposition: open
+    disposition: fixed
     title: "[BLOCKER] el prompt manda al modelo a pedir la confirmación, pero el servidor ya liberó la compuerta y bloquea la confirmación siguiente"
   - id: WR-01
     severity: warning
-    disposition: open
+    disposition: fixed
     title: "[WARNING] G-02-19 está incompleto: con dos o más issues, el mensaje de arranque sigue teniendo puntuación doble (\".;\")"
   - id: WR-02
     severity: warning
-    disposition: open
+    disposition: fixed
     title: "[WARNING] un envío autorizado que falla saca el caso de la compuerta, aunque el conocimiento dice que el servidor vuelve a preguntar"
   - id: IN-01
     severity: info
@@ -195,7 +195,7 @@ findings:
     severity: info
     disposition: open
     title: "The agent clock re-parses the environment on every call and silently diverges from the tools when `FECHA_EJECUCION` is invalid"
-open: 23
+open: 20
 total: 48
 recorded: 2026-10-14T03:20:13.827Z
 ---
@@ -213,9 +213,9 @@ recorded: 2026-10-14T03:20:13.827Z
 | IN-25 | info | open | - |
 | IN-26 | info | open | - |
 | IN-27 | info | open | - |
-| CR-01 | critical | open | - (not in the current review) |
-| WR-01 | warning | open | - (not in the current review) |
-| WR-02 | warning | open | - (not in the current review) |
+| CR-01 | critical | fixed | fixed by 02-19 (D-63.6; c8cf640, d585b53); confirmed resolved in the 02-19..02-21 review round |
+| WR-01 | warning | fixed | fixed by 02-20 (63a06b9); confirmed resolved in the 02-19..02-21 review round |
+| WR-02 | warning | fixed | fixed by 02-20 (D-63.7; 803d74c); confirmed resolved in the 02-19..02-21 review round |
 | IN-01 | info | open | - (not in the current review) |
 | IN-02 | info | open | - (not in the current review) |
 | IN-03 | info | open | - (not in the current review) |
