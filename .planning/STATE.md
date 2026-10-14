@@ -3,16 +3,16 @@ gsd_state_version: "1.0"
 current_phase: 02
 current_phase_name: Agente y compuerta de confirmación
 status: executing
-stopped_at: Completed 02-15-PLAN.md
-last_updated: "2026-10-14T01:10:12.395Z"
+stopped_at: Completed 02-17-PLAN.md
+last_updated: "2026-10-14T01:13:29.895Z"
 last_activity: 2026-10-13
 last_activity_desc: Phase 02 execution started
-state_head: 178cc0cbc0d40e38c46dd285c1516e90484a592a
+state_head: a05382b9832dbebc9b08e60858fc06f0b76508a0
 progress:
   total_phases: 4
   completed_phases: 1
   total_plans: 33
-  completed_plans: 30
+  completed_plans: 31
   percent: 25
 ---
 
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-10-13)
 ## Current Position
 
 Phase: 02 (Agente y compuerta de confirmación) — READY TO EXECUTE
-Plan: 7 of 14
+Plan: 8 of 14
 Status: Ready to execute
 Last activity: 2026-10-13 — Phase 02 execution started
 
@@ -86,6 +86,7 @@ Progress: [███░░░░░░░] 25%
 | Phase 02 P14 | 3 min | 2 tasks | 5 files |
 | Phase 02 P13 | 3 min | 2 tasks | 4 files |
 | Phase 02 P15 | 4 min | 2 tasks | 9 files |
+| Phase 02 P17 | 2 min | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -187,6 +188,8 @@ Recent decisions affecting current work:
 - [Phase 02]: 02-13: only the pending state is recovered, never the grant (D-38); revoked, used, unknown and inherited-key cases are never recovered
 - [Phase 02]: 02-13: live run after all gap fixes passed on the first run (VIVO PASS modelo=deepseek-flash llamadas=12 tokens=79292); agent/prompt.md unchanged
 - [Phase 02]: 02-15: D-63.4 — la compuerta recuerda los casos enviados en Sesion.casosEnviados; un simular_envio bloqueado de un caso ya enviado no lo reabre ni en el mismo turno ni después, y un armar_paquete nuevo y exitoso borra la marca y vuelve a pedir confirmación (G-02-3)
+- [Phase 02]: G-02-19: TEXTO_AGENTE.conDetalle adds the final period only when missing (endsWith, no regex); CONFIGURACION_LLM_INVALIDA and PROVEEDOR_SIN_CLAVE drop the open-session sentence because crearAgente raises them before any session exists; turn-time codes keep it
+
 ### Pending Todos
 
 None yet.
@@ -211,6 +214,6 @@ Items acknowledged and deferred at milestone close, most recent first:
 
 ## Session Continuity
 
-Last session: 2026-10-14T01:10:02.692Z
-Stopped at: Completed 02-15-PLAN.md
+Last session: 2026-10-14T01:13:29.831Z
+Stopped at: Completed 02-17-PLAN.md
 Resume file: None

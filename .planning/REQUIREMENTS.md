@@ -58,12 +58,12 @@ Fuente vinculante: `reto-01/PRD.md`, sin modificar. Fixtures: `reto-01/fixtures/
 - [ ] **AGT-02**: El system prompt vive en `agent/prompt.md` y el conocimiento del proceso en `src/knowledge/registro-proveedor.md`, separados de la ejecución en `src/tools/`. Un cambio de reglas de negocio no toca el servidor.
 - [ ] **AGT-03**: El prompt prohíbe afirmar valores que no hayan salido de una herramienta (CA2).
 - [x] **AGT-04**: La sesión vive en un store en memoria detrás de una interfaz, con TTL. El historial queda íntegro: cada tool call tiene su resultado y un paso abortado se descarta. La sesión sobrevive a errores de herramienta o del proveedor (CA5).
-- [ ] **AGT-05**: Los errores de herramienta y de proveedor se traducen a lenguaje claro en español, a partir de un catálogo centralizado de errores.
+- [x] **AGT-05**: Los errores de herramienta y de proveedor se traducen a lenguaje claro en español, a partir de un catálogo centralizado de errores.
 
 ### Adaptador LLM y resiliencia (§6.1, §8)
 
 - [ ] **LLM-01**: Hay un puerto propio `enviar(mensajes, herramientas) → respuesta` con un modelo de mensajes neutral, y un adaptador genérico compatible con OpenAI lo implementa. Cambiar de proveedor o de modelo solo cambia variables de entorno; el ciclo nunca cambia.
-- [ ] **LLM-02**: El adaptador usa `fetch` directo contra un `/chat/completions` compatible con OpenAI, con DeepSeek como preset por defecto. Proveedor, URL, modelo y clave salen de env (`LLM_PROVIDER`, `LLM_BASE_URL`, `LLM_MODEL`, `LLM_API_KEY`, con `DEEPSEEK_API_KEY` como alias; `deepseek-flash` por defecto). El preset desactiva el modo thinking, `max_tokens` es explícito y `reasoning_content` se conserva en el tipo. Las diferencias entre proveedores son flags de capacidad en config, nunca ramas en el ciclo.
+- [x] **LLM-02**: El adaptador usa `fetch` directo contra un `/chat/completions` compatible con OpenAI, con DeepSeek como preset por defecto. Proveedor, URL, modelo y clave salen de env (`LLM_PROVIDER`, `LLM_BASE_URL`, `LLM_MODEL`, `LLM_API_KEY`, con `DEEPSEEK_API_KEY` como alias; `deepseek-flash` por defecto). El preset desactiva el modo thinking, `max_tokens` es explícito y `reasoning_content` se conserva en el tipo. Las diferencias entre proveedores son flags de capacidad en config, nunca ramas en el ciclo.
 - [ ] **LLM-03**: Hay timeout al proveedor con mensaje claro. Se reintenta con backoff y jitter solo ante errores transitorios (429, 500, 503 y red). Los errores 400, 401 y 422 no se reintentan, y el 402 se informa como "saldo agotado".
 - [ ] **LLM-04**: Un decorador de fallback pasa a la segunda ranura (`LLM_FALLBACK_*`, `deepseek-v4-pro` por defecto) solo cuando el primario agotó sus reintentos ante errores transitorios. La ranura de respaldo hereda la clave del primario solo si la URL base es idéntica.
 - [ ] **LLM-05**: El tope de tokens por sesión y el tope de iteraciones por turno son configurables. Al superarlos, el usuario recibe un mensaje claro, no un 500.
@@ -206,9 +206,9 @@ Cada requisito v1 está asignado a exactamente una fase del roadmap (`.planning/
 | AGT-02 | Phase 2 | Gaps Found |
 | AGT-03 | Phase 2 | Gaps Found |
 | AGT-04 | Phase 2 | Complete |
-| AGT-05 | Phase 2 | Gaps Found |
+| AGT-05 | Phase 2 | Complete |
 | LLM-01 | Phase 2 | Gaps Found |
-| LLM-02 | Phase 2 | Gaps Found |
+| LLM-02 | Phase 2 | Complete |
 | LLM-03 | Phase 2 | Gaps Found |
 | LLM-04 | Phase 2 | Gaps Found |
 | LLM-05 | Phase 2 | Gaps Found |
