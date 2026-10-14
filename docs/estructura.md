@@ -56,9 +56,9 @@ La API agrega la capa `http` y la entrada del proceso `src/server.ts`. El guardi
 
 | Carpeta | Sufijo | Rol |
 |---|---|---|
-| `http/routes/` | `.route.ts` | Una ruta Hono por recurso: salud del servicio sin acceso y sin llamar al modelo (`health`). |
+| `http/routes/` | `.route.ts` | Una ruta Hono por recurso: salud del servicio sin acceso y sin llamar al modelo (`health`) y el turno del chat por SSE con latido, timeout de inactividad desactivado, corte al cerrar la pestaña y respaldo JSON del PRD §6.4 (`chat`). |
 | `http/middlewares/` | `.middleware.ts` | Middlewares Hono que se aplican antes de las rutas. |
-| `http/services/` | `.service.ts` | Lógica HTTP pura, sin Hono, que las rutas reutilizan. |
+| `http/services/` | `.service.ts` | Lógica HTTP pura, sin Hono, que las rutas reutilizan: proyección de cada evento del bucle a un frame SSE redactado y el temporizador del latido (`sse`). |
 | `http/schemas/` | `.schema.ts` | Validación zod de los cuerpos que recibe la API, con `satisfies z.ZodType<T>`. |
 | `http/types/` | `.type.ts` | El contrato del cable (`api.type.ts`, que el front importa con `import type`) y los tipos del servidor (`server.type.ts`: `HttpBindings`, `HttpEnv`, `ServerOptions`, `ServerCreation`). |
 | `http/wiring/` | `.wiring.ts` | `server.wiring.ts`, el tercer composition root: lee `ServerEnv`, arma el agente con `crearAgente` y la app Hono, y `startServer` levanta `Bun.serve` en `0.0.0.0:PORT`. |

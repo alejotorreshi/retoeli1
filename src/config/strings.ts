@@ -322,6 +322,13 @@ export const TEXTO_CONTEXTO = {
   fecha: (fecha: string): string => `Contexto de la sesión: la fecha de ejecución efectiva es ${fecha}.`,
 } as const;
 
+export const MENSAJE_HTTP = {
+  cuerpoInvalido:
+    "El pedido no es válido: envía un JSON con sessionId (texto o null) y message (texto no vacío), sin otros campos.",
+  errorInterno: "Ocurrió un error interno en el servidor. Intenta de nuevo en unos segundos.",
+  rutaNoEncontrada: "La ruta pedida no existe en la API.",
+} as const;
+
 export const TEXTO_SESION = {
   expirada: "La sesión anterior expiró; empezamos de cero.",
 } as const;

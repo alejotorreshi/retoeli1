@@ -86,9 +86,9 @@ function modeloDelAgente(opciones: OpcionesAgente, config: AgentEnv, apiKey: str
   return withFallback(primario, respaldoDe(config, opciones), avisarCambio);
 }
 
-function secretosDe(config: AgentEnv, apiKey: string): readonly string[] {
-  const respaldo = config.fallback?.apiKey ?? null;
-  return respaldo === null ? [apiKey] : [apiKey, respaldo];
+export function secretosDelAgente(config: AgentEnv): readonly string[] {
+  const claves = [config.primary.apiKey, config.fallback?.apiKey ?? null];
+  return claves.filter((clave): clave is string => clave !== null);
 }
 
 function bitacoraDe(opciones: OpcionesAgente, config: AgentEnv, secretos: readonly string[]) {
@@ -98,7 +98,7 @@ function bitacoraDe(opciones: OpcionesAgente, config: AgentEnv, secretos: readon
 
 function dependencias(opciones: OpcionesAgente, config: AgentEnv, apiKey: string): DependenciasTurno {
   const reloj = relojCompartidoConHerramientas();
-  const secretos = secretosDe(config, apiKey);
+  const secretos = secretosDelAgente(config);
   return {
     llm: modeloDelAgente(opciones, config, apiKey),
     herramientas: crearRegistroHerramientas(proveedor),
