@@ -89,6 +89,18 @@ created: "2026-10-13"
 | T-02-51 | EoP | prompt confirmation protocol | low | mitigate | agent/prompt.md:48-57; tests/contract/instrucciones-agente.test.ts:110-131 | closed |
 | T-02-52 | Repudiation | model prose about sends | medium | mitigate | prompt.md:55,57; instrucciones-agente.test.ts:111-126 (see audit note 2) | closed |
 | T-02-53 | Info disclosure | live run | high | mitigate | same as T-02-40 | closed |
+| T-02-54 | EoP | abrirTurno / recuperarAutorizado | high | mitigate | compuerta.policy.ts:46-57,133-143; ejecutar-turno.service.ts:83; compuerta.policy.test.ts:86-110,326-340; compuerta-casos.test.ts:613-640; compuerta.test.ts:225-257 | closed |
+| T-02-55 | Spoofing | carried pending case plus new work | high | mitigate | confirmacion.policy.ts:77-79; strings.ts:230-236; confirmacion.policy.test.ts:41; compuerta-casos.test.ts:177-182,664-703 | closed |
+| T-02-56 | Repudiation | turn after a non-confirming reply | medium | mitigate | ejecutar-turno.service.ts:80; cierre-turno.service.ts:19-28; compuerta.test.ts:236-245,259-284 | closed |
+| T-02-57 | DoS | persisting pending state | low | accept | AR-02-04 | closed |
+| T-02-58 | EoP | prompt confirmation protocol (D-63.6) | low | mitigate | despacho-llamada.service.ts:65-68; agent/prompt.md:33,48-54; instrucciones-agente.test.ts:133-159 | closed |
+| T-02-59 | EoP | despacharEnvio after a failed send | high | mitigate | despacho-llamada.service.ts:77-78; compuerta.policy.ts:140; compuerta.policy.test.ts:113-120,267-269; compuerta-casos.test.ts:768-873 | closed |
+| T-02-60 | Repudiation | failed confirmed send | medium | mitigate | compuerta.policy.ts:102-104; compuerta-casos.test.ts:783-788 | closed |
+| T-02-61 | Tampering | FALLIDO for an already-sent case | low | mitigate | compuerta.policy.ts:82; compuerta.policy.test.ts:249-253,262-265 | closed |
+| T-02-62 | Info disclosure | multi-issue startup message | medium | mitigate | formatear-issues.util.ts:5-20; env-agente.test.ts:422-425,446,450 | closed |
+| T-02-63 | Info disclosure | live run request bodies | high | mitigate | agente-en-vivo.test.ts:230-231,255-259 (commit 87fabe7); closes audit note 1 | closed |
+| T-02-64 | DoS (cost) | extra live turns | low | mitigate | agente-en-vivo.test.ts:54-55,129,147-148; single run after the user's "correr" (02-21-SUMMARY.md) | closed |
+| T-02-65 | Repudiation | live evidence | medium | mitigate | no assertion relaxed in 87fabe7; VIVO PASS copied verbatim in 02-21-SUMMARY.md and STATE.md | closed |
 | T-02-SC | Tampering | npm installs | high | mitigate (02-05) / accept (other plans) | pino pinned 10.3.1; bun.lock committed; `bun audit` clean; AR-02-03 | closed |
 
 *Status: open · closed · open — below high threshold (non-blocking)*
@@ -103,7 +115,8 @@ created: "2026-10-13"
 |---------|------------|-----------|-------------|------|
 | AR-02-01 | T-02-41 | Non-question model lines above the server question stay in the reply. The gate still authorizes only the pending case, and the last paragraph is always the server question naming the case and its bloqueos. Carried to SOLUCION.md in Phase 4. | plan 02-10 | 2026-10-13 |
 | AR-02-02 | T-02-45 | `Sesion.casosEnviados` lives only in the in-memory store behind the fenced lease; the client cannot write it. A lost session loses the mark together with the packages, so a new armado is required before any send. | plan 02-15 | 2026-10-13 |
-| AR-02-03 | T-02-SC | 17 of 18 plans installed no package; package.json and bun.lock changed only in the pino commit (46fe7ba) plus one script line (9dadd1d). | plans 02-01..02-18 | 2026-10-13 |
+| AR-02-03 | T-02-SC | 20 of 21 plans installed no package; package.json and bun.lock changed only in the pino commit (46fe7ba) plus one script line (9dadd1d). `git diff 882f418..HEAD` of the manifests is empty for 02-19..02-21. | plans 02-01..02-21 | 2026-10-13 |
+| AR-02-04 | T-02-57 | A pending case persists across turns until a send, an explicit rejection, a caller abort or the session TTL clears it. While pending, every turn re-appends one server paragraph and one event per case, with no extra LLM call (compuerta.test.ts:234). | plan 02-19 | 2026-10-13 |
 
 ---
 
@@ -112,10 +125,11 @@ created: "2026-10-13"
 | Audit Date | Threats Total | Closed | Open | Run By |
 |------------|---------------|--------|------|--------|
 | 2026-10-13 | 54 | 54 | 0 | gsd-security-auditor |
+| 2026-10-13 | 66 | 66 | 0 | gsd-security-auditor (gap closure 02-19..02-21) |
 
 ### Audit notes (non-blocking)
 
-1. **T-02-40 / T-02-53:** the live test checks events and logs for the key but not the recorded request bodies (`tests/live/agente-en-vivo.test.ts:215`). The key's only sink is the Authorization header, and key-free bodies are checked on the same path by `trazador-agente.test.ts:226-227`. Follow-up: add `...cuerpos` to `salidas` in the live test.
+1. **T-02-40 / T-02-53 (resolved by T-02-63):** the live test now checks events, logs and every recorded request body for the key (`tests/live/agente-en-vivo.test.ts:255-259`), with non-empty `cuerpos` and `claves` guarding against a vacuous pass. The authorized run after 02-21 printed VIVO PASS.
 2. **T-02-52:** the latest reading of live replies (after 02-18) was done by the executor; the human UAT reading (H1) predates 02-18.
 3. **Review ledger:** 02-REVIEW-DISPOSITION.md still lists WR-01 as open; 02-16 fixed it (T-02-46).
 4. **Phase 3:** `EntradaTurno.confirmacion` (button) skips the text classifier by design (D-39) and must stay behind auth once exposed over HTTP; R1-WR-04 (per-session budget sidestepped by new sessions) also lands in the Phase 3 HTTP layer.
