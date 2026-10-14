@@ -1,5 +1,5 @@
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test } from "bun:test";
-import { readFile, rm } from "node:fs/promises";
+import { readFile, rm, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { crearAgentePrueba } from "@tests/helpers/agente-prueba.helper.ts";
 import { capturarLogs } from "@tests/helpers/bitacora.helper.ts";
@@ -48,14 +48,21 @@ import { ESTADO_SOPORTE } from "@/config/constants/supports.constants.ts";
 import { SEPARADOR_PARRAFOS } from "@/config/constants/text.constants.ts";
 import { HERRAMIENTA, NOMBRE_VISIBLE } from "@/config/constants/tools.constants.ts";
 import { pinExecutionDate } from "@/config/env.ts";
-import { MENSAJE_AGENTE } from "@/config/strings.ts";
+import { MENSAJE_AGENTE, MENSAJE_ERROR, RESUMEN_HERRAMIENTA } from "@/config/strings.ts";
 import { cierreConPregunta } from "@/domain/builders/cierre-turno.builder.ts";
 import type { CasoPendiente } from "@/domain/types/compuerta.type.ts";
+import { cuerpoDeFallo } from "@/domain/utils/respuesta-herramienta.util.ts";
 import { createInstructionsLoader } from "@/infra/knowledge/instructions-loader.adapter.ts";
 import { createLogger } from "@/infra/logging/logger.adapter.ts";
 import type { ErrorLlm, RespuestaLlm } from "@/llm/types/llm.type.ts";
+import {
+  crearRegistroHerramientas,
+  resultadoDeFallo,
+} from "@/loop/services/registro-herramientas.service.ts";
 import { respuestaDeTurno } from "@/loop/services/respuesta-turno.service.ts";
 import type { EventoAgente } from "@/loop/types/evento.type.ts";
+import type { RegistroHerramientas } from "@/loop/types/turno.type.ts";
+import * as proveedor from "@/tools/proveedor.ts";
 
 const EC = "ec-corp-andina";
 const CO = "co-industrias-delta";
@@ -732,6 +739,32 @@ async function quitarChecklist(caso: string): Promise<void> {
   await rm(join(proyecto.raiz, OUT_DIR, caso, DIRECTORIO_PAQUETE, ARCHIVOS_PAQUETE.CHECKLIST));
 }
 
+function codigosDeSimular(lineas: readonly Record<string, unknown>[]) {
+  return lineas.map(({ ok, codigo }) => ({ ok, codigo: codigo ?? null }));
+}
+
+function envioConErrorInterno(fallosRestantes: number): RegistroHerramientas {
+  const real = crearRegistroHerramientas(proveedor);
+  const codigo = CODIGO_ERROR.ERROR_INTERNO;
+  const fallo = resultadoDeFallo(
+    cuerpoDeFallo(
+      { codigo, error: MENSAJE_ERROR[codigo] },
+      RESUMEN_HERRAMIENTA.fallo(HERRAMIENTA.SIMULAR_ENVIO, codigo),
+    ),
+  );
+  let restantes = fallosRestantes;
+  return {
+    definiciones: real.definiciones,
+    async ejecutar(llamada, ctx) {
+      if (llamada.nombre !== NOMBRE_VISIBLE[HERRAMIENTA.SIMULAR_ENVIO] || restantes === 0) {
+        return real.ejecutar(llamada, ctx);
+      }
+      restantes -= 1;
+      return fallo;
+    },
+  };
+}
+
 describe("WR-02 (D-63.7): un envío autorizado que falla vuelve a dejar el caso pendiente", () => {
   test("PAQUETE_NO_ARMADO tras 'envía' vuelve a preguntar; re-armar y 'sí' envía una vez", async () => {
     const prueba = agente([
@@ -750,9 +783,9 @@ describe("WR-02 (D-63.7): un envío autorizado que falla vuelve a dejar el caso 
     vuelvePreguntandoPorEc(turno2, MOTIVO_FIN.FINAL);
     expect(await casosConEnvioSimulado(proyecto.raiz)).toEqual([]);
     expect(prueba.sesionActual().casosEnviados).toEqual([]);
-    expect(
-      (await lineasDeSimularDelCaso(EC)).map(({ ok, codigo }) => ({ ok, codigo: codigo ?? null })),
-    ).toEqual([{ ok: false, codigo: CODIGO_ERROR.PAQUETE_NO_ARMADO }]);
+    expect(codigosDeSimular(await lineasDeSimularDelCaso(EC))).toEqual([
+      { ok: false, codigo: CODIGO_ERROR.PAQUETE_NO_ARMADO },
+    ]);
 
     const turno3 = await prueba.turno(`vuelve a armar el paquete de ${EC}`);
     expect(casosPorConfirmar(turno3)).toEqual([EC]);
@@ -764,6 +797,77 @@ describe("WR-02 (D-63.7): un envío autorizado que falla vuelve a dejar el caso 
     expect(await casosConEnvioSimulado(proyecto.raiz)).toEqual([EC]);
     expect(await enviosOk()).toBe(1);
     expect(finDeTurno(turno4).needsConfirmation).toBe(false);
+    historialSano(prueba);
+  });
+
+  test("PAQUETE_DESACTUALIZADO y un re-armado en el mismo turno dejan el caso pendiente con los bloqueos nuevos", async () => {
+    const prueba = agente([
+      ...armarCaso(EC),
+      respuestaHerramientas(simular("simular-1", { caso: EC })),
+      respuestaHerramientas(llamar("armar-ec-2", HERRAMIENTA.ARMAR_PAQUETE, { caso: EC })),
+      respuestaTexto(`Volví a armar el paquete de ${EC}.`),
+      ...enviar("simular-2", EC),
+    ]);
+    await prueba.turno(`procesa ${EC}`);
+    await writeFile(join(proyecto.raiz, OUT_DIR, EC, DIRECTORIO_PAQUETE, "sobrante.txt"), "sobra");
+
+    const turno2 = await prueba.turno("envía");
+    expect(finesDeHerramienta(turno2)).toEqual([falloDeEnvio(CODIGO_ERROR.PAQUETE_DESACTUALIZADO)]);
+    vuelvePreguntandoPorEc(turno2, MOTIVO_FIN.FINAL);
+    expect(await casosConEnvioSimulado(proyecto.raiz)).toEqual([]);
+
+    const turno3 = await prueba.turno("sí");
+    expect(finesDeHerramienta(turno3)).toEqual([exitosa()]);
+    expect(await casosConEnvioSimulado(proyecto.raiz)).toEqual([EC]);
+    expect(await enviosOk()).toBe(1);
+    historialSano(prueba);
+  });
+
+  test("ERROR_INTERNO y luego un error del proveedor terminan en error y vuelven a preguntar; el 'envía' siguiente envía una vez", async () => {
+    const prueba = crearAgentePrueba({
+      raiz: proyecto.raiz,
+      guion: [
+        ...armarCaso(EC),
+        respuestaHerramientas(simular("simular-1", { caso: EC })),
+        ERROR_SERVIDOR,
+        ...enviar("simular-2", EC),
+      ],
+      herramientas: envioConErrorInterno(1),
+    });
+    await prueba.turno(`procesa ${EC}`);
+
+    const turno2 = await prueba.turno("envía");
+    expect(finesDeHerramienta(turno2)).toEqual([falloDeEnvio(CODIGO_ERROR.ERROR_INTERNO)]);
+    expect(errores(turno2).map(({ codigo }) => codigo)).toEqual([CODIGO_AGENTE.PROVEEDOR_NO_DISPONIBLE]);
+    vuelvePreguntandoPorEc(turno2, MOTIVO_FIN.ERROR);
+    expect(await casosConEnvioSimulado(proyecto.raiz)).toEqual([]);
+
+    await enviaUnaVez(prueba);
+    historialSano(prueba);
+  });
+
+  test("dos envíos autorizados que fallan seguidos vuelven a preguntar cada vez y no escriben nada", async () => {
+    const prueba = agente([
+      ...armarCaso(EC),
+      respuestaHerramientas(simular("simular-1", { caso: EC })),
+      respuestaTexto("No pude registrar el envío simulado."),
+      respuestaHerramientas(simular("simular-2", { caso: EC })),
+      respuestaTexto("No pude registrar el envío simulado."),
+    ]);
+    await prueba.turno(`procesa ${EC}`);
+    await quitarChecklist(EC);
+
+    for (const _intento of [1, 2]) {
+      const turno = await prueba.turno("envía");
+      expect(finesDeHerramienta(turno)).toEqual([falloDeEnvio(CODIGO_ERROR.PAQUETE_NO_ARMADO)]);
+      vuelvePreguntandoPorEc(turno, MOTIVO_FIN.FINAL);
+    }
+    expect(await casosConEnvioSimulado(proyecto.raiz)).toEqual([]);
+    expect(prueba.sesionActual().casosEnviados).toEqual([]);
+    expect(codigosDeSimular(await lineasDeSimularDelCaso(EC))).toEqual([
+      { ok: false, codigo: CODIGO_ERROR.PAQUETE_NO_ARMADO },
+      { ok: false, codigo: CODIGO_ERROR.PAQUETE_NO_ARMADO },
+    ]);
     historialSano(prueba);
   });
 });
