@@ -296,6 +296,12 @@ describe("G-02-2 (D-63.8, D-63.9): un pedido o una pregunta no cancela y una neg
     "¿por qué no se puede enviar?",
     "Para pe-andes, ¿qué falta?",
     "Luego ¿qué sigue?",
+    "Luego, ¿qué sigue?",
+    "Dame primero el NIT, después el paquete",
+    "Mejor, ¿me das el NIT?",
+    "No envié el certificado, ¿lo puedo agregar?",
+    "No hagas el PDF, solo el xlsx",
+    "No, el de pe-andes",
   ])(
     "%p deja el caso pendiente con la pregunta del servidor y el 'sí' siguiente envía una vez",
     async (frase) => {
@@ -342,6 +348,8 @@ describe("G-02-2 (D-63.8, D-63.9): un pedido o una pregunta no cancela y una neg
     "no lo envíes aún, ¿puedes revisar el NIT?",
     "no quiero enviarlo todavía",
     "todavía no qué falta?",
+    "espera un momento",
+    "no lo confirmes",
   ])(
     "%p cancela lo pendiente sin la pregunta del servidor y el 'sí' siguiente no autoriza",
     async (frase) => {

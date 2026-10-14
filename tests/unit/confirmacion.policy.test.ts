@@ -1,10 +1,23 @@
 import { describe, expect, test } from "bun:test";
 import {
+  atajoPrevio,
+  CONECTORES_DE_CABEZA,
+  estresDeConfirmacion,
+  NEGACIONES_10A43AD,
+  nuncaCancelanCabeza,
+  nuncaCancelanDentro,
+  nuncaCancelanPreguntasYAjenos,
+  PALABRAS_DENTRO_DE_FRASE,
+  siempreCancelan,
+} from "@tests/helpers/corpus-confirmacion.helper.ts";
+import {
   ACUSES,
   AFIRMACIONES,
+  CANCELACIONES,
   DECISION_CONFIRMACION,
   NEGACIONES,
   NEGADORES,
+  NUCLEOS_DE_RECHAZO,
   RELLENO,
   SI_SIN_TILDE,
   VERBOS_ENVIO,
@@ -197,14 +210,74 @@ const FILAS_RECHAZO_ACOTADO: readonly Fila[] = [
 
 const FILAS_D639: readonly Fila[] = [
   ["Para pe-andes, ¿qué falta?", UNO, OTRO],
-  ["Luego ¿qué sigue?", UNO, OTRO],
+  ["Para el caso pe-andes, ¿qué falta?", UNO, OTRO],
+  ["Y para el caso co-industrias-delta, ¿qué falta?", UNO, OTRO],
+  ["Consulta el NIT, para el caso co-industrias-delta", UNO, OTRO],
+  ["Luego, ¿qué sigue?", UNO, OTRO],
+  ["Y después, ¿qué hago?", UNO, OTRO],
+  ["Después, ¿me muestras el checklist?", UNO, OTRO],
+  ["Mejor, ¿me das el NIT?", UNO, OTRO],
+  ["Dame primero el NIT, después el paquete", UNO, OTRO],
+  ["muéstrame el checklist, no el paquete", UNO, OTRO],
+  ["procesa co-industrias-delta, no pe-andes", UNO, OTRO],
   ["procesa co-industrias-delta, no pe-andes", DOS, OTRO],
+  ["lee la solicitud de pe-andes, no la de ec-corp-andina", UNO, OTRO],
+  ["Procesa pe-andes. Después, el paquete de co-industrias-delta", UNO, OTRO],
+  ["Luego ¿qué sigue?", UNO, OTRO],
+  ["Para pe-andes ¿qué falta?", UNO, OTRO],
+  ["Después ¿qué hago?", UNO, OTRO],
+  ["Mejor ¿me das el NIT?", UNO, OTRO],
+  ["Momento, ¿cuál es el NIT?", UNO, OTRO],
+  ["Y luego ¿qué?", UNO, OTRO],
+  ["Bueno, luego ¿qué sigue?", UNO, OTRO],
+  ["No, el de pe-andes", UNO, OTRO],
+  ["No, el de pe-andes", DOS, OTRO],
+  ["nada, procesa pe-andes", UNO, OTRO],
+  ["Para el paquete de pe-andes, revisa el NIT", UNO, OTRO],
   ["No envié el certificado, ¿lo puedo agregar?", UNO, OTRO],
+  ["¿por qué no mandé el RUT?", UNO, OTRO],
+  ["todavía no lo envié", UNO, OTRO],
+  ["¿no lo envié ya?", UNO, OTRO],
+  ["¿no confirmo yo después?", UNO, OTRO],
   ["No hagas el PDF, solo el xlsx", UNO, OTRO],
-  ["no quiero enviarlo todavía", UNO, RECHAZA],
+  ["procesa pe-andes pero no hagas el pdf", UNO, OTRO],
+  ["no lo hagas así, usa el NIT del maestro", UNO, OTRO],
+  ["no confirmo que el RUC esté bien", UNO, OTRO],
+  ["no confirmo el NIT, revísalo", UNO, OTRO],
+  ["el cliente respondió: no.", UNO, OTRO],
+  ["No, procesa pe-andes", UNO, OTRO],
+  ["No. Procesa pe-andes.", UNO, OTRO],
+  ["espera que reviso el NIT", UNO, OTRO],
+  ["no quiero enviar el certificado todavía", UNO, OTRO],
+  ["cancela el pdf", UNO, OTRO],
+  ["y luego", UNO, OTRO],
+  ["Ahora, ¿qué falta?", UNO, OTRO],
+  ["Procesa pe-andes, luego", UNO, OTRO],
   ["espera un momento", UNO, RECHAZA],
+  ["un momento", UNO, RECHAZA],
+  ["no quiero enviarlo todavía", UNO, RECHAZA],
+  ["ni se te ocurra enviarlo", UNO, RECHAZA],
   ["no lo confirmes", UNO, RECHAZA],
+  ["no confirmes", UNO, RECHAZA],
+  ["no autorices", UNO, RECHAZA],
+  ["no puedo confirmar todavía", UNO, RECHAZA],
   ["todavía no qué falta?", UNO, RECHAZA],
+  ["No, ¿qué falta?", UNO, RECHAZA],
+  ["Espera, ¿qué falta?", UNO, RECHAZA],
+  ["Todavía no. ¿Qué falta?", UNO, RECHAZA],
+  ["Para.", UNO, RECHAZA],
+  ["mejor después", UNO, RECHAZA],
+  ["cancela ec-corp-andina", UNO, RECHAZA],
+  ["no, gracias", UNO, RECHAZA],
+  ["por ahora no", UNO, RECHAZA],
+  ["No, dime qué falta", UNO, RECHAZA],
+  ["Espera, dime qué falta", UNO, RECHAZA],
+  ["No, ¿qué falta en ec-corp-andina?", UNO, RECHAZA],
+  ["no envie", UNO, RECHAZA],
+  ["no vayas a enviarlo", UNO, RECHAZA],
+  ["no quiero que lo envíes", UNO, RECHAZA],
+  ["todavía no ¿qué falta?", UNO, RECHAZA],
+  ["espera un momento", DOS, RECHAZA],
 ];
 
 const PALABRAS_DE_RECHAZO: readonly string[] = [...new Set([...NEGACIONES, ...NEGADORES])];
@@ -274,6 +347,138 @@ describe("clasificarConfirmacion: una palabra de rechazo nunca confirma (D-63.8,
 describe("clasificarConfirmacion: rechazo explícito por cláusulas afirmadas (G-02-2, CR-04, D-63.9)", () => {
   test.each(FILAS_D639)("%p con pendientes %p", (texto, pendientes, esperado) => {
     expect(clasificarConfirmacion(texto, pendientes)).toEqual(esperado);
+  });
+});
+
+const PENDIENTES_DE_CLASE: readonly (readonly string[])[] = [UNO, DOS];
+const UN_SEGUNDO_MS = 1000;
+type Infraccion = readonly [string, readonly string[], string];
+
+function nuncaCancelan(): readonly string[] {
+  return [
+    ...PALABRAS_DENTRO_DE_FRASE.flatMap(nuncaCancelanDentro),
+    ...CONECTORES_DE_CABEZA.flatMap(nuncaCancelanCabeza),
+    ...nuncaCancelanPreguntasYAjenos(),
+  ];
+}
+
+function infraccionesDe(
+  mensajes: readonly string[],
+  esInfraccion: (mensaje: string, decision: string) => boolean,
+): readonly Infraccion[] {
+  return mensajes.flatMap((mensaje) =>
+    PENDIENTES_DE_CLASE.flatMap((pendientes): Infraccion[] => {
+      const { decision } = clasificarConfirmacion(mensaje, pendientes);
+      return esInfraccion(mensaje, decision) ? [[mensaje, pendientes, decision]] : [];
+    }),
+  );
+}
+
+const TABLAS: readonly Fila[] = [
+  ...TABLA_INVESTIGACION,
+  ...FILAS_EXTRA,
+  ...FILAS_RECHAZO_ACOTADO,
+  ...FILAS_D639,
+];
+
+describe("clasificarConfirmacion: clases generadas que nunca y siempre cancelan (G-02-2, IN-29, D-63.9)", () => {
+  test("las preguntas, los pedidos y los conectores generados nunca cancelan, con uno o dos casos pendientes", () => {
+    const mensajes = nuncaCancelan();
+    expect(mensajes.length).toBeGreaterThanOrEqual(2000);
+    expect(infraccionesDe(mensajes, (_, decision) => decision !== DECISION_CONFIRMACION.OTRO)).toEqual([]);
+  });
+
+  test("los rechazos generados siempre cancelan, con uno o dos casos pendientes", () => {
+    const mensajes = siempreCancelan();
+    expect(mensajes.length).toBeGreaterThanOrEqual(1000);
+    expect(infraccionesDe(mensajes, (_, decision) => decision !== DECISION_CONFIRMACION.RECHAZA)).toEqual([]);
+  });
+});
+
+describe("clasificarConfirmacion: comparación con el clasificador anterior a 02-22 (10a43ad, D-63.9)", () => {
+  const corpus = [
+    ...nuncaCancelan(),
+    ...siempreCancelan(),
+    ...estresDeConfirmacion([...PALABRAS_DE_RECHAZO, ...PALABRAS_DENTRO_DE_FRASE]),
+    ...TABLAS.map(([texto]) => texto),
+  ];
+  const declarados: ReadonlySet<string> = new Set([
+    ...siempreCancelan(),
+    ...TABLAS.filter(([, , esperado]) => esperado.decision === DECISION_CONFIRMACION.RECHAZA).map(
+      ([texto]) => texto,
+    ),
+  ]);
+
+  test("lo que el clasificador anterior mandaba a la gramática nunca es un rechazo", () => {
+    const infracciones = infraccionesDe(
+      corpus,
+      (mensaje, decision) => atajoPrevio(mensaje) === null && decision === DECISION_CONFIRMACION.RECHAZA,
+    );
+    expect(infracciones).toEqual([]);
+  });
+
+  test("lo que el clasificador anterior cortaba antes nunca confirma ni pide el caso", () => {
+    const infracciones = infraccionesDe(
+      corpus,
+      (mensaje, decision) =>
+        atajoPrevio(mensaje) !== null &&
+        (decision === DECISION_CONFIRMACION.CONFIRMA || decision === DECISION_CONFIRMACION.FALTA_CASO),
+    );
+    expect(infracciones).toEqual([]);
+  });
+
+  test("una pregunta que antes daba otro solo rechaza si es una forma declarada", () => {
+    const infracciones = infraccionesDe(
+      corpus,
+      (mensaje, decision) =>
+        atajoPrevio(mensaje) === DECISION_CONFIRMACION.OTRO &&
+        decision === DECISION_CONFIRMACION.RECHAZA &&
+        !declarados.has(mensaje),
+    );
+    expect(infracciones).toEqual([]);
+  });
+});
+
+describe("clasificarConfirmacion: vocabulario del rechazo (D-63.9)", () => {
+  test("NEGACIONES conserva sus 25 palabras", () => {
+    expect([...NEGACIONES].sort()).toEqual([...NEGACIONES_10A43AD].sort());
+  });
+
+  test("los núcleos de rechazo y los negadores son NEGACIONES", () => {
+    expect([...NUCLEOS_DE_RECHAZO, ...NEGADORES].filter((palabra) => !NEGACIONES.has(palabra))).toEqual([]);
+  });
+
+  test("las cancelaciones son núcleos de rechazo", () => {
+    expect([...CANCELACIONES].filter((palabra) => !NUCLEOS_DE_RECHAZO.has(palabra))).toEqual([]);
+  });
+
+  test("los núcleos y las cancelaciones no comparten palabras con el vocabulario de confirmación", () => {
+    const nucleos = [...NUCLEOS_DE_RECHAZO, ...CANCELACIONES];
+    expect(nucleos.filter((palabra) => VOCABULARIO_DE_CONFIRMACION.has(palabra))).toEqual([]);
+  });
+});
+
+function medir(texto: string): { readonly decision: string; readonly ms: number } {
+  const inicio = performance.now();
+  const { decision } = clasificarConfirmacion(texto, UNO);
+  return { decision, ms: performance.now() - inicio };
+}
+
+describe("clasificarConfirmacion: tiempo lineal (T-02-71, IN-28)", () => {
+  test("'no ' repetido 200000 veces rechaza en menos de un segundo", () => {
+    const { decision, ms } = medir("no ".repeat(200_000));
+    expect(decision).toBe(DECISION_CONFIRMACION.RECHAZA);
+    expect(ms).toBeLessThan(UN_SEGUNDO_MS);
+  });
+
+  test("'no lo ' repetido 100000 veces se clasifica en menos de un segundo", () => {
+    expect(medir("no lo ".repeat(100_000)).ms).toBeLessThan(UN_SEGUNDO_MS);
+  });
+
+  test("'No, ' repetido 100000 veces con una pregunta al final rechaza en menos de un segundo", () => {
+    const { decision, ms } = medir(`${"No, ".repeat(100_000)}¿qué falta?`);
+    expect(decision).toBe(DECISION_CONFIRMACION.RECHAZA);
+    expect(ms).toBeLessThan(UN_SEGUNDO_MS);
   });
 });
 
