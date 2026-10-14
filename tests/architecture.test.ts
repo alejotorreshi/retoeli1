@@ -43,7 +43,7 @@ const IMPORTACION =
 
 const API_SHELL = /child_process|\bBun\s*\.\s*(?:spawn|\$)|\bBun\s*\[\s*["'`](?:spawn|\$)/;
 
-const PAQUETES_CON_CAPA = new Set(["zod", "exceljs", "pdf-lib", "pino"]);
+const PAQUETES_CON_CAPA = new Set(["zod", "exceljs", "pdf-lib", "pino", "hono"]);
 
 const DESTINOS_DE_HERRAMIENTAS = [
   "domain",
@@ -59,6 +59,8 @@ const DESTINOS_DE_HERRAMIENTAS = [
 const DESTINOS_DE_DEMO = ["demo", "proveedor", "config-pure", "config-env", "node"];
 
 const DESTINOS_DEL_BUCLE = ["loop", "llm", "domain", "application", "config-pure", "tools", "zod"];
+
+const DESTINOS_HTTP = ["http", "loop", "llm", "domain", "application", "config-pure", "zod", "hono"];
 
 const PERMITIDOS: Readonly<Record<string, readonly string[]>> = {
   domain: ["domain", "config-pure"],
@@ -85,6 +87,9 @@ const PERMITIDOS: Readonly<Record<string, readonly string[]>> = {
   llm: ["llm", "config-pure", "zod"],
   loop: DESTINOS_DEL_BUCLE,
   "wiring-agente": [...DESTINOS_DEL_BUCLE, "config-env", "infra", "proveedor"],
+  http: DESTINOS_HTTP,
+  "wiring-http": [...DESTINOS_HTTP, "config-env", "infra", "wiring-agente", "node"],
+  servidor: ["wiring-http", "node"],
 };
 
 const CONFIG_PURA = /^src\/config\/(?:constants\/.+|types\/.+|strings)$/;
@@ -204,6 +209,10 @@ const CARPETAS_DE_ROL: Readonly<Record<string, string>> = {
   "llm/mappers": "mapper",
   "loop/services": "service",
   "loop/wiring": "wiring",
+  "http/routes": "route",
+  "http/middlewares": "middleware",
+  "http/services": "service",
+  "http/wiring": "wiring",
 };
 
 const ROLES_DE_PRUEBA = [...new Set([...Object.values(CARPETAS_DE_ROL), "adapter", "schema"])].join("|");
@@ -212,10 +221,11 @@ const NOMBRES_CON_ROL: readonly RegExp[] = [
   /^demo\.ts$/,
   /^src\/tools\/proveedor\.ts$/,
   /^src\/config\/(?:strings|env)\.ts$/,
+  /^src\/server\.ts$/,
   new RegExp(`^src/config/constants/${KEBAB}\\.constants\\.ts$`),
-  new RegExp(`^src/(?:config|domain|application|infra|tools|demo|llm|loop)/types/${KEBAB}\\.type\\.ts$`),
+  new RegExp(`^src/(?:config|domain|application|infra|tools|demo|llm|loop|http)/types/${KEBAB}\\.type\\.ts$`),
   new RegExp(`^tests/helpers/types/${KEBAB}\\.type\\.ts$`),
-  new RegExp(`^src/(?:infra|tools|llm|loop)/(?:${KEBAB}/)*schemas/${KEBAB}\\.schema\\.ts$`),
+  new RegExp(`^src/(?:infra|tools|llm|loop|http)/(?:${KEBAB}/)*schemas/${KEBAB}\\.schema\\.ts$`),
   ...Object.entries(CARPETAS_DE_ROL).map(
     ([carpeta, rol]) => new RegExp(`^src/${carpeta}/${KEBAB}\\.${rol}\\.ts$`),
   ),
@@ -231,6 +241,7 @@ const SUELTOS_PERMITIDOS: ReadonlySet<string> = new Set([
   "src/tools/proveedor.ts",
   "src/config/env.ts",
   "src/config/strings.ts",
+  "src/server.ts",
 ]);
 
 const PRUEBA_UNITARIA = /^tests\/unit\/([a-z0-9-]+\.[a-z-]+)\.test\.ts$/;
@@ -240,8 +251,6 @@ const CASO_DE_USO = /^src\/application\/use-cases\//;
 const EXPORTA_FUNCION = /^export\s+(?:async\s+)?function\s/;
 
 const NOMBRE_DE_HERRAMIENTA_SUELTO = new RegExp(`\\b(?:${Object.values(HERRAMIENTA).join("|")})\\b`);
-
-const CAPAS_FUTURAS = /^src\/(?:server[^/]*|http)(?:\/|$)/;
 
 const Z_ENUM_CON_ARREGLO = /\bz\s*\.\s*enum\(\s*\[([^\]]*)\]/g;
 
@@ -262,6 +271,9 @@ const CARPETAS_ENUMERADAS_EN_DOCS = [
   "domain/utils",
   "llm/decorators",
   "loop/services",
+  "http/routes",
+  "http/middlewares",
+  "http/services",
 ];
 
 const DOC_DE_ESTRUCTURA = "docs/estructura.md";
@@ -275,12 +287,13 @@ function capaDeRuta(ruta: string): string {
   if (base === "demo") return "raiz-demo";
   if (base === "src/tools/wiring/entorno.wiring") return "wiring";
   if (base === "src/loop/wiring/agente.wiring") return "wiring-agente";
+  if (base === "src/http/wiring/server.wiring") return "wiring-http";
+  if (base === "src/server") return "servidor";
   if (base === "src/tools/proveedor") return "proveedor";
   if (base.startsWith("tests/")) return "tests";
   if (CONFIG_PURA.test(base)) return "config-pure";
   if (base === "src/config/env") return "config-env";
-  if (CAPAS_FUTURAS.test(base)) return "prohibida";
-  const capa = /^src\/(domain|application|infra|tools|demo|llm|loop)\//.exec(base)?.[1];
+  const capa = /^src\/(domain|application|infra|tools|demo|llm|loop|http)\//.exec(base)?.[1];
   return capa ?? "desconocida";
 }
 
@@ -859,7 +872,7 @@ describe("el escáner muerde sobre fuentes de muestra", () => {
     ]);
   });
 
-  test("reporta una importación multilínea y una dinámica hacia capas futuras", () => {
+  test("reporta una importación multilínea y una dinámica hacia capas exteriores", () => {
     const codigo =
       'import {\n  servidor,\n} from "@/server";\nconst llm = await import("@/llm/adaptador");\n';
     expect(violacionesDeCapas("src/application/d.ts", codigo)).toEqual([
@@ -1293,6 +1306,83 @@ describe("el escáner muerde sobre fuentes de muestra", () => {
   test("reporta un archivo en una capa no declarada", () => {
     expect(violacionesDeCapas("src/varios/x.ts", "export const x = 1;\n")).toEqual([
       "src/varios/x.ts: pertenece a una capa no declarada (desconocida)",
+    ]);
+  });
+
+  test("solo http/wiring/server.wiring.ts importa infra, env.ts y el wiring del agente desde http", () => {
+    const codigo = [
+      'import { createLogger } from "@/infra/logging/logger.adapter.ts";',
+      'import { readServerEnv } from "@/config/env.ts";',
+      'import { crearAgente } from "@/loop/wiring/agente.wiring.ts";',
+      'import { join } from "node:path";',
+    ].join("\n");
+    expect(violacionesDeCapas("src/http/wiring/server.wiring.ts", codigo)).toEqual([]);
+    expect(violacionesDeCapas("src/http/routes/chat.route.ts", codigo)).toEqual([
+      "src/http/routes/chat.route.ts: la capa http no puede importar @/infra/logging/logger.adapter.ts",
+      "src/http/routes/chat.route.ts: la capa http no puede importar @/config/env.ts",
+      "src/http/routes/chat.route.ts: la capa http no puede importar @/loop/wiring/agente.wiring.ts",
+      "src/http/routes/chat.route.ts: la capa http no puede importar node:path",
+    ]);
+    expect(violacionesDeCapas("src/http/wiring/otro.wiring.ts", codigo)).toHaveLength(4);
+  });
+
+  test("hono solo entra por la capa http y su wiring", () => {
+    const codigo = 'import { Hono } from "hono";\n';
+    expect(violacionesDeCapas("src/http/routes/health.route.ts", codigo)).toEqual([]);
+    expect(violacionesDeCapas("src/http/wiring/server.wiring.ts", codigo)).toEqual([]);
+    expect(
+      [
+        "src/loop/services/x.service.ts",
+        "src/llm/adapters/x.adapter.ts",
+        "src/domain/utils/x.util.ts",
+        "src/infra/logging/x.adapter.ts",
+      ].flatMap((ruta) => violacionesDeCapas(ruta, codigo)),
+    ).toEqual([
+      "src/loop/services/x.service.ts: la capa loop no puede importar hono",
+      "src/llm/adapters/x.adapter.ts: la capa llm no puede importar hono",
+      "src/domain/utils/x.util.ts: la capa domain no puede importar hono",
+      "src/infra/logging/x.adapter.ts: la capa infra no puede importar hono",
+    ]);
+  });
+
+  test("ninguna capa interior importa http", () => {
+    const codigo = 'import type { HealthResponse } from "@/http/types/api.type.ts";\n';
+    expect(violacionesDeCapas("src/loop/services/x.service.ts", codigo)).toEqual([
+      "src/loop/services/x.service.ts: la capa loop no puede importar @/http/types/api.type.ts",
+    ]);
+    expect(violacionesDeCapas("src/infra/x/x.adapter.ts", codigo)).toEqual([
+      "src/infra/x/x.adapter.ts: la capa infra no puede importar @/http/types/api.type.ts",
+    ]);
+  });
+
+  test("src/server.ts solo llega al wiring http y a node:", () => {
+    const permitido =
+      'import { join } from "node:path";\nimport { startServer } from "@/http/wiring/server.wiring.ts";\n';
+    const prohibido = 'import { registerChatRoute } from "@/http/routes/chat.route.ts";\n';
+    expect(violacionesDeCapas("src/server.ts", permitido)).toEqual([]);
+    expect(violacionesDeCapas("src/server.ts", prohibido)).toEqual([
+      "src/server.ts: la capa servidor no puede importar @/http/routes/chat.route.ts",
+    ]);
+  });
+
+  test("G5 y G13: roles y sufijos de la capa http y de src/server.ts", () => {
+    const rutas = [
+      "src/http/routes/chat.ts",
+      "src/http/suelto.ts",
+      "src/http/routes/chat.route.ts",
+      "src/http/middlewares/access.middleware.ts",
+      "src/http/services/sse.service.ts",
+      "src/http/schemas/chat.schema.ts",
+      "src/http/types/api.type.ts",
+      "src/http/wiring/server.wiring.ts",
+      "src/server.ts",
+    ];
+    expect(rutas.flatMap(violacionesDeNombre)).toEqual([
+      "src/http/routes/chat.ts: el nombre no sigue la tabla de sufijos por carpeta",
+      "src/http/suelto.ts: el nombre no sigue la tabla de sufijos por carpeta",
+    ]);
+    expect(rutas.flatMap(violacionesDeArchivoSuelto)).toEqual([
+      "src/http/suelto.ts: archivo suelto en la raíz de su capa; va en una carpeta de rol",
     ]);
   });
 });

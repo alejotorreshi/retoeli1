@@ -7,6 +7,7 @@ import {
   PRESUPUESTO_TOKENS_SESION_POR_DEFECTO,
   TTL_SESION_MINUTOS_POR_DEFECTO,
 } from "@/config/constants/agent.constants.ts";
+import { PUERTO_API_POR_DEFECTO, PUERTO_MAXIMO } from "@/config/constants/http.constants.ts";
 import {
   BOOLEANO_ENV,
   CAPACIDADES_GENERICAS,
@@ -323,4 +324,18 @@ export function parseAgentEnv(source: EnvSource) {
 
 export function readAgentEnv() {
   return parseAgentEnv(process.env);
+}
+
+const serverEnvSchema = z.object({
+  PORT: withDefault(z.coerce.number().int().min(1).max(PUERTO_MAXIMO), PUERTO_API_POR_DEFECTO),
+});
+
+export type ServerEnv = z.output<typeof serverEnvSchema>;
+
+export function parseServerEnv(source: EnvSource) {
+  return serverEnvSchema.safeParse(source, { error: z.locales.es().localeError });
+}
+
+export function readServerEnv() {
+  return parseServerEnv(process.env);
 }

@@ -48,7 +48,31 @@ Direcciones permitidas:
 - `loop` importa `loop`, `llm`, dominio, aplicación, los tipos de las herramientas, la config pura y zod. Nunca importa infra, `config/env.ts` ni `tools/proveedor.ts`: el módulo de herramientas le llega inyectado.
 - `loop/wiring/agente.wiring.ts` es el segundo composition root. Además de lo anterior puede importar infra, `config/env.ts` y `tools/proveedor.ts`. Cualquier otro archivo de `loop/wiring/` sigue las reglas de `loop`.
 - pino solo se importa desde infra.
-- `config/env.ts` lo importan infra, tools, demo y `loop/wiring/agente.wiring.ts`.
+- `config/env.ts` lo importan infra, tools, demo, `loop/wiring/agente.wiring.ts` y `http/wiring/server.wiring.ts`.
+
+## Capa HTTP
+
+La API agrega la capa `http` y la entrada del proceso `src/server.ts`. El guardián de capas de `tests/architecture.test.ts` las declara con sus importaciones permitidas, y cada regla tiene su prueba de violación.
+
+| Carpeta | Sufijo | Rol |
+|---|---|---|
+| `http/routes/` | `.route.ts` | Una ruta Hono por recurso: salud del servicio sin acceso y sin llamar al modelo (`health`). |
+| `http/middlewares/` | `.middleware.ts` | Middlewares Hono que se aplican antes de las rutas. |
+| `http/services/` | `.service.ts` | Lógica HTTP pura, sin Hono, que las rutas reutilizan. |
+| `http/schemas/` | `.schema.ts` | Validación zod de los cuerpos que recibe la API, con `satisfies z.ZodType<T>`. |
+| `http/types/` | `.type.ts` | El contrato del cable (`api.type.ts`, que el front importa con `import type`) y los tipos del servidor (`server.type.ts`: `HttpBindings`, `HttpEnv`, `ServerOptions`, `ServerCreation`). |
+| `http/wiring/` | `.wiring.ts` | `server.wiring.ts`, el tercer composition root: lee `ServerEnv`, arma el agente con `crearAgente` y la app Hono, y `startServer` levanta `Bun.serve` en `0.0.0.0:PORT`. |
+| `src/server.ts` | (sin sufijo) | Entrada del proceso: deriva la raíz del proyecto de `import.meta.dir` y llama a `startServer`. Con el entorno inválido escribe el motivo y sale con código 1. |
+
+Idioma: `src/http` va en inglés, como infra, porque es un adaptador. El contrato del cable conserva los nombres del PRD (`sessionId`, `message`, `reply`, `toolCalls`, `needsConfirmation`) y los que fijó la usuaria (`accion`, `tipo`, `caso`, `mensaje`).
+
+Direcciones permitidas:
+
+- `http` importa `http`, `loop`, `llm`, dominio, aplicación, la config pura, zod y hono. Nunca importa infra, `config/env.ts`, el wiring del agente ni `node:`.
+- `http/wiring/server.wiring.ts` es el tercer composition root. Además de lo anterior puede importar infra, `config/env.ts`, `loop/wiring/agente.wiring.ts` y `node:`. Cualquier otro archivo de `http/wiring/` sigue las reglas de `http`.
+- `src/server.ts` solo importa `http/wiring/server.wiring.ts` y `node:`, y no lee el entorno: el puerto llega del `ServerEnv` que parsea el wiring.
+- hono solo se importa desde `http` y su wiring. Ninguna capa interior importa `http`.
+- `src/server.ts` es la cuarta excepción permitida fuera de una carpeta de rol, porque el PRD (6.5) sugiere ese nombre.
 
 ## Esquemas
 
