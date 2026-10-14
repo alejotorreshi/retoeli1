@@ -281,9 +281,8 @@ export const MENSAJE_AGENTE = {
     "Esta sesión agotó su presupuesto de tokens. Abre una sesión nueva para continuar.",
   [CODIGO_AGENTE.TURNO_INTERRUMPIDO]: "El turno se interrumpió antes de terminar.",
   [CODIGO_AGENTE.TIEMPO_TURNO_AGOTADO]: conSesionAbierta("El turno tardó más de lo permitido y se detuvo."),
-  [CODIGO_AGENTE.PROVEEDOR_SIN_CLAVE]: conSesionAbierta(
+  [CODIGO_AGENTE.PROVEEDOR_SIN_CLAVE]:
     "El proveedor del modelo no tiene una clave configurada en el servidor.",
-  ),
   [CODIGO_AGENTE.CONFIGURACION_LLM_INVALIDA]: "La configuración del proveedor del modelo no es válida.",
   [CODIGO_AGENTE.PROVEEDOR_PETICION_INVALIDA]: conSesionAbierta(
     "El proveedor del modelo rechazó la solicitud.",
