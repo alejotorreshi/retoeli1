@@ -6,12 +6,17 @@ import {
   MOTIVO_FIN,
   TIPO_EVENTO,
 } from "@/config/constants/agent.constants.ts";
-import { DECISION_CONFIRMACION, ESTADO_COMPUERTA } from "@/config/constants/confirmation.constants.ts";
+import { DECISION_CONFIRMACION } from "@/config/constants/confirmation.constants.ts";
 import { ROL_MENSAJE } from "@/config/constants/llm.constants.ts";
 import { MENSAJE_AGENTE, TEXTO_SESION } from "@/config/strings.ts";
-import { abrirTurno, casosPendientes, estadoLibre } from "@/domain/policies/compuerta.policy.ts";
+import {
+  abrirTurno,
+  casosPendientes,
+  estadoLibre,
+  pendientesDe,
+} from "@/domain/policies/compuerta.policy.ts";
 import { clasificarConfirmacion } from "@/domain/policies/confirmacion.policy.ts";
-import type { AperturaTurno, CasoPendiente, EstadoCompuerta } from "@/domain/types/compuerta.type.ts";
+import type { EstadoCompuerta } from "@/domain/types/compuerta.type.ts";
 import type { DecisionConfirmacion } from "@/domain/types/confirmacion.type.ts";
 import { bitacoraDelTurno, observadorDelTurno } from "@/loop/services/bitacora-turno.service.ts";
 import { resolverTurno } from "@/loop/services/conversacion-turno.service.ts";
@@ -44,11 +49,6 @@ export function sesionVacia(id: string): Sesion {
   };
 }
 
-function arrastradosDe(apertura: AperturaTurno): readonly CasoPendiente[] {
-  const { siguiente } = apertura;
-  return apertura.preguntarCual && siguiente.tipo === ESTADO_COMPUERTA.PENDIENTE ? siguiente.casos : [];
-}
-
 function decisionDe(entrada: EntradaTurno, compuerta: EstadoCompuerta): DecisionConfirmacion {
   const { confirmacion } = entrada;
   if (confirmacion === undefined) {
@@ -77,7 +77,7 @@ function crearTurno(
     deps,
     observador: observadorDelTurno(base.bitacora),
     inicioMs: Date.now(),
-    arrastrados: arrastradosDe(apertura),
+    arrastrados: pendientesDe(apertura.siguiente),
     eventosCompuerta: [],
     llamadas: [],
     autorizacion: { caso: apertura.autorizado, usada: false },

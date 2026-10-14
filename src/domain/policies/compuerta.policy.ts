@@ -39,24 +39,21 @@ export function paqueteConocido(conocidos: PaquetesConocidos, caso: string): Cas
   return Object.hasOwn(conocidos, caso) ? conocidos[caso] : undefined;
 }
 
-function sinAutorizacion(): AperturaTurno {
-  return { autorizado: null, siguiente: estadoLibre(), preguntarCual: false };
-}
-
-function preguntarCual(estado: EstadoCompuerta): AperturaTurno {
-  return { autorizado: null, siguiente: estado, preguntarCual: true };
+function estadoSin(estado: EstadoCompuerta, caso: string): EstadoCompuerta {
+  return estadoCon(pendientesDe(estado).filter((pendiente) => pendiente.caso !== caso));
 }
 
 export function abrirTurno(estado: EstadoCompuerta, decision: DecisionConfirmacion): AperturaTurno {
-  if (estado.tipo === ESTADO_COMPUERTA.LIBRE) return sinAutorizacion();
-  if (decision.decision === DECISION_CONFIRMACION.FALTA_CASO) return preguntarCual(estado);
+  if (estado.tipo === ESTADO_COMPUERTA.LIBRE || decision.decision === DECISION_CONFIRMACION.RECHAZA) {
+    return { autorizado: null, siguiente: estadoLibre() };
+  }
   if (
     decision.decision === DECISION_CONFIRMACION.CONFIRMA &&
     casosPendientes(estado).includes(decision.caso)
   ) {
-    return { autorizado: decision.caso, siguiente: estadoLibre(), preguntarCual: false };
+    return { autorizado: decision.caso, siguiente: estadoSin(estado, decision.caso) };
   }
-  return sinAutorizacion();
+  return { autorizado: null, siguiente: estado };
 }
 
 export function evaluarEnvio(autorizacion: AutorizacionTurno, caso: string): EvaluacionEnvio {
@@ -128,7 +125,7 @@ export function recuperarAutorizado(
   conocidos: PaquetesConocidos,
 ): readonly CasoPendiente[] {
   const { caso, usada } = autorizacion;
-  if (motivo === MOTIVO_FIN.FINAL || motivo === MOTIVO_FIN.ABORTADO) return [];
+  if (motivo === MOTIVO_FIN.ABORTADO) return [];
   if (caso === null || usada) return [];
   const paquete = paqueteConocido(conocidos, caso);
   return paquete === undefined ? [] : [paquete];

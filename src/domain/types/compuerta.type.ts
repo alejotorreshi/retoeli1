@@ -23,7 +23,6 @@ export type EstadoCompuerta =
 export type AperturaTurno = {
   readonly autorizado: string | null;
   readonly siguiente: EstadoCompuerta;
-  readonly preguntarCual: boolean;
 };
 
 export type AutorizacionTurno = { readonly caso: string | null; readonly usada: boolean };
