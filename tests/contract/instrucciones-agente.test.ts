@@ -1,6 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
+import { nuncaCancelanCabeza, nuncaCancelanDentro } from "@tests/helpers/corpus-confirmacion.helper.ts";
 import { CODIGO_AGENTE } from "@/config/constants/agent.constants.ts";
 import { DECISION_CONFIRMACION } from "@/config/constants/confirmation.constants.ts";
 import { CODIGO_ERROR } from "@/config/constants/errors.constants.ts";
@@ -229,6 +230,171 @@ describe("el rechazo explícito es acotado (G-02-2, D-63.8)", () => {
 
   test("ninguna frase retirada sobre la negación que cancela sigue en los archivos", () => {
     expect(RETIRADOS_G022.filter((frase) => prompt.includes(frase) || conocimiento.includes(frase))).toEqual(
+      [],
+    );
+  });
+});
+
+const RETIRADOS_G023 = [
+  'Un rechazo es un "no envíes" (o "no lo mandes", "no lo hagas", "no confirmo") o una frase corta como "no", "todavía no", "espera", "cancela" o "mejor no", aunque después venga una pregunta.',
+  'Ese pedido no es un rechazo aunque traiga palabras como "no", "para", "luego", "mejor" o "después", por ejemplo "consulta el NIT para tenerlo a mano" o "dame el NIT, no el RUC": no digas que la confirmación quedó cancelada.',
+  'solo un rechazo explícito la cancela: un "no envíes" o "no lo mandes", aunque después venga una pregunta ("no envíes nada todavía, ¿qué falta?"), o una frase corta como "no", "todavía no", "espera" o "cancela".',
+  'Un pedido que solo contiene palabras como "no", "para", "luego" o "mejor" no es un rechazo.',
+];
+const DOS_PENDIENTES = ["ec-corp-andina", "co-industrias-delta"];
+const CITA_RECTA = /"([^"]*)"/g;
+
+type OracionD639 = {
+  readonly nombre: string;
+  readonly archivo: "prompt" | "conocimiento";
+  readonly oracion: string;
+  readonly rechazos: readonly string[];
+  readonly otros: readonly string[];
+  readonly dentro: readonly string[];
+  readonly cabeza: readonly string[];
+};
+
+const ORACIONES_D639: readonly OracionD639[] = [
+  {
+    nombre: "prompt S51",
+    archivo: "prompt",
+    oracion:
+      'Un rechazo es una negación del envío, como "no envíes", "no lo mandes", "no lo confirmes", "no lo hagas", "no confirmo" o "no quiero enviarlo todavía", o una respuesta corta de espera, como "no", "todavía no", "espera", "espera un momento", "cancela" o "mejor no", sola o separada del resto por una coma o un punto, aunque después venga una pregunta o un pedido que no nombra un caso ("No, ¿qué falta?", "Espera, dime qué falta", "todavía no, ¿qué falta?").',
+    rechazos: [
+      "no envíes",
+      "no lo mandes",
+      "no lo confirmes",
+      "no lo hagas",
+      "no confirmo",
+      "no quiero enviarlo todavía",
+      "no",
+      "todavía no",
+      "espera",
+      "espera un momento",
+      "cancela",
+      "mejor no",
+      "No, ¿qué falta?",
+      "Espera, dime qué falta",
+      "todavía no, ¿qué falta?",
+    ],
+    otros: [],
+    dentro: [],
+    cabeza: [],
+  },
+  {
+    nombre: "prompt SCON",
+    archivo: "prompt",
+    oracion:
+      'Palabras como "para", "luego", "después", "mejor" o "momento" no rechazan al comienzo de una pregunta o de un pedido ("Luego, ¿qué sigue?", "Para pe-andes, ¿qué falta?", "Mejor, dame el NIT"); solo rechazan cuando forman todo el mensaje ("Para.", "mejor después", "un momento").',
+    rechazos: ["Para.", "mejor después", "un momento"],
+    otros: ["Luego, ¿qué sigue?", "Para pe-andes, ¿qué falta?", "Mejor, dame el NIT"],
+    dentro: [],
+    cabeza: ["para", "luego", "después", "mejor", "momento"],
+  },
+  {
+    nombre: "prompt S53",
+    archivo: "prompt",
+    oracion:
+      'Ese pedido no es un rechazo aunque traiga palabras como "no", "para", "luego", "mejor" o "después" dentro de la frase o junto al nombre de un caso, por ejemplo "consulta el NIT para tenerlo a mano", "dame el NIT, no el RUC", "procesa co-industrias-delta, no pe-andes" o "No, el de pe-andes": no digas que la confirmación quedó cancelada.',
+    rechazos: [],
+    otros: [
+      "consulta el NIT para tenerlo a mano",
+      "dame el NIT, no el RUC",
+      "procesa co-industrias-delta, no pe-andes",
+      "No, el de pe-andes",
+    ],
+    dentro: ["no", "para", "luego", "mejor", "después"],
+    cabeza: [],
+  },
+  {
+    nombre: "conocimiento RN4a",
+    archivo: "conocimiento",
+    oracion:
+      'solo un rechazo explícito la cancela: una negación del envío ("no envíes", "no lo mandes", "no quiero enviarlo todavía"), aunque después venga una pregunta ("no envíes nada todavía, ¿qué falta?"), o una respuesta corta de espera sola o separada del resto por una coma o un punto ("no", "todavía no", "espera", "espera un momento", "cancela", "No, ¿qué falta?").',
+    rechazos: [
+      "no envíes",
+      "no lo mandes",
+      "no quiero enviarlo todavía",
+      "no envíes nada todavía, ¿qué falta?",
+      "no",
+      "todavía no",
+      "espera",
+      "espera un momento",
+      "cancela",
+      "No, ¿qué falta?",
+    ],
+    otros: [],
+    dentro: [],
+    cabeza: [],
+  },
+  {
+    nombre: "conocimiento RN4b",
+    archivo: "conocimiento",
+    oracion:
+      'Un pedido distinto (por ejemplo "consulta el NIT para tenerlo a mano") no es un rechazo aunque traiga palabras como "no", "para", "luego" o "mejor" dentro de la frase o junto al nombre de un caso.',
+    rechazos: [],
+    otros: ["consulta el NIT para tenerlo a mano"],
+    dentro: ["no", "para", "luego", "mejor"],
+    cabeza: [],
+  },
+];
+
+function textoDe(archivo: OracionD639["archivo"]): string {
+  return archivo === "prompt" ? prompt : conocimiento;
+}
+
+function citasRectas(oracion: string): string[] {
+  return [...oracion.matchAll(CITA_RECTA)].map(([, cita]) => cita ?? "");
+}
+
+function expandidos({ dentro, cabeza }: OracionD639): readonly string[] {
+  return [...dentro.flatMap(nuncaCancelanDentro), ...cabeza.flatMap(nuncaCancelanCabeza)];
+}
+
+describe("el prompt y el conocimiento describen el rechazo de D-63.9 (G-02-2, WR-22, IN-29)", () => {
+  test("hay cinco oraciones que definen el rechazo", () => {
+    expect(ORACIONES_D639).toHaveLength(5);
+  });
+
+  test.each([...ORACIONES_D639])("$nombre está entera en su archivo", ({ archivo, oracion }) => {
+    expect(textoDe(archivo)).toContain(oracion);
+  });
+
+  test.each([...ORACIONES_D639])("$nombre no deja ninguna cita sin clasificar", (entrada) => {
+    const clasificadas = [...entrada.rechazos, ...entrada.otros, ...entrada.dentro, ...entrada.cabeza];
+    expect(citasRectas(entrada.oracion).sort()).toEqual(clasificadas.sort());
+  });
+
+  test.each([...ORACIONES_D639])("cada rechazo citado en $nombre rechaza", ({ rechazos }) => {
+    const fallidos = rechazos.filter(
+      (ejemplo) => clasificarConfirmacion(ejemplo, PENDIENTE_EC).decision !== DECISION_CONFIRMACION.RECHAZA,
+    );
+    expect(fallidos).toEqual([]);
+  });
+
+  test.each([...ORACIONES_D639])("cada pedido citado en $nombre deja el caso pendiente", ({ otros }) => {
+    const fallidos = otros.flatMap((ejemplo) =>
+      [PENDIENTE_EC, DOS_PENDIENTES]
+        .filter(
+          (pendientes) => clasificarConfirmacion(ejemplo, pendientes).decision !== DECISION_CONFIRMACION.OTRO,
+        )
+        .map((pendientes) => [ejemplo, pendientes]),
+    );
+    expect(fallidos).toEqual([]);
+  });
+
+  test.each([...ORACIONES_D639])(
+    "cada palabra citada en $nombre se expande en mensajes que no cancelan",
+    (entrada) => {
+      const fallidos = expandidos(entrada).filter(
+        (mensaje) => clasificarConfirmacion(mensaje, PENDIENTE_EC).decision !== DECISION_CONFIRMACION.OTRO,
+      );
+      expect(fallidos).toEqual([]);
+    },
+  );
+
+  test("ninguna oración retirada de 02-22 sigue en los archivos", () => {
+    expect(RETIRADOS_G023.filter((frase) => prompt.includes(frase) || conocimiento.includes(frase))).toEqual(
       [],
     );
   });
