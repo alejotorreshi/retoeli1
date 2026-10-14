@@ -55,8 +55,8 @@ Fuente vinculante: `reto-01/PRD.md`, sin modificar. Fixtures: `reto-01/fixtures/
 ### Ciclo del agente (§6.1, §6.3)
 
 - [ ] **AGT-01**: El ciclo es propio: prompt → modelo → herramientas → respuesta. Las herramientas se ejecutan en secuencia y hay un tope configurable de iteraciones por turno (25 por defecto). Al alcanzarlo, el agente responde con lo que tiene y lo que falta.
-- [ ] **AGT-02**: El system prompt vive en `agent/prompt.md` y el conocimiento del proceso en `src/knowledge/registro-proveedor.md`, separados de la ejecución en `src/tools/`. Un cambio de reglas de negocio no toca el servidor.
-- [ ] **AGT-03**: El prompt prohíbe afirmar valores que no hayan salido de una herramienta (CA2).
+- [x] **AGT-02**: El system prompt vive en `agent/prompt.md` y el conocimiento del proceso en `src/knowledge/registro-proveedor.md`, separados de la ejecución en `src/tools/`. Un cambio de reglas de negocio no toca el servidor.
+- [x] **AGT-03**: El prompt prohíbe afirmar valores que no hayan salido de una herramienta (CA2).
 - [x] **AGT-04**: La sesión vive en un store en memoria detrás de una interfaz, con TTL. El historial queda íntegro: cada tool call tiene su resultado y un paso abortado se descarta. La sesión sobrevive a errores de herramienta o del proveedor (CA5).
 - [x] **AGT-05**: Los errores de herramienta y de proveedor se traducen a lenguaje claro en español, a partir de un catálogo centralizado de errores.
 
@@ -203,8 +203,8 @@ Cada requisito v1 está asignado a exactamente una fase del roadmap (`.planning/
 | ENV-02 | Phase 2 | Complete |
 | ENV-03 | Phase 2 | Complete |
 | AGT-01 | Phase 2 | Gaps Found |
-| AGT-02 | Phase 2 | Gaps Found |
-| AGT-03 | Phase 2 | Gaps Found |
+| AGT-02 | Phase 2 | Complete |
+| AGT-03 | Phase 2 | Complete |
 | AGT-04 | Phase 2 | Complete |
 | AGT-05 | Phase 2 | Complete |
 | LLM-01 | Phase 2 | Gaps Found |

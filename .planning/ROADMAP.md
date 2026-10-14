@@ -89,7 +89,7 @@ Plans:
   4. Al llegar al tope de iteraciones (25 por defecto) o al de tokens por sesión, el usuario recibe en lenguaje claro lo que se tiene y lo que falta, no un error. Una instrucción inyectada en el cuerpo del correo del cliente no cambia el comportamiento del agente.
   5. Un cambio en `src/knowledge/registro-proveedor.md` o en `agent/prompt.md` cambia el comportamiento del agente sin tocar código del servidor. Los logs JSON llevan IDs de sesión, turno y tool call, sin clave ni PII. `bun test` cubre el ciclo con un LLM falso (tope, compuerta con "No envíes…" y el guion §11, CA5 e inyección) sin gastar tokens.
 
-**Plans:** 17/18 plans executed
+**Plans:** 18/18 plans executed
 
 Plans:
 **Wave 1**
@@ -132,7 +132,7 @@ Plans:
 - [x] 02-16-PLAN.md — Un acuse suelto o un "si" condicional ya no autorizan el envío; "sí" con tilde en cualquier posición y "si" como mensaje entero sí confirman (G-02-18, D-63.5)
 
 **Cierre de brechas de la UAT, Wave 3** *(blocked on 02-15, 02-16 and 02-17)*
-- [ ] 02-18-PLAN.md — `agent/prompt.md` y el conocimiento siguen la compuerta del servidor (pregunta de cierre del servidor, turno de confirmación breve, acuses que no confirman) y una corrida en vivo final con línea VIVO PASS (G-02-21)
+- [x] 02-18-PLAN.md — `agent/prompt.md` y el conocimiento siguen la compuerta del servidor (pregunta de cierre del servidor, turno de confirmación breve, acuses que no confirman) y una corrida en vivo final con línea VIVO PASS (G-02-21)
 
 **Research flag**: Spike en vivo con DeepSeek antes de construir el ciclo: nombre de modelo vigente, thinking desactivado, `tool_choice`, forma de los tool calls y de los errores. La línea de modelos cambió 3 veces en 2026 y `deepseek-chat`/`deepseek-reasoner` se retiraron el 2026-07-24.
 
@@ -175,6 +175,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Núcleo determinista | 15/15 | Complete    | 2026-10-13 |
-| 2. Agente y compuerta de confirmación | 17/18 | In Progress | - |
+| 2. Agente y compuerta de confirmación | 18/18 | In Progress | - |
 | 3. Chat web, API SSE y despliegue | 0/TBD | Not started | - |
 | 4. Módulo, documentación y defensa | 0/TBD | Not started | - |
