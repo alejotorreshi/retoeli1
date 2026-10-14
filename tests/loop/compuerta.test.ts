@@ -284,7 +284,7 @@ describe("CR-01 (D-63.6): una respuesta que no confirma deja el caso pendiente y
   });
 });
 
-describe("G-02-2 (D-63.8): un pedido con 'para' no cancela y una negación con pregunta sí cancela", () => {
+describe("G-02-2 (D-63.8, D-63.9): un pedido o una pregunta no cancela y una negación del envío sí cancela", () => {
   const TEXTO_CONSULTA = "Consulté el NIT de co-industrias-delta: viene de maestro.nit.";
   const TEXTO_RECHAZO = "Entendido, no envío nada. Falta el certificado de cumplimiento tributario.";
 
@@ -294,6 +294,8 @@ describe("G-02-2 (D-63.8): un pedido con 'para' no cancela y una negación con p
     `dame el NIT de ${EC}, no el RUC`,
     "mejor dime qué falta",
     "¿por qué no se puede enviar?",
+    "Para pe-andes, ¿qué falta?",
+    "Luego ¿qué sigue?",
   ])(
     "%p deja el caso pendiente con la pregunta del servidor y el 'sí' siguiente envía una vez",
     async (frase) => {
@@ -338,6 +340,8 @@ describe("G-02-2 (D-63.8): un pedido con 'para' no cancela y una negación con p
     "No, ¿qué falta?",
     "Espera, ¿qué falta?",
     "no lo envíes aún, ¿puedes revisar el NIT?",
+    "no quiero enviarlo todavía",
+    "todavía no qué falta?",
   ])(
     "%p cancela lo pendiente sin la pregunta del servidor y el 'sí' siguiente no autoriza",
     async (frase) => {

@@ -195,6 +195,18 @@ const FILAS_RECHAZO_ACOTADO: readonly Fila[] = [
   ["no, gracias", DOS, RECHAZA],
 ];
 
+const FILAS_D639: readonly Fila[] = [
+  ["Para pe-andes, ¿qué falta?", UNO, OTRO],
+  ["Luego ¿qué sigue?", UNO, OTRO],
+  ["procesa co-industrias-delta, no pe-andes", DOS, OTRO],
+  ["No envié el certificado, ¿lo puedo agregar?", UNO, OTRO],
+  ["No hagas el PDF, solo el xlsx", UNO, OTRO],
+  ["no quiero enviarlo todavía", UNO, RECHAZA],
+  ["espera un momento", UNO, RECHAZA],
+  ["no lo confirmes", UNO, RECHAZA],
+  ["todavía no qué falta?", UNO, RECHAZA],
+];
+
 const PALABRAS_DE_RECHAZO: readonly string[] = [...new Set([...NEGACIONES, ...NEGADORES])];
 const VOCABULARIO_DE_CONFIRMACION: ReadonlySet<string> = new Set([
   ...AFIRMACIONES,
@@ -256,6 +268,12 @@ describe("clasificarConfirmacion: una palabra de rechazo nunca confirma (D-63.8,
     expect(VERBOS_NEGABLES.has("confirmo")).toBe(true);
     expect(clasificarConfirmacion("confirmo", UNO)).toEqual(confirma(EC));
     expect(clasificarConfirmacion("no confirmo", UNO)).toEqual(RECHAZA);
+  });
+});
+
+describe("clasificarConfirmacion: rechazo explícito por cláusulas afirmadas (G-02-2, CR-04, D-63.9)", () => {
+  test.each(FILAS_D639)("%p con pendientes %p", (texto, pendientes, esperado) => {
+    expect(clasificarConfirmacion(texto, pendientes)).toEqual(esperado);
   });
 });
 
