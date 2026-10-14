@@ -3,16 +3,16 @@ gsd_state_version: "1.0"
 current_phase: 03
 current_phase_name: Chat web, API SSE y despliegue
 status: executing
-stopped_at: Completed 03-02-PLAN.md
-last_updated: "2026-10-14T23:26:47.379Z"
+stopped_at: Completed 03-03-PLAN.md
+last_updated: "2026-10-14T23:57:25.353Z"
 last_activity: 2026-10-14
 last_activity_desc: Phase 03 execution started
-state_head: 405bce2ce2712fb097e8990afacba2feec0c12e8
+state_head: 5b05e6c49c9f842e8f649d9bf5fb4919961a23bb
 progress:
   total_phases: 4
   completed_phases: 2
   total_plans: 66
-  completed_plans: 41
+  completed_plans: 42
   percent: 50
 ---
 
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-10-14)
 ## Current Position
 
 Phase: 03 (Chat web, API SSE y despliegue) — EXECUTING
-Plan: 3 of 27
+Plan: 4 of 27
 Status: Ready to execute
 Last activity: 2026-10-14 — Phase 03 execution started
 
@@ -98,6 +98,7 @@ Progress: [█████░░░░░] 50%
 | Phase 02 P24 | 11 min | 3 tasks | 10 files |
 | Phase 03 P01 | 4 min | 2 tasks | 14 files |
 | Phase 03 P02 | 9 min | 2 tasks | 14 files |
+| Phase 03 P03 | 29min | 2 tasks | 15 files |
 
 ## Accumulated Context
 
@@ -214,6 +215,8 @@ Recent decisions affecting current work:
 - [Phase 03]: 03-02: el tracer fija el orden real del bucle (turn_start, usage, tool_start, tool_end, usage, text, turn_end), con un usage por cada llamada al modelo
 - [Phase 03]: 03-02: el respaldo JSON de /api/chat también pasa por redactar con secretosDelAgente, igual que cada frame SSE
 - [Phase 03]: 03-02: notFound y onError globales viven en server.wiring y responden { mensaje } de MENSAJE_HTTP; el detalle solo va a pino
+- [Phase 03]: 03-03: un rechazo HTTP sin { mensaje } legible se trata como ERROR_RED (copia de red caída); un stream cortado con error equivale a FIN_STREAM
+- [Phase 03]: 03-03: enviarMensaje nunca rechaza; el reductor ignora FIN_STREAM si el turno ya cerró, y el evento error no cierra enCurso
 
 ### Pending Todos
 
@@ -248,6 +251,6 @@ Items acknowledged and deferred at milestone close, most recent first:
 
 ## Session Continuity
 
-Last session: 2026-10-14T23:26:47.297Z
-Stopped at: Completed 03-02-PLAN.md
+Last session: 2026-10-14T23:57:25.274Z
+Stopped at: Completed 03-03-PLAN.md
 Resume file: None
