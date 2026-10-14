@@ -58,10 +58,11 @@ La numeración sigue la de la Fase 1 (D-01 a D-36).
 - **D-60:** Texto plano garantizado en dos capas: el prompt prohíbe el markdown **y** el servidor limpia la respuesta final (negritas `**`/`__`, encabezados `#`, tablas `|`) antes de emitirla, para que D-46 no dependa de que el modelo obedezca. Las regex van en `patterns.constants.ts`.
 - **D-61:** pino se fija en **10.3.1**, no en 10.4.0. Tiene la misma API, es más madura y evita el punto de verificación humana. pino-pretty sigue siendo solo de desarrollo, con la política D-35.
 - **D-62:** Las reglas nuevas de arquitectura (capas `llm`, `loop` y sesiones, un segundo composition root `loop/wiring`, roles y sufijos de archivo nuevos y otro importador permitido de `config/env.ts`) se aplican **en la misma tarea** en `.claude/CLAUDE.md`, en los guardianes de `tests/architecture.test.ts` (cada regla nueva lleva su prueba de violación) y en `docs/estructura.md`.
-- **D-63:** Se confirman tres lecturas de D-37 a D-40:
+- **D-63:** Se confirman cuatro lecturas de D-37 a D-40:
   1. Un `simular_envio` bloqueado solo deja una confirmación pendiente si el paquete de ese caso se armó en esta sesión.
   2. La pregunta y el estado pendiente también se aplican si el turno termina en error o en un tope, siempre que el paquete esté armado.
   3. Si el agente pregunta "¿cuál caso?", los casos pendientes se conservan para el mensaje inmediatamente siguiente.
+  4. (UAT G-02-3, 2026-10-14) Un `simular_envio` bloqueado nunca reabre un caso cuyo envío simulado ya se registró en esta sesión. La compuerta recuerda los casos enviados (`Sesion.casosEnviados`), aparte de los paquetes conocidos, que siguen sirviendo para el log por caso y las líneas `gate_*`. Un `proveedor_armar_paquete` nuevo y exitoso de ese caso abre un ciclo nuevo: borra la marca de enviado, deja el caso pendiente y vuelve a pedir confirmación (D-37, D-42 y D-12 de la Fase 1).
 
 ### Claude's Discretion
 - La estructura interna del ciclo (`runTurn` como generador de eventos tipados), los decoradores `withTimeout`, `withRetry` y `withFallback`, y la forma del modelo de mensajes neutral, siguiendo `.planning/research/ARCHITECTURE.md` y respetando las reglas de capas de CLAUDE.md. Las capas nuevas (`llm`, `loop`, sesiones) se declaran en `PERMITIDOS` de `tests/architecture.test.ts`.

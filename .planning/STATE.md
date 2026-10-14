@@ -161,7 +161,7 @@ Recent decisions affecting current work:
 - [Phase 02]: SEG-03 stays open until plan 02-08 wires the log points in the loop
 - [Phase 02]: 02-06: el ciclo construye {caso, confirmado: true} desde la autorización y nunca reenvía los args del modelo; un simular_envio bloqueado devuelve el rechazo literal de la herramienta y escribe la línea CA4
 - [Phase 02]: 02-06: revocarAlArmar se aplica a toda llamada a armar_paquete del caso, no solo a las ok; un envío autorizado que la herramienta rechaza consume la autorización
-- [Phase 02]: 02-06: paquetesConocidos conserva el caso tras enviar, así un reintento bloqueado vuelve a preguntar en vez de enviar dos veces
+- [Phase 02]: 02-06: paquetesConocidos conserva el caso tras enviar para rutear el log por caso (CA4) y el caso de las líneas gate_*; desde 02-15 (D-63.4) un reintento bloqueado de un caso ya enviado no lo reabre, y solo un armar_paquete nuevo abre otro ciclo
 - [Phase 02]: 02-06: cerrarTurnoConCompuerta limpia el markdown antes de decidir y agregar la pregunta; en error o tope el texto emitido es solo la pregunta y el historial guarda error + pregunta
 - [Phase 02]: 02-07: una sesión sin presupuesto responde al abrir el turno con PRESUPUESTO_AGOTADO y cero llamadas; a mitad de turno cierra con tope_tokens, el mensaje y cierreDeterminista
 - [Phase 02]: 02-07: al tope de iteraciones hay una sola llamada sin herramientas con instruccionTope al final (no persistida); si falla, pide herramientas, trae texto vacío o no cabe en el presupuesto, el servidor usa cierreDeterminista con motivo tope_iteraciones
@@ -185,6 +185,7 @@ Recent decisions affecting current work:
 - [Phase 02]: 02-13: a confirmation turn that ends in error, tope_tokens or tope_iteraciones before using its authorization returns that case to pending and ends with the server question (D-63.2); final and abortado recover nothing
 - [Phase 02]: 02-13: only the pending state is recovered, never the grant (D-38); revoked, used, unknown and inherited-key cases are never recovered
 - [Phase 02]: 02-13: live run after all gap fixes passed on the first run (VIVO PASS modelo=deepseek-flash llamadas=12 tokens=79292); agent/prompt.md unchanged
+- [Phase 02]: 02-15: D-63.4 — la compuerta recuerda los casos enviados en Sesion.casosEnviados; un simular_envio bloqueado de un caso ya enviado no lo reabre ni en el mismo turno ni después, y un armar_paquete nuevo y exitoso borra la marca y vuelve a pedir confirmación (G-02-3)
 
 ### Pending Todos
 
