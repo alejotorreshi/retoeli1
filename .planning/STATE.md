@@ -4,10 +4,10 @@ current_phase: 02
 current_phase_name: Agente y compuerta de confirmación
 status: executing
 stopped_at: Completed 02-21-PLAN.md
-last_updated: "2026-10-14T04:34:26.291Z"
+last_updated: "2026-10-14T04:49:55.164Z"
 last_activity: 2026-10-14
 last_activity_desc: Phase 02 execution started
-state_head: 1fe12d54ddedbce981ba1c0bf279a6a6082dde8b
+state_head: 10a43addb3f540c5b14bdb8e38d247f2ae669bc9
 progress:
   total_phases: 4
   completed_phases: 1
@@ -27,10 +27,10 @@ See: .planning/PROJECT.md (updated 2026-10-13)
 
 ## Current Position
 
-Phase: 02 (Agente y compuerta de confirmación) — READY TO EXECUTE
-Plan: 21 of 21
-Status: Ready to execute
-Last activity: 2026-10-14 — Completed 02-20 (20 of 21 plans complete)
+Phase: 02 (Agente y compuerta de confirmación) — EXECUTING
+Plan: 1 of 22
+Status: Executing Phase 02
+Last activity: 2026-10-13 — Phase 02 execution started
 
 Progress: [███░░░░░░░] 25%
 
@@ -155,7 +155,7 @@ Recent decisions affecting current work:
 - [Phase 02]: 02-02: el almacén de sesiones registra la sesión nueva en abrir y nunca la desaloja por su propia creación; una sesión ocupada no expira ni se desaloja
 - [Phase 02]: 02-02: el turno libera la sesión tras guardar el historial y antes de emitir turn_end; un turno rechazado por SESION_OCUPADA nunca libera
 - [Phase 02]: 02-02: el reloj del agente relee el entorno de herramientas en cada llamada (clockFromToolEnv), así modelo y herramientas usan la misma fecha
-- [Phase 02]: 02-03: el clasificador de confirmación es una gramática de lista blanca; la negación se evalúa primero y cualquier duda da otro, que nunca autoriza
+- [Phase 02]: 02-03: el clasificador de confirmación es una gramática de lista blanca; la negación se evalúa primero y cualquier duda da otro, que nunca autoriza — CORREGIDO por 02-22 (D-63.8): el código de 02-03 evaluaba la pregunta antes que la negación y tomaba como rechazo cualquier palabra de NEGACIONES; desde 02-22 el rechazo explícito es acotado (una negación que rige el envío, o una cláusula que no es pregunta hecha solo de palabras de espera) y se evalúa antes que la pregunta
 - [Phase 02]: 02-03: abrirTurno con confirma de un caso no pendiente no autoriza y cancela a LIBRE; falta_caso conserva los casos — SUPERSEDED por 02-19 (D-63.6): solo rechaza cancela; otro, falta_caso y la confirmación de un caso no pendiente conservan los casos
 - [Phase 02]: 02-03: cerrarTurno solo vuelve pendiente un bloqueado si su paquete está en conocidos; el bucle debe registrar cada paquete armado en conocidos
 - [Phase 02]: 02-03: necesitaPreguntaDeterminista exige que el último párrafo termine en ? y nombre cada caso pendiente
@@ -200,6 +200,7 @@ Recent decisions affecting current work:
 - [Phase 02]: 02-20: D-63.7 — un envío autorizado que falla emite FALLIDO y el caso vuelve a quedar pendiente con la pregunta del servidor (salvo aborto); la autorización usada no se recupera (WR-02)
 - [Phase 02]: 02-20: formatearIssues quita el punto final de cada issue salvo el último antes de unir con SEPARADOR_ISSUES; FIN_DE_ORACION vive en text.constants.ts y strings.ts lo importa (WR-01)
 - [Phase 02]: 02-21: la prueba en vivo revisa la clave también en los cuerpos de los pedidos (nota 1 de SECURITY) y recorre "ok" → "sí" en co-industrias-delta; corrida en vivo final tras CR-01, WR-01 y WR-02: VIVO PASS modelo=deepseek-flash llamadas=15 tokens=113249
+- [Phase 02]: 02-22: D-63.8 — el rechazo explícito es acotado: (a) "no/nunca/jamás/tampoco/ni" más pronombres átonos y una forma de rechazo del envío ("envíes", "mandes", "hagas", "confirmo"…), en cualquier parte y aunque haya pregunta; (b) una cláusula que no es pregunta hecha solo de NEGACIONES y rellenos; se evalúa antes que la pregunta; un pedido o una pregunta que solo contiene esas palabras da otro y deja el caso pendiente con la pregunta del servidor (G-02-2, WR-15, WR-16); WR-17 sigue abierto
 
 ### Pending Todos
 
