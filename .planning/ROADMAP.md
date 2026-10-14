@@ -89,7 +89,7 @@ Plans:
   4. Al llegar al tope de iteraciones (25 por defecto) o al de tokens por sesión, el usuario recibe en lenguaje claro lo que se tiene y lo que falta, no un error. Una instrucción inyectada en el cuerpo del correo del cliente no cambia el comportamiento del agente.
   5. Un cambio en `src/knowledge/registro-proveedor.md` o en `agent/prompt.md` cambia el comportamiento del agente sin tocar código del servidor. Los logs JSON llevan IDs de sesión, turno y tool call, sin clave ni PII. `bun test` cubre el ciclo con un LLM falso (tope, compuerta con "No envíes…" y el guion §11, CA5 e inyección) sin gastar tokens.
 
-**Plans:** 22/22 plans executed
+**Plans:** 22/23 plans executed
 
 Plans:
 **Wave 1**
@@ -145,6 +145,9 @@ Plans:
 
 **Cierre de brechas de la UAT ronda 2, Wave 1** *(gap closure)*
 - [x] 02-22-PLAN.md — El rechazo explícito se acota y se evalúa antes que la pregunta: un pedido que solo contiene "para", "no", "luego" o "mejor" deja el caso pendiente con la pregunta del servidor, y "No envíes nada todavía, ¿qué falta?" lo cancela; el prompt y el conocimiento dicen lo mismo (G-02-2, D-63.8)
+
+**Cierre de brechas de la re-verificación de 02-22, Wave 1** *(gap closure)*
+- [ ] 02-23-PLAN.md — El rechazo se busca solo en lo que la analista afirma: las preguntas y los pedidos con "para", "luego", "después", "mejor" o "no" junto a un objeto o un caso ya no cancelan, y "no quiero enviarlo todavía", "espera un momento" y "todavía no qué falta?" sí cancelan; un corpus generado con comparación contra el clasificador anterior fija las clases, y el prompt y RN4 dicen lo mismo (G-02-2, CR-04, WR-19 a WR-22, D-63.9)
 
 **Research flag**: Spike en vivo con DeepSeek antes de construir el ciclo: nombre de modelo vigente, thinking desactivado, `tool_choice`, forma de los tool calls y de los errores. La línea de modelos cambió 3 veces en 2026 y `deepseek-chat`/`deepseek-reasoner` se retiraron el 2026-07-24.
 
