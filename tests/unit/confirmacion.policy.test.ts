@@ -1,5 +1,15 @@
 import { describe, expect, test } from "bun:test";
-import { DECISION_CONFIRMACION } from "@/config/constants/confirmation.constants.ts";
+import {
+  ACUSES,
+  AFIRMACIONES,
+  DECISION_CONFIRMACION,
+  NEGACIONES,
+  NEGADORES,
+  RELLENO,
+  SI_SIN_TILDE,
+  VERBOS_ENVIO,
+  VERBOS_NEGABLES,
+} from "@/config/constants/confirmation.constants.ts";
 import { SEPARADOR_PARRAFOS } from "@/config/constants/text.constants.ts";
 import { HERRAMIENTA } from "@/config/constants/tools.constants.ts";
 import { EJEMPLOS_CONFIRMACION, TEXTO_CIERRE, TEXTO_CONFIRMACION } from "@/config/strings.ts";
@@ -130,7 +140,79 @@ const FILAS_EXTRA: readonly Fila[] = [
 const FILAS_RECHAZO_ACOTADO: readonly Fila[] = [
   ["Consulta el valor del NIT de co-industrias-delta para tenerlo a mano", UNO, OTRO],
   ["No envíes nada todavía, ¿qué falta?", UNO, RECHAZA],
+  ["¿no hay nada más?", UNO, OTRO],
+  ["¿para qué sirve el RUT?", UNO, OTRO],
+  ["¿por qué no se puede enviar?", UNO, OTRO],
+  ["¿cuál es el NIT? no lo encuentro", UNO, OTRO],
+  ["¿qué hago después?", UNO, OTRO],
+  ["¿y luego qué sigue?", UNO, OTRO],
+  ["¿es mejor esperar al certificado?", UNO, OTRO],
+  ["¿qué falta?", UNO, OTRO],
+  ["¿y luego?", UNO, OTRO],
+  ["y luego?", UNO, OTRO],
+  ["¿todavía no?", UNO, OTRO],
+  ["¿no?", UNO, OTRO],
+  ["Procesa co-industrias-delta, luego vemos el otro", UNO, OTRO],
+  ["Procesa el caso co-industrias-delta para tenerlo listo", UNO, OTRO],
+  ["mejor procesa pe-andes", UNO, OTRO],
+  ["después procesa pe-andes", UNO, OTRO],
+  ["aún falta el RUT, procesa el caso", UNO, OTRO],
+  ["un momento, procesa pe-andes", UNO, OTRO],
+  ["ni idea, procesa pe-andes", UNO, OTRO],
+  ["no sé, procesa pe-andes", UNO, OTRO],
+  ["dame el NIT de ec-corp-andina, no el RUC", UNO, OTRO],
+  ["no se envía", UNO, OTRO],
+  ["¿por qué no envía?", UNO, OTRO],
+  ["Consulta el valor del NIT de co-industrias-delta para tenerlo a mano", DOS, OTRO],
+  ["envía el paquete de ec-corp-andina para firma", UNO, OTRO],
+  ["envíalo para firma", UNO, OTRO],
+  ["sí, mándalo ya para que lo firmen", UNO, OTRO],
+  ["dale no más", UNO, OTRO],
+  ["envía luego", UNO, OTRO],
+  ["No envíes nada todavía. ¿Qué falta?", UNO, RECHAZA],
+  ["¿Qué falta? No envíes nada todavía.", UNO, RECHAZA],
+  ["no lo envíes aún, ¿puedes revisar el NIT?", UNO, RECHAZA],
+  ["no lo mandes", UNO, RECHAZA],
+  ["no me lo envíes", UNO, RECHAZA],
+  ["no se lo mandes todavía", UNO, RECHAZA],
+  ["nunca lo envíes", UNO, RECHAZA],
+  ["no lo hagas", UNO, RECHAZA],
+  ["no confirmo", UNO, RECHAZA],
+  ["no autorizo el envío", UNO, RECHAZA],
+  ["Procesa el caso co-industrias-delta. No envíes nada todavía.", UNO, RECHAZA],
+  ["No envíes nada todavía, ¿qué falta?", DOS, RECHAZA],
+  ["No, ¿qué falta?", UNO, RECHAZA],
+  ["Espera, ¿qué falta?", UNO, RECHAZA],
+  ["Todavía no. ¿Qué falta?", UNO, RECHAZA],
+  ["cancela el envío", UNO, RECHAZA],
+  ["cancela ec-corp-andina", UNO, RECHAZA],
+  ["no, gracias", UNO, RECHAZA],
+  ["ahora no", UNO, RECHAZA],
+  ["por ahora no", UNO, RECHAZA],
+  ["mejor después", UNO, RECHAZA],
+  ["Para.", UNO, RECHAZA],
+  ["¡No!", UNO, RECHAZA],
+  ["no, gracias", DOS, RECHAZA],
 ];
+
+const PALABRAS_DE_RECHAZO: readonly string[] = [...new Set([...NEGACIONES, ...NEGADORES])];
+const VOCABULARIO_DE_CONFIRMACION: ReadonlySet<string> = new Set([
+  ...AFIRMACIONES,
+  ...ACUSES,
+  ...RELLENO,
+  ...VERBOS_ENVIO,
+  SI_SIN_TILDE,
+]);
+
+function frasesConPalabraDeRechazo(palabra: string): readonly string[] {
+  return [
+    `envía ${palabra}`,
+    `${palabra}, envía`,
+    `sí, ${palabra}`,
+    `sí ${palabra}`,
+    `envía ${EC} ${palabra}`,
+  ];
+}
 
 describe("clasificarConfirmacion: tabla del Patrón 7 (ENV-02, D-39, D-40)", () => {
   test("la tabla de la investigación tiene al menos 43 filas", () => {
@@ -151,6 +233,29 @@ describe("clasificarConfirmacion: filas adicionales", () => {
 describe("clasificarConfirmacion: rechazo explícito acotado (G-02-2, D-63.8)", () => {
   test.each(FILAS_RECHAZO_ACOTADO)("%p con pendientes %p", (texto, pendientes, esperado) => {
     expect(clasificarConfirmacion(texto, pendientes)).toEqual(esperado);
+  });
+});
+
+describe("clasificarConfirmacion: una palabra de rechazo nunca confirma (D-63.8, D-39)", () => {
+  test("el vocabulario de confirmación no comparte palabras con NEGACIONES ni NEGADORES", () => {
+    expect(PALABRAS_DE_RECHAZO.filter((palabra) => VOCABULARIO_DE_CONFIRMACION.has(palabra))).toEqual([]);
+  });
+
+  test.each([...PALABRAS_DE_RECHAZO])(
+    "ninguna frase con %p confirma, con uno o dos casos pendientes",
+    (palabra) => {
+      for (const frase of frasesConPalabraDeRechazo(palabra)) {
+        for (const pendientes of [UNO, DOS]) {
+          expect(clasificarConfirmacion(frase, pendientes).decision).not.toBe(DECISION_CONFIRMACION.CONFIRMA);
+        }
+      }
+    },
+  );
+
+  test("VERBOS_NEGABLES solo rechaza tras un negador", () => {
+    expect(VERBOS_NEGABLES.has("confirmo")).toBe(true);
+    expect(clasificarConfirmacion("confirmo", UNO)).toEqual(confirma(EC));
+    expect(clasificarConfirmacion("no confirmo", UNO)).toEqual(RECHAZA);
   });
 });
 

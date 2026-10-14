@@ -288,7 +288,13 @@ describe("G-02-2 (D-63.8): un pedido con 'para' no cancela y una negación con p
   const TEXTO_CONSULTA = "Consulté el NIT de co-industrias-delta: viene de maestro.nit.";
   const TEXTO_RECHAZO = "Entendido, no envío nada. Falta el certificado de cumplimiento tributario.";
 
-  test.each(["Consulta el valor del NIT de co-industrias-delta para tenerlo a mano"])(
+  test.each([
+    "Consulta el valor del NIT de co-industrias-delta para tenerlo a mano",
+    "Revisa los soportes, luego vemos el otro",
+    `dame el NIT de ${EC}, no el RUC`,
+    "mejor dime qué falta",
+    "¿por qué no se puede enviar?",
+  ])(
     "%p deja el caso pendiente con la pregunta del servidor y el 'sí' siguiente envía una vez",
     async (frase) => {
       const prueba = agente([
@@ -326,7 +332,13 @@ describe("G-02-2 (D-63.8): un pedido con 'para' no cancela y una negación con p
     },
   );
 
-  test.each(["No envíes nada todavía, ¿qué falta?"])(
+  test.each([
+    "No envíes nada todavía, ¿qué falta?",
+    "¿Qué falta? No envíes nada todavía.",
+    "No, ¿qué falta?",
+    "Espera, ¿qué falta?",
+    "no lo envíes aún, ¿puedes revisar el NIT?",
+  ])(
     "%p cancela lo pendiente sin la pregunta del servidor y el 'sí' siguiente no autoriza",
     async (frase) => {
       const prueba = agente([
