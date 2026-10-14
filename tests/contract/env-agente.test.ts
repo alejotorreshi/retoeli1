@@ -3,6 +3,7 @@ import { join } from "node:path";
 import { crearFetchFalso } from "@tests/helpers/fetch-falso.helper.ts";
 import { CODIGO_AGENTE } from "@/config/constants/agent.constants.ts";
 import { ESQUEMA_LOOPBACK, ESQUEMA_SEGURO, HOSTS_LOOPBACK } from "@/config/constants/llm.constants.ts";
+import { FIN_DE_ORACION, SEPARADOR_ISSUES } from "@/config/constants/text.constants.ts";
 import { type EnvSource, parseAgentEnv } from "@/config/env.ts";
 import { MENSAJE_AGENTE, TEXTO_AGENTE, TEXTO_ENV } from "@/config/strings.ts";
 import { crearAgente } from "@/loop/wiring/agente.wiring.ts";
@@ -415,5 +416,38 @@ describe("mensajes de configuración al crear el agente (WR-13, G-02-19)", () =>
     CODIGO_AGENTE.INSTRUCCIONES_NO_DISPONIBLES,
   ])("el error de turno %s conserva la sesión abierta", (codigo) => {
     expect(MENSAJE_AGENTE[codigo].endsWith(SESION_ABIERTA_COMPLETA)).toBe(true);
+  });
+});
+
+const MENSAJE_PROVEEDOR_SIN_URL_NI_MODELO =
+  "La configuración del proveedor del modelo no es válida. Detalle: LLM_BASE_URL: Falta la URL del proveedor: es obligatoria cuando el proveedor no tiene valores por defecto; LLM_MODEL: Falta el modelo: es obligatorio cuando el proveedor no tiene valores por defecto.";
+const MENSAJE_DOS_URLS_NO_SEGURAS =
+  "La configuración del proveedor del modelo no es válida. Detalle: LLM_BASE_URL: La URL del proveedor debe usar https; solo estos hosts locales admiten también http: localhost, 127.0.0.1, [::1]; LLM_FALLBACK_BASE_URL: La URL del proveedor debe usar https; solo estos hosts locales admiten también http: localhost, 127.0.0.1, [::1].";
+
+describe("varios issues de configuración al crear el agente (WR-01)", () => {
+  test.each([
+    [
+      "un proveedor propio sin URL ni modelo",
+      { LLM_API_KEY: CLAVE_FICTICIA, LLM_PROVIDER: "otro-proveedor" },
+      MENSAJE_PROVEEDOR_SIN_URL_NI_MODELO,
+    ],
+    [
+      "las dos URL en http",
+      {
+        LLM_API_KEY: CLAVE_FICTICIA,
+        LLM_BASE_URL: "http://api.example.com",
+        LLM_FALLBACK_BASE_URL: "http://openrouter.ai/api/v1",
+      },
+      MENSAJE_DOS_URLS_NO_SEGURAS,
+    ],
+  ])("%s da una sola oración con un solo punto final", (_nombre, fuenteEntorno, esperado) => {
+    const creacion = mensajeAlCrear(fuenteEntorno);
+    expect(creacion.codigo).toBe(CODIGO_AGENTE.CONFIGURACION_LLM_INVALIDA);
+    expect(creacion.mensaje).toBe(esperado);
+    expect(creacion.mensaje).not.toContain(`${FIN_DE_ORACION}${FIN_DE_ORACION}`);
+    expect(creacion.mensaje).not.toContain(`${FIN_DE_ORACION}${SEPARADOR_ISSUES}`);
+    expect(creacion.mensaje.endsWith(FIN_DE_ORACION)).toBe(true);
+    expect(creacion.mensaje).not.toContain(CLAVE_FICTICIA);
+    expect(creacion.mensaje).not.toContain(SESION_ABIERTA);
   });
 });
