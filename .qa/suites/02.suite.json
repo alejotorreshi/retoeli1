@@ -1,7 +1,7 @@
 {
   "phase": "02",
   "group": "02-agente-y-compuerta-de-confirmaci-n",
-  "generated_at": "2026-10-13T23:50:54Z",
+  "generated_at": "2026-10-14T03:51:22Z",
   "sources": [
     "02-01..02-14-SUMMARY.md coverage (50 auto-passed; 8 present: 4 human_judgment, 5 validation_failed from an invalid verification kind, folded into T01/T14/H1/H4/H5; 02-09 legacy)",
     "02-VERIFICATION.md human_verification (2: H1, H2)",
@@ -11,6 +11,153 @@
   "regression_scope": "phase 02 touched phase-1 modules (normalizar.util, definir-herramienta.factory, fixtures schemas, tools.constants, strings.ts); codegraph affected lists tests/e2e/{demo,determinismo,pii,trazador}, tests/golden/*, tests/contract/*",
   "revision": 1,
   "tests": [
+    {
+      "id": "HV1",
+      "uat_ref": 1,
+      "round": 2,
+      "name": "Human reading of the five 02-21 live replies (A1, A2 'ok', A3 'sí', B1 §11, B2 'envía') — 02-VERIFICATION human item 1",
+      "kind": "human",
+      "surface": "agent-live",
+      "recipe": "No new live run (one authorized run already spent: VIVO PASS modelo=deepseek-flash llamadas=15 tokens=113249). Runner extracts the five recorded replies from 02-21-SUMMARY.md (and the scratchpad live log if present), sanitized, and checks them mechanically: count of '¿' per reply, last paragraph = server question in A1/A2, no unmasked maestro values (pii helper patterns), no 'enviado/firmado/lleno' claim without a tool ok.",
+      "asserts": [
+        "exactly one live run recorded after the user's 'correr' (runs table in 02-21-SUMMARY.md / STATE.md)",
+        "A2 last paragraph is the server question; A2 has no tool call",
+        "A3 and B2 report only the simulated send; B1 has caso, out/ec-corp-andina/, 13/1/1, RUC por confirmar, Certificado de cumplimiento tributario, BLOQUEADO",
+        "no unmasked sensitive value in any reply"
+      ],
+      "human_checks": [
+        "A2: the model wrote its own confirmation request without '¿' above the server question — accept as model variance (T-02-41/AR-02-01) or adjust agent/prompt.md with a second authorized live run"
+      ],
+      "isolation": "repo"
+    },
+    {
+      "id": "HV2",
+      "uat_ref": 2,
+      "round": 2,
+      "name": "Product decision on WR-16 (+WR-15): broad NEGACIONES class cancels a pending case on unrelated requests; negation+question keeps it pending — 02-VERIFICATION human item 2",
+      "kind": "human",
+      "surface": "agent",
+      "recipe": "Evidence comes from P01 (reproductions). No automation of the decision.",
+      "asserts": [],
+      "human_checks": [
+        "(a) accept as known limit with an override in 02-VERIFICATION.md, or (b) open a gap-closure plan that narrows NEGACIONES and makes negation win over the question"
+      ],
+      "isolation": "repo"
+    },
+    {
+      "id": "N01",
+      "uat_ref": 3,
+      "round": 2,
+      "name": "D-63.6 (02-19 D1/D2): a non-confirming reply keeps the case pending, the server re-asks, and the next 'sí' sends exactly once",
+      "kind": "tool",
+      "surface": "agent",
+      "recipe": "agent: scratch copy of the repo (rsync without node_modules/.git/out/.qa/.planning, node_modules symlinked); bun -e (cwd = scratch root, so @/ and @tests/ aliases resolve) with crearAgente({ directorio: <scratch>, fetch: crearFetchFalso(<guion>).fetch, fuenteEntorno: { LLM_API_KEY: 'clave-falsa-qa', LOG_LEVEL: 'silent', ...overrides } }); turns via agente.turno({ sesionId, mensaje }); events via @tests/helpers/eventos.helper.ts. No network, no real key. For each reply in ['ok','listo','si por favor','si gracias','si ec-corp-andina']: turn 1 'procesa el caso ec-corp-andina' (pending); turn 2 <reply> with a guion that answers text only (no tools); turn 3 'sí' with a guion that calls proveedor_simular_envio. Control: turn 2 'no envíes nada' cancels.",
+      "asserts": [
+        "turn 2: needsConfirmation true, exactly one confirmation_required for ec-corp-andina with its bloqueos, last paragraph = server question, no ENVIO-SIMULADO.md, the model reply contains no extra '¿'",
+        "turn 3: out/ec-corp-andina/ENVIO-SIMULADO.md written once, one ok line in the per-case log, needsConfirmation false",
+        "control: after 'no envíes nada' the gate is LIBRE and a later bare 'sí' is blocked with CONFIRMACION_REQUERIDA"
+      ],
+      "human_checks": [],
+      "isolation": "scratch-copy"
+    },
+    {
+      "id": "N02",
+      "uat_ref": 4,
+      "round": 2,
+      "name": "D-63.6 (02-19 D3): unrelated work does not hijack the confirmation; several pending cases need the case named; abort closes LIBRE; a disobedient send is still blocked",
+      "kind": "tool",
+      "surface": "agent",
+      "recipe": "agent: scratch copy of the repo (rsync without node_modules/.git/out/.qa/.planning, node_modules symlinked); bun -e (cwd = scratch root, so @/ and @tests/ aliases resolve) with crearAgente({ directorio: <scratch>, fetch: crearFetchFalso(<guion>).fetch, fuenteEntorno: { LLM_API_KEY: 'clave-falsa-qa', LOG_LEVEL: 'silent', ...overrides } }); turns via agente.turno({ sesionId, mensaje }); events via @tests/helpers/eventos.helper.ts. No network, no real key. (a) pending ec-corp-andina, then 'procesa el caso co-industrias-delta' (both pending), then bare 'sí', then 'envía co-industrias-delta'. (b) pending case, then a turn aborted by the caller (AbortSignal), then 'sí'. (c) pending case, turn 2 'ok' with a guion that calls proveedor_simular_envio anyway.",
+      "asserts": [
+        "(a) the server question names both cases; bare 'sí' sends nothing (falta_caso); 'envía co-industrias-delta' sends only co",
+        "(b) after abort the gate is LIBRE and 'sí' sends nothing",
+        "(c) the disobedient call returns CONFIRMACION_REQUERIDA, nothing written"
+      ],
+      "human_checks": [],
+      "isolation": "scratch-copy"
+    },
+    {
+      "id": "N03",
+      "uat_ref": 5,
+      "round": 2,
+      "name": "D-63.7 (02-20 D1/D2/D3): a failed authorized send re-opens the case, the used grant is never recovered, and only a new confirmation sends",
+      "kind": "tool",
+      "surface": "agent",
+      "recipe": "agent: scratch copy of the repo (rsync without node_modules/.git/out/.qa/.planning, node_modules symlinked); bun -e (cwd = scratch root, so @/ and @tests/ aliases resolve) with crearAgente({ directorio: <scratch>, fetch: crearFetchFalso(<guion>).fetch, fuenteEntorno: { LLM_API_KEY: 'clave-falsa-qa', LOG_LEVEL: 'silent', ...overrides } }); turns via agente.turno({ sesionId, mensaje }); events via @tests/helpers/eventos.helper.ts. No network, no real key. Turn 1 processes ec-corp-andina (pending); delete out/ec-corp-andina/paquete in the scratch copy; turn 2 'envía' (guion calls proveedor_simular_envio) -> PAQUETE_NO_ARMADO; turn 3 'ok' with a guion that calls proveedor_simular_envio without confirmation; turn 4 re-arm + 'sí'.",
+      "asserts": [
+        "turn 2: needsConfirmation true, confirmation_required with the server question, nothing written, per-case log keeps PAQUETE_NO_ARMADO",
+        "turn 3: the disobedient send is blocked (CONFIRMACION_REQUERIDA) — the used grant is not recovered",
+        "turn 4: exactly one ENVIO-SIMULADO.md and one ok line; casosEnviados contains ec-corp-andina once"
+      ],
+      "human_checks": [],
+      "isolation": "scratch-copy"
+    },
+    {
+      "id": "N04",
+      "uat_ref": 6,
+      "round": 2,
+      "name": "WR-01 (02-20 D4): multi-issue startup messages end in exactly one period with no '.;' and never echo values",
+      "kind": "tool",
+      "surface": "agent",
+      "recipe": "bun -e in a scratch copy: crearAgente with fuenteEntorno (1) LLM_PROVIDER=custom without LLM_BASE_URL nor LLM_MODEL, (2) LLM_BASE_URL and LLM_FALLBACK_BASE_URL both http://example.com with fallback enabled; capture the thrown/returned configuration message; also a single-issue control.",
+      "asserts": [
+        "each multi-issue message contains no '.;' and ends with exactly one '.'",
+        "single-issue message unchanged",
+        "the dummy key and URL values never appear in the message"
+      ],
+      "human_checks": [
+        "the joined sentence reads naturally in Spanish (IN-24: '; ' separator ambiguity)"
+      ],
+      "isolation": "scratch-copy"
+    },
+    {
+      "id": "N05",
+      "uat_ref": 7,
+      "round": 2,
+      "name": "Prompt and knowledge (02-19 D4, 02-20 D5): the re-ask belongs to the server; a failed send is not retried and stays pending",
+      "kind": "contract",
+      "surface": "tools",
+      "recipe": "bun test tests/contract/instrucciones-agente.test.ts; grep agent/prompt.md and src/knowledge/registro-proveedor.md for the retired CR-01 sentences (must be absent) and the server re-ask / failed-send lines (must be present).",
+      "asserts": [
+        "contract test green",
+        "retired sentences absent; server re-ask and 'vuelve a quedar pendiente' lines present"
+      ],
+      "human_checks": [],
+      "isolation": "repo"
+    },
+    {
+      "id": "N06",
+      "uat_ref": 8,
+      "round": 2,
+      "name": "02-21: live test hardened (request bodies checked, non-vacuous) and offline-skipped without a key",
+      "kind": "cli",
+      "surface": "gate-test",
+      "recipe": "bun test tests/live (no LLM_EN_VIVO) ; static read of tests/live/agente-en-vivo.test.ts for salidas including ...cuerpos and the non-empty cuerpos/claves asserts; git show 87fabe7 --stat; read the runs table in 02-21-SUMMARY.md.",
+      "asserts": [
+        "offline: 0 pass, 1 skip, 0 fail",
+        "salidas includes every recorded body; cuerpos and claves asserted non-empty before the key check",
+        "no assertion relaxed in 87fabe7 (only [EC]/1 -> [CO,EC]/2 expectation changes)"
+      ],
+      "human_checks": [],
+      "isolation": "repo"
+    },
+    {
+      "id": "P01",
+      "uat_ref": 9,
+      "round": 2,
+      "name": "Probe (02-REVIEW round 3): reproduce WR-15, WR-16, WR-17, WR-18 and WR-03-aggravated end to end — evidence for HV2",
+      "kind": "tool",
+      "surface": "agent",
+      "recipe": "agent: scratch copy of the repo (rsync without node_modules/.git/out/.qa/.planning, node_modules symlinked); bun -e (cwd = scratch root, so @/ and @tests/ aliases resolve) with crearAgente({ directorio: <scratch>, fetch: crearFetchFalso(<guion>).fetch, fuenteEntorno: { LLM_API_KEY: 'clave-falsa-qa', LOG_LEVEL: 'silent', ...overrides } }); turns via agente.turno({ sesionId, mensaje }); events via @tests/helpers/eventos.helper.ts. No network, no real key. (WR-16) pending co-industrias-delta, then 'Consulta el valor del NIT de co-industrias-delta para tenerlo a mano' (guion: text only), then 'sí'. (WR-15) pending, then 'No envíes nada todavía, ¿qué falta?', then 'sí'. (WR-17) two pending cases, structured confirmacion {aprobada:false, caso:'co-industrias-delta'}, then 'envía ec-corp-andina'. (WR-18) pending, paquete deleted, 'envía' -> PAQUETE_NO_ARMADO, read the closing text. (WR-03) AGENT_SESSION_TOKEN_BUDGET tiny, pending case, then 'hola' and 'sí'. Also classify the phrases directly with the confirmacion policy.",
+      "asserts": [
+        "record the observed behavior per finding (this probe documents, it does not judge): classifier decision, gate state after the turn, closing text, whether the following 'sí' sends",
+        "no path sends without an explicit confirmation of a pending case"
+      ],
+      "human_checks": [
+        "feeds HV2"
+      ],
+      "isolation": "scratch-copy"
+    },
     {
       "id": "T01",
       "uat_ref": 1,
@@ -339,5 +486,77 @@
         "G-02-21"
       ]
     }
-  ]
+  ],
+  "rounds": [
+    {
+      "round": 1,
+      "generated_at": "2026-10-13T23:50:54Z",
+      "run_set": "all T01-T14, R1, R2, H1-H5"
+    },
+    {
+      "round": 2,
+      "generated_at": "2026-10-14T03:51:22Z",
+      "trigger": "gap closure 02-19..02-21 + re-verification human_needed",
+      "run_set": [
+        "HV1",
+        "HV2",
+        "N01",
+        "N02",
+        "N03",
+        "N04",
+        "N05",
+        "N06",
+        "P01",
+        "T01",
+        "T02",
+        "T03",
+        "T04",
+        "T05",
+        "T06",
+        "T07",
+        "T08",
+        "T09",
+        "T10",
+        "T11",
+        "T12",
+        "T13",
+        "T14",
+        "R1",
+        "R2"
+      ],
+      "regression_basis": "git diff --name-only 882f418..HEAD | codegraph affected --stdin: src/config/strings.ts and the gate/loop files reach every agent test and the phase-1 golden/e2e tests, so all saved recipes T01-T14, R1, R2 are replayed; H1-H5 were resolved in round 1",
+      "uat_map": {
+        "HV1": 1,
+        "HV2": 2,
+        "N01": 3,
+        "N02": 4,
+        "N03": 5,
+        "N04": 6,
+        "N05": 7,
+        "N06": 8,
+        "P01": 9,
+        "T01": 10,
+        "T02": 11,
+        "T03": 12,
+        "T04": 13,
+        "T05": 14,
+        "T06": 15,
+        "T07": 16,
+        "T08": 17,
+        "T09": 18,
+        "T10": 19,
+        "T11": 20,
+        "T12": 21,
+        "T13": 22,
+        "T14": 23,
+        "R1": 24,
+        "R2": 25
+      },
+      "replay": {
+        "group_A": "copy .qa/evidence/02-agente-y-compuerta-de-confirmaci-n/seeds/02-r2-{qa.helper,n01,n02,n03,n04,p01,hv1,hv1-scan}.ts into <scratch>/repo/qa-r2/ (drop the 02-r2- prefix) and run bun --no-env-file run qa-r2/<n>.ts",
+        "group_B": "seeds/02-r2-run-regression.sh <dir> <TNN> [seed] with QA_SCRATCH and REPO_ROOT set; seeds 02-T*.ts, 02-T04r2-*.ts, 02-X-*.ts"
+      }
+    }
+  ],
+  "scratch_copy_rule": "rsync -a --exclude node_modules --exclude .git --exclude out --exclude .qa --exclude .planning --exclude .env <repo>/ <scratch>/repo/; symlink node_modules; run every bun command with --no-env-file so the gitignored env file is never loaded (round-2 finding: the old recipe copied it)"
 }
