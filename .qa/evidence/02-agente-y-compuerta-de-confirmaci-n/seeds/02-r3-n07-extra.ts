@@ -1,0 +1,11 @@
+import { FECHA_DEMO } from "@/config/constants/demo.constants.ts";
+import { pinExecutionDate } from "@/config/env.ts";
+import { EC, agente, armar, casosConEnvioSimulado, enviar, herr, proyecto, resumen, texto } from "./qa.helper.ts";
+pinExecutionDate(FECHA_DEMO);
+const raiz = await proyecto("n07-extra");
+const a = agente(raiz, [herr("leer-ec", "LEER_SOLICITUD", { caso: EC }), ...armar(EC), texto("El NIT viene de maestro.nit."), ...enviar("s1", EC), ...enviar("s2", EC)]);
+await a.turno(`procesa el caso ${EC}`);
+const t2 = resumen(await a.turno("No, por favor consulta el NIT de ec-corp-andina"));
+const t3 = resumen(await a.turno("sí"));
+const t4 = resumen(await a.turno("sí"));
+console.log("OBS", JSON.stringify({ t2: t2.fin.needsConfirmation, t3: { simular: t3.simular, needs: t3.fin.needsConfirmation }, t4: { simular: t4.simular, needs: t4.fin.needsConfirmation }, envios: await casosConEnvioSimulado(raiz) }));
