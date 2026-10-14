@@ -1,7 +1,13 @@
 import { describe, expect, test } from "bun:test";
+import { join } from "node:path";
+import { crearFetchFalso } from "@tests/helpers/fetch-falso.helper.ts";
+import { CODIGO_AGENTE } from "@/config/constants/agent.constants.ts";
 import { ESQUEMA_LOOPBACK, ESQUEMA_SEGURO, HOSTS_LOOPBACK } from "@/config/constants/llm.constants.ts";
 import { type EnvSource, parseAgentEnv } from "@/config/env.ts";
 import { TEXTO_ENV } from "@/config/strings.ts";
+import { crearAgente } from "@/loop/wiring/agente.wiring.ts";
+
+const RAIZ_REPO = join(import.meta.dir, "..", "..");
 
 function valido(source: EnvSource) {
   const resultado = parseAgentEnv(source);
@@ -350,5 +356,27 @@ describe("entorno del agente: topes y registro (D-51, D-58, LLM-04)", () => {
     expect(resultado.success).toBe(false);
     const serializado = JSON.stringify(resultado.error);
     for (const marca of ["Zq9X", "Wp4Y", "Mn7V"]) expect(serializado).not.toContain(marca);
+  });
+});
+
+const CLAVE_FICTICIA = "clave-ficticia-Qh3T";
+const SESION_ABIERTA = "La sesión sigue abierta";
+const MENSAJE_URL_PRINCIPAL_NO_SEGURA =
+  "La configuración del proveedor del modelo no es válida. Detalle: LLM_BASE_URL: La URL del proveedor debe usar https; solo estos hosts locales admiten también http: localhost, 127.0.0.1, [::1].";
+
+function mensajeAlCrear(fuenteEntorno: EnvSource) {
+  const creacion = crearAgente({ directorio: RAIZ_REPO, fetch: crearFetchFalso([]).fetch, fuenteEntorno });
+  if (creacion.ok) throw new Error("se esperaba un error al crear el agente");
+  return creacion;
+}
+
+describe("mensajes de configuración al crear el agente (WR-13, G-02-19)", () => {
+  test("una URL principal no segura da un solo punto final y no promete una sesión abierta", () => {
+    const creacion = mensajeAlCrear({ LLM_API_KEY: CLAVE_FICTICIA, LLM_BASE_URL: "http://api.example.com" });
+    expect(creacion.codigo).toBe(CODIGO_AGENTE.CONFIGURACION_LLM_INVALIDA);
+    expect(creacion.mensaje).toBe(MENSAJE_URL_PRINCIPAL_NO_SEGURA);
+    expect(creacion.mensaje).not.toContain("..");
+    expect(creacion.mensaje).not.toContain(SESION_ABIERTA);
+    expect(creacion.mensaje).not.toContain(CLAVE_FICTICIA);
   });
 });
