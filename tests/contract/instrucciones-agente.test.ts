@@ -157,3 +157,10 @@ describe("la re-pregunta es del servidor (CR-01, D-63.6)", () => {
     );
   });
 });
+
+describe("un envío que falla vuelve a quedar pendiente (WR-02, D-63.7)", () => {
+  test("el conocimiento dice que un envío que falla vuelve a quedar pendiente (WR-02, D-63.7)", () => {
+    expect(conocimiento).toContain("vuelve a quedar pendiente");
+    expect(conocimiento).toContain("no lo reintentes en ese turno");
+  });
+});
