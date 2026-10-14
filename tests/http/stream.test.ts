@@ -1,5 +1,6 @@
 import { afterAll, afterEach, beforeAll, describe, expect, test } from "bun:test";
-import { bitacoraMuda } from "@tests/helpers/bitacora.helper.ts";
+import { CLAVE_PRUEBA } from "@tests/helpers/agente-fetch.helper.ts";
+import { bitacoraMuda, capturarLogs } from "@tests/helpers/bitacora.helper.ts";
 import {
   crearFetchFalso,
   cuerpoConHerramientas,
@@ -27,10 +28,12 @@ import { FECHA_DEMO } from "@/config/constants/demo.constants.ts";
 import {
   CABECERA,
   COMENTARIO_LATIDO,
+  EVENTO_HTTP,
   RESPUESTA_HTTP,
   RUTA_API,
   TIPO_CONTENIDO,
 } from "@/config/constants/http.constants.ts";
+import { NIVELES_LOG } from "@/config/constants/logging.constants.ts";
 import { HERRAMIENTA, NOMBRE_VISIBLE } from "@/config/constants/tools.constants.ts";
 import { pinExecutionDate } from "@/config/env.ts";
 import { MENSAJE_HTTP } from "@/config/strings.ts";
@@ -123,7 +126,7 @@ describe("POST /api/chat sobre un socket real", () => {
     const url = socketReal(servidor);
     const respuesta = await fetch(url, pedidoChat(null, "hola", TIPO_CONTENIDO.JSON));
     expect(respuesta.status).toBe(RESPUESTA_HTTP.OK);
-    const cuerpo: ChatJsonResponse = await respuesta.json();
+    const cuerpo: ChatJsonResponse = JSON.parse(await respuesta.text());
     expect(cuerpo.reply).toBe("Listo.");
   });
 
@@ -145,9 +148,11 @@ describe("POST /api/chat sobre un socket real", () => {
       ...pedidoChat(null, `procesa el caso ${CASO}`),
       signal: corte.signal,
     });
+    const cuerpo = respuesta.body;
+    if (cuerpo === null) throw new Error("respuesta sin cuerpo");
     const vistos: EventoAgente[] = [];
     const lectura = (async () => {
-      for await (const mensaje of eventosSse(respuesta.body ?? new ReadableStream())) {
+      for await (const mensaje of eventosSse(cuerpo)) {
         vistos.push(eventoDeFrame({ event: mensaje.event ?? "", data: mensaje.data }));
       }
     })().catch(() => undefined);
@@ -206,7 +211,7 @@ describe("POST /api/chat: latido, codificación e invariante SSE/JSON", () => {
     );
     expect(respuesta.status).toBe(RESPUESTA_HTTP.OK);
     expect(respuesta.headers.get("Content-Type")).toStartWith(TIPO_CONTENIDO.JSON);
-    const cuerpo: ChatJsonResponse = await respuesta.json();
+    const cuerpo: ChatJsonResponse = JSON.parse(await respuesta.text());
     expect(cuerpo.reply).toBe(plegado.reply);
     expect(cuerpo.toolCalls).toEqual(plegado.toolCalls);
     expect(cuerpo.needsConfirmation).toBe(plegado.needsConfirmation);
@@ -280,7 +285,13 @@ describe("POST /api/chat: cuerpos inválidos y errores contenidos", () => {
   });
 
   test("una excepción en cualquier ruta responde 500 con mensaje genérico y sin la pila", async () => {
-    const { servidor } = servidorCon([]);
+    const logs = capturarLogs();
+    const servidor = crearServidorPrueba({
+      raiz: proyecto.raiz,
+      fetch: crearFetchFalso([]).fetch,
+      entorno: { LOG_LEVEL: NIVELES_LOG.ERROR },
+      destinoLogs: logs.destino,
+    });
     servidor.app.get(`${RUTA_API.SALUD}/explota`, () => {
       throw new Error(DETALLE_INTERNO);
     });
@@ -289,5 +300,7 @@ describe("POST /api/chat: cuerpos inválidos y errores contenidos", () => {
     expect(respuesta.status).toBe(RESPUESTA_HTTP.ERROR_INTERNO);
     expect(JSON.parse(texto)).toEqual({ mensaje: MENSAJE_HTTP.errorInterno });
     expect(texto).not.toContain(DETALLE_INTERNO);
+    expect(logs.lineas().map((linea) => linea.msg)).toContain(EVENTO_HTTP.ERROR_NO_CONTROLADO);
+    expect(logs.crudas.join("")).not.toContain(CLAVE_PRUEBA);
   });
 });

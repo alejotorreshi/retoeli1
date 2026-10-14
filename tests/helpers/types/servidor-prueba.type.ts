@@ -1,4 +1,5 @@
 import type { Hono } from "hono";
+import type { DestinoBitacora } from "@/application/types/puertos-agente.type.ts";
 import type { HttpEnv } from "@/http/types/server.type.ts";
 import type { FetchLike } from "@/llm/types/provider.type.ts";
 
@@ -7,6 +8,7 @@ export type OpcionesServidorPrueba = {
   readonly fetch: FetchLike;
   readonly entorno?: Readonly<Record<string, string>>;
   readonly latidoMs?: number;
+  readonly destinoLogs?: DestinoBitacora;
 };
 
 export type FrameSse = {

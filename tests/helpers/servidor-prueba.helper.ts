@@ -27,7 +27,7 @@ export function cabecerasPrueba(extra?: RequestInit["headers"]): Headers {
 export const MARCA_COMENTARIO = ":";
 
 export function eventosSse(
-  cuerpo: ReadableStream<Uint8Array>,
+  cuerpo: NonNullable<Response["body"]>,
   alComentar: (comentario: string) => void = () => undefined,
 ): ReadableStream<EventSourceMessage> {
   return cuerpo
@@ -69,6 +69,7 @@ export function crearServidorPrueba(opciones: OpcionesServidorPrueba): ServidorP
     envSource: { LLM_API_KEY: CLAVE_PRUEBA, LOG_LEVEL: NIVELES_LOG.SILENCIO, ...opciones.entorno },
     wait: async () => undefined,
     ...(opciones.latidoMs === undefined ? {} : { heartbeatMs: opciones.latidoMs }),
+    ...(opciones.destinoLogs === undefined ? {} : { logDestination: opciones.destinoLogs }),
   });
   if (!creacion.ok) throw new Error(creacion.mensaje);
   const { app, port } = creacion;
