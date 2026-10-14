@@ -150,6 +150,31 @@ const ESPERAS: readonly string[] = [
   "Cancela",
 ];
 
+const CASO_PENDIENTE = "ec-corp-andina";
+const COLAS_DEL_SERVIDOR: readonly string[] = [
+  " el envío simulado",
+  ` el envío simulado de ${CASO_PENDIENTE}`,
+  " la confirmación",
+];
+const COLAS_DE_MOTIVO: readonly string[] = [
+  " porque falta el certificado",
+  ": falta el certificado",
+  " hasta tener el certificado",
+  " sin el certificado",
+  " pues falta el certificado",
+  " mientras falta el certificado",
+];
+const CANCELACIONES_DE_ENVIO: readonly string[] = ["cancela", "detén"];
+const COLAS_DE_CANCELACION: readonly string[] = [
+  "",
+  " el envío",
+  " el envío simulado",
+  " la confirmación",
+  ` el envío de ${CASO_PENDIENTE}`,
+  " porque falta el certificado",
+  ": falta el certificado",
+];
+
 const CONFIRMACIONES: readonly string[] = [
   "sí",
   "envía",
@@ -193,6 +218,10 @@ export const NEGACIONES_10A43AD: ReadonlySet<string> = new Set([
 
 function mayuscula(texto: string): string {
   return texto.charAt(0).toUpperCase() + texto.slice(1);
+}
+
+function minuscula(texto: string): string {
+  return texto.charAt(0).toLowerCase() + texto.slice(1);
 }
 
 function sinApertura(pregunta: string): string {
@@ -272,8 +301,62 @@ export function nuncaCancelanPreguntasYAjenos(): readonly string[] {
   ];
 }
 
+export const RELLENO_10A43AD: ReadonlySet<string> = new Set([
+  "por",
+  "favor",
+  "porfa",
+  "ya",
+  "ahora",
+  "el",
+  "la",
+  "lo",
+  "los",
+  "caso",
+  "paquete",
+  "envio",
+  "de",
+  "del",
+  "una",
+  "vez",
+  "gracias",
+  "entonces",
+  "todo",
+  "bien",
+  "y",
+  "con",
+]);
+
+function rechazosConRedaccionYCaso(): readonly string[] {
+  const caso = CASO_PENDIENTE;
+  return [
+    ...["no", "nunca"].flatMap((neg) =>
+      ["", "lo "].flatMap((pron) =>
+        GENERICOS.flatMap((verbo) =>
+          [...COLAS_DEL_SERVIDOR, ...COLAS_DE_MOTIVO].map((cola) => `${neg} ${pron}${verbo}${cola}`),
+        ),
+      ),
+    ),
+    ...MODALES.flatMap((modal) =>
+      INFINITIVOS.flatMap((inf) => COLAS_DE_MOTIVO.map((cola) => `${modal} ${inf}${cola}`)),
+    ),
+    "no quiero confirmar el envío simulado",
+    ...CANCELACIONES_DE_ENVIO.flatMap((cancela) => COLAS_DE_CANCELACION.map((cola) => `${cancela}${cola}`)),
+    ...ESPERAS.flatMap((espera) => [
+      `${espera}, ${caso}`,
+      `${espera} ${caso}`,
+      `${caso} ${minuscula(espera)}`,
+      `${caso}, ${minuscula(espera)}`,
+      `${espera} el paquete de ${caso}`,
+      `el paquete de ${caso} ${minuscula(espera)}`,
+      `${espera}, el de ${caso} tiene bloqueos`,
+      `${espera}, falta el certificado de ${caso}`,
+    ]),
+  ];
+}
+
 export function siempreCancelan(): readonly string[] {
   return [
+    ...rechazosConRedaccionYCaso(),
     ...NEGADORES_DE_ENVIO.flatMap((neg) =>
       PRONOMBRES_DE_ENVIO.flatMap((pron) =>
         SUBJUNTIVOS_DE_ENVIO.flatMap((verbo) =>
@@ -304,17 +387,20 @@ export function siempreCancelan(): readonly string[] {
   ];
 }
 
-export function estresDeConfirmacion(palabras: readonly string[]): readonly string[] {
+export function estresMismaClausula(palabras: readonly string[]): readonly string[] {
   return CONFIRMACIONES.flatMap((conf) =>
-    palabras.flatMap((w) => [
-      `${conf} ${w}`,
-      `${w}, ${conf}`,
-      `${w} ${conf}`,
-      `${conf}, ${w}`,
-      `${conf} ${w} por favor`,
-      `${w}. ${conf}.`,
-    ]),
+    palabras.flatMap((w) => [`${conf} ${w}`, `${w} ${conf}`, `${conf} ${w} por favor`]),
   );
+}
+
+export function estresClausulaAparte(palabras: readonly string[]): readonly string[] {
+  return CONFIRMACIONES.flatMap((conf) =>
+    palabras.flatMap((w) => [`${w}, ${conf}`, `${conf}, ${w}`, `${w}. ${conf}.`]),
+  );
+}
+
+export function estresDeConfirmacion(palabras: readonly string[]): readonly string[] {
+  return [...estresMismaClausula(palabras), ...estresClausulaAparte(palabras)];
 }
 
 export function atajoPrevio(texto: string): DecisionConfirmacion["decision"] | null {

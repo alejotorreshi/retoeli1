@@ -765,65 +765,72 @@ function envioConErrorInterno(fallosRestantes: number): RegistroHerramientas {
   };
 }
 
-describe("G-02-2 (D-63.9): con dos casos pendientes, un pedido que nombra un caso no cancela y un rechazo explícito cancela los dos", () => {
-  test.each(["procesa co-industrias-delta, no pe-andes", "No, el de pe-andes", "Para pe-andes, ¿qué falta?"])(
-    "%p con dos pendientes no cancela ninguno",
-    async (frase) => {
-      const prueba = agente([
-        ...armarCaso(EC),
-        ...armarCaso(CO),
-        respuestaTexto("Listo, revisé."),
-        ...enviar("simular-ec", EC),
-        ...enviar("simular-co", CO),
-      ]);
-      await prueba.turno(`procesa ${EC}`);
-      const turno2 = await prueba.turno(`procesa el caso ${CO}`);
-      expect(casosPorConfirmar(turno2)).toEqual([EC, CO]);
+describe("G-02-2 (D-63.9, CR-05, D-63.10): con dos casos pendientes, un pedido que nombra un caso no cancela y un rechazo explícito cancela los dos", () => {
+  test.each([
+    "procesa co-industrias-delta, no pe-andes",
+    "No, el de pe-andes",
+    "Para pe-andes, ¿qué falta?",
+    "procesa co-industrias-delta, no ec-corp-andina",
+    "No, consulta el NIT de co-industrias-delta",
+  ])("%p con dos pendientes no cancela ninguno", async (frase) => {
+    const prueba = agente([
+      ...armarCaso(EC),
+      ...armarCaso(CO),
+      respuestaTexto("Listo, revisé."),
+      ...enviar("simular-ec", EC),
+      ...enviar("simular-co", CO),
+    ]);
+    await prueba.turno(`procesa ${EC}`);
+    const turno2 = await prueba.turno(`procesa el caso ${CO}`);
+    expect(casosPorConfirmar(turno2)).toEqual([EC, CO]);
 
-      const turno3 = await prueba.turno(frase);
-      expect(finesDeHerramienta(turno3)).toEqual([]);
-      expect(casosPorConfirmar(turno3)).toEqual([EC, CO]);
-      expect(textoFinal(turno3).trimEnd().endsWith(PREGUNTA_VARIOS)).toBe(true);
-      expect(finDeTurno(turno3).needsConfirmation).toBe(true);
+    const turno3 = await prueba.turno(frase);
+    expect(finesDeHerramienta(turno3)).toEqual([]);
+    expect(casosPorConfirmar(turno3)).toEqual([EC, CO]);
+    expect(textoFinal(turno3).trimEnd().endsWith(PREGUNTA_VARIOS)).toBe(true);
+    expect(finDeTurno(turno3).needsConfirmation).toBe(true);
 
-      const turno4 = await prueba.turno(`envía ${EC}`);
-      expect(finesDeHerramienta(turno4)).toEqual([exitosa()]);
-      expect(casosPorConfirmar(turno4)).toEqual([CO]);
+    const turno4 = await prueba.turno(`envía ${EC}`);
+    expect(finesDeHerramienta(turno4)).toEqual([exitosa()]);
+    expect(casosPorConfirmar(turno4)).toEqual([CO]);
 
-      const turno5 = await prueba.turno("sí");
-      expect(finesDeHerramienta(turno5)).toEqual([exitosa()]);
-      expect(await casosConEnvioSimulado(proyecto.raiz)).toEqual([CO, EC]);
-      expect(await enviosOk()).toBe(2);
-      historialSano(prueba);
-    },
-  );
+    const turno5 = await prueba.turno("sí");
+    expect(finesDeHerramienta(turno5)).toEqual([exitosa()]);
+    expect(await casosConEnvioSimulado(proyecto.raiz)).toEqual([CO, EC]);
+    expect(await enviosOk()).toBe(2);
+    historialSano(prueba);
+  });
 
-  test.each(["espera un momento", "no quiero enviarlo todavía", "todavía no qué falta?"])(
-    "%p con dos pendientes cancela los dos",
-    async (frase) => {
-      const prueba = agente([
-        ...armarCaso(EC),
-        ...armarCaso(CO),
-        respuestaTexto("Entendido, no envío nada."),
-        ...enviar("simular-ec", EC),
-      ]);
-      await prueba.turno(`procesa ${EC}`);
-      const turno2 = await prueba.turno(`procesa el caso ${CO}`);
-      expect(casosPorConfirmar(turno2)).toEqual([EC, CO]);
+  test.each([
+    "espera un momento",
+    "no quiero enviarlo todavía",
+    "todavía no qué falta?",
+    "co-industrias-delta todavía no",
+    "no confirmo el envío simulado",
+    "No, el de co-industrias-delta",
+  ])("%p con dos pendientes cancela los dos", async (frase) => {
+    const prueba = agente([
+      ...armarCaso(EC),
+      ...armarCaso(CO),
+      respuestaTexto("Entendido, no envío nada."),
+      ...enviar("simular-ec", EC),
+    ]);
+    await prueba.turno(`procesa ${EC}`);
+    const turno2 = await prueba.turno(`procesa el caso ${CO}`);
+    expect(casosPorConfirmar(turno2)).toEqual([EC, CO]);
 
-      const turno3 = await prueba.turno(frase);
-      expect(finesDeHerramienta(turno3)).toEqual([]);
-      expect(confirmaciones(turno3)).toEqual([]);
-      expect(finDeTurno(turno3).needsConfirmation).toBe(false);
-      expect(textoFinal(turno3)).toBe("Entendido, no envío nada.");
+    const turno3 = await prueba.turno(frase);
+    expect(finesDeHerramienta(turno3)).toEqual([]);
+    expect(confirmaciones(turno3)).toEqual([]);
+    expect(finDeTurno(turno3).needsConfirmation).toBe(false);
+    expect(textoFinal(turno3)).toBe("Entendido, no envío nada.");
 
-      const turno4 = await prueba.turno(`envía ${EC}`);
-      expect(finesDeHerramienta(turno4)).toEqual([bloqueada()]);
-      expect(await enviosOk()).toBe(0);
-      expect(await casosConEnvioSimulado(proyecto.raiz)).toEqual([]);
-      historialSano(prueba);
-    },
-  );
+    const turno4 = await prueba.turno(`envía ${EC}`);
+    expect(finesDeHerramienta(turno4)).toEqual([bloqueada()]);
+    expect(await enviosOk()).toBe(0);
+    expect(await casosConEnvioSimulado(proyecto.raiz)).toEqual([]);
+    historialSano(prueba);
+  });
 });
 
 describe("WR-02 (D-63.7): un envío autorizado que falla vuelve a dejar el caso pendiente", () => {

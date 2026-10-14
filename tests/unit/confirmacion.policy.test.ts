@@ -2,24 +2,30 @@ import { describe, expect, test } from "bun:test";
 import {
   atajoPrevio,
   CONECTORES_DE_CABEZA,
+  estresClausulaAparte,
   estresDeConfirmacion,
+  estresMismaClausula,
   NEGACIONES_10A43AD,
   nuncaCancelanCabeza,
   nuncaCancelanDentro,
   nuncaCancelanPreguntasYAjenos,
   PALABRAS_DENTRO_DE_FRASE,
+  RELLENO_10A43AD,
   siempreCancelan,
 } from "@tests/helpers/corpus-confirmacion.helper.ts";
 import {
   ACUSES,
   AFIRMACIONES,
   CANCELACIONES,
+  COMPLEMENTOS_DE_ENVIO,
+  CORTES_DE_COMPLEMENTO,
   DECISION_CONFIRMACION,
   NEGACIONES,
   NEGADORES,
   NUCLEOS_DE_RECHAZO,
   RELLENO,
   SI_SIN_TILDE,
+  VERBOS_DE_PEDIDO,
   VERBOS_ENVIO,
   VERBOS_GENERICOS_NEGABLES,
 } from "@/config/constants/confirmation.constants.ts";
@@ -28,6 +34,7 @@ import { HERRAMIENTA } from "@/config/constants/tools.constants.ts";
 import { EJEMPLOS_CONFIRMACION, TEXTO_CIERRE, TEXTO_CONFIRMACION } from "@/config/strings.ts";
 import { clasificarConfirmacion } from "@/domain/policies/confirmacion.policy.ts";
 import type { DecisionConfirmacion } from "@/domain/types/confirmacion.type.ts";
+import { sinDiacriticos } from "@/domain/utils/normalizar.util.ts";
 
 const EC = "ec-corp-andina";
 const CO = "co-industrias-delta";
@@ -484,11 +491,34 @@ describe("clasificarConfirmacion: clases generadas que nunca y siempre cancelan 
   });
 });
 
+const PALABRAS_DE_ESTRES: readonly string[] = [...PALABRAS_DE_RECHAZO, ...PALABRAS_DENTRO_DE_FRASE];
+const NUCLEOS_DE_ESTRES: readonly string[] = PALABRAS_DE_ESTRES.filter((palabra) =>
+  NUCLEOS_DE_RECHAZO.has(sinDiacriticos(palabra)),
+);
+const CONECTORES_DE_ESTRES: readonly string[] = PALABRAS_DE_ESTRES.filter(
+  (palabra) => !NUCLEOS_DE_RECHAZO.has(sinDiacriticos(palabra)),
+);
+const MEZCLAS: readonly string[] = [
+  ...estresMismaClausula(PALABRAS_DE_ESTRES),
+  ...estresClausulaAparte(CONECTORES_DE_ESTRES),
+];
+const NEGACIONES_GENERICAS_DE_ESTRES: ReadonlySet<string> = new Set(
+  PALABRAS_DE_ESTRES.filter((palabra) => NEGADORES.has(sinDiacriticos(palabra))).map(
+    (palabra) => `${palabra} confirmo`,
+  ),
+);
+
+function decisionDeMezcla(mensaje: string): string {
+  return NEGACIONES_GENERICAS_DE_ESTRES.has(mensaje)
+    ? DECISION_CONFIRMACION.RECHAZA
+    : DECISION_CONFIRMACION.OTRO;
+}
+
 describe("clasificarConfirmacion: comparación con el clasificador anterior a 02-22 (10a43ad, D-63.9)", () => {
   const corpus = [
     ...nuncaCancelan(),
     ...siempreCancelan(),
-    ...estresDeConfirmacion([...PALABRAS_DE_RECHAZO, ...PALABRAS_DENTRO_DE_FRASE]),
+    ...estresDeConfirmacion(PALABRAS_DE_ESTRES),
     ...TABLAS.map(([texto]) => texto),
   ];
   const declarados: ReadonlySet<string> = new Set([
@@ -526,6 +556,38 @@ describe("clasificarConfirmacion: comparación con el clasificador anterior a 02
     );
     expect(infracciones).toEqual([]);
   });
+
+  test("las mezclas de una confirmación con una palabra de rechazo tienen una decisión fija (D-63.10)", () => {
+    expect(MEZCLAS).toHaveLength(1590);
+    const infracciones = infraccionesDe(
+      MEZCLAS,
+      (mensaje, decision) => decision !== decisionDeMezcla(mensaje),
+    );
+    expect(infracciones).toEqual([]);
+  });
+
+  test("lo que el clasificador anterior rechazaba solo deja de rechazar si está declarado otro (CR-05, D-63.10)", () => {
+    const declaradosOtro: ReadonlySet<string> = new Set([
+      ...nuncaCancelan(),
+      ...TABLAS.filter(([, , esperado]) => esperado.decision === DECISION_CONFIRMACION.OTRO).map(
+        ([texto]) => texto,
+      ),
+      ...MEZCLAS.filter((mensaje) => decisionDeMezcla(mensaje) === DECISION_CONFIRMACION.OTRO),
+    ]);
+    const infracciones = infraccionesDe(
+      corpus,
+      (mensaje, decision) =>
+        atajoPrevio(mensaje) === DECISION_CONFIRMACION.RECHAZA &&
+        decision === DECISION_CONFIRMACION.OTRO &&
+        !declaradosOtro.has(mensaje),
+    );
+    expect(infracciones).toEqual([]);
+  });
+
+  test("una palabra núcleo en su propia cláusula junto a una confirmación cancela (D-63.10)", () => {
+    const mensajes = estresClausulaAparte(NUCLEOS_DE_ESTRES);
+    expect(infraccionesDe(mensajes, (_, decision) => decision !== DECISION_CONFIRMACION.RECHAZA)).toEqual([]);
+  });
 });
 
 describe("clasificarConfirmacion: vocabulario del rechazo (D-63.9)", () => {
@@ -545,11 +607,25 @@ describe("clasificarConfirmacion: vocabulario del rechazo (D-63.9)", () => {
     const nucleos = [...NUCLEOS_DE_RECHAZO, ...CANCELACIONES];
     expect(nucleos.filter((palabra) => VOCABULARIO_DE_CONFIRMACION.has(palabra))).toEqual([]);
   });
+
+  test("RELLENO conserva sus 22 palabras (D-63.10)", () => {
+    expect([...RELLENO].sort()).toEqual([...RELLENO_10A43AD].sort());
+  });
+
+  test("los complementos de envío, los cortes y los verbos de pedido no son vocabulario de confirmación ni de rechazo (D-63.10)", () => {
+    const nuevas = [...COMPLEMENTOS_DE_ENVIO, ...CORTES_DE_COMPLEMENTO, ...VERBOS_DE_PEDIDO];
+    expect(
+      nuevas.filter((palabra) => VOCABULARIO_DE_CONFIRMACION.has(palabra) || NEGACIONES.has(palabra)),
+    ).toEqual([]);
+  });
 });
 
-function medir(texto: string): { readonly decision: string; readonly ms: number } {
+function medir(
+  texto: string,
+  pendientes: readonly string[] = UNO,
+): { readonly decision: string; readonly ms: number } {
   const inicio = performance.now();
-  const { decision } = clasificarConfirmacion(texto, UNO);
+  const { decision } = clasificarConfirmacion(texto, pendientes);
   return { decision, ms: performance.now() - inicio };
 }
 
@@ -566,6 +642,33 @@ describe("clasificarConfirmacion: tiempo lineal (T-02-71, IN-28)", () => {
 
   test("'No, ' repetido 100000 veces con una pregunta al final rechaza en menos de un segundo", () => {
     const { decision, ms } = medir(`${"No, ".repeat(100_000)}¿qué falta?`);
+    expect(decision).toBe(DECISION_CONFIRMACION.RECHAZA);
+    expect(ms).toBeLessThan(UN_SEGUNDO_MS);
+  });
+});
+
+describe("clasificarConfirmacion: tiempo lineal de punta a punta, también por la gramática de confirmación (WR-25, T-02-77)", () => {
+  test.each([
+    ["'a' repetida 200000 veces", "a".repeat(200_000)],
+    ["'1' repetido 200000 veces", "1".repeat(200_000)],
+    ["'no ' y 'a' repetida 200000 veces", `no ${"a".repeat(200_000)}`],
+  ])("%s sin caso pendiente da otro en menos de un segundo", (_, texto) => {
+    const { decision, ms } = medir(texto, NINGUNO);
+    expect(decision).toBe(DECISION_CONFIRMACION.OTRO);
+    expect(ms).toBeLessThan(UN_SEGUNDO_MS);
+  });
+
+  test.each([
+    [
+      "'no confirmo' con 'el envío simulado' repetido 50000 veces",
+      `no confirmo ${"el envío simulado ".repeat(50_000)}`,
+    ],
+    [
+      "'mejor no el paquete de ec-corp-andina' repetido 50000 veces",
+      `mejor no el paquete de ${EC} `.repeat(50_000),
+    ],
+  ])("%s rechaza en menos de un segundo", (_, texto) => {
+    const { decision, ms } = medir(texto, UNO);
     expect(decision).toBe(DECISION_CONFIRMACION.RECHAZA);
     expect(ms).toBeLessThan(UN_SEGUNDO_MS);
   });
