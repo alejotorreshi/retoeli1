@@ -1,146 +1,158 @@
 ---
 phase: 02-agente-y-compuerta-de-confirmaci-n
-verified: 2026-10-13T22:45:00Z
-status: human_needed
-score: 21/22 must-haves verified
-covered_files: [".env.example",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-01-PLAN.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-01-SUMMARY.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-02-PLAN.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-02-SUMMARY.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-03-PLAN.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-03-SUMMARY.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-04-PLAN.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-04-SUMMARY.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-05-PLAN.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-05-SUMMARY.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-06-PLAN.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-06-SUMMARY.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-07-PLAN.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-07-SUMMARY.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-08-PLAN.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-08-SUMMARY.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-09-PLAN.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-09-SUMMARY.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-10-PLAN.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-10-SUMMARY.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-11-PLAN.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-11-SUMMARY.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-12-PLAN.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-12-SUMMARY.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-13-PLAN.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-13-SUMMARY.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-14-PLAN.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-14-SUMMARY.md","agent/prompt.md","docs/estructura.md","package.json","src/application/types/puertos-agente.type.ts","src/config/constants/agent.constants.ts","src/config/constants/confirmacion.constants.ts","src/config/constants/files.constants.ts","src/config/constants/llm.constants.ts","src/config/constants/logging.constants.ts","src/config/constants/patterns.constants.ts","src/config/constants/redaccion.constants.ts","src/config/constants/tools.constants.ts","src/config/env.ts","src/config/strings.ts","src/domain/builders/cierre-turno.builder.ts","src/domain/policies/compuerta.policy.ts","src/domain/policies/confirmacion.policy.ts","src/domain/policies/redaccion.policy.ts","src/domain/types/cierre-turno.type.ts","src/domain/types/compuerta.type.ts","src/domain/types/confirmacion.type.ts","src/domain/utils/texto-plano.util.ts","src/infra/clock/clock.adapter.ts","src/infra/clock/sleep.util.ts","src/infra/knowledge/instructions-loader.adapter.ts","src/infra/logging/logger.adapter.ts","src/infra/sessions/memory-session-store.adapter.ts","src/infra/types/logger.type.ts","src/infra/types/session-store.type.ts","src/knowledge/registro-proveedor.md","src/llm/adapters/openai-compatible.adapter.ts","src/llm/decorators/fallback.decorator.ts","src/llm/decorators/observacion.decorator.ts","src/llm/decorators/retry.decorator.ts","src/llm/decorators/timeout.decorator.ts","src/llm/mappers/provider-error.mapper.ts","src/llm/mappers/wire-messages.mapper.ts","src/llm/schemas/chat-completion.schema.ts","src/llm/types/llm.type.ts","src/llm/types/provider.type.ts","src/llm/types/resiliencia.type.ts","src/loop/schemas/resultado-herramienta.schema.ts","src/loop/services/bitacora-turno.service.ts","src/loop/services/cierre-turno.service.ts","src/loop/services/despacho-llamada.service.ts","src/loop/services/ejecutar-turno.service.ts","src/loop/services/presupuesto.service.ts","src/loop/services/registro-herramientas.service.ts","src/loop/services/respuesta-turno.service.ts","src/loop/services/tope-iteraciones.service.ts","src/loop/types/agente.type.ts","src/loop/types/evento.type.ts","src/loop/types/turno.type.ts","src/loop/wiring/agente.wiring.ts","src/tools/wiring/entorno.wiring.ts","tests/architecture.test.ts","tests/contract/env-agente.test.ts","tests/contract/instrucciones-agente.test.ts","tests/e2e/pii.test.ts","tests/fixtures/casos/zz-inyeccion/plantilla-campos.json","tests/fixtures/casos/zz-inyeccion/solicitud.json","tests/fixtures/casos/zz-inyeccion/soportes-exigidos.json","tests/fixtures/llm/completion-texto.json","tests/fixtures/llm/completion-tool-calls.json","tests/helpers/adaptador-guion.helper.ts","tests/helpers/agente-fetch.helper.ts","tests/helpers/agente-prueba.helper.ts","tests/helpers/bitacora.helper.ts","tests/helpers/eventos.helper.ts","tests/helpers/fetch-falso.helper.ts","tests/helpers/historial.helper.ts","tests/helpers/llm-falso.helper.ts","tests/helpers/pii.helper.ts","tests/helpers/types/adaptador-guion.type.ts","tests/helpers/types/agente-fetch.type.ts","tests/helpers/types/agente-prueba.type.ts","tests/helpers/types/bitacora.type.ts","tests/helpers/types/eventos.type.ts","tests/helpers/types/fetch-falso.type.ts","tests/helpers/types/llm-falso.type.ts","tests/helpers/types/pii.type.ts","tests/live/agente-en-vivo.test.ts","tests/loop/bitacora.test.ts","tests/loop/compuerta-casos.test.ts","tests/loop/compuerta.test.ts","tests/loop/fallback.test.ts","tests/loop/instrucciones.test.ts","tests/loop/inyeccion.test.ts","tests/loop/pii-modelo.test.ts","tests/loop/presupuesto.test.ts","tests/loop/resiliencia.test.ts","tests/loop/sesion.test.ts","tests/loop/tope.test.ts","tests/loop/trazador-agente.test.ts","tests/unit/cierre-turno.builder.test.ts","tests/unit/clock.adapter.test.ts","tests/unit/compuerta.policy.test.ts","tests/unit/confirmacion.policy.test.ts","tests/unit/fallback.decorator.test.ts","tests/unit/logger.adapter.test.ts","tests/unit/memory-session-store.adapter.test.ts","tests/unit/observacion.decorator.test.ts","tests/unit/openai-compatible.adapter.test.ts","tests/unit/provider-error.mapper.test.ts","tests/unit/redaccion.policy.test.ts","tests/unit/retry.decorator.test.ts","tests/unit/sleep.util.test.ts","tests/unit/texto-plano.util.test.ts","tests/unit/timeout.decorator.test.ts","tests/unit/wire-messages.mapper.test.ts"]
-covered_digest: "v3:sha256:aa3417a1f6f8257a18c61694cf9975fefd791e76646d5170531d39098c7238ee"
+verified: 2026-10-14T01:48:03Z
+status: gaps_found
+score: 25/28 must-haves verified
+covered_files: [".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-01-PLAN.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-01-SUMMARY.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-02-PLAN.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-02-SUMMARY.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-03-PLAN.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-03-SUMMARY.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-04-PLAN.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-04-SUMMARY.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-05-PLAN.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-05-SUMMARY.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-06-PLAN.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-06-SUMMARY.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-07-PLAN.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-07-SUMMARY.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-08-PLAN.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-08-SUMMARY.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-09-PLAN.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-09-SUMMARY.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-10-PLAN.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-10-SUMMARY.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-11-PLAN.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-11-SUMMARY.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-12-PLAN.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-12-SUMMARY.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-13-PLAN.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-13-SUMMARY.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-14-PLAN.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-14-SUMMARY.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-15-PLAN.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-15-SUMMARY.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-16-PLAN.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-16-SUMMARY.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-17-PLAN.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-17-SUMMARY.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-18-PLAN.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-18-SUMMARY.md",".qa/evidence/02-agente-y-compuerta-de-confirmaci-n/seeds/02-T04-clasificador-confirmacion.ts","agent/prompt.md","src/application/types/puertos-agente.type.ts","src/config/constants/agent.constants.ts","src/config/constants/confirmation.constants.ts","src/config/constants/llm.constants.ts","src/config/constants/logging.constants.ts","src/config/constants/patterns.constants.ts","src/config/constants/redaction.constants.ts","src/config/constants/runtime.constants.ts","src/config/constants/supports.constants.ts","src/config/constants/text.constants.ts","src/config/constants/tools.constants.ts","src/config/env.ts","src/config/strings.ts","src/config/types/provider-capabilities.type.ts","src/domain/builders/cierre-turno.builder.ts","src/domain/policies/compuerta.policy.ts","src/domain/policies/confirmacion.policy.ts","src/domain/policies/redaccion.policy.ts","src/domain/policies/vigencias.policy.ts","src/domain/types/compuerta.type.ts","src/domain/types/confirmacion.type.ts","src/domain/types/json.type.ts","src/domain/types/respuesta-herramienta.type.ts","src/domain/utils/json.util.ts","src/domain/utils/normalizar.util.ts","src/domain/utils/respuesta-herramienta.util.ts","src/domain/utils/texto-plano.util.ts","src/infra/fixtures/fixtures-reader.adapter.ts","src/infra/fixtures/schemas/fixtures.schema.ts","src/infra/fs/fs.util.ts","src/infra/knowledge/rules-loader.adapter.ts","src/infra/logging/logger.adapter.ts","src/infra/types/logger.type.ts","src/knowledge/registro-proveedor.md","src/llm/adapters/openai-compatible.adapter.ts","src/llm/decorators/fallback.decorator.ts","src/llm/decorators/observation.decorator.ts","src/llm/decorators/retry.decorator.ts","src/llm/decorators/timeout.decorator.ts","src/llm/mappers/provider-error.mapper.ts","src/llm/mappers/wire-messages.mapper.ts","src/llm/types/provider.type.ts","src/llm/types/resilience.type.ts","src/loop/schemas/resultado-herramienta.schema.ts","src/loop/services/bitacora-turno.service.ts","src/loop/services/cierre-error.service.ts","src/loop/services/cierre-turno.service.ts","src/loop/services/conversacion-turno.service.ts","src/loop/services/despacho-llamada.service.ts","src/loop/services/ejecutar-turno.service.ts","src/loop/services/guardado-turno.service.ts","src/loop/services/paso-herramientas.service.ts","src/loop/services/presupuesto.service.ts","src/loop/services/registro-herramientas.service.ts","src/loop/services/respuesta-turno.service.ts","src/loop/types/agente.type.ts","src/loop/types/resultado-herramienta.type.ts","src/loop/types/turno.type.ts","src/loop/wiring/agente.wiring.ts","src/tools/factories/definir-herramienta.factory.ts","tests/architecture.test.ts","tests/contract/env-agente.test.ts","tests/contract/instrucciones-agente.test.ts","tests/helpers/agente-fetch.helper.ts","tests/helpers/agente-prueba.helper.ts","tests/helpers/eventos.helper.ts","tests/helpers/llm-falso.helper.ts","tests/helpers/pii.helper.ts","tests/helpers/types/agente-fetch.type.ts","tests/helpers/types/bitacora.type.ts","tests/live/agente-en-vivo.test.ts","tests/loop/bitacora.test.ts","tests/loop/compuerta-casos.test.ts","tests/loop/compuerta.test.ts","tests/loop/fallback.test.ts","tests/loop/pii-modelo.test.ts","tests/loop/presupuesto.test.ts","tests/loop/resiliencia.test.ts","tests/loop/sesion.test.ts","tests/loop/tope.test.ts","tests/loop/trazador-agente.test.ts","tests/unit/cierre-turno.builder.test.ts","tests/unit/compuerta.policy.test.ts","tests/unit/confirmacion.policy.test.ts","tests/unit/fallback.decorator.test.ts","tests/unit/json.util.test.ts","tests/unit/logger.adapter.test.ts","tests/unit/normalizar.util.test.ts","tests/unit/observation.decorator.test.ts","tests/unit/openai-compatible.adapter.test.ts","tests/unit/provider-error.mapper.test.ts","tests/unit/redaccion.policy.test.ts","tests/unit/respuesta-herramienta.util.test.ts","tests/unit/retry.decorator.test.ts","tests/unit/texto-plano.util.test.ts"]
+covered_digest: "v3:sha256:f49c223c3839aae80d76a5c47d7157aea35bb2fbf156643ef8a3b9a43ed7cc95"
 behavior_unverified: 0
 overrides_applied: 0
 re_verification:
-  previous_status: gaps_found
-  previous_score: 12/16
+  previous_status: human_needed
+  previous_score: 21/22
   gaps_closed:
-    - "ROADMAP criterio 2 / ENV-02: solo una confirmación explícita del mensaje inmediatamente siguiente autoriza el envío (clasificador conservador: ante la duda, otro). CR-01, cerrado por 02-14"
-    - "ROADMAP criterio 2 / ENV-03 / ENV-02: con un caso pendiente, el turno termina con la pregunta del servidor que lista los bloqueos, y la confirmación siguiente responde a ESA pregunta. CR-02, cerrado por 02-10"
-    - "AGT-04 / CA5: el historial queda íntegro y cada pedido posterior de la sesión es válido, también después de un paso cortado por finish_reason=length. CR-03, cerrado por 02-11"
+    - "G-02-3 (UAT T03): un caso ya enviado no se reabre con un simular_envio bloqueado, ni en el mismo turno ni en turnos posteriores; un armado nuevo abre otro ciclo (02-15, D-63.4)"
+    - "G-02-18 (UAT H2), parte del clasificador: un acuse suelto o un 'si' sin tilde acompañado nunca autoriza; 'sí' con tilde, 'si' solo y los verbos de envío sí (02-16, D-63.5)"
+    - "G-02-19 (UAT H3), caso de un solo issue: el mensaje de URL no segura termina con un solo punto y ningún error de arranque promete una sesión abierta (02-17)"
+    - "G-02-21 (UAT H5/H1), parte textual: el prompt y el conocimiento dejan la pregunta de cierre al servidor y acotan la respuesta del turno de confirmación (02-18)"
+    - "Revisión humana 2 de la verificación anterior (decisión WR-01 sobre acuses): resuelta por la usuaria en UAT H2 (endurecer) e implementada en 02-16"
   gaps_remaining: []
-  regressions: []
-human_verification:
-  - test: "Revisión CA2 de las respuestas en vivo (prohibición de nivel judgment de 02-09 y human-check diferido de 02-13). Lee las tres respuestas de `bun run test:vivo`, ya sea de la corrida de 02-13 o de una nueva con la clave en .env"
-    expected: "co-industrias-delta: texto plano construido solo con resultados de herramientas, cuyo último párrafo es la pregunta LISTO del servidor. §11 turno 1: caso y out/ec-corp-andina/, 13 llenos, 1 faltante, 1 por confirmar, 'Número de contribuyente especial', RUC por confirmar con su nota, 'Certificado de cumplimiento tributario' y BLOQUEADO; sin segunda pregunta del modelo, y como último párrafo la pregunta del servidor con el bloqueo legible. Turno 2: envío simulado solo de ec-corp-andina, sin correo real ni firma. Ningún valor sin máscara, y ninguna afirmación de lleno, enviado o firmado sin un resultado ok de una herramienta. En particular, el modelo nunca dice que registró un envío si no llamó a proveedor_simular_envio (riesgo WR-04)"
-    why_human: "Es una prohibición de nivel judgment. La lectura que registró 02-13-SUMMARY.md la hizo el ejecutor, que es un LLM, así que ese veredicto no es autoritativo. Además, la línea 'VIVO PASS modelo=deepseek-flash llamadas=12 tokens=79292' la reportó el ejecutor, y el verificador no la reprodujo para no gastar la clave personal"
-  - test: "Decisión de producto sobre WR-01: ¿un acuse suelto ('ok', 'listo', 'vale', 'claro', 'correcto', 'ok ok') o 'si todo bien', en respuesta a '¿Confirmas el envío simulado de <caso>?', cuenta como confirmación explícita?"
-    expected: "Una de dos. (a) Se acepta tal como está implementado (tabla D-39 que conserva 02-14) y el riesgo queda documentado en SOLUCION.md. (b) Se endurece la gramática para exigir una afirmación fuerte o un verbo de envío; mover 'ok', 'vale', 'listo' y 'claro, ok' a OTRO en tests/unit/confirmacion.policy.test.ts es un cambio de pocas líneas"
-    why_human: "El código hace exactamente lo que fija el plan 02-14 ('ok' sigue confirmando). Que un acuse suelto sea una confirmación explícita es una decisión de producto sobre el valor central (ninguna acción externa sin confirmación humana explícita), no un defecto que se pueda resolver con grep o con tests"
+  regressions:
+    - "Con 02-16, 'ok', 'listo', 'si por favor', 'si gracias' y 'si ec-corp-andina' pasaron a 'otro' y liberan la compuerta (D-37). Con 02-18, prompt.md:50,53 manda al modelo a pedir él mismo la confirmación. La confirmación explícita que la analista da a continuación queda bloqueada con CONFIRMACION_REQUERIDA (CR-01 de 02-REVIEW.md, reproducido por el verificador)"
+gaps:
+  - truth: "Después de una respuesta que no confirma ('ok', 'listo', 'si por favor'…), el agente vuelve a preguntar (D-39, UAT G-02-18 'the agent asks again', 02-18 verdad 3) y la confirmación explícita de la analista en el mensaje siguiente escribe ENVIO-SIMULADO.md una sola vez. La pregunta de confirmación la pone siempre el servidor, con needsConfirmation y los bloqueos (ENV-03, prohibición de 02-18)"
+    status: failed
+    reason: "abrirTurno devuelve sinAutorizacion() con siguiente LIBRE para 'otro' (compuerta.policy.ts:59) y arrastradosDe solo arrastra casos si preguntarCual es true (ejecutar-turno.service.ts:46-49). Así, el turno del 'ok' cierra con needsConfirmation=false y sin la pregunta del servidor. A la vez, agent/prompt.md:50 ('pide una confirmación explícita, como \"envía\" o \"sí\"') y :53 ('vuelve a preguntar en lugar de enviar') hacen que el modelo escriba su propia pregunta, contra prompt.md:33 y contra la prohibición de 02-18. El 'sí' siguiente encuentra la compuerta LIBRE y no autoriza nada; el simular_envio del modelo recibe CONFIRMACION_REQUERIDA, no se escribe ENVIO-SIMULADO.md y el servidor recién entonces vuelve a preguntar. Lo reproduje con el LLM falso para 'ok', 'listo', 'si por favor', 'si gracias' y 'si ec-corp-andina': T2 needsConfirmation=false, T3 'sí' da CONFIRMACION_REQUERIDA, enviados=[] y 0 líneas ok. Ningún test lo cubre, porque el describe CR-01 de tests/loop/compuerta.test.ts:201-216 guiona un simular_envio tras la frase dudosa, que es justo lo que el prompt prohíbe."
+    artifacts:
+      - path: "src/domain/policies/compuerta.policy.ts"
+        issue: "abrirTurno (l.50-60): 'otro' cae en sinAutorizacion() y libera la compuerta en lugar de mantener el caso pendiente"
+      - path: "src/loop/services/ejecutar-turno.service.ts"
+        issue: "arrastradosDe (l.46-49) solo arrastra casos cuando preguntarCual es true"
+      - path: "agent/prompt.md"
+        issue: "l.50 y l.53 mandan al modelo a pedir la confirmación él mismo; contradice l.33 ('No escribas tú la pregunta de cierre'), registro-proveedor.md:55,63 y la prohibición de 02-18"
+      - path: "tests/loop/compuerta.test.ts"
+        issue: "el describe CR-01 (l.201-230) nunca ejecuta el guion que exige el prompt: 'ok' sin herramientas y luego 'sí'"
+    missing:
+      - "Elegir una sola semántica y aplicarla en el servidor y en el prompt. Opción A (recomendada): ante 'otro' con un caso pendiente, mantenerlo pendiente; el servidor repite su pregunta en ese turno (needsConfirmation=true, confirmation_required con bloqueos) y arrastradosDe arrastra siempre que siguiente sea PENDIENTE; 'rechaza' sigue liberando. Opción B: conservar D-37 ('otro' cancela) y cambiar prompt.md:50,53 para que el modelo diga que la confirmación quedó cancelada y que hay que volver a armar el paquete, sin pedir 'envía' o 'sí'"
+      - "En cualquiera de las dos opciones, que prompt.md no le pida al modelo escribir una pregunta de confirmación (prohibición de 02-18) y registrar la decisión en 02-CONTEXT.md (D-37 frente a D-39)"
+      - "Agregar una prueba de bucle con el guion del prompt: §11 turno 1, 'ok' sin herramientas, luego 'sí'. Con la opción A, el turno 2 tiene needsConfirmation=true y el turno 3 escribe ENVIO-SIMULADO.md una vez. Con la opción B, el texto del turno 2 no pide 'envía' ni 'sí'. Extender la semilla T04 con el mismo caso"
+behavior_unverified_items: []
 ---
 
 # Fase 2: Agente y compuerta de confirmación. Informe de verificación
 
 **Objetivo de la fase:** Un mensaje de chat como "procesa el caso X" recorre el ciclo propio prompt → DeepSeek → herramientas → respuesta, con topes de costo, resiliencia ante fallas del proveedor y una compuerta de confirmación que el servidor hace cumplir. El modelo nunca ve ni afirma valores reales.
-**Verificado:** 2026-10-13T22:45:00Z
-**Estado:** human_needed
-**Re-verificación:** Sí, después del cierre de gaps (planes 02-10 a 02-14)
+**Verificado:** 2026-10-14T01:48:03Z
+**Estado:** gaps_found
+**Re-verificación:** Sí, después del cierre de las brechas de UAT (planes 02-15 a 02-18)
 
 ## Logro del objetivo
 
-Los tres gaps de la verificación anterior (CR-01, CR-02 y CR-03) quedaron cerrados en el código. Los comprobé con pruebas nombradas y con mis propias sondas, no con lo que dicen los SUMMARY:
+Los cuatro planes de cierre hacen lo que dicen sus verdades. Lo comprobé en el código, con pruebas nombradas y con sondas propias en el scratchpad, sin fiarme de los SUMMARY:
 
-- **CR-01:** "y el envío", "el envío", "envío", "entonces el envío", "todo bien con el envío", "ok, gracias", "listo, gracias" y "vale, el paquete" dan ahora `otro`. "No envíes nada todavía" y "todavía no" dan `rechaza`.
-- **CR-02:** cuando hay un caso pendiente, `cierreConPregunta` deja siempre `preguntaConfirmacion(pendientes)` como último párrafo, y la pregunta propia del modelo ya no la reemplaza. Lo cubren los tests de ciclo (a), (a-control) y (b).
-- **CR-03:** un paso cortado se guarda con `ARGUMENTOS_VACIOS` y conserva `id` y `nombre`. Además, `toWireToolCall` nunca envía argumentos que no sean un objeto JSON. El test usa una cadena realmente truncada y pasa por el adaptador real.
+- **02-15 (G-02-3):** un caso enviado no se reabre.
+- **02-16 (G-02-18):** reproduje las 46 filas del clasificador.
+- **02-17 (G-02-19):** los literales exactos para un solo issue están fijados.
+- **02-18 (G-02-21):** el cambio es solo de prompt y conocimiento, y el contrato pasa.
 
-También quedaron resueltas las advertencias WR-02 y WR-03 de la ronda anterior: un turno de confirmación que falla devuelve el caso a pendiente, y el candado de sesión ahora es un lease con ficha.
+Las barreras pasan: `bun run check` sale con exit 0 y `bun test` da 1159 pass, 1 skip y 0 fail.
 
-Ninguna verdad obligatoria falla. El estado es `human_needed` por dos razones. La prohibición CA2 es de nivel judgment y la única lectura de las respuestas en vivo la hizo el ejecutor, que es un LLM. Y WR-01 es una decisión de producto que toca el valor central.
+**Pero la combinación de 02-16 y 02-18 rompe el flujo de re-pregunta (CR-01).** El defecto falla del lado seguro: nada se envía sin confirmación. Aun así lo cuento como bloqueante, por tres razones:
+
+1. Es justo el camino que fija la propia UAT. G-02-18 dice "doubt gives 'otro' and the agent asks again", y G-02-21 pide "hay que volver a preguntar". Ese camino es el del re-test de H2.
+2. Si el modelo obedece el prompt, el agente pide una confirmación explícita y el servidor rechaza la que llega. La analista tiene que confirmar dos veces.
+3. El turno que pide la confirmación termina con `needsConfirmation=false`, sin la pregunta del servidor y sin los bloqueos (ENV-03). Además viola la prohibición de 02-18: "MUST NOT instruct the model to write its own closing confirmation question".
+
+La raíz es una contradicción entre dos decisiones bloqueadas. D-37 dice "cualquier otro mensaje cancela lo pendiente" y D-39 dice "si el agente no reconoce una confirmación, vuelve a preguntar". Desde que la pregunta es del servidor (02-10), las dos no conviven. Con 02-16, la contradicción pasó de ser un caso raro a darse con cualquier "ok".
 
 ### Verdades observables
 
 | # | Verdad | Estado | Evidencia |
 |---|--------|--------|-----------|
-| 1 | **ROADMAP C1**: "procesa el caso co-industrias-delta" ejecuta las herramientas en secuencia por el ciclo propio, sin framework de agentes; `deepseek-flash` desde env/preset con thinking desactivado; el modelo solo recibe rutas y valores enmascarados | ✓ VERIFIED | `ejecutar-turno.service.ts:279-307` (bucle `for` propio, `deps.llm.enviar`); `package.json` sin langchain, ai-sdk, openai ni mastra; `llm.constants.ts:89,93` (`deepseek-flash`, `MODO_THINKING.DESHABILITADO`); `trazador-agente.test.ts`, `pii-modelo.test.ts` e `inyeccion.test.ts` pasan. La parte de la verdad que depende del modelo real ("responde solo con resultados de herramientas") se deriva a la revisión humana 1 |
-| 2 | **ROADMAP C2**: "No envíes nada todavía" nunca autoriza; en el §11 el turno termina con una pregunta que lista los bloqueos, y solo la confirmación explícita siguiente escribe `ENVIO-SIMULADO.md`, una vez y para ese caso; el `confirmado: true` del modelo nunca basta | ✓ VERIFIED | Sonda: "No envíes nada todavía" da `rechaza`, y las 8 frases de CR-01 dan `otro`. `compuerta.test.ts` (§11, "No envíes…", "¿y si envío?", la describe CR-01 y las 4 pruebas CR-02) pasa (6/6 con `-t "CR-0"`). `despacho-llamada.service.ts` arma `{caso, confirmado: true}` en el servidor. Los acuses sueltos siguen confirmando por decisión del plan 02-14 (ver WR-01 y la revisión humana 2) |
-| 3 | **ROADMAP C3**: ante timeout, 429/503 o error de red hay reintentos con backoff o respaldo; si aun así falla, mensaje claro en español (402 = "Saldo agotado"); el siguiente mensaje funciona con el historial íntegro (CA5) | ✓ VERIFIED | `agente.wiring.ts:65,86` (`withRetry(withObservacion(withTimeout(...)))` y `withFallback`). `resiliencia.test.ts` (503, 402, timeout y deadline) y `fallback.test.ts` pasan dentro de la suite completa |
-| 4 | **ROADMAP C4**: al llegar al tope de iteraciones o de tokens, respuesta clara con lo hecho y lo que falta; una instrucción inyectada en el correo no cambia la conducta | ✓ VERIFIED | `tope-iteraciones.service.ts`, `presupuesto.service.ts`, `tope.test.ts`, `presupuesto.test.ts` e `inyeccion.test.ts` pasan. Con la sesión ya agotada, el texto pide abrir otra sesión y a la vez confirmar el envío (WR-03). Es incoherente, pero no envía nada y no rompe el criterio |
-| 5 | **ROADMAP C5**: editar `registro-proveedor.md` o `agent/prompt.md` cambia la conducta sin tocar el servidor; logs JSON con IDs, sin clave ni PII; `bun test` cubre el ciclo con un LLM falso | ✓ VERIFIED | `instrucciones.test.ts`, `bitacora.test.ts` y `logger.adapter.test.ts`. Corrida única de la suite: 1079 pass, 1 skip (el test en vivo), 0 fail |
-| 6 | 02-01: puerto neutral `enviar(mensajes, herramientas)` y adaptador genérico compatible con OpenAI con el cuerpo esperado | ✓ VERIFIED | Regresión: `verify.artifacts` 9/9 y `verify.key-links` 4/4; los tests pasan |
-| 7 | 02-02: `crearAgente` como composition root; store con TTL, LRU y candado; un id desconocido recibe un id nuevo del servidor | ✓ VERIFIED | `agente.wiring.ts:109` (`createMemorySessionStore<Sesion>(`). La herramienta vuelve a dar el mismo falso negativo por el genérico; `sesion.test.ts` pasa |
-| 8 | 02-03 (D-39): clasificador determinista y conservador; ante la duda, `otro`, que nunca autoriza | ✓ VERIFIED | `confirmacion.policy.ts:38-81`, con tres niveles (afirmación fuerte, acuse solo y relleno nunca suficiente). La sonda reproduce todas las filas de CR-01 como `otro` y las negaciones como `rechaza`. `confirmacion.policy.test.ts` pasa 86/86. Advertencias WR-01 e IN-04 |
-| 9 | 02-03/02-06: máquina de estados de un solo paso; la autorización vale para un caso, una vez y solo en el turno inmediato; `falta_caso`; revocación al re-armar | ✓ VERIFIED | `compuerta.policy.ts:40-59`; `compuerta-casos.test.ts` |
-| 10 | 02-06: el servidor arma los args del envío; ni el `confirmado` del modelo ni el texto inyectado autorizan; el bloqueo deja una línea CA4 | ✓ VERIFIED | Regresión: `compuerta.test.ts` e `inyeccion.test.ts` pasan |
-| 11 | ENV-03, D-44: con un caso pendiente, el cierre lleva la pregunta determinista del servidor, que nombra el caso y lista los bloqueos legibles | ✓ VERIFIED | `cierre-turno.service.ts:30` llama a `cierreConPregunta(limpiarMarkdown(texto), pendientes)`, y `cierre-turno.builder.ts:48-53` la agrega siempre como último párrafo. `necesitaPreguntaDeterminista` se retiró. Los tests CR-02 (a) y (b) comprueban el reply PRD 6.4 y el evento de texto |
-| 12 | 02-04: taxonomía de errores por estado HTTP; solo se reintentan los transitorios; el respaldo nunca actúa ante errores no recuperables | ✓ VERIFIED | Regresión: `verify` 5/5 y 2/2; los tests pasan |
-| 13 | 02-05/02-08: un solo `redactar()`; logs con pino sin transport y con correlación, sin clave ni PII | ✓ VERIFIED | Regresión: `verify` 3/3 y 2/2; los tests pasan |
-| 14 | 02-07: el presupuesto cuenta todas las llamadas; al tope, resumen sin herramientas o cierre determinista; un paquete armado conserva su pregunta | ✓ VERIFIED | Regresión: `verify` 4/4 y 3/3; `tope.test.ts` y `presupuesto.test.ts` pasan |
-| 15 | 02-08 (AGT-04): ningún pedido posterior lleva una tool call sin resultado ni argumentos inválidos; el paso abortado se descarta; `finish_reason=length` no ejecuta herramientas | ✓ VERIFIED | `ejecutar-turno.service.ts:200-210` (`pasoTruncado` con `ARGUMENTOS_VACIOS` que conserva `id` y `nombre`); `wire-messages.mapper.ts:28-44` (`esObjetoJson`). `resiliencia.test.ts` con `-t "CR-03\|ARGUMENTOS_VACIOS"` da 3/3 pass; el test se arma con `TRUNCADO` literal y un control `JSON.parse(...).toThrow()` |
-| 16 | 02-09: el modelo no recibe valores sensibles del maestro ni el cuerpo de la solicitud en los 4 casos | ✓ VERIFIED | Regresión: `pii-modelo.test.ts` y `tests/e2e/pii.test.ts` pasan |
-| 17 | 02-10: la pregunta del modelo se quita antes de agregar la del servidor; el recorte corta solo en fin de oración o descarta la línea entera, sin dejar fragmentos | ✓ VERIFIED | `cierre-turno.builder.ts:22-46`; sonda: "Armé el paquete de ec-corp-andina. Falta el certificado (¿lo tienes?)…" conserva "Armé el paquete de ec-corp-andina.". Cumple la semántica que el plan define. Advertencia WR-02: la regla descarta líneas enteras que solo contienen un `¿…?`, incluidas viñetas por confirmar cuando quedan al final |
-| 18 | 02-11: el mapeador nunca envía argumentos que no sean un objeto JSON; los objetos válidos salen byte a byte | ✓ VERIFIED | `wire-messages.mapper.ts:37-44`; `tests/unit/wire-messages.mapper.test.ts` (nuevo); test de ciclo con `MALFORMADO` y `finish_reason tool_calls` |
-| 19 | 02-12: el candado es un lease (`deadline + MARGEN_CANDADO_SESION_MS`) con ficha; un titular vencido no libera ni pisa la sesión; un lease vigente no se barre ni se desaloja | ✓ VERIFIED | `memory-session-store.adapter.ts:5-76` (`isHeld`, `ocupar` devuelve un token, `liberar` y `guardar` comparan el token); `ejecutar-turno.service.ts:439,469`. `sesion.test.ts` con `-t "plazo\|vencido\|consumidor"` da 4/4 pass |
-| 20 | 02-13: un turno de confirmación cortado por error, falta de instrucciones o tope devuelve el caso a pendiente y cierra con la pregunta del servidor; nunca se recupera la autorización; FINAL y ABORTADO no recuperan nada | ✓ VERIFIED | `compuerta.policy.ts:93-103` y `ejecutar-turno.service.ts:318-330`. `compuerta-casos.test.ts` con `-t "WR-02\|control"` da 5/5 pass, y la tabla de 10 filas de `compuerta.policy.test.ts` también pasa. Advertencias WR-03 y WR-04 |
-| 21 | 02-13: después de los arreglos, `bun run test:vivo` vuelve a pasar contra el proveedor real con una línea VIVO PASS nueva, y el último párrafo de cada respuesta pendiente es la pregunta del servidor | ? UNCERTAIN | `tests/live/agente-en-vivo.test.ts:166,181` comprueba `ultimoParrafo(reply) === preguntaConfirmacion(...)`. La línea `VIVO PASS modelo=deepseek-flash llamadas=12 tokens=79292` la reportó el ejecutor; el verificador no la reprodujo para no gastar la clave personal. Va a la revisión humana 1 |
-| 22 | 02-14: la pregunta del servidor y el clasificador coinciden; cada ejemplo citado en `TEXTO_CONFIRMACION` se clasifica como `confirma`; la pregunta conserva los bloqueos, "con esos bloqueos" y "envía <caso>" en un solo párrafo | ✓ VERIFIED | `strings.ts:210-234` (`EJEMPLOS_CONFIRMACION`, ya sin "cualquier otra cosa"); describe de alineación en `confirmacion.policy.test.ts` |
+| 1 | **ROADMAP C1**: ciclo propio, `deepseek-flash` con thinking desactivado y solo rutas y valores enmascarados hacia el modelo | ✓ VERIFIED | Regresión: suite verde (`trazador-agente`, `pii-modelo`, `inyeccion`). La lógica se reubicó por WR-10: `deps.llm.enviar` está ahora en `conversacion-turno.service.ts:77`. La parte que depende del modelo real va a la revisión humana 1 |
+| 2 | **ROADMAP C2**: "No envíes nada todavía" nunca autoriza; en el guion §11, la confirmación explícita siguiente escribe `ENVIO-SIMULADO.md` una vez y solo para ese caso; el `confirmado: true` del modelo no basta | ✓ VERIFIED | `compuerta.test.ts` (§11, "No envíes…", "¿y si envío?") pasa. Sonda: "No envíes nada todavía" da `rechaza`. Con 02-15, "una sola vez" se cumple también ante reintentos (verdad 23). El flujo de re-pregunta va en la verdad 27 |
+| 3 | **ROADMAP C3**: reintentos, respaldo, mensajes en español (402 = saldo agotado) y CA5 | ✓ VERIFIED | Regresión: `resiliencia.test.ts` y `fallback.test.ts` dentro de la suite verde |
+| 4 | **ROADMAP C4**: topes de iteraciones y de tokens con respuesta clara; la inyección no cambia la conducta | ✓ VERIFIED | Regresión: `tope`, `presupuesto` e `inyeccion` en verde |
+| 5 | **ROADMAP C5**: prompt y conocimiento editables en caliente; logs JSON correlacionados sin clave ni PII; `bun test` cubre el ciclo con un LLM falso | ✓ VERIFIED | Regresión: `instrucciones`, `bitacora` y `logger.adapter` en verde. El 02-18 cambió la conducta solo con texto (commit 907ca4f: `agent/prompt.md` y `registro-proveedor.md`) |
+| 6–20, 22 | Verdades de los planes 02-01 a 02-14 de la verificación anterior | ✓ VERIFIED | Regresión: suite completa en verde. Los fallos de `verify.artifacts` y `verify.key-links` de 02-01, 02-02, 02-03, 02-05, 02-10, 02-11, 02-13 y 02-14 son renombres y divisiones de REVIEW-FIX, no regresiones. Comprobé cada uno: `confirmacion.constants`→`confirmation.constants` y `redaccion.constants`→`redaction.constants` (IN-18); `ARGUMENTOS_VACIOS` en `paso-herramientas.service.ts:32`; `recuperarAutorizado(` en `guardado-turno.service.ts:25` (WR-10); `preguntaConfirmacion` ya no se exporta, y las pruebas usan `cierreConPregunta` (IN-13); `createMemorySessionStore<Sesion>(` en `agente.wiring.ts:109` |
+| 21 | 02-13: `bun run test:vivo` pasa contra el proveedor real con una línea VIVO PASS nueva | ? UNCERTAIN | 02-18-SUMMARY reporta `VIVO PASS modelo=deepseek-flash llamadas=12 tokens=83531`. No lo reproduje, para no gastar la clave personal. Va a la revisión humana 1 |
+| 23 | **02-15 / G-02-3**: tras el envío, un reintento queda bloqueado y no reabre el caso (sin `confirmation_required` y con `needsConfirmation=false`); un "envía" posterior no reescribe nada; se cumple también en el mismo turno; queda la línea CA4 y `gate_blocked` con el caso; un armado nuevo abre otro ciclo; D-63.1 y WR-02 no cambian | ✓ VERIFIED | `compuerta.policy.ts:79-123`: `enviados` en `aplicarEvento` y `enviadosTrasEventos`; `guardado-turno.service.ts:29,48`; `sesionVacia` con `casosEnviados: []`. `bun test compuerta-casos -t "G-02-3\|D-63.4"`: 3 pass, con aserciones de una línea ok, bytes iguales, `casosEnviados=[EC]`, LIBRE y re-armado con `needsConfirmation=true`. `compuerta.policy.test.ts`: 51 pass. Artefactos 5/5 y enlaces 3/3 |
+| 24 | **02-16 / G-02-18**: un acuse solo nunca confirma; "si" sin tilde confirma solo si es el mensaje entero; "sí" con tilde (también "SÍ" y la forma NFD) confirma en cualquier posición; acuse + verbo o afirmación confirma; de punta a punta, "ok", "listo" y "si todo bien" no envían y "si" y "SÍ" envían una vez | ✓ VERIFIED | Sonda propia con las 46 filas de la verdad: todas coinciden, incluidas `"sí"` NFD y `"ok"` con dos pendientes, que da `otro`. `confirmacion.policy.test.ts`: 117 pass. `compuerta.test.ts -t CR-01`: 7 pass. Artefactos 5/5 y enlaces 3/3 |
+| 25 | **02-17 / G-02-19**: el texto exacto para una URL principal o de respaldo no segura tiene un solo punto final y no habla de una sesión abierta; sin clave, una sola oración; `conDetalle` cierra con un solo punto; los errores de turno conservan "La sesión sigue abierta…" | ✓ VERIFIED (⚠️ WR-01) | `env-agente.test.ts -t G-02-19`: 8 pass. Mi sonda confirma los literales con un solo issue. Con dos issues aparece ".;" (ver WR-01). El must-have "ningún mensaje contiene '..'" se cumple a la letra |
+| 26 | **02-18 / G-02-21** (verdades 1, 2, 4 y 5): el prompt dice que el servidor agrega la pregunta y que el modelo no la escribe; en el turno de confirmación responde solo con el resultado; el conocimiento cubre varios casos y las tres situaciones de CONFIRMACION_REQUERIDA; cambio solo de texto | ✓ VERIFIED | `prompt.md:30,33,48,54,55`; `registro-proveedor.md:53-55,63`. `git show --stat` de 94bb874, 907ca4f y ba48244: solo tocan `agent/prompt.md`, `registro-proveedor.md`, `instrucciones-agente.test.ts` y STATE.md. `instrucciones-agente.test.ts`: 13 pass |
+| 27 | **Flujo de re-pregunta** (D-39, UAT G-02-18 y G-02-21, 02-18 verdad 3 y su prohibición, ENV-03): ante un "ok" el agente vuelve a preguntar y la confirmación explícita siguiente escribe `ENVIO-SIMULADO.md` una vez, con la pregunta y `needsConfirmation` del servidor | ✗ FAILED | Sonda con el LLM falso, en la que el modelo obedece `prompt.md:50`. T1 da `needsConfirmation=true`. T2 "ok" (también "listo", "si por favor", "si gracias", "si ec-corp-andina") da `needsConfirmation=false`, 0 `confirmation_required` y el texto del modelo "Responde envía o sí.". T3 "sí" da `CONFIRMACION_REQUERIDA`, `enviados=[]` y 0 líneas ok. Causa: `compuerta.policy.ts:59` y `ejecutar-turno.service.ts:46-49`, frente a `prompt.md:50,53`. Ver la brecha |
+| 28 | **02-18 verdad 6**: después de los cuatro arreglos, `test:vivo` pasa; el último párrafo de A y de B1 es la pregunta del servidor; B2 solo confirma el envío, sin repetir el resumen | ? UNCERTAIN | `agente-en-vivo.test.ts:162,177` comprueba el último párrafo. La línea VIVO PASS y la lectura de B2 las registró el ejecutor. Va a la revisión humana 1. La corrida en vivo no ejercita "ok" y luego "sí", así que no habría detectado la verdad 27 |
 
-**Puntaje:** 21/22 verdades verificadas (0 presentes con comportamiento sin verificar; 1 incierta que va a revisión humana)
+**Puntaje:** 25/28 verdades verificadas: 1 fallida (27), 2 inciertas que van a revisión humana (21 y 28) y 0 presentes con comportamiento sin verificar.
 
 ### Elementos diferidos
 
-Ninguno. Ninguna advertencia abierta aparece de forma específica en los criterios de las fases 3 o 4, salvo la tarjeta de confirmación de la Fase 3, que no cambia el clasificador de texto libre.
+Ninguno. Revisé la Fase 3: su criterio 3 pinta una tarjeta con Confirmar y Cancelar solo cuando el servidor emite `confirmation_required`. Tras un "ok" el servidor no lo emite, así que no hay tarjeta. Además, un botón aprobado con la compuerta LIBRE tampoco autoriza (`abrirTurno` devuelve `sinAutorizacion()` en la línea 51). La Fase 3 no cubre la brecha.
 
 ### Advisory (alcance nuevo, sin evidencia)
 
-Ninguno. Los hallazgos nuevos de la revisión (WR-01 a WR-04) tienen evidencia reproducible: sonda propia para WR-01 y WR-02, y tests que fijan el comportamiento para WR-03 y WR-04. Por eso se clasifican como ⚠️ Warning en la tabla de antipatrones y no como advisory. No los cuento como bloqueantes porque ninguno hace caer una verdad obligatoria (ver el análisis abajo).
+Ninguno. CR-01, WR-01 y WR-02 tienen evidencia determinista: la sonda propia del verificador, reproducible. CR-01 además toca `agent/prompt.md`, que cambió después de la verificación anterior (commit 907ca4f), así que cumple las dos condiciones de la compuerta de evidencia para bloquear.
 
-### Artefactos requeridos
+### Artefactos requeridos (planes 02-15 a 02-18)
 
 | Artefacto | Esperado | Estado | Detalles |
 |-----------|----------|--------|----------|
-| `src/domain/policies/confirmacion.policy.ts` | Clasificador conservador | ✓ VERIFIED | Gramática de tres niveles, conectada desde `ejecutar-turno.service.ts:108` |
-| `src/config/constants/confirmacion.constants.ts` | `ACUSES`, `VERBOS_ENVIO` solo imperativos, `FINES_DE_ORACION` | ✓ VERIFIED | "envio" queda solo en `RELLENO` |
-| `src/domain/builders/cierre-turno.builder.ts` | `cierreConPregunta` y `preguntaConfirmacion` | ✓ VERIFIED (WR-02) | |
-| `src/loop/services/cierre-turno.service.ts` | El cierre siempre termina con la pregunta del servidor | ✓ VERIFIED | |
-| `src/domain/policies/compuerta.policy.ts` | Transiciones y `recuperarAutorizado` | ✓ VERIFIED | `necesitaPreguntaDeterminista` se retiró a propósito (02-10). El `verify.artifacts` de 02-03 la reporta como faltante: es un artefacto reemplazado, no una regresión |
-| `src/loop/services/ejecutar-turno.service.ts` | `pasoTruncado` saneado, lease, recuperación | ✓ VERIFIED | |
-| `src/llm/mappers/wire-messages.mapper.ts` | Guarda de argumentos | ✓ VERIFIED | |
-| `src/infra/sessions/memory-session-store.adapter.ts` | Lease con ficha | ✓ VERIFIED | |
-| `src/config/strings.ts` | `EJEMPLOS_CONFIRMACION` y `TEXTO_CONFIRMACION` alineados | ✓ VERIFIED | |
-| `tests/unit/wire-messages.mapper.test.ts` | Test espejo del mapeador | ✓ VERIFIED | Nuevo |
-| `tests/live/agente-en-vivo.test.ts` | Aserción del último párrafo | ✓ VERIFIED | Omitido por defecto (`LLM_EN_VIVO`) |
+| `src/domain/policies/compuerta.policy.ts` | `enviadosTrasEventos` y un pliegue que no reabre lo enviado | ✓ VERIFIED | Conectado desde `guardado-turno.service.ts:4,48`. `abrirTurno` es la raíz de CR-01 |
+| `src/domain/types/compuerta.type.ts` | `CasosEnviados` | ✓ VERIFIED | |
+| `src/loop/types/turno.type.ts` | `Sesion.casosEnviados` | ✓ VERIFIED | |
+| `src/loop/services/guardado-turno.service.ts` | Pasa y persiste los enviados | ✓ VERIFIED | |
+| `src/domain/policies/confirmacion.policy.ts` | Gramática con `SI_CON_TILDE` y `SI_SIN_TILDE` | ✓ VERIFIED | Conectado desde `ejecutar-turno.service.ts:54` |
+| `src/config/constants/confirmation.constants.ts` | `SI_CON_TILDE`, `SI_SIN_TILDE` y `AFIRMACIONES` sin "si" | ✓ VERIFIED | |
+| `src/config/constants/patterns.constants.ts` | `PATRON_NO_PALABRA_UNICODE` | ✓ VERIFIED | |
+| `src/config/strings.ts` | `TEXTO_AGENTE.conDetalle` con un solo punto | ✓ VERIFIED (⚠️ WR-01) | `cerrarOracion` solo mira el final del texto |
+| `agent/prompt.md` | Pregunta del servidor, turno breve y acuses que no confirman | ⚠️ PARCIAL | Tiene todo el texto pedido, pero las líneas 50 y 53 contradicen la 33 y al servidor (CR-01) |
+| `src/knowledge/registro-proveedor.md` | Varios casos y situaciones de CONFIRMACION_REQUERIDA | ✓ VERIFIED (⚠️ WR-02) | Las líneas 53-54 prometen "el servidor vuelve a pedir la confirmación"; se cumple solo si el modelo vuelve a armar el paquete en el mismo turno |
+| Pruebas: `compuerta-casos`, `compuerta`, `confirmacion.policy`, `env-agente` e `instrucciones-agente` | Fijan las verdades | ✓ VERIFIED | Ninguna prueba cubre el guion "ok" sin herramientas y luego "sí" |
 
-`verify.artifacts`: 02-10 6/6, 02-11 5/5, 02-12 5/5, 02-13 3/3 y 02-14 5/5. De los planes 01 a 09, todos pasan salvo el falso negativo de 02-03 explicado arriba.
+`verify.artifacts`: 02-15 5/5, 02-16 5/5, 02-17 2/2 y 02-18 3/3.
 
 ### Verificación de enlaces clave
 
 | De | A | Vía | Estado | Detalles |
 |----|---|-----|--------|----------|
-| cierre-turno.service | cierre-turno.builder | `cierreConPregunta(` | WIRED | |
-| cierre-turno.builder | strings | `TEXTO_CONFIRMACION.` | WIRED | |
-| ejecutar-turno | llm.constants | `ARGUMENTOS_VACIOS` | WIRED | |
-| wire-messages.mapper | llm.constants | `ARGUMENTOS_VACIOS` | WIRED | |
-| ejecutar-turno | puertos-agente | `ocupar(…, deadlineMs + MARGEN_CANDADO_SESION_MS)`, `guardar(sesion, candado)`, `liberar(id, candado)` | WIRED | |
-| memory-session-store | puertos-agente | `AlmacenSesiones` | WIRED | |
-| ejecutar-turno | compuerta.policy | `recuperarAutorizado(` | WIRED | |
-| confirmacion.policy | confirmacion.constants | `ACUSES` | WIRED | |
-| confirmacion.policy.test | strings | `EJEMPLOS_CONFIRMACION` | WIRED | |
-| agente.wiring | memory-session-store | `createMemorySessionStore<Sesion>(` | WIRED | Falso negativo de la herramienta por el genérico; comprobado en la línea 109 |
+| guardado-turno.service | compuerta.policy | `enviadosTrasEventos(` | WIRED | |
+| cierre-turno.service | compuerta.policy | `cerrarTurno(` con `entrada.enviados` | WIRED | |
+| ejecutar-turno.service | turno.type | `casosEnviados: []` | WIRED | |
+| confirmacion.policy | confirmation.constants | `SI_SIN_TILDE` | WIRED | |
+| confirmacion.policy | patterns.constants | `PATRON_NO_PALABRA_UNICODE` | WIRED | |
+| ejecutar-turno.service | confirmacion.policy | `clasificarConfirmacion(` | WIRED | |
+| agente.wiring | strings | `TEXTO_AGENTE.conDetalle(` | WIRED | |
+| instructions-loader | agent/prompt.md | `ARCHIVO_PROMPT` | WIRED | |
+| cierre-turno.service | agent/prompt.md | `cierreConPregunta(` | WIRED, contrato roto | El servidor pone la pregunta solo si el caso sigue PENDIENTE. Tras un "otro", el prompt manda al modelo a preguntar y el servidor no respalda esa pregunta (CR-01) |
 
-`verify.key-links`: los 11 enlaces de 02-10 a 02-14 dan WIRED.
+`verify.key-links`: 02-15 3/3, 02-16 3/3, 02-17 1/1 y 02-18 2/2.
 
 ### Traza de datos (nivel 4)
 
 | Artefacto | Dato | Fuente | Datos reales | Estado |
 |-----------|------|--------|--------------|--------|
-| Pedido `/chat/completions` | `tool_calls[].function.arguments` | `respuesta.llamadas`, saneado en `pasoTruncado` y en `toWireToolCall` | Sí, siempre un objeto JSON | ✓ FLOWING |
-| Reply del turno | Último párrafo | `preguntaConfirmacion(pendientes)`, derivada de `armar_paquete` real mediante `conocidos` | Sí | ✓ FLOWING |
-| `confirmation_required` | `bloqueos` | `paqueteArmado` | Sí | ✓ FLOWING |
-| Reply del turno | Texto del modelo sobre la pregunta | Modelo → `limpiarMarkdown` → `sinPreguntaFinal` | Sí, pero el recorte puede descartar viñetas al final (WR-02) | ⚠️ WR-02 |
+| `Sesion.casosEnviados` | Casos enviados | Eventos `ENVIADO` del despacho (`despacho-llamada.service.ts:78`) → `enviadosTrasEventos` | Sí | ✓ FLOWING |
+| `needsConfirmation` tras un "otro" | Estado de la compuerta | `abrirTurno` → `estadoLibre()` | Sí, pero contradice lo que el prompt hace decir al modelo | ✗ CR-01 |
+| Mensaje de arranque | `TEXTO_AGENTE.conDetalle(…, formatearIssues(...))` | Issues de zod unidos con "; " | Sí; con 2 o más issues queda ".;" | ⚠️ WR-01 |
 
 ### Comprobaciones de comportamiento
 
 | Comportamiento | Comando | Resultado | Estado |
 |----------------|---------|-----------|--------|
-| Tipos, lint y auditoría | `bun run check` | exit 0; Biome revisó 268 archivos; 0 vulnerabilidades | ✓ PASS |
-| Suite completa (una sola vez) | `bun test` | 1079 pass, 1 skip, 0 fail, 4779 expect | ✓ PASS |
-| CR-01 y CR-02 en el ciclo | `bun test tests/loop/compuerta.test.ts -t "CR-0"` | 6 pass, 0 fail | ✓ PASS |
-| CR-03 y guarda del mapeador | `bun test tests/loop/resiliencia.test.ts -t "CR-03\|ARGUMENTOS_VACIOS"` | 3 pass, 0 fail | ✓ PASS |
-| Recuperación WR-02 y controles | `bun test tests/loop/compuerta-casos.test.ts -t "WR-02\|control"` | 5 pass, 0 fail | ✓ PASS |
-| Lease del candado | `bun test tests/loop/sesion.test.ts -t "plazo\|vencido\|consumidor"` | 4 pass, 0 fail | ✓ PASS |
-| Tabla del clasificador | `bun test tests/unit/confirmacion.policy.test.ts` | 86 pass, 0 fail | ✓ PASS |
-| Sonda CR-01 (scratchpad) | `clasificarConfirmacion(frase, ["ec-corp-andina"])` | Las 8 frases del gap dan `otro`; "No envíes nada todavía" da `rechaza`; "envía" y "sí" dan `confirma` | ✓ PASS |
-| Sonda WR-01 (scratchpad) | Mismo comando con acuses | "ok", "listo", "claro", "correcto", "vale", "ok ok", "si todo bien" y "si, todo bien con el paquete" dan `confirma` | ⚠️ Warning (decisión humana) |
-| Sonda WR-02 (scratchpad) | `cierreConPregunta(texto, pendiente)` | Con viñetas `requiere_confirmacion (¿…?)` al final, solo queda la línea de encabezado. Con el formato de `agent/prompt.md` (Por confirmar → Soportes → Estado), la viñeta "RUC: ¿el cliente acepta…?" se conserva | ⚠️ Warning |
+| Tipos, lint y auditoría | `bun run check` | exit 0; Biome revisó 280 archivos; 0 vulnerabilidades | ✓ PASS |
+| Suite completa (una sola vez) | `bun test` | 1159 pass, 1 skip, 0 fail, 4992 expect, 71 archivos | ✓ PASS |
+| G-02-3 y D-63.4 | `bun test tests/loop/compuerta-casos.test.ts -t "G-02-3\|D-63.4"` | 3 pass, 0 fail | ✓ PASS |
+| Política de la compuerta | `bun test tests/unit/compuerta.policy.test.ts` | 51 pass | ✓ PASS |
+| Clasificador (tabla) | `bun test tests/unit/confirmacion.policy.test.ts` | 117 pass | ✓ PASS |
+| CR-01 de punta a punta, según el guion actual | `bun test tests/loop/compuerta.test.ts -t CR-01` | 7 pass | ✓ PASS |
+| Arranque G-02-19 | `bun test tests/contract/env-agente.test.ts -t G-02-19` | 8 pass | ✓ PASS |
+| Contrato del prompt | `bun test tests/contract/instrucciones-agente.test.ts` | 13 pass | ✓ PASS |
+| Sonda del clasificador (scratchpad) | `clasificarConfirmacion` sobre las 46 filas de las verdades de 02-16 | Todas coinciden | ✓ PASS |
+| Sonda CR-01 (scratchpad) | §11 T1, luego "ok" con el modelo sin herramientas que pide "envía o sí", luego "sí" | T2 `needsConfirmation=false`; T3 `CONFIRMACION_REQUERIDA`, sin `ENVIO-SIMULADO.md`. Igual con "listo", "si por favor", "si gracias" y "si ec-corp-andina" | ✗ FAIL |
+| Sonda WR-02 (scratchpad) | §11 T1, borrar el checklist y luego "envía" (el envío autorizado falla con `PAQUETE_NO_ARMADO`, sin re-armar) | T2 `needsConfirmation=false`: el caso sale de la compuerta | ⚠️ Warning |
+| Sonda WR-01 (scratchpad) | `crearAgente` con las dos URLs en http, y con `LLM_PROVIDER=otro-proveedor` sin URL ni modelo | "…[::1].; LLM_FALLBACK_BASE_URL: …" y "…por defecto.; LLM_MODEL: …" | ⚠️ Warning |
 
-Las sondas viven solo en el scratchpad. `git status` no muestra cambios fuera de `.planning/`.
+Las sondas viven solo en el scratchpad. `git status` no muestra cambios fuera de `.planning/` antes de este informe.
 
 ### Ejecución de probes
 
@@ -148,75 +160,88 @@ No aplica: la fase no declara probes `scripts/*/tests/probe-*.sh` y el repositor
 
 ### Cobertura de requisitos
 
-| Requisito | Plan | Descripción (resumen) | Estado | Evidencia |
-|-----------|------|----------------------|--------|-----------|
-| SOLI-03 | 02-06 | El cuerpo no llega al modelo; fixture inyectado | ✓ SATISFIED | `inyeccion.test.ts`; `prompt.md:16`. REQUIREMENTS.md lo sigue marcando `[ ]` y "Pending" (líneas 22 y 185): inconsistencia de documentación (ℹ️) |
-| ENV-02 | 02-03, 02-06, 02-10, 02-13, 02-14 | Compuerta del servidor, clasificador con negaciones, una vez, mensaje siguiente | ✓ SATISFIED | Verdades 2, 8, 9, 10 y 22. WR-01 queda como decisión humana |
-| ENV-03 | 02-03, 02-06, 02-10, 02-13, 02-14 | Pregunta explícita que lista los bloqueos; `needsConfirmation` del servidor | ✓ SATISFIED | Verdades 11 y 17 |
-| AGT-01 | 02-01, 02-07 | Ciclo propio, secuencial, tope 25 | ✓ SATISFIED | Verdades 1 y 14 |
-| AGT-02 | 02-01, 02-02, 02-09 | Prompt y conocimiento separados y editables | ✓ SATISFIED | Verdad 5 |
-| AGT-03 | 02-09 | El prompt prohíbe afirmar valores que no salieron de una herramienta | ✓ SATISFIED (conducta → revisión humana 1) | `prompt.md:13-17,54` |
-| AGT-04 | 02-02, 02-06, 02-08, 02-11, 02-12, 02-13 | Store con TTL; historial íntegro; CA5 | ✓ SATISFIED | Verdades 15, 19 y 20 |
-| AGT-05 | 02-04, 02-08 | Errores en español desde un catálogo | ✓ SATISFIED | `MENSAJE_AGENTE` |
-| LLM-01 | 02-01, 02-02, 02-09 | Puerto propio y adaptador genérico | ✓ SATISFIED | Verdad 6 |
-| LLM-02 | 02-01, 02-04, 02-09 | fetch directo, preset DeepSeek, thinking desactivado | ✓ SATISFIED | Verdad 1 |
-| LLM-03 | 02-04, 02-08 | Timeout, backoff con jitter, 402 = saldo agotado | ✓ SATISFIED | Verdad 12 |
-| LLM-04 | 02-01, 02-04, 02-08, 02-09 | Respaldo después de agotar los reintentos | ✓ SATISFIED | `fallback.test.ts` |
-| LLM-05 | 02-07 | Topes configurables con mensaje claro | ✓ SATISFIED | Verdad 14 (WR-03 y R1-WR-04 quedan como advertencias) |
-| SEG-03 | 02-05, 02-08 | Logs JSON correlacionados sin clave ni PII | ✓ SATISFIED | Verdad 13 |
-| DEMO-03 | 02-03, 02-06 a 02-14 | Tests de dominio, contrato y ciclo con LLM falso | ✓ SATISFIED | El falso verde de truncado quedó reemplazado; los tests nuevos detectan CR-01, CR-02 y CR-03 |
+| Requisito | Planes | Descripción (resumen) | Estado | Evidencia |
+|-----------|--------|----------------------|--------|-----------|
+| SOLI-03 | 02-06 | El cuerpo no llega al modelo; fixture inyectado | ✓ SATISFIED | `inyeccion.test.ts`. REQUIREMENTS.md lo sigue marcando `[ ]` y "Pending" (líneas 22 y 185): ℹ️ trazabilidad |
+| ENV-02 | 02-03, 02-06, 02-10, 02-13 a 02-16, 02-18 | La compuerta la hace cumplir el servidor; una vez, ese caso y el mensaje siguiente; clasificador con negaciones | ✓ SATISFIED | Verdades 2, 23 y 24. Nada se envía sin una autorización del servidor |
+| ENV-03 | 02-03, 02-06, 02-10, 02-13 a 02-16, 02-18 | Cuando una acción requiere confirmación, el turno termina con una pregunta explícita que lista los bloqueos; el servidor calcula `needsConfirmation` | ✗ BLOCKED (parcial) | En el flujo de la verdad 27, el turno en que el agente pide la confirmación cierra con `needsConfirmation=false`, una pregunta escrita por el modelo y sin bloqueos |
+| AGT-01 | 02-01, 02-07 | Ciclo propio y tope de 25 | ✓ SATISFIED | Verdades 1 y 4 |
+| AGT-02 | 02-01, 02-02, 02-09, 02-18 | Prompt y conocimiento separados y editables | ✓ SATISFIED | Verdades 5 y 26 |
+| AGT-03 | 02-09, 02-18 | El prompt prohíbe afirmar sin herramienta | ✓ SATISFIED (conducta → revisión humana 1) | `prompt.md:13-17,57` |
+| AGT-04 | 02-02, 02-06, 02-08, 02-11 a 02-13, 02-15 | Sesiones; historial íntegro; CA5 | ✓ SATISFIED | Verdad 23 y regresión |
+| AGT-05 | 02-04, 02-08, 02-17 | Errores en español desde un catálogo | ✓ SATISFIED | Verdad 25 (⚠️ WR-01) |
+| LLM-01 | 02-01, 02-02, 02-09 | Puerto propio y adaptador genérico | ✓ SATISFIED | Regresión |
+| LLM-02 | 02-01, 02-04, 02-09, 02-17 | fetch directo, preset DeepSeek y thinking desactivado | ✓ SATISFIED | Regresión y verdad 25 |
+| LLM-03 | 02-04, 02-08 | Timeout, backoff y 402 | ✓ SATISFIED | Regresión |
+| LLM-04 | 02-01, 02-04, 02-08, 02-09 | Respaldo | ✓ SATISFIED | Regresión |
+| LLM-05 | 02-07 | Topes configurables | ✓ SATISFIED | Regresión (WR-03 y R1-WR-04 siguen abiertos) |
+| SEG-03 | 02-05, 02-08, 02-15 | Logs JSON sin clave ni PII | ✓ SATISFIED | `gate_blocked` con el caso (verdad 23) y regresión |
+| DEMO-03 | todos | Tests con un LLM falso | ✓ SATISFIED, con hueco | Falta la prueba del guion que exige el prompt ("ok" sin herramientas y luego "sí"). Por eso CR-01 pasó con la suite en verde |
 
-Requisitos huérfanos: ninguno. Los 15 IDs de la fase en REQUIREMENTS.md coinciden con la unión de los `requirements:` de los 14 planes.
+Requisitos huérfanos: ninguno. Los 15 IDs de la fase en REQUIREMENTS.md coinciden con la unión de los `requirements:` de los 18 planes.
 
 ### Antipatrones y hallazgos
 
 | Archivo | Línea | Patrón | Severidad | Impacto |
 |---------|-------|--------|-----------|---------|
-| `src/domain/policies/confirmacion.policy.ts` | 50-58 | WR-01: un acuse suelto ("ok", "listo", "correcto", "vale", "claro") confirma | ⚠️ Warning | Reproducido con sonda. Es la decisión explícita de 02-14. Como respuesta inmediata a "¿Confirmas el envío simulado de X?", un acuse suelto es una afirmación convencional en español, y la acción es un envío *simulado*. Por eso no lo cuento como verdad fallida, pero lo derivo a decisión humana |
-| `src/domain/policies/confirmacion.policy.ts` | 25-27 | IN-04: "si todo bien" confirma ("si" sin tilde) | ℹ️ Info | Reproducido. Va junto con la decisión de WR-01 |
-| `src/domain/builders/cierre-turno.builder.ts` | 30-46 | WR-02: `sinPreguntaFinal` descarta líneas finales que contienen `¿…?` aunque sean afirmativas | ⚠️ Warning | Reproducido. El recorte puede ocultar en el chat las notas de campos `requiere_confirmacion` si el modelo las deja al final. Es latente: el formato de `prompt.md` pone Soportes y Estado después de Por confirmar, y el dato sigue marcado en los artefactos (`por_confirmar` del checklist). Conviene corregirlo antes de la UI de la Fase 3 con el arreglo que propone 02-REVIEW.md |
-| `src/domain/policies/compuerta.policy.ts` | 93-103 | WR-03: con el presupuesto agotado, la sesión pide para siempre una confirmación imposible | ⚠️ Warning | Diseño explícito de 02-13. Nunca envía, pero el texto se contradice ("abre una sesión nueva" junto a "¿Confirmas…?"), y la Fase 3 mostraría una tarjeta inútil |
-| `src/domain/policies/compuerta.policy.ts` | 99 | WR-04: si el turno cierra en FINAL con la autorización sin usar, se descarta en silencio | ⚠️ Warning | Coherente con D-38 ("se consume al final del turno, se haya usado o no"). El riesgo es que el modelo afirme un envío que no ocurrió y el servidor no lo contradiga. Eso lo gobierna la regla del prompt (`prompt.md:54`), así que va a la revisión humana 1 |
-| `src/loop/services/despacho-llamada.service.ts` | 79-93 | IN-01: un envío autorizado que falla saca el caso de los pendientes | ℹ️ Info | No envía nada sin confirmación |
-| `src/loop/services/ejecutar-turno.service.ts` | 410-419 | IN-02: `guardar` rechazado y aun así se anuncia `confirmation_required` | ℹ️ Info | Solo con un titular vencido |
-| `src/infra/sessions/memory-session-store.adapter.ts` | 14-16 | IN-03: lease con reloj de pared | ℹ️ Info | Caso límite de saltos NTP |
-| `src/config/strings.ts` | 245-246 | IN-05: el siguiente paso con varios casos cita "envía" o "sí" | ℹ️ Info | "sí" da `falta_caso` y no envía |
-| `src/loop/services/ejecutar-turno.service.ts` | 212-251 | R1-WR-01 (abierto desde la ronda anterior): un corte a mitad de paso descarta resultados ya ejecutados | ⚠️ Warning | Coherencia del historial; no habilita envíos |
-| `src/loop/services/presupuesto.service.ts` | — | R1-WR-04 (abierto): el tope es por sesión y crear sesiones es gratis | ⚠️ Warning | Cumple LLM-05 al pie de la letra; el control de abuso queda para la capa HTTP |
-| `tests/helpers/agente-prueba.helper.ts`, `ejecutar-turno.service.ts:300` | — | WR-05 y WR-06 (abiertos) | ⚠️ Warning | Sin cambios desde la ronda anterior |
+| `agent/prompt.md` / `src/domain/policies/compuerta.policy.ts` / `src/loop/services/ejecutar-turno.service.ts` | 50, 53 / 59 / 46-49 | CR-01: el prompt manda a re-preguntar y el servidor ya liberó la compuerta | 🛑 Blocker | Reproducido. La confirmación explícita que pidió el agente se rechaza y la analista tiene que confirmar dos veces. Falla del lado seguro, pero rompe el contrato de G-02-18 y G-02-21 y la prohibición de 02-18 |
+| `src/config/strings.ts`, `src/domain/utils/formatear-issues.util.ts` | 331-338 / 4-12 | WR-01: con dos o más issues, el mensaje de arranque lleva ".;" | ⚠️ Warning | Reproducido. G-02-19 queda cerrado para el caso que se probó en UAT (un issue), pero el defecto de puntuación vuelve con varios issues, por ejemplo con un proveedor propio sin URL ni modelo. No afecta el objetivo |
+| `src/loop/services/despacho-llamada.service.ts`, `src/domain/policies/compuerta.policy.ts` | 78 / 62-65, 125-135 | WR-02: un envío autorizado que falla saca el caso de la compuerta | ⚠️ Warning | Reproducido con `PAQUETE_NO_ARMADO`. Es anterior a esta ronda (R2-IN-01), pero ahora `registro-proveedor.md:53-54` lo presenta como garantía. Se cumple si el modelo vuelve a armar el paquete en el mismo turno; si el turno termina antes (tope o error), el caso desaparece. Con `PAQUETE_DESACTUALIZADO` y un cierre por error o tope, contradice D-63.2. Nunca envía sin confirmación |
+| `src/domain/policies/confirmacion.policy.ts` | 53-55 | IN-01: "si ec-corp-andina" da `otro` y "si" a secas confirma | ℹ️ Info | Sigue la letra de D-63.5. Junto con CR-01, cada uno de estos casos cancela lo pendiente |
+| `.qa/evidence/.../02-T04-clasificador-confirmacion.ts` | 5, 14-20, 38 | IN-04: literales en vez de constantes; importa `./qa-comun.ts`, que no existe en su carpeta | ℹ️ Info | Fuera de `src/`, sin efecto en el producto |
 | `.planning/REQUIREMENTS.md` | 22, 185 | SOLI-03 sigue "Pending" | ℹ️ Info | Trazabilidad |
+| (abiertos de rondas anteriores) | — | WR-03 (sesión agotada que pide confirmación), R1-WR-01, R1-WR-04, WR-05 y WR-06 | ⚠️ Warning | Sin cambios; no bloquean el objetivo (ver la verificación anterior) |
 
-No hay marcadores TBD, FIXME, XXX, TODO ni HACK en los 24 archivos que cambiaron desde la verificación anterior. La única coincidencia, `METODO_POST`, es un falso positivo. Tampoco hay comentarios en `src/`.
+No hay marcadores TBD, FIXME, XXX, TODO, HACK ni PLACEHOLDER en los 97 archivos de `src/`, `agent/`, `tests/` y `.qa/` que cambiaron desde 41111d7, y no hay comentarios en `src/`. `reto-01/` no tiene diferencias.
 
-**¿Alguna advertencia derrota el objetivo de la fase?** Las juzgué contra el valor central:
-- *Ninguna acción externa sin confirmación humana explícita.* WR-01 es el único hallazgo que toca este punto, y solo si se considera que un "ok" o un "listo" en respuesta directa a "¿Confirmas el envío simulado de X?" no es explícito. La pregunta ahora es siempre del servidor (CR-02 cerrado), así que el acuse responde a esa pregunta y no a otra. WR-03 y WR-04 van en la dirección opuesta: confirmación sin acción, nunca acción sin confirmación.
-- *Nunca inventar ni ocultar un dato.* WR-02 puede ocultar texto del modelo en el chat, pero no altera ningún valor ni estado de los artefactos, y no se activa con el formato prescrito. WR-04 permitiría una afirmación falsa del modelo que el servidor no corrige; eso es la prohibición CA2 de nivel judgment, que ya va a revisión humana.
-- *El modelo nunca ve valores reales.* Ninguna advertencia lo toca.
+**¿Bloquea CR-01 el objetivo de la fase?** Lo juzgué contra el objetivo y contra lo que estos planes dicen cerrar:
+- *"Compuerta de confirmación que el servidor hace cumplir"*: la mitad de seguridad se cumple, porque nunca hay envío sin autorización. La otra mitad (ENV-03: el turno que pide confirmación termina con la pregunta del servidor, con los bloqueos y con `needsConfirmation`) no se cumple en este flujo.
+- *G-02-18*: la UAT lo cerró con "doubt gives 'otro' and the agent asks again". El clasificador cumple la primera parte. La segunda, que el agente vuelva a preguntar y eso funcione, falla. Es lo primero que hará el re-test de H2.
+- *G-02-21*: el plan prometía alinear el prompt con el servidor. Corrigió la pregunta de cierre normal, pero abrió una desalineación nueva (las líneas 50 y 53 contra la 33 y contra la compuerta).
+
+Por eso la brecha es bloqueante, aunque el arreglo es chico. Hay dos opciones en la sección de brechas, y una de ellas (B) toca solo el prompt.
 
 ### Prohibiciones
 
-| Prohibición | Nivel | Disposición |
-|-------------|-------|-------------|
-| La clave solo en el header Authorization; no se leen cuerpos de error; la clave no se envía a otro host | test | Cumplida: `openai-compatible.adapter.test.ts`, `fallback.test.ts`, `bitacora.test.ts` |
-| No exponer el cuerpo de la solicitud al modelo | test | Cumplida: `inyeccion.test.ts`, `pii-modelo.test.ts` |
-| No adoptar ids de sesión del cliente | test | Cumplida: `sesion.test.ts` |
-| No clasificar como confirmación textos con negación, "?", condicional, palabra fuera de la lista o dos slugs | test | Cumplida, y ahora con la lista corregida (CR-01) |
-| No ejecutar `simular_envio` sin una autorización vigente del mensaje inmediatamente anterior | test | Cumplida: la autorización sale solo de una confirmación clasificada contra la pregunta del servidor (CR-01 y CR-02 cerrados) |
-| Ninguna edición del prompt relaja la compuerta | test | Cumplida: la compuerta y la pregunta final son del servidor, y el texto del modelo ya no decide nada |
-| No presentar valores como llenos, enviados o firmados sin una herramienta | judgment | **unverified-prohibition: se recomienda revisión humana.** Veredicto no autoritativo: el ejecutor (un LLM) leyó la corrida de 02-13 y no encontró afirmaciones sin respaldo; el código nunca afirma un envío sin `ok`. Ver la revisión humana 1 |
+| Prohibición | Plan | Nivel | Disposición |
+|-------------|------|-------|-------------|
+| No escribir un segundo `ENVIO-SIMULADO.md` de un caso ya enviado sin un armado nuevo y una confirmación | 02-15 | test | Cumplida: `compuerta-casos -t "G-02-3\|D-63.4"` |
+| No ocultar el registro de un intento bloqueado de un caso ya enviado | 02-15 | test | Cumplida: línea CA4 y `gate_blocked` con el caso |
+| No autorizar con acuses solos ni con un "si" sin tilde acompañado | 02-16 | test | Cumplida: sonda de 46 filas y 117 pruebas unitarias |
+| No decir que hay una sesión abierta en errores de arranque; no repetir la clave | 02-17 | test | Cumplida: `env-agente -t G-02-19` |
+| No indicarle al modelo que escriba su propia pregunta de confirmación, ni tratar un acuse como confirmación | 02-18 | test | **Incumplida en su primera mitad.** `prompt.md:50` ("pide una confirmación explícita, como 'envía' o 'sí'") y `:53` ("vuelve a preguntar") hacen que el modelo escriba una pregunta de confirmación. La segunda mitad sí se cumple. El contrato de `instrucciones-agente.test.ts` fija la redacción retirada de la pregunta de cierre, pero no estas líneas. Forma parte de la brecha |
+| No imprimir la clave, no nombrar `.env` en un comando y no guardar la salida de la corrida en vivo en el repo | 02-18 | judgment | **unverified-prohibition: se recomienda revisión humana.** Veredicto no autoritativo: `git status` no muestra salida de la corrida en el repo, y 02-18-SUMMARY no contiene la clave |
+| No presentar valores como llenos, enviados o firmados sin una herramienta | 02-09 | judgment | **unverified-prohibition: se recomienda revisión humana** (revisión humana 1) |
 
 ### Verificación humana requerida
 
-1. **Revisión CA2 de las respuestas en vivo.** Lee las tres respuestas de `bun run test:vivo` (o vuelve a correrlo con la clave en `.env`). Esperado: el contenido que fija el human-check de 02-13: conteos, faltante, por confirmar con su nota, bloqueo legible, pregunta del servidor como último párrafo y envío solo de ec-corp-andina sin correo real ni firma. Ningún valor sin máscara, y ninguna afirmación de lleno, enviado o firmado sin un resultado `ok`. En particular, el modelo nunca dice que registró un envío si no llamó a `proveedor_simular_envio` (WR-04). Por qué humana: es de nivel judgment, y tanto la lectura como la línea `VIVO PASS … tokens=79292` las registró el ejecutor, no una persona.
-2. **Decisión sobre WR-01.** Decide si un acuse suelto ("ok", "listo", "vale", "claro", "correcto") o "si todo bien", en respuesta a "¿Confirmas el envío simulado de X?", es una confirmación explícita. Esperado: aceptarlo y documentarlo en SOLUCION.md, o endurecer la gramática con el arreglo de 02-REVIEW.md, que son pocas líneas y unas filas de tabla. Por qué humana: el código cumple lo que fija el plan 02-14, y es una decisión de producto sobre el valor central.
+Además de la brecha, quedan dos puntos para una persona. No cambian el estado, que ya es `gaps_found`.
 
-### Resumen
+1. **Lectura CA2 de la corrida en vivo posterior a los cuatro arreglos (verdades 21 y 28).**
+   - **Prueba:** lee las respuestas de `bun run test:vivo` registradas en 02-18-SUMMARY.md (VIVO PASS con 12 llamadas y 83531 tokens), o vuelve a correrlo con la clave en `.env`.
+   - **Esperado:**
+     - A y B1 terminan con la pregunta del servidor, sin una segunda pregunta del modelo.
+     - B2 informa solo el envío simulado de ec-corp-andina, sin repetir el resumen.
+     - Ningún valor sin máscara, y ninguna afirmación de lleno, enviado o firmado sin un resultado `ok`.
+   - **Por qué humana:** es una prohibición de nivel judgment, y la línea VIVO PASS y la lectura las registró el ejecutor (un LLM). Conviene repetir la corrida después de arreglar CR-01 y agregar el turno "ok" y luego "sí".
+2. **Decisión de producto para CR-01.**
+   - **Prueba:** elige entre la opción A (un "otro" mantiene el caso pendiente y el servidor repite su pregunta) y la opción B (un "otro" cancela, como dice D-37, y el prompt deja de pedir "envía o sí").
+   - **Esperado:** la decisión queda en 02-CONTEXT.md y resuelve la tensión entre D-37 y D-39.
+   - **Por qué humana:** toca dos decisiones bloqueadas con reversibilidad "costly".
 
-El objetivo de la fase está logrado en el código. El ciclo es propio, el adaptador es genérico con preset DeepSeek y thinking desactivado, y la resiliencia CA5 cubre timeout, 429/503, red y 402, con el historial ahora válido también después de `length`. Hay topes de iteraciones y de tokens, el prompt y el conocimiento se editan en caliente, los logs van correlacionados y sin secretos, y el modelo nunca recibe valores reales. La compuerta cumple el criterio 2: el servidor decide quién envía, qué pregunta cierra el turno y qué frases cuentan como confirmación.
+### Resumen de brechas
 
-Los tres gaps anteriores están cerrados, sin regresiones, y sus tests ya no son falsos verdes. Quedan dos puntos para una persona: la lectura CA2 de las respuestas reales y la decisión sobre los acuses sueltos (WR-01). Recomiendo además corregir WR-02 y WR-03 antes de construir la tarjeta de confirmación de la Fase 3, porque los dos afectan lo que la UI mostrará. No bloquean esta fase.
+Hay una sola brecha bloqueante, y su raíz es el contrato entre el prompt y la compuerta. El 02-16 endureció bien el clasificador, así que ahora muchos mensajes naturales ("ok", "listo", "si por favor", "si gracias", "si ec-corp-andina") dan `otro`, y por D-37 liberan la compuerta. El 02-18 le dijo al modelo que, en ese caso, pida él mismo una confirmación explícita. El servidor no respalda esa pregunta: el turno cierra sin `needsConfirmation`, sin la pregunta del servidor y sin los bloqueos, y el "sí" siguiente se bloquea con `CONFIRMACION_REQUERIDA`. La suite no lo detecta, porque sus guiones nunca siguen el camino que el prompt prescribe.
+
+El resto del cierre de brechas se cumple:
+- G-02-3: un caso enviado no se reabre.
+- G-02-18: la tabla del clasificador se cumple.
+- G-02-19: un solo punto final con un issue.
+- G-02-21: pregunta de cierre del servidor y turno de confirmación breve.
+
+No hay regresiones en lo verificado antes, y las barreras pasan. Quedan dos advertencias: WR-01, puntuación con varios issues, y WR-02, un envío autorizado que falla saca el caso de la compuerta pese a lo que promete el conocimiento. Conviene corregirlas en el mismo plan de cierre, porque las dos son de pocas líneas.
 
 ---
 
-_Verificado: 2026-10-13T22:45:00Z_
+_Verificado: 2026-10-14T01:48:03Z_
 _Verificador: Claude (gsd-verifier)_
