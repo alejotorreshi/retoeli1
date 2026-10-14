@@ -11,6 +11,7 @@ import {
   DIRECTORIO_AGENTE,
 } from "@/config/constants/files.constants.ts";
 import { HERRAMIENTA, NOMBRE_VISIBLE } from "@/config/constants/tools.constants.ts";
+import { TEXTO_CONFIRMACION } from "@/config/strings.ts";
 import { clasificarConfirmacion } from "@/domain/policies/confirmacion.policy.ts";
 
 const RAIZ_REPO = join(import.meta.dir, "..", "..");
@@ -241,6 +242,10 @@ const RETIRADOS_G023 = [
   'solo un rechazo explícito la cancela: un "no envíes" o "no lo mandes", aunque después venga una pregunta ("no envíes nada todavía, ¿qué falta?"), o una frase corta como "no", "todavía no", "espera" o "cancela".',
   'Un pedido que solo contiene palabras como "no", "para", "luego" o "mejor" no es un rechazo.',
 ];
+const RETIRADOS_G024 = [
+  'Un rechazo es una negación del envío, como "no envíes", "no lo mandes", "no lo confirmes", "no lo hagas", "no confirmo" o "no quiero enviarlo todavía", o una respuesta corta de espera, como "no", "todavía no", "espera", "espera un momento", "cancela" o "mejor no", sola o separada del resto por una coma o un punto, aunque después venga una pregunta o un pedido que no nombra un caso ("No, ¿qué falta?", "Espera, dime qué falta", "todavía no, ¿qué falta?").',
+  'Ese pedido no es un rechazo aunque traiga palabras como "no", "para", "luego", "mejor" o "después" dentro de la frase o junto al nombre de un caso, por ejemplo "consulta el NIT para tenerlo a mano", "dame el NIT, no el RUC", "procesa co-industrias-delta, no pe-andes" o "No, el de pe-andes": no digas que la confirmación quedó cancelada.',
+];
 const DOS_PENDIENTES = ["ec-corp-andina", "co-industrias-delta"];
 const CITA_RECTA = /"([^"]*)"/g;
 
@@ -259,23 +264,28 @@ const ORACIONES_D639: readonly OracionD639[] = [
     nombre: "prompt S51",
     archivo: "prompt",
     oracion:
-      'Un rechazo es una negación del envío, como "no envíes", "no lo mandes", "no lo confirmes", "no lo hagas", "no confirmo" o "no quiero enviarlo todavía", o una respuesta corta de espera, como "no", "todavía no", "espera", "espera un momento", "cancela" o "mejor no", sola o separada del resto por una coma o un punto, aunque después venga una pregunta o un pedido que no nombra un caso ("No, ¿qué falta?", "Espera, dime qué falta", "todavía no, ¿qué falta?").',
+      'Un rechazo es una negación del envío, con o sin motivo, como "no envíes", "no lo mandes", "no lo confirmes", "no lo hagas", "no confirmo", "no confirmo el envío simulado", "no confirmo porque falta el certificado" o "no quiero enviarlo todavía", o una respuesta corta de espera, como "no", "todavía no", "espera", "espera un momento", "cancela", "detén el envío" o "mejor no", sola, junto al nombre del caso que espera confirmación o separada del resto por una coma o un punto, aunque después venga una pregunta o un pedido que no nombra un caso ("No, ¿qué falta?", "Espera, dime qué falta", "todavía no, ¿qué falta?", "ec-corp-andina no", "todavía no, ec-corp-andina").',
     rechazos: [
       "no envíes",
       "no lo mandes",
       "no lo confirmes",
       "no lo hagas",
       "no confirmo",
+      "no confirmo el envío simulado",
+      "no confirmo porque falta el certificado",
       "no quiero enviarlo todavía",
       "no",
       "todavía no",
       "espera",
       "espera un momento",
       "cancela",
+      "detén el envío",
       "mejor no",
       "No, ¿qué falta?",
       "Espera, dime qué falta",
       "todavía no, ¿qué falta?",
+      "ec-corp-andina no",
+      "todavía no, ec-corp-andina",
     ],
     otros: [],
     dentro: [],
@@ -295,7 +305,7 @@ const ORACIONES_D639: readonly OracionD639[] = [
     nombre: "prompt S53",
     archivo: "prompt",
     oracion:
-      'Ese pedido no es un rechazo aunque traiga palabras como "no", "para", "luego", "mejor" o "después" dentro de la frase o junto al nombre de un caso, por ejemplo "consulta el NIT para tenerlo a mano", "dame el NIT, no el RUC", "procesa co-industrias-delta, no pe-andes" o "No, el de pe-andes": no digas que la confirmación quedó cancelada.',
+      'Ese pedido no es un rechazo aunque traiga palabras como "no", "para", "luego", "mejor" o "después" dentro de la frase o junto al nombre de otro caso, por ejemplo "consulta el NIT para tenerlo a mano", "dame el NIT, no el RUC", "procesa co-industrias-delta, no pe-andes" o "No, el de pe-andes": no digas que la confirmación quedó cancelada.',
     rechazos: [],
     otros: [
       "consulta el NIT para tenerlo a mano",
@@ -355,7 +365,7 @@ function expandidos({ dentro, cabeza }: OracionD639): readonly string[] {
   );
 }
 
-describe("el prompt y el conocimiento describen el rechazo de D-63.9 (G-02-2, WR-22, IN-29)", () => {
+describe("el prompt y el conocimiento describen el rechazo de D-63.9 y D-63.10 (G-02-2, WR-22, IN-29, CR-05)", () => {
   test("hay cinco oraciones que definen el rechazo", () => {
     expect(ORACIONES_D639).toHaveLength(5);
   });
@@ -399,6 +409,53 @@ describe("el prompt y el conocimiento describen el rechazo de D-63.9 (G-02-2, WR
 
   test("ninguna oración retirada de 02-22 sigue en los archivos", () => {
     expect(RETIRADOS_G023.filter((frase) => prompt.includes(frase) || conocimiento.includes(frase))).toEqual(
+      [],
+    );
+  });
+});
+
+const NEGACIONES_DE_LA_PREGUNTA = ["no confirmo", "no autorizo", "no lo confirmo"];
+const MOTIVOS = [" porque falta el certificado", ": falta el certificado", " hasta tener el certificado"];
+const APERTURA_DE_LA_PREGUNTA = "¿Confirmas ";
+const CIERRE_DE_LA_PREGUNTA = "?";
+
+function objetoDeLaPregunta(caso: string): string {
+  const pregunta = TEXTO_CONFIRMACION.unCaso(caso, []);
+  const inicio = pregunta.lastIndexOf(APERTURA_DE_LA_PREGUNTA) + APERTURA_DE_LA_PREGUNTA.length;
+  return pregunta.slice(inicio, pregunta.lastIndexOf(CIERRE_DE_LA_PREGUNTA));
+}
+
+function negacionesDeLaPregunta(caso: string): readonly string[] {
+  const objeto = objetoDeLaPregunta(caso);
+  const sinCaso = objeto.slice(0, objeto.lastIndexOf(` de ${caso}`));
+  return NEGACIONES_DE_LA_PREGUNTA.flatMap((negacion) => [
+    `${negacion} ${objeto}`,
+    `${negacion} ${sinCaso}`,
+    ...MOTIVOS.map((motivo) => `${negacion}${motivo}`),
+  ]);
+}
+
+describe("el 'no confirmo' del prompt cubre la redacción de la pregunta del servidor y un motivo (CR-05, D-63.10)", () => {
+  test("el objeto de la pregunta del servidor sale de TEXTO_CONFIRMACION.unCaso", () => {
+    expect(objetoDeLaPregunta("ec-corp-andina")).toBe("el envío simulado de ec-corp-andina");
+  });
+
+  test("negar la pregunta del servidor, con o sin el caso y con un motivo, rechaza con uno o dos pendientes", () => {
+    const mensajes = negacionesDeLaPregunta("ec-corp-andina");
+    expect(mensajes).toHaveLength(15);
+    const fallidos = mensajes.flatMap((mensaje) =>
+      [PENDIENTE_EC, DOS_PENDIENTES]
+        .filter(
+          (pendientes) =>
+            clasificarConfirmacion(mensaje, pendientes).decision !== DECISION_CONFIRMACION.RECHAZA,
+        )
+        .map((pendientes) => [mensaje, pendientes]),
+    );
+    expect(fallidos).toEqual([]);
+  });
+
+  test("ninguna oración retirada de 02-23 sigue en los archivos", () => {
+    expect(RETIRADOS_G024.filter((frase) => prompt.includes(frase) || conocimiento.includes(frase))).toEqual(
       [],
     );
   });
