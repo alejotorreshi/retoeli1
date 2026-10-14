@@ -99,3 +99,33 @@ describe("contrato de contenido de agent/prompt.md y del conocimiento del proces
     ]);
   });
 });
+
+const RETIRADOS = [
+  "Termina con la pregunta de cierre en el último párrafo.",
+  "La pregunta de cierre es la última oración de tu respuesta: no escribas nada después de ella.",
+  "Después de un proveedor_armar_paquete exitoso, termina el turno con una pregunta que pida confirmar el envío simulado de ese caso y que liste los bloqueos vigentes.",
+  "Después da un resumen por caso y una sola pregunta de cierre que nombre cada paquete pendiente de confirmación.",
+];
+
+describe("el prompt y el conocimiento siguen la compuerta del servidor (G-02-21)", () => {
+  test("el prompt deja la pregunta de cierre al servidor, acota el turno de confirmación y no acepta acuses", () => {
+    for (const fragmento of [
+      "el servidor agrega",
+      "no repitas el resumen del caso",
+      "ya quedó registrado",
+      '"ok"',
+      '"listo"',
+    ]) {
+      expect(prompt).toContain(fragmento);
+    }
+  });
+
+  test("el conocimiento deja la pregunta al servidor y no reenvía un caso ya enviado", () => {
+    expect(conocimiento).toContain("el servidor agrega");
+    expect(conocimiento).toContain("ya quedó registrado");
+  });
+
+  test("ninguna frase retirada sobre la pregunta de cierre del modelo sigue en los archivos", () => {
+    expect(RETIRADOS.filter((frase) => prompt.includes(frase) || conocimiento.includes(frase))).toEqual([]);
+  });
+});
