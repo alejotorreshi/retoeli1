@@ -39,6 +39,10 @@ const MENSAJE_CRITERIO_1 = "Procesa el caso co-industrias-delta.";
 const MENSAJE_PRD_11 =
   'Procesa el caso "ec-corp-andina". Dime qué campos quedaron llenos, cuáles faltan, si el paquete está listo para firma y qué soportes debo actualizar. No envíes nada todavía.';
 const MENSAJE_CONFIRMACION = "envía";
+const MENSAJE_ACUSE = "ok";
+const MENSAJE_SI = "sí";
+const SIGNO_PREGUNTA = "¿";
+const PREGUNTAS_DEL_SERVIDOR = 1;
 const TIPO_BLOQUEO_EC = "certificado_cumplimiento_tributario";
 const BLOQUEO_EC = `ausente: ${TIPO_BLOQUEO_EC}`;
 const PENDIENTE_EC: CasoPendiente = {
@@ -110,6 +114,14 @@ function ultimoParrafo(texto: string): string | undefined {
   return texto.trimEnd().split(SEPARADOR_PARRAFOS).at(-1);
 }
 
+function cuentaPreguntas(texto: string): number {
+  return texto.split(SIGNO_PREGUNTA).length - 1;
+}
+
+function llamadasDeEnvio(llamadas: readonly LlamadaRespondida[]): LlamadaRespondida[] {
+  return llamadas.filter((llamada) => llamada.herramienta === NOMBRE_VISIBLE[HERRAMIENTA.SIMULAR_ENVIO]);
+}
+
 function totalFinal(eventos: readonly EventoAgente[]): number {
   return usos(eventos).at(-1)?.totalSesion ?? 0;
 }
@@ -118,7 +130,7 @@ describe.skipIf(process.env.LLM_EN_VIVO !== "1")(
   "criterio 1 y guion PRD §11 contra el modelo real (LLM_EN_VIVO=1)",
   () => {
     test(
-      "co-industrias-delta corre las cuatro herramientas en orden y ec-corp-andina pide confirmación y envía tras 'envía'",
+      "co-industrias-delta corre las cuatro herramientas en orden, sigue pendiente tras 'ok' y envía tras 'sí'; ec-corp-andina pide confirmación y envía tras 'envía'",
       async () => {
         expect(hayClave).toBe(true);
 
@@ -154,13 +166,39 @@ describe.skipIf(process.env.LLM_EN_VIVO !== "1")(
           };
 
           const agenteA = nuevoAgente();
-          const turnoA = await conversacion(agenteA)(MENSAJE_CRITERIO_1);
-          const respuestaA = respuestaDeTurno(turnoA);
-          expect(enOrden(primerosOkDelFlujo(respuestaA.toolCalls, CO))).toBe(true);
-          expect(respuestaA.reply.trim().length).toBeGreaterThan(0);
-          expect(respuestaA.reply).not.toContain(NEGRITA);
-          expect(ultimoParrafo(respuestaA.reply)).toBe(cierreConPregunta("", [PENDIENTE_CO]));
+          const turnoA = conversacion(agenteA);
+          const turnoA1 = await turnoA(MENSAJE_CRITERIO_1);
+          const respuestaA1 = respuestaDeTurno(turnoA1);
+          expect(enOrden(primerosOkDelFlujo(respuestaA1.toolCalls, CO))).toBe(true);
+          expect(respuestaA1.reply.trim().length).toBeGreaterThan(0);
+          expect(respuestaA1.reply).not.toContain(NEGRITA);
+          expect(ultimoParrafo(respuestaA1.reply)).toBe(cierreConPregunta("", [PENDIENTE_CO]));
           expect(existsSync(join(proyecto.raiz, OUT_DIR, CO, ARCHIVOS_SALIDA.ENVIO_SIMULADO))).toBe(false);
+
+          const turnoA2 = await turnoA(MENSAJE_ACUSE);
+          const respuestaA2 = respuestaDeTurno(turnoA2);
+          expect(respuestaA2.needsConfirmation).toBe(true);
+          expect(ultimoParrafo(respuestaA2.reply)).toBe(cierreConPregunta("", [PENDIENTE_CO]));
+          expect(
+            confirmaciones(turnoA2)
+              .filter((confirmacion) => confirmacion.caso === CO)
+              .at(-1),
+          ).toEqual(expect.objectContaining({ caso: CO, bloqueos: [] }));
+          expect(existsSync(join(proyecto.raiz, OUT_DIR, CO, ARCHIVOS_SALIDA.ENVIO_SIMULADO))).toBe(false);
+          expect((await lineasDeEnvio(proyecto.raiz)).filter((linea) => linea.ok)).toHaveLength(0);
+          expect(llamadasDeEnvio(respuestaA2.toolCalls)).toEqual([]);
+          expect(cuentaPreguntas(respuestaA2.reply)).toBe(PREGUNTAS_DEL_SERVIDOR);
+
+          const turnoA3 = await turnoA(MENSAJE_SI);
+          const respuestaA3 = respuestaDeTurno(turnoA3);
+          expect(await casosConEnvioSimulado(proyecto.raiz)).toEqual([CO]);
+          expect((await lineasDeEnvio(proyecto.raiz)).filter((linea) => linea.ok)).toHaveLength(1);
+          expect(finDeTurno(turnoA3).needsConfirmation).toBe(false);
+          expect(
+            llamadasDeEnvio(respuestaA3.toolCalls).filter(
+              (llamada) => llamada.ok && casoDe(llamada.argumentos) === CO,
+            ),
+          ).toHaveLength(1);
 
           const agenteB = nuevoAgente();
           const turnoB = conversacion(agenteB);
@@ -181,11 +219,13 @@ describe.skipIf(process.env.LLM_EN_VIVO !== "1")(
 
           const turnoB2 = await turnoB(MENSAJE_CONFIRMACION);
           const respuestaB2 = respuestaDeTurno(turnoB2);
-          expect(await casosConEnvioSimulado(proyecto.raiz)).toEqual([EC]);
-          expect((await lineasDeEnvio(proyecto.raiz)).filter((linea) => linea.ok)).toHaveLength(1);
+          expect(await casosConEnvioSimulado(proyecto.raiz)).toEqual([CO, EC]);
+          expect((await lineasDeEnvio(proyecto.raiz)).filter((linea) => linea.ok)).toHaveLength(2);
           expect(finDeTurno(turnoB2).needsConfirmation).toBe(false);
 
-          const eventos = [...turnoA, ...turnoB1, ...turnoB2];
+          const turnosA = [...turnoA1, ...turnoA2, ...turnoA3];
+          const turnosB = [...turnoB1, ...turnoB2];
+          const eventos = [...turnosA, ...turnosB];
           for (const uso of usos(eventos)) expect(modelos).toContain(uso.modelo);
           for (const texto of cuerpos) {
             const cuerpo: CuerpoPedido = JSON.parse(texto);
@@ -212,17 +252,21 @@ describe.skipIf(process.env.LLM_EN_VIVO !== "1")(
           );
           expect(fragmentos.filter((fragmento) => pedidos.includes(fragmento))).toEqual([]);
 
-          const salidas = [JSON.stringify(eventos), ...logs.crudas].join("\n");
+          const salidas = [JSON.stringify(eventos), ...logs.crudas, ...cuerpos].join("\n");
           expect(logs.crudas.length).toBeGreaterThan(0);
+          expect(cuerpos.length).toBeGreaterThan(0);
+          expect(claves.length).toBeGreaterThan(0);
           expect(claves.some((clave) => salidas.includes(clave))).toBe(false);
           expect(sensibles.filter((hoja) => salidas.includes(hoja.valor)).map((hoja) => hoja.ruta)).toEqual(
             [],
           );
 
-          console.log(respuestaA.reply);
+          console.log(respuestaA1.reply);
+          console.log(respuestaA2.reply);
+          console.log(respuestaA3.reply);
           console.log(respuestaB1.reply);
           console.log(respuestaB2.reply);
-          const tokens = totalFinal(turnoA) + totalFinal([...turnoB1, ...turnoB2]);
+          const tokens = totalFinal(turnosA) + totalFinal(turnosB);
           console.log(`VIVO PASS modelo=${agenteA.modelo} llamadas=${usos(eventos).length} tokens=${tokens}`);
         } finally {
           restaurarFecha();
