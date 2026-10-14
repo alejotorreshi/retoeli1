@@ -89,7 +89,7 @@ Plans:
   4. Al llegar al tope de iteraciones (25 por defecto) o al de tokens por sesión, el usuario recibe en lenguaje claro lo que se tiene y lo que falta, no un error. Una instrucción inyectada en el cuerpo del correo del cliente no cambia el comportamiento del agente.
   5. Un cambio en `src/knowledge/registro-proveedor.md` o en `agent/prompt.md` cambia el comportamiento del agente sin tocar código del servidor. Los logs JSON llevan IDs de sesión, turno y tool call, sin clave ni PII. `bun test` cubre el ciclo con un LLM falso (tope, compuerta con "No envíes…" y el guion §11, CA5 e inyección) sin gastar tokens.
 
-**Plans:** 18/18 plans executed
+**Plans:** 18/21 plans executed
 
 Plans:
 **Wave 1**
@@ -133,6 +133,15 @@ Plans:
 
 **Cierre de brechas de la UAT, Wave 3** *(blocked on 02-15, 02-16 and 02-17)*
 - [x] 02-18-PLAN.md — `agent/prompt.md` y el conocimiento siguen la compuerta del servidor (pregunta de cierre del servidor, turno de confirmación breve, acuses que no confirman) y una corrida en vivo final con línea VIVO PASS (G-02-21)
+
+**Cierre de brechas de la re-verificación, Wave 1** *(gap closure)*
+- [ ] 02-19-PLAN.md — Una respuesta que no confirma ("ok", "listo", una pregunta o un pedido distinto) deja el caso pendiente y el servidor vuelve a preguntar con `needsConfirmation`; solo un rechazo explícito cancela, y el prompt ya no le pide al modelo pedir la confirmación (CR-01, D-63.6)
+
+**Cierre de brechas de la re-verificación, Wave 2** *(blocked on 02-19)*
+- [ ] 02-20-PLAN.md — Un envío autorizado que falla vuelve a dejar el caso pendiente con la pregunta del servidor (WR-02, D-63.7), y el mensaje de arranque con varios errores de configuración termina en un solo punto (WR-01)
+
+**Cierre de brechas de la re-verificación, Wave 3** *(blocked on 02-19 and 02-20)*
+- [ ] 02-21-PLAN.md — La prueba en vivo revisa la clave también en los cuerpos de los pedidos y recorre "ok" → "sí"; una corrida en vivo final con línea VIVO PASS (nota 1 de SECURITY)
 
 **Research flag**: Spike en vivo con DeepSeek antes de construir el ciclo: nombre de modelo vigente, thinking desactivado, `tool_choice`, forma de los tool calls y de los errores. La línea de modelos cambió 3 veces en 2026 y `deepseek-chat`/`deepseek-reasoner` se retiraron el 2026-07-24.
 
