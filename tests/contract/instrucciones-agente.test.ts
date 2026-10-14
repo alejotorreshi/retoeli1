@@ -347,8 +347,12 @@ function citasRectas(oracion: string): string[] {
   return [...oracion.matchAll(CITA_RECTA)].map(([, cita]) => cita ?? "");
 }
 
+const CANCELAN_CON_EC: ReadonlySet<string> = new Set(["No, el de ec-corp-andina"]);
+
 function expandidos({ dentro, cabeza }: OracionD639): readonly string[] {
-  return [...dentro.flatMap(nuncaCancelanDentro), ...cabeza.flatMap(nuncaCancelanCabeza)];
+  return [...dentro.flatMap(nuncaCancelanDentro), ...cabeza.flatMap(nuncaCancelanCabeza)].filter(
+    (mensaje) => !CANCELAN_CON_EC.has(mensaje),
+  );
 }
 
 describe("el prompt y el conocimiento describen el rechazo de D-63.9 (G-02-2, WR-22, IN-29)", () => {

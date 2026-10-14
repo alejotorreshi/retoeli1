@@ -280,6 +280,67 @@ const FILAS_D639: readonly Fila[] = [
   ["espera un momento", DOS, RECHAZA],
 ];
 
+const FILAS_D6310: readonly Fila[] = [
+  ["no confirmo el envío simulado", UNO, RECHAZA],
+  ["no confirmo el envío simulado de ec-corp-andina", UNO, RECHAZA],
+  ["no autorizo el envío simulado", UNO, RECHAZA],
+  ["no confirmo porque falta el certificado", UNO, RECHAZA],
+  ["no confirmo hasta tener el certificado", UNO, RECHAZA],
+  ["no lo hagas hasta tener el certificado", UNO, RECHAZA],
+  ["no confirmo: falta el certificado", UNO, RECHAZA],
+  ["ec-corp-andina no", UNO, RECHAZA],
+  ["no, ec-corp-andina", UNO, RECHAZA],
+  ["todavía no, ec-corp-andina", UNO, RECHAZA],
+  ["espera, ec-corp-andina", UNO, RECHAZA],
+  ["Todavía no, falta el certificado de ec-corp-andina", UNO, RECHAZA],
+  ["mejor no el paquete de ec-corp-andina", UNO, RECHAZA],
+  ["no, el de ec-corp-andina tiene bloqueos", UNO, RECHAZA],
+  ["co-industrias-delta todavía no", DOS, RECHAZA],
+  ["detén el envío", UNO, RECHAZA],
+  ["no confirmo el envío simulado", DOS, RECHAZA],
+  ["todavía no, ec-corp-andina", DOS, RECHAZA],
+  ["no, ec-corp-andina no", UNO, RECHAZA],
+  ["no ec-corp-andina", UNO, RECHAZA],
+  ["No el paquete de ec-corp-andina", UNO, RECHAZA],
+  ["cancela el envío simulado", UNO, RECHAZA],
+  ["cancela la confirmación", UNO, RECHAZA],
+  ["cancela porque falta el certificado", UNO, RECHAZA],
+  ["no quiero enviarlo sin el certificado", UNO, RECHAZA],
+  ["no quiero confirmar el envío simulado", UNO, RECHAZA],
+  ["hoy no", UNO, RECHAZA],
+  ["no confirmo: el NIT está mal", UNO, RECHAZA],
+  ["no confirmo porque el NIT está mal", UNO, RECHAZA],
+  ["no, envía ec-corp-andina", UNO, RECHAZA],
+  ["No, el de ec-corp-andina", UNO, RECHAZA],
+  ["No, el de ec-corp-andina", DOS, RECHAZA],
+  ["No, el de co-industrias-delta", DOS, RECHAZA],
+  ["No, el de co-industrias-delta", UNO, OTRO],
+  ["No, consulta el NIT de co-industrias-delta", UNO, OTRO],
+  ["co-industrias-delta todavía no", UNO, OTRO],
+  ["No, consulta el NIT de co-industrias-delta", DOS, OTRO],
+  ["No. Consulta el NIT de co-industrias-delta.", DOS, OTRO],
+  ["No, procesa ec-corp-andina", UNO, OTRO],
+  ["Todavía no, revisa el NIT de ec-corp-andina", UNO, OTRO],
+  ["No, consulta el NIT de ec-corp-andina", UNO, OTRO],
+  ["No, el de pe-andes", UNO, OTRO],
+  ["No, el de pe-andes", DOS, OTRO],
+  ["procesa co-industrias-delta, no pe-andes", UNO, OTRO],
+  ["procesa co-industrias-delta, no pe-andes", DOS, OTRO],
+  ["procesa co-industrias-delta, no ec-corp-andina", DOS, OTRO],
+  ["consulta el NIT de co-industrias-delta, no ec-corp-andina", DOS, OTRO],
+  ["No ec-corp-andina, ¿qué falta?", UNO, OTRO],
+  ["Y no el caso ec-corp-andina, ¿qué falta?", UNO, OTRO],
+  ["dame el NIT, no la de ec-corp-andina", UNO, OTRO],
+  ["lee la solicitud de pe-andes, no la de ec-corp-andina", UNO, OTRO],
+  ["no confirmo el NIT", UNO, OTRO],
+  ["no confirmo el NIT porque está mal", UNO, OTRO],
+  ["No hagas el PDF", UNO, OTRO],
+  ["detén el pdf", UNO, OTRO],
+  ["el cliente respondió: no.", UNO, OTRO],
+  ["mejor co-industrias-delta", DOS, OTRO],
+  ["y luego ec-corp-andina", UNO, OTRO],
+];
+
 const PALABRAS_DE_RECHAZO: readonly string[] = [...new Set([...NEGACIONES, ...NEGADORES])];
 const VOCABULARIO_DE_CONFIRMACION: ReadonlySet<string> = new Set([
   ...AFIRMACIONES,
@@ -350,6 +411,12 @@ describe("clasificarConfirmacion: rechazo explícito por cláusulas afirmadas (G
   });
 });
 
+describe("clasificarConfirmacion: la redacción del servidor, un motivo y el caso pendiente no salvan un rechazo (G-02-2, CR-05, D-63.10)", () => {
+  test.each(FILAS_D6310)("%p con pendientes %p", (texto, pendientes, esperado) => {
+    expect(clasificarConfirmacion(texto, pendientes)).toEqual(esperado);
+  });
+});
+
 const PENDIENTES_DE_CLASE: readonly (readonly string[])[] = [UNO, DOS];
 const UN_SEGUNDO_MS = 1000;
 type Infraccion = readonly [string, readonly string[], string];
@@ -379,13 +446,35 @@ const TABLAS: readonly Fila[] = [
   ...FILAS_EXTRA,
   ...FILAS_RECHAZO_ACOTADO,
   ...FILAS_D639,
+  ...FILAS_D6310,
 ];
+
+const CANCELAN_POR_CASO_PENDIENTE: readonly (readonly [string, readonly string[]])[] = [
+  ["No, el de ec-corp-andina", UNO],
+  ["No, el de ec-corp-andina", DOS],
+  ["No, el de co-industrias-delta", DOS],
+];
+
+function estaDeclarado(mensaje: string, pendientes: readonly string[]): boolean {
+  return CANCELAN_POR_CASO_PENDIENTE.some(
+    ([declarado, susPendientes]) => declarado === mensaje && susPendientes === pendientes,
+  );
+}
 
 describe("clasificarConfirmacion: clases generadas que nunca y siempre cancelan (G-02-2, IN-29, D-63.9)", () => {
   test("las preguntas, los pedidos y los conectores generados nunca cancelan, con uno o dos casos pendientes", () => {
     const mensajes = nuncaCancelan();
     expect(mensajes.length).toBeGreaterThanOrEqual(2000);
-    expect(infraccionesDe(mensajes, (_, decision) => decision !== DECISION_CONFIRMACION.OTRO)).toEqual([]);
+    const infracciones = infraccionesDe(mensajes, (_, decision) => decision !== DECISION_CONFIRMACION.OTRO);
+    expect(infracciones.filter(([mensaje, pendientes]) => !estaDeclarado(mensaje, pendientes))).toEqual([]);
+  });
+
+  test("los mensajes generados que nombran solo un caso pendiente tras un 'No' suelto cancelan (CR-05, D-63.10)", () => {
+    const generados = new Set(nuncaCancelan());
+    for (const [mensaje, pendientes] of CANCELAN_POR_CASO_PENDIENTE) {
+      expect(generados.has(mensaje)).toBe(true);
+      expect(clasificarConfirmacion(mensaje, pendientes)).toEqual(RECHAZA);
+    }
   });
 
   test("los rechazos generados siempre cancelan, con uno o dos casos pendientes", () => {
