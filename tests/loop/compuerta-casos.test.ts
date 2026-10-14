@@ -274,15 +274,23 @@ describe("D-38: la autorización vale una vez, para un caso y en el turno siguie
     historialSano(prueba);
   });
 
-  test("dos simular(ec) en el turno confirmado: el primero envía y el segundo queda bloqueado", async () => {
+  test("dos simular(ec) en el turno confirmado: el primero envía, el segundo queda bloqueado y ec no se reabre (G-02-3)", async () => {
     const prueba = agente([
       ...armarCaso(EC),
       respuestaHerramientas(simular("simular-1", { caso: EC }), simular("simular-2", { caso: EC })),
       respuestaTexto("Hecho."),
+      ...enviar("simular-3", EC),
     ]);
     await prueba.turno(`procesa ${EC}`);
     const turno2 = await prueba.turno("envía");
     expect(finesDeHerramienta(turno2)).toEqual([exitosa(), bloqueada()]);
+    expect(await enviosOk()).toBe(1);
+    expect(confirmaciones(turno2)).toEqual([]);
+    expect(finDeTurno(turno2).needsConfirmation).toBe(false);
+    expect(textoFinal(turno2)).toBe("Hecho.");
+
+    const turno3 = await prueba.turno("envía");
+    expect(finesDeHerramienta(turno3)).toEqual([bloqueada()]);
     expect(await enviosOk()).toBe(1);
     historialSano(prueba);
   });
@@ -350,6 +358,36 @@ describe("AGT-04 (G-02-3, D-63.4): un caso ya enviado no se reabre ni se envía 
       { llamadaId: "simular-2", caso: EC },
       { llamadaId: "simular-3", caso: EC },
     ]);
+    historialSano(prueba);
+  });
+});
+
+describe("D-63.4: un armado nuevo tras el envío abre otro ciclo", () => {
+  test("re-armar ec tras enviarlo vuelve a preguntar y el 'envía' siguiente escribe un segundo envío", async () => {
+    const prueba = agente([
+      ...armarCaso(EC),
+      ...enviar("simular-1", EC),
+      respuestaHerramientas(llamar("armar-ec-2", HERRAMIENTA.ARMAR_PAQUETE, { caso: EC })),
+      respuestaTexto(`Volví a armar el paquete de ${EC}.`),
+      ...enviar("simular-2", EC),
+    ]);
+    await prueba.turno(`procesa ${EC}`);
+    const turno2 = await prueba.turno("envía");
+    expect(finesDeHerramienta(turno2)).toEqual([exitosa()]);
+    expect(prueba.sesionActual().casosEnviados).toEqual([EC]);
+
+    const turno3 = await prueba.turno(`vuelve a armar el paquete de ${EC}`);
+    expect(confirmaciones(turno3)).toEqual([
+      expect.objectContaining({ caso: EC, accion: ACCION.ENVIO, bloqueos: [BLOQUEO_EC] }),
+    ]);
+    terminaPreguntandoPor(textoFinal(turno3), EC);
+    expect(finDeTurno(turno3).needsConfirmation).toBe(true);
+    expect(prueba.sesionActual().casosEnviados).toEqual([]);
+
+    const turno4 = await prueba.turno("envía");
+    expect(finesDeHerramienta(turno4)).toEqual([exitosa()]);
+    expect(await enviosOk()).toBe(2);
+    expect(await casosConEnvioSimulado(proyecto.raiz)).toEqual([EC]);
     historialSano(prueba);
   });
 });
