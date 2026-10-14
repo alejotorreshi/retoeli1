@@ -174,7 +174,7 @@ Recent decisions affecting current work:
 - [Phase 02]: 02-08: un turno abandonado se guarda en finally como usuario + pasos completos + TURNO_INTERRUMPIDO antes de liberar; un paso fin limite no ejecuta herramientas y responde ARGUMENTOS_TRUNCADOS por llamada
 - [Phase 02]: 02-08: las líneas gate_* llevan caso solo si es un paquete armado por el servidor; CODIGO_AGENTE.TOPE_ITERACIONES y su mensaje se eliminaron por no tener emisor
 - [Phase 02]: 02-09: el prompt nombra los soportes en palabras legibles derivadas del tipo; las herramientas conservan los ids crudos (contrato v1)
-- [Phase 02]: 02-09: la pregunta de cierre es la última oración y no hay secciones fuera del formato D-43; los avisos de soportes presentes van en Soportes por actualizar
+- [Phase 02]: 02-09: la pregunta de cierre es la última oración y no hay secciones fuera del formato D-43; los avisos de soportes presentes van en Soportes por actualizar — la parte de la pregunta de cierre SUPERSEDED por 02-10 (el servidor escribe la pregunta) y 02-18 (el modelo no la escribe)
 - [Phase 02]: 02-09: la prueba en vivo es opt-in solo por LLM_EN_VIVO; sin clave falla en la primera aserción y nunca se salta
 - [Phase 02]: 02-10: with a case pending, every turn ends with preguntaConfirmacion as its last paragraph; trailing model question lines are stripped first, even one naming the case (D-44 strict, CR-02 closed)
 - [Phase 02]: 02-10: sinPreguntaFinal cuts a trailing question line only at FINES_DE_ORACION before its first question mark, otherwise drops the whole line, so model text is never left mid-sentence
@@ -191,6 +191,7 @@ Recent decisions affecting current work:
 - [Phase 02]: 02-15: D-63.4 — la compuerta recuerda los casos enviados en Sesion.casosEnviados; un simular_envio bloqueado de un caso ya enviado no lo reabre ni en el mismo turno ni después, y un armar_paquete nuevo y exitoso borra la marca y vuelve a pedir confirmación (G-02-3)
 - [Phase 02]: G-02-19: TEXTO_AGENTE.conDetalle adds the final period only when missing (endsWith, no regex); CONFIGURACION_LLM_INVALIDA and PROVEEDOR_SIN_CLAVE drop the open-session sentence because crearAgente raises them before any session exists; turn-time codes keep it
 - [Phase 02]: 02-16: D-63.5 — un acuse suelto (ok, okay, vale, listo, claro, correcto) nunca confirma; hace falta una afirmación fuerte o un verbo de envío. "sí" con tilde (detectado sobre el texto NFC antes de quitar diacríticos) es afirmación fuerte en cualquier posición; "si" sin tilde confirma solo como mensaje entero y en cualquier otra frase nunca basta (G-02-18)
+- [Phase 02]: 02-18: agent/prompt.md y el conocimiento dejan la pregunta de cierre al servidor (cierreConPregunta), acotan el turno de confirmación al resultado del envío simulado, dicen que un "ok" o "listo" suelto no confirma y que un caso ya enviado no se reenvía sin un armado nuevo; cambio solo de texto (AGT-02), fijado por tests/contract/instrucciones-agente.test.ts (G-02-21)
 
 ### Pending Todos
 
@@ -203,6 +204,7 @@ None yet.
 - [Phase 2]: Hacer un spike en vivo con DeepSeek antes del ciclo (modelo vigente, thinking desactivado, `tool_choice`, forma de los errores).
 - [Phase 3]: Hay que verificar con `curl -N` que el proxy de Render no bufferice el SSE apenas exista el endpoint.
 - [Phase 3]: El servicio en Render free duerme por inactividad y su disco es efímero; hay que calentarlo antes de la defensa.
+- [Phase 4]: modulo/agent.md se genera desde agent/prompt.md, que desde 02-18 deja la pregunta de confirmación al servidor; sin servidor (OpenCode) nadie la escribiría, así que el generador de la Phase 4 debe decidir quién pide la confirmación (nota del generador o párrafo propio del módulo).
 - [Phase 4]: SOLUCION.md debe explicar los ids canónicos en la consola de la demo y el `resumen` (WR-03), mover desde docs/plantillas.md la nota de NOMBRE_SOPORTE (IN-01) y registrar SEG-02 como parcial hasta que exista `redactar()`.
 - [General]: PRD §10 no trae la tabla de puntos de la rúbrica; cada "debe/obligatorio/evaluamos" se trata como ítem y el supuesto va en SOLUCION.md §7.
 
