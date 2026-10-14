@@ -3,16 +3,16 @@ gsd_state_version: "1.0"
 current_phase: 03
 current_phase_name: Chat web, API SSE y despliegue
 status: executing
-stopped_at: Completed 03-01-PLAN.md
-last_updated: "2026-10-14T23:15:27.384Z"
+stopped_at: Completed 03-02-PLAN.md
+last_updated: "2026-10-14T23:26:47.379Z"
 last_activity: 2026-10-14
 last_activity_desc: Phase 03 execution started
-state_head: 9088a721f009eaac89f247a27a734e21b27da81a
+state_head: 405bce2ce2712fb097e8990afacba2feec0c12e8
 progress:
   total_phases: 4
   completed_phases: 2
   total_plans: 66
-  completed_plans: 40
+  completed_plans: 41
   percent: 50
 ---
 
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-10-14)
 ## Current Position
 
 Phase: 03 (Chat web, API SSE y despliegue) — EXECUTING
-Plan: 2 of 27
+Plan: 3 of 27
 Status: Ready to execute
 Last activity: 2026-10-14 — Phase 03 execution started
 
@@ -97,6 +97,7 @@ Progress: [█████░░░░░] 50%
 | Phase 02 P23 | 8 min | 3 tasks | 12 files |
 | Phase 02 P24 | 11 min | 3 tasks | 10 files |
 | Phase 03 P01 | 4 min | 2 tasks | 14 files |
+| Phase 03 P02 | 9 min | 2 tasks | 14 files |
 
 ## Accumulated Context
 
@@ -210,6 +211,9 @@ Recent decisions affecting current work:
 - [Phase 02]: 02-24: D-63.10 (enmienda de D-63.9, CR-05, aprobada por la usuaria el 2026-10-14) — una negación del envío con la redacción del servidor ("simulado", "confirmación") o con un motivo ("porque", "hasta", "sin", "pues", "mientras", ":") rechaza; "detén" cancela y "hoy" es relleno de espera; un caso pendiente cuenta como palabra de espera (con rellenos) salvo en la contraposición "no <caso>"; la exención por nombrar un caso vale para un caso no pendiente y para una cláusula encabezada por un verbo de pedido; "No, el de <caso pendiente>" pasa a rechazo (tres pares, aprobados); cuarta dirección del diferencial con mezclas de decisión fija; PATRON_SLUG_EN_TEXTO anclado con lookbehind (WR-25, T-02-77); siguen abiertos WR-17, WR-23 (resto), WR-24, IN-31, IN-32 e IN-33
 - [Phase 03]: 03-01: capa src/http en inglés; solo http/wiring/server.wiring.ts importa infra, config/env.ts y agente.wiring; hono solo en http; src/server.ts solo llega al wiring http y a node:
 - [Phase 03]: 03-01: la usuaria aprobó hono 4.13.13, react/react-dom 19.3.0, vite 8.3.3, @vitejs/plugin-react 6.1.2, eventsource-parser 4.1.1 y @types/react(-dom) 19.3.0 ('aprobado'); instaladas exactas
+- [Phase 03]: 03-02: el tracer fija el orden real del bucle (turn_start, usage, tool_start, tool_end, usage, text, turn_end), con un usage por cada llamada al modelo
+- [Phase 03]: 03-02: el respaldo JSON de /api/chat también pasa por redactar con secretosDelAgente, igual que cada frame SSE
+- [Phase 03]: 03-02: notFound y onError globales viven en server.wiring y responden { mensaje } de MENSAJE_HTTP; el detalle solo va a pino
 
 ### Pending Todos
 
@@ -244,6 +248,6 @@ Items acknowledged and deferred at milestone close, most recent first:
 
 ## Session Continuity
 
-Last session: 2026-10-14T23:15:27.261Z
-Stopped at: Completed 03-01-PLAN.md
+Last session: 2026-10-14T23:26:47.297Z
+Stopped at: Completed 03-02-PLAN.md
 Resume file: None
