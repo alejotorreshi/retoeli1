@@ -284,9 +284,7 @@ export const MENSAJE_AGENTE = {
   [CODIGO_AGENTE.PROVEEDOR_SIN_CLAVE]: conSesionAbierta(
     "El proveedor del modelo no tiene una clave configurada en el servidor.",
   ),
-  [CODIGO_AGENTE.CONFIGURACION_LLM_INVALIDA]: conSesionAbierta(
-    "La configuración del proveedor del modelo no es válida.",
-  ),
+  [CODIGO_AGENTE.CONFIGURACION_LLM_INVALIDA]: "La configuración del proveedor del modelo no es válida.",
   [CODIGO_AGENTE.PROVEEDOR_PETICION_INVALIDA]: conSesionAbierta(
     "El proveedor del modelo rechazó la solicitud.",
   ),
@@ -331,9 +329,13 @@ export const TEXTO_SESION = {
   expirada: "La sesión anterior expiró; empezamos de cero.",
 } as const;
 
+function cerrarOracion(texto: string): string {
+  const recortado = texto.trimEnd();
+  return recortado.endsWith(FIN_DE_ORACION) ? recortado : `${recortado}${FIN_DE_ORACION}`;
+}
+
 export const TEXTO_AGENTE = {
-  conDetalle: (mensaje: string, detalle: string): string =>
-    `${conDetalle(mensaje, detalle)}${FIN_DE_ORACION}`,
+  conDetalle: (mensaje: string, detalle: string): string => cerrarOracion(conDetalle(mensaje, detalle)),
 } as const;
 
 export const TEXTO_CONOCIMIENTO = {
