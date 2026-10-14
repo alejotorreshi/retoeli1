@@ -2,6 +2,7 @@ import { describe, expect, test } from "bun:test";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { CODIGO_AGENTE } from "@/config/constants/agent.constants.ts";
+import { DECISION_CONFIRMACION } from "@/config/constants/confirmation.constants.ts";
 import { CODIGO_ERROR } from "@/config/constants/errors.constants.ts";
 import {
   ARCHIVO_CONOCIMIENTO_PROCESO,
@@ -9,6 +10,7 @@ import {
   DIRECTORIO_AGENTE,
 } from "@/config/constants/files.constants.ts";
 import { HERRAMIENTA, NOMBRE_VISIBLE } from "@/config/constants/tools.constants.ts";
+import { clasificarConfirmacion } from "@/domain/policies/confirmacion.policy.ts";
 
 const RAIZ_REPO = join(import.meta.dir, "..", "..");
 const RUTA_PROMPT = join(RAIZ_REPO, DIRECTORIO_AGENTE, ARCHIVO_PROMPT);
@@ -153,6 +155,80 @@ describe("la re-pregunta es del servidor (CR-01, D-63.6)", () => {
 
   test("ninguna frase que le pedía al modelo pedir la confirmación sigue en los archivos", () => {
     expect(RETIRADOS_CR01.filter((frase) => prompt.includes(frase) || conocimiento.includes(frase))).toEqual(
+      [],
+    );
+  });
+});
+
+const RETIRADOS_G022 = [
+  "Si la analista dice que no envíes nada todavía, no llames a proveedor_simular_envio en ese turno.",
+  'Mientras un paquete espera confirmación, una respuesta que no confirma ni rechaza, o un pedido distinto, lo deja pendiente y el servidor vuelve a agregar su pregunta; una negación como "no envíes nada todavía" la cancela.',
+];
+const PENDIENTE_EC = ["ec-corp-andina"];
+const RECHAZOS_DEL_PROMPT = [
+  "no envíes",
+  "no lo mandes",
+  "no lo hagas",
+  "no confirmo",
+  "no",
+  "todavía no",
+  "espera",
+  "cancela",
+  "mejor no",
+];
+const PEDIDOS_DEL_PROMPT = ["consulta el NIT para tenerlo a mano", "dame el NIT, no el RUC"];
+const RECHAZOS_DEL_CONOCIMIENTO = [
+  "no envíes",
+  "no lo mandes",
+  "no envíes nada todavía, ¿qué falta?",
+  "no",
+  "todavía no",
+  "espera",
+  "cancela",
+];
+
+function citado(texto: string, ejemplo: string): boolean {
+  return texto.includes(`"${ejemplo}"`);
+}
+
+describe("el rechazo explícito es acotado (G-02-2, D-63.8)", () => {
+  test.each(RECHAZOS_DEL_PROMPT)("el prompt cita %p como rechazo y el servidor lo rechaza", (ejemplo) => {
+    expect(citado(prompt, ejemplo)).toBe(true);
+    expect(clasificarConfirmacion(ejemplo, PENDIENTE_EC).decision).toBe(DECISION_CONFIRMACION.RECHAZA);
+  });
+
+  test.each(PEDIDOS_DEL_PROMPT)("el prompt cita %p como pedido y el servidor no lo rechaza", (ejemplo) => {
+    expect(citado(prompt, ejemplo)).toBe(true);
+    expect(clasificarConfirmacion(ejemplo, PENDIENTE_EC).decision).toBe(DECISION_CONFIRMACION.OTRO);
+  });
+
+  test.each(RECHAZOS_DEL_CONOCIMIENTO)(
+    "el conocimiento cita %p como rechazo y el servidor lo rechaza",
+    (ejemplo) => {
+      expect(citado(conocimiento, ejemplo)).toBe(true);
+      expect(clasificarConfirmacion(ejemplo, PENDIENTE_EC).decision).toBe(DECISION_CONFIRMACION.RECHAZA);
+    },
+  );
+
+  test("el prompt y el conocimiento definen el rechazo como el servidor", () => {
+    for (const fragmento of [
+      "aunque después venga una pregunta",
+      "no es un rechazo",
+      "no digas que la confirmación quedó cancelada",
+    ]) {
+      expect(prompt).toContain(fragmento);
+    }
+    for (const fragmento of [
+      "solo un rechazo explícito la cancela",
+      "aunque después venga una pregunta",
+      "no es un rechazo",
+    ]) {
+      expect(conocimiento).toContain(fragmento);
+    }
+  });
+
+  test("ninguna frase retirada sobre la negación que cancela sigue en los archivos", () => {
+    expect(RETIRADOS_G022.filter((frase) => prompt.includes(frase) || conocimiento.includes(frase))).toEqual(
       [],
     );
   });
