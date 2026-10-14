@@ -248,6 +248,7 @@ const RETIRADOS_G024 = [
 ];
 const RETIRADOS_D6311 = [
   "Ese paquete sigue pendiente y el servidor vuelve a agregar su pregunta; si quedan varios paquetes pendientes, la pregunta los nombra y la analista tiene que nombrar el caso al confirmar.",
+  'Un pedido distinto (por ejemplo "consulta el NIT para tenerlo a mano") no es un rechazo aunque traiga palabras como "no", "para", "luego" o "mejor" dentro de la frase o junto al nombre de un caso.',
 ];
 const DOS_PENDIENTES = ["ec-corp-andina", "co-industrias-delta"];
 const CITA_RECTA = /"([^"]*)"/g;
@@ -361,10 +362,20 @@ const ORACIONES_D639: readonly OracionD639[] = [
     nombre: "conocimiento RN4b",
     archivo: "conocimiento",
     oracion:
-      'Un pedido distinto (por ejemplo "consulta el NIT para tenerlo a mano") no es un rechazo aunque traiga palabras como "no", "para", "luego" o "mejor" dentro de la frase o junto al nombre de un caso.',
+      'Un pedido distinto (por ejemplo "consulta el NIT para tenerlo a mano") no es un rechazo aunque traiga palabras como "no", "para", "luego" o "mejor" dentro de la frase o junto al nombre de otro caso.',
     rechazos: [],
     otros: ["consulta el NIT para tenerlo a mano"],
     dentro: ["no", "para", "luego", "mejor"],
+    cabeza: [],
+  },
+  {
+    nombre: "conocimiento RN4c",
+    archivo: "conocimiento",
+    oracion:
+      'Tras una respuesta de espera, un pedido que nombra el caso que espera confirmación solo lo deja pendiente si empieza directamente con un verbo de pedido como consulta, procesa o revisa ("No, consulta el NIT de ec-corp-andina"); con otra palabra delante, o sin un verbo de pedido, el servidor cancela la confirmación ("No, por favor consulta el NIT de ec-corp-andina").',
+    rechazos: ["No, por favor consulta el NIT de ec-corp-andina"],
+    otros: ["No, consulta el NIT de ec-corp-andina"],
+    dentro: [],
     cabeza: [],
   },
 ];
@@ -386,8 +397,8 @@ function expandidos({ dentro, cabeza }: OracionD639): readonly string[] {
 }
 
 describe("el prompt y el conocimiento describen el rechazo de D-63.9, D-63.10 y D-63.11 (G-02-2, WR-22, IN-29, CR-05, CR-06)", () => {
-  test("hay seis oraciones que definen el rechazo", () => {
-    expect(ORACIONES_D639).toHaveLength(6);
+  test("hay siete oraciones que definen el rechazo", () => {
+    expect(ORACIONES_D639).toHaveLength(7);
   });
 
   test.each([...ORACIONES_D639])("$nombre está entera en su archivo", ({ archivo, oracion }) => {
