@@ -3,6 +3,42 @@ phase: 02
 review: 02-REVIEW.md
 titles: json
 findings:
+  - id: WR-15
+    severity: warning
+    disposition: open
+    title: "[WARNING] \"No envíes nada todavía\" seguido de una pregunta ya no cancela: el servidor vuelve a pedir la confirmación justo después de la negación"
+  - id: WR-16
+    severity: warning
+    disposition: open
+    title: "[WARNING] un pedido distinto que contiene \"para\", \"no\", \"luego\", \"mejor\" o \"después\" se clasifica como rechazo y cancela el caso pendiente, aunque D-63.6 y el prompt prometen que sigue pendiente"
+  - id: WR-17
+    severity: warning
+    disposition: open
+    title: "[WARNING] el rechazo estructurado de un caso (`{ aprobada: false, caso }`) cancela todos los casos pendientes"
+  - id: WR-18
+    severity: warning
+    disposition: open
+    title: "[WARNING] D-63.7 vuelve a ofrecer el envío de un paquete que la herramienta acaba de declarar no armado o desactualizado, y el texto del servidor lo describe como vigente"
+  - id: IN-23
+    severity: info
+    disposition: open
+    title: "[INFO] un `simular_envio` desobediente en el mismo turno de un rechazo explícito deshace el rechazo"
+  - id: IN-24
+    severity: info
+    disposition: open
+    title: "[INFO] `SEPARADOR_ISSUES` es el mismo \"; \" que usa `TEXTO_ENV.urlNoSegura` dentro de su oración"
+  - id: IN-25
+    severity: info
+    disposition: open
+    title: "[INFO] la prueba \"PAQUETE_DESACTUALIZADO y un re-armado en el mismo turno dejan el caso pendiente con los bloqueos nuevos\" no comprueba ningún bloqueo"
+  - id: IN-26
+    severity: info
+    disposition: open
+    title: "[INFO] los contratos nuevos del prompt y del conocimiento comprueban fragmentos tan cortos que no fijan la regla"
+  - id: IN-27
+    severity: info
+    disposition: open
+    title: "[INFO] `FALLIDO` trata cualquier `ok: false` como \"no se envió\", incluido un fallo posterior a escribir `ENVIO-SIMULADO.md`"
   - id: CR-01
     severity: critical
     disposition: open
@@ -159,91 +195,32 @@ findings:
     severity: info
     disposition: open
     title: "The agent clock re-parses the environment on every call and silently diverges from the tools when `FECHA_EJECUCION` is invalid"
-  - id: R2-WR-01
-    severity: warning
-    disposition: fixed
-    title: "Un acuse suelto (\"ok\", \"listo\", \"claro\", \"correcto\", \"vale\") sigue autorizando el envío"
-  - id: R2-WR-02
-    severity: warning
-    disposition: open
-    title: "`sinPreguntaFinal` borra texto que no es pregunta, incluidas advertencias de campos `requiere_confirmacion`"
-  - id: R2-IN-01
-    severity: info
-    disposition: open
-    title: "Si el envío autorizado se ejecuta y falla, el caso desaparece de los pendientes"
-  - id: R2-IN-02
-    severity: info
-    disposition: open
-    title: "Cuando `guardar` es rechazado, el turno igual anuncia texto y `confirmation_required` como si el estado se hubiera guardado"
-  - id: R2-IN-03
-    severity: info
-    disposition: open
-    title: "El cercado depende de que el deadline (temporizador monotónico) venza antes que el lease (reloj de pared), y el cercado solo protege `guardar`"
-  - id: R2-IN-04
-    severity: info
-    disposition: fixed
-    title: "\"si\" sin tilde se clasifica siempre como afirmación, aunque pueda ser el condicional \"si\""
-  - id: R2-IN-05
-    severity: info
-    disposition: open
-    title: "La instrucción de siguiente paso dice \"envía\" o \"sí\" aunque haya varios casos pendientes"
-  - id: R2-CR-01
-    severity: critical
-    disposition: fixed
-    title: "\"envio\" counts as an affirmative verb, so noun phrases and acknowledgements authorize the send"
-  - id: R1-WR-01
-    severity: warning
-    disposition: open
-    title: "An abort or deadline in the middle of a step drops the results of tools that already ran (including `simular_envio`) from history, while their gate events still apply"
-  - id: R1-WR-02
-    severity: warning
-    disposition: fixed
-    title: "A confirmation turn that fails before sending silently drops the pending case"
-  - id: R1-WR-03
-    severity: warning
-    disposition: fixed
-    title: "Session locks have no lease, so a consumer that stops iterating without `return()` locks the session forever"
-  - id: R1-WR-04
-    severity: warning
-    disposition: open
-    title: "The cost cap can be bypassed: the token budget is per session, sessions are free to create, and invalid responses are retried without counting their tokens"
-  - id: R1-IN-01
-    severity: info
-    disposition: open
-    title: "`LONGITUD_MAXIMA_NOMBRE_HERRAMIENTA` is dead, and model-controlled tool names are unbounded"
-  - id: R1-IN-02
-    severity: info
-    disposition: open
-    title: "The gate re-parses the `armar_paquete` output with a local schema and duplicates the checklist blocking-reason logic"
-  - id: R1-IN-03
-    severity: info
-    disposition: fixed
-    title: "Agent-creation errors say the session is still open when no session exists"
-  - id: R1-IN-04
-    severity: info
-    disposition: open
-    title: "An unknown or malformed session id is reported as \"expired\""
-  - id: R1-IN-05
-    severity: info
-    disposition: open
-    title: "The agent clock re-parses the environment on every call and silently diverges from the tools when `FECHA_EJECUCION` is invalid"
-open: 25
-total: 56
-recorded: 2026-10-14T01:42:10.286Z
+open: 23
+total: 48
+recorded: 2026-10-14T03:20:13.827Z
 ---
 
 # Phase 02: Code Review Disposition
 
 | Finding | Severity | Disposition | Source |
 |---------|----------|-------------|--------|
-| CR-01 | critical | open | - |
-| WR-01 | warning | open | - |
-| WR-02 | warning | open | - |
-| IN-01 | info | open | - |
-| IN-02 | info | open | - |
-| IN-03 | info | open | - |
-| IN-04 | info | open | - |
-| IN-05 | info | open | - |
+| WR-15 | warning | open | - |
+| WR-16 | warning | open | - |
+| WR-17 | warning | open | - |
+| WR-18 | warning | open | - |
+| IN-23 | info | open | - |
+| IN-24 | info | open | - |
+| IN-25 | info | open | - |
+| IN-26 | info | open | - |
+| IN-27 | info | open | - |
+| CR-01 | critical | open | - (not in the current review) |
+| WR-01 | warning | open | - (not in the current review) |
+| WR-02 | warning | open | - (not in the current review) |
+| IN-01 | info | open | - (not in the current review) |
+| IN-02 | info | open | - (not in the current review) |
+| IN-03 | info | open | - (not in the current review) |
+| IN-04 | info | open | - (not in the current review) |
+| IN-05 | info | open | - (not in the current review) |
 | WR-07 | warning | fixed | fixed in f2e7d7c (02-REVIEW-FIX.md) (not in the current review) |
 | WR-08 | warning | fixed | fixed in f4c6f14 (02-REVIEW-FIX.md) (not in the current review) |
 | WR-09 | warning | fixed | fixed in 3187ddd (02-REVIEW-FIX.md) (not in the current review) |
@@ -275,23 +252,6 @@ recorded: 2026-10-14T01:42:10.286Z
 | IN-06 | info | fixed | prior round; fixed by 02-15 (D-63.4, G-02-3) (not in the current review) |
 | IN-07 | info | open | - (not in the current review) |
 | IN-08 | info | open | - (not in the current review) |
-| R2-WR-01 | warning | fixed | prior round; fixed by 02-16 (D-63.5, G-02-18) |
-| R2-WR-02 | warning | open | prior round (id reused by gap-closure review 524051a) |
-| R2-IN-01 | info | open | prior round (id reused by gap-closure review 524051a) |
-| R2-IN-02 | info | open | prior round (id reused by gap-closure review 524051a) |
-| R2-IN-03 | info | open | prior round (id reused by gap-closure review 524051a) |
-| R2-IN-04 | info | fixed | prior round; fixed by 02-16 (D-63.5, G-02-18) |
-| R2-IN-05 | info | open | prior round (id reused by gap-closure review 524051a) |
-| R2-CR-01 | critical | fixed | prior round; fixed by 02-14 (verified in re-review 4c30e81) |
-| R1-WR-01 | warning | open | prior round (id reused by re-review); not in gap-closure scope |
-| R1-WR-02 | warning | fixed | prior round; fixed by 02-13 (verified in re-review 4c30e81) |
-| R1-WR-03 | warning | fixed | prior round; fixed by 02-12 (verified in re-review 4c30e81) |
-| R1-WR-04 | warning | open | prior round (id reused by re-review); not in gap-closure scope |
-| R1-IN-01 | info | open | prior round (id reused by re-review) |
-| R1-IN-02 | info | open | prior round (id reused by re-review) |
-| R1-IN-03 | info | fixed | prior round; fixed by 02-17 (G-02-19) |
-| R1-IN-04 | info | open | prior round (id reused by re-review) |
-| R1-IN-05 | info | open | prior round (id reused by re-review) |
 
 Dispositions: `open` (recorded, not yet triaged), `fixed`, `skipped`, `deferred`.
 Set `deferred` by hand and put the reason in the Source cell; both are preserved. A `|` in the reason is kept as prose and escaped on the next run.
