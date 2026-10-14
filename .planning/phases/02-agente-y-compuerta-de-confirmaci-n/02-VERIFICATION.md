@@ -7,6 +7,15 @@ covered_files: [".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-01-PL
 covered_digest: "v3:sha256:e9caf322c53d3d00b2fbc70eee2071de1823c359427d22fefbbf5fef2f143ecd"
 behavior_unverified: 0
 overrides_applied: 0
+overrides:
+  - must_have: "Verdad 31: solo un rechazo explícito saca el caso de la compuerta; un pedido que nombra un caso no cancela"
+    reason: "La usuaria acepta la regla de primera palabra (D-63.11, 2026-10-14, 'cortar el ciclo' tras 02-22, 02-23 y 02-24). Tras una respuesta de espera, un pedido que nombra el caso pendiente solo lo deja pendiente si empieza con una palabra de VERBOS_DE_PEDIDO; con un relleno, un conector, un modal o un enclítico delante, cancela. Es el lado seguro: nunca envía, y el 'sí' siguiente queda bloqueado con CONFIRMACION_REQUERIDA. Está fijado en FILAS_D6311, el riesgo aceptado es AR-02-06 (T-02-83), la limitación conocida se lleva a SOLUCION.md en la Fase 4 y el botón (D-39) llega en la Fase 3."
+    accepted_by: "elianatorres5772"
+    accepted_at: "2026-10-14T19:37:31Z"
+  - must_have: "Verdad 41: agent/prompt.md y src/knowledge/registro-proveedor.md describen el mismo rechazo que aplica el servidor"
+    reason: "Los dos archivos quedaron acotados a D-63.11. prompt.md:54 ya no promete que un pedido deja el paquete pendiente, describe la regla de primera palabra y le pide al modelo no afirmar el estado de la compuerta en ese pedido. RN4 dice 'de otro caso', como el prompt (WR-27), y describe la misma regla. instrucciones-agente.test.ts fija cada oración y clasifica cada cita con uno y con dos pendientes. La prosa da la regla con ejemplos (consulta, procesa, revisa) y no con la lista cerrada VERBOS_DE_PEDIDO; esa diferencia es la limitación aceptada en D-63.11."
+    accepted_by: "elianatorres5772"
+    accepted_at: "2026-10-14T19:37:31Z"
 re_verification:
   previous_status: gaps_found
   previous_score: 47/49
@@ -246,6 +255,8 @@ overrides:
 ```
 
 Con esa opción, la verdad 41 se cierra solo si `prompt.md:54` y RN4 se acotan a la misma regla.
+
+**Decisión (2026-10-14):** la usuaria eligió aceptar la regla de primera palabra (D-63.11). Los overrides de las verdades 31 y 41 están en el frontmatter, y la próxima re-verificación los aplica.
 
 ### Resumen de brechas
 

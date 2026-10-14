@@ -118,7 +118,9 @@ created: "2026-10-13"
 | T-02-80 | Repudiation | false cancel of a request after narrowing the case-naming exemption (D-63.10 d) | medium | mitigate | confirmacion.policy.ts:256-262 (eximeLaEspera, VERBOS_DE_PEDIDO confirmation.constants.ts:204-223), 235-240 (contrast rule); confirmacion.policy.test.ts:472-477 (2107-message never-cancel corpus), 459-469,479-485 (3 user-approved pairs), 324-348 (25 OTRO rows); compuerta.test.ts:305-306; compuerta-casos.test.ts:773-774; approval 02-CONTEXT.md:71; residual T-02-83 | closed |
 | T-02-81 | Spoofing | model text vs gate state after D-63.10 (S51, S53) | low | mitigate | agent/prompt.md:51 (S51), 54 (S53); instrucciones-agente.test.ts:264-293,304-318,368-415 (verbatim pins, quotations classified), 417-455 (server wording from TEXTO_CONFIRMACION.unCaso negated rejects), 457-461 (retired sentences absent); src/knowledge unchanged; residual AR-02-01 | closed |
 | T-02-82 | DoS | new token scan (":" gap check), pending-case lookups, prefix and suffix scans | low | mitigate | confirmacion.policy.ts:115 (gap slice), 156-164 (one backward pass), 200-209 (one prefix pass); confirmacion.policy.test.ts:661-674 (50000-fold CR-05 shapes < 1000 ms); auditor probe ≤ 950 KB in ≤ 49 ms, 50 pending cases + 220 KB in 11 ms | closed |
-| T-02-83 | Repudiation | request that names a pending case but does not start with a VERBOS_DE_PEDIDO word now cancels it (unregistered, found by the 02-24 audit) | medium | pending decision | Probed a9f18a9 vs HEAD: "No, ahora consulta el NIT de co-industrias-delta", "No, por favor consulta el NIT de ec-corp-andina", "No, quiero/necesito/envíame el NIT de ec-corp-andina", "No, el NIT de ec-corp-andina", "No, procésalo: ec-corp-andina" went otro → rechaza. Nothing is ever sent by mistake; the analyst must re-arm, and the model reply may not mention the cancel (AR-02-01). Fix: skip leading RELLENO/RELLENO_DE_ESPERA before the request-verb check, or accept and name these forms in D-63.10 | open — below high threshold (non-blocking) |
+| T-02-83 | Repudiation | request that names a pending case but does not start with a VERBOS_DE_PEDIDO word right after a wait response cancels it | medium | accept | AR-02-06; D-63.11 (02-CONTEXT.md); pinned as RECHAZA rows in confirmacion.policy.test.ts (FILAS_D6311); prompt.md:54 and RN4 (registro-proveedor.md:42) narrowed and pinned in instrucciones-agente.test.ts | closed |
+| T-02-84 | Spoofing | model text vs gate state after D-63.11 | low | mitigate | prompt.md:54 tells the model not to assert pending or cancelled after a request that names the pending case following a wait response; instrucciones-agente.test.ts classifies every quotation of SCASO, RN4b and RN4c with one and two pending cases, and RETIRADOS_D6311 stays absent; residual AR-02-01 | closed |
+| T-02-85 | Tampering | confirmation classifier changed by a docs and test task | low | mitigate | `git diff 9207112` over src and reto-01 lists only src/knowledge/registro-proveedor.md; package.json and bun.lock unchanged; FILAS_D6311 pins the behavior | closed |
 | T-02-SC | Tampering | npm installs | high | mitigate (02-05) / accept (other plans) | pino pinned 10.3.1; bun.lock committed; `bun audit` clean; AR-02-03 | closed |
 
 *Status: open · closed · open — below high threshold (non-blocking)*
@@ -136,6 +138,7 @@ created: "2026-10-13"
 | AR-02-03 | T-02-SC | 20 of 21 plans installed no package; package.json and bun.lock changed only in the pino commit (46fe7ba) plus one script line (9dadd1d). `git diff 882f418..HEAD` of the manifests is empty for 02-19..02-21, and `git diff 10a43ad..696e2bb` is empty for 02-22, and `git diff a9f18a9..HEAD -- package.json bun.lock` is empty for 02-24. | plans 02-01..02-24 | 2026-10-13 |
 | AR-02-04 | T-02-57 | A pending case persists across turns until a send, an explicit rejection, a caller abort or the session TTL clears it. While pending, every turn re-appends one server paragraph and one event per case, with no extra LLM call (compuerta.test.ts:234). | plan 02-19 | 2026-10-13 |
 | AR-02-05 | T-02-70 | `PATRON_CLAUSULA` is one negated character class between optional single marks, so it can split only one way and runs in linear time (1 MB adversarial inputs ≤ 18 ms). The rationale's message-size bound (API-04) is still pending in Phase 3. | plan 02-22 | 2026-10-14 |
+| AR-02-06 | T-02-83 | With a pending case, a request that names it and does not start with a VERBOS_DE_PEDIDO word right after a wait response (a filler, connector, modal or enclitic in front) cancels every pending case. Fail-safe: nothing is sent, the next 'sí' is blocked with CONFIRMACION_REQUERIDA and the analyst re-arms the package. The prompt tells the model not to assert the gate state for that request, so the reply does not contradict the server. Pinned in FILAS_D6311; edge cases carried to SOLUCION.md in Phase 4; the structured button (D-39) arrives in Phase 3. | user decision D-63.11 (quick 261014-jz4) | 2026-10-14 |
 
 ---
 
@@ -148,6 +151,7 @@ created: "2026-10-13"
 | 2026-10-14 | 72 | 71 | 0 (1 low open, non-blocking: T-02-71) | gsd-security-auditor (gap closure 02-22) |
 | 2026-10-14 | 78 | 77 | 0 (1 low open, non-blocking: T-02-77) | gsd-security-auditor (gap closure 02-23) |
 | 2026-10-14 | 84 | 83 | 0 (1 medium open, non-blocking: T-02-83) | gsd-security-auditor (gap closure 02-24) |
+| 2026-10-14 | 86 | 86 | 0 | user decision D-63.11 (quick 261014-jz4) |
 
 ### Audit notes (non-blocking)
 
@@ -158,15 +162,16 @@ created: "2026-10-13"
 5. **T-02-71 (closed by 02-23):** the per-negator tail copy is gone and the scans run by index; the linear-time test pins it (confirmacion.policy.test.ts:467-483).
 6. **T-02-77 (closed by 02-24):** `PATRON_SLUG_EN_TEXTO` now has the left boundary `(?<![a-z0-9])` (6db6a86); the auditor's 1.2M-string differential found identical matches, and the 200 KB test pins linear time (confirmacion.policy.test.ts:650-659).
 7. **AR-02-03:** `git diff 732644a..a92ecf2 -- package.json bun.lock` is empty and `bun audit` is clean (220 packages), so the accepted supply-chain risk extends unchanged to 02-23; the same holds for 02-24 (`git diff a9f18a9..HEAD -- package.json bun.lock` empty).
-8. **T-02-83 (open, medium, non-blocking):** the D-63.10(d) exemption only applies when the request verb is the first word of the clause. Requests led by a filler or an unlisted verb ("No, ahora consulta el NIT de co-industrias-delta") now cancel the pending case. Fail-safe (no send), but it narrows the user's "ningún pedido que nombra un caso cancela". Needs a decision: skip leading fillers before the request-verb check, or accept and name these forms in D-63.10.
+8. **T-02-83 (accepted, AR-02-06):** the D-63.10(d) exemption only applies when the request verb is the first word of the clause, so a request on the pending case led by a filler, connector, modal or enclitic ("No, por favor consulta el NIT de ec-corp-andina") cancels it. Instead of another grammar fix (02-22, 02-23 and 02-24 each opened a regression in the opposite direction), the user accepted the first-word rule on 2026-10-14 (D-63.11). The forms are pinned in FILAS_D6311 without touching the classifier, and prompt.md:54 and RN4 no longer promise that such a request leaves the package pending; the prompt tells the model not to assert the gate state for it. Fail-safe: nothing is ever sent.
+9. **T-02-84 / T-02-85 (closed by quick 261014-jz4, 230beb0 and d241352):** `git diff --name-only 9207112 -- src reto-01` lists only src/knowledge/registro-proveedor.md, and `git diff --quiet 9207112 -- src/domain src/config reto-01` is clean, so confirmacion.policy.ts and confirmation.constants.ts are unchanged; package.json and bun.lock are unchanged. instrucciones-agente.test.ts pins SCASO, RN4b and RN4c verbatim and classifies each quotation with one and two pending cases.
 
 ---
 
 ## Sign-Off
 
-- [x] All threats have a disposition (mitigate / accept / transfer), except T-02-83 (medium, below the high threshold), which awaits a fix-or-accept decision
+- [x] All threats have a disposition (mitigate / accept / transfer); T-02-83 is accepted as AR-02-06 (D-63.11, 2026-10-14)
 - [x] Accepted risks documented in Accepted Risks Log
 - [x] `threats_open: 0` confirmed
 - [x] `status: verified` set in frontmatter
 
-**Approval:** verified 2026-10-13; re-verified 2026-10-14 after 02-22, after 02-23 and after 02-24
+**Approval:** verified 2026-10-13; re-verified 2026-10-14 after 02-22, after 02-23 and after 02-24; T-02-83 accepted 2026-10-14 (D-63.11)

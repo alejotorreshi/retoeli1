@@ -5,7 +5,7 @@ titles: json
 findings:
   - id: CR-06
     severity: critical
-    disposition: open
+    disposition: skipped
     title: "[BLOCKER] la exención de D-63.10(d) solo mira la primera palabra de la cláusula. \"No, ahora consulta el NIT de co-industrias-delta\" (con dos pendientes), \"No, por favor consulta el NIT de ec-corp-andina\" y \"Todavía no. Por favor revisa el NIT de ec-corp-andina.\" pasan de `otro` a `rechaza` (external: gsd-security-auditor, T-02-83)"
   - id: WR-26
     severity: warning
@@ -13,7 +13,7 @@ findings:
     title: "[WARNING] cualquier palabra con guion cuenta como \"caso que no está pendiente\" y exime la espera: \"Todavía no, falta el e-mail del contacto\" y \"No, espera, falta el pre-registro\" dan `otro`, sin declarar"
   - id: WR-27
     severity: warning
-    disposition: open
+    disposition: fixed
     title: "[WARNING] el prompt no describe la exención (d) para el caso pendiente, y RN4 dice \"un caso\" mientras el prompt dice \"otro caso\": para \"No, procesa ec-corp-andina\" el modelo y el servidor pueden contradecirse"
   - id: IN-34
     severity: info
@@ -279,7 +279,7 @@ findings:
     severity: info
     disposition: open
     title: "The agent clock re-parses the environment on every call and silently diverges from the tools when `FECHA_EJECUCION` is invalid"
-open: 36
+open: 34
 total: 69
 recorded: 2026-10-14T19:07:46.712Z
 ---
@@ -288,9 +288,9 @@ recorded: 2026-10-14T19:07:46.712Z
 
 | Finding | Severity | Disposition | Source |
 |---------|----------|-------------|--------|
-| CR-06 | critical | open | - |
+| CR-06 | critical | skipped | accepted by the user 2026-10-14 as D-63.11 (amends D-63.10(d)); T-02-83 accepted as AR-02-06; first-word rule pinned in FILAS_D6311, fail-safe (never sends); known limitation carried to SOLUCION.md in Phase 4 (quick 261014-jz4, 230beb0) |
 | WR-26 | warning | open | - |
-| WR-27 | warning | open | - |
+| WR-27 | warning | fixed | fixed by quick 261014-jz4 (230beb0, d241352): RN4 says 'de otro caso' like the prompt, and prompt.md:54 and RN4 describe the D-63.11 first-word rule; pinned in instrucciones-agente.test.ts |
 | IN-34 | info | open | - |
 | IN-35 | info | open | - |
 | IN-36 | info | open | - |
