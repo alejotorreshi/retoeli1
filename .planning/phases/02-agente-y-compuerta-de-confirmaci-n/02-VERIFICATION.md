@@ -1,269 +1,253 @@
 ---
 phase: 02-agente-y-compuerta-de-confirmaci-n
-verified: 2026-10-14T03:40:00Z
-status: human_needed
-score: 31/35 must-haves verified
-covered_files: [".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-01-PLAN.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-01-SUMMARY.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-02-PLAN.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-02-SUMMARY.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-03-PLAN.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-03-SUMMARY.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-04-PLAN.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-04-SUMMARY.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-05-PLAN.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-05-SUMMARY.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-06-PLAN.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-06-SUMMARY.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-07-PLAN.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-07-SUMMARY.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-08-PLAN.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-08-SUMMARY.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-09-PLAN.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-09-SUMMARY.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-10-PLAN.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-10-SUMMARY.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-11-PLAN.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-11-SUMMARY.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-12-PLAN.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-12-SUMMARY.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-13-PLAN.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-13-SUMMARY.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-14-PLAN.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-14-SUMMARY.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-15-PLAN.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-15-SUMMARY.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-16-PLAN.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-16-SUMMARY.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-17-PLAN.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-17-SUMMARY.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-18-PLAN.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-18-SUMMARY.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-19-PLAN.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-19-SUMMARY.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-20-PLAN.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-20-SUMMARY.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-21-PLAN.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-21-SUMMARY.md","agent/prompt.md","src/config/constants/confirmation.constants.ts","src/config/constants/text.constants.ts","src/config/strings.ts","src/domain/policies/compuerta.policy.ts","src/domain/policies/confirmacion.policy.ts","src/domain/types/compuerta.type.ts","src/domain/utils/formatear-issues.util.ts","src/knowledge/registro-proveedor.md","src/loop/services/cierre-turno.service.ts","src/loop/services/despacho-llamada.service.ts","src/loop/services/ejecutar-turno.service.ts","src/loop/services/guardado-turno.service.ts","tests/contract/env-agente.test.ts","tests/contract/instrucciones-agente.test.ts","tests/live/agente-en-vivo.test.ts","tests/loop/compuerta-casos.test.ts","tests/loop/compuerta.test.ts","tests/unit/compuerta.policy.test.ts","tests/unit/formatear-issues.util.test.ts"]
-covered_digest: "v3:sha256:626984c589df2704cedca87cdf8828b647838b050f86a36216a62d45ba921cc0"
+verified: 2026-10-14T05:40:00Z
+status: gaps_found
+score: 39/42 must-haves verified
+covered_files: [".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-01-PLAN.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-01-SUMMARY.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-02-PLAN.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-02-SUMMARY.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-03-PLAN.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-03-SUMMARY.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-04-PLAN.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-04-SUMMARY.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-05-PLAN.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-05-SUMMARY.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-06-PLAN.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-06-SUMMARY.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-07-PLAN.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-07-SUMMARY.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-08-PLAN.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-08-SUMMARY.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-09-PLAN.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-09-SUMMARY.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-10-PLAN.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-10-SUMMARY.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-11-PLAN.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-11-SUMMARY.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-12-PLAN.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-12-SUMMARY.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-13-PLAN.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-13-SUMMARY.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-14-PLAN.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-14-SUMMARY.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-15-PLAN.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-15-SUMMARY.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-16-PLAN.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-16-SUMMARY.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-17-PLAN.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-17-SUMMARY.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-18-PLAN.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-18-SUMMARY.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-19-PLAN.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-19-SUMMARY.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-20-PLAN.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-20-SUMMARY.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-21-PLAN.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-21-SUMMARY.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-22-PLAN.md",".planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-22-SUMMARY.md","agent/prompt.md","src/config/constants/confirmation.constants.ts","src/config/constants/patterns.constants.ts","src/domain/policies/compuerta.policy.ts","src/domain/policies/confirmacion.policy.ts","src/knowledge/registro-proveedor.md","src/loop/services/ejecutar-turno.service.ts","tests/contract/instrucciones-agente.test.ts","tests/loop/compuerta.test.ts","tests/unit/confirmacion.policy.test.ts"]
+covered_digest: "v3:sha256:e8f445ccb9f4595bd764266a90f19c3204c7d230ab107ed2895dc58bb4b2b7f5"
 behavior_unverified: 0
 overrides_applied: 0
 re_verification:
-  previous_status: gaps_found
-  previous_score: 25/28
+  previous_status: human_needed
+  previous_score: 31/35
   gaps_closed:
-    - "Verdad 27 / CR-01: tras un 'ok', 'listo', 'si por favor', 'si gracias' o 'si ec-corp-andina' sin herramientas, el turno cierra con needsConfirmation=true, un confirmation_required y la pregunta del servidor; el 'sí' siguiente escribe ENVIO-SIMULADO.md una vez (02-19, D-63.6)"
-    - "Prohibición de 02-18 (el prompt no le pide al modelo escribir su pregunta ni su pedido de confirmación): prompt.md:50,53,54 reescritos y fijados por instrucciones-agente.test.ts (RETIRADOS_CR01)"
-    - "WR-01: los mensajes de arranque con varios issues terminan en un solo punto y sin '.;' (02-20)"
-    - "WR-02: un envío autorizado que falla deja el caso pendiente con la pregunta del servidor; la autorización usada no se recupera (02-20, D-63.7)"
-    - "Nota 1 de SECURITY: la prueba en vivo revisa la clave también en los cuerpos de los pedidos, con aserciones de no vacuidad (02-21, T-02-63)"
-  gaps_remaining: []
+    - "HV1 (verdades 21, 28 y 35): la usuaria leyó la corrida en vivo de 02-21 y la aceptó; A2 queda como varianza del modelo (02-UAT.md prueba 1, T-02-41 / AR-02-01)"
+    - "G-02-2, frases reportadas: 'Consulta el valor del NIT de co-industrias-delta para tenerlo a mano' deja el caso pendiente con la pregunta del servidor y el 'sí' siguiente envía una vez; 'No envíes nada todavía, ¿qué falta?' cancela sin pregunta del servidor (02-22, D-63.8)"
+    - "WR-15 en su forma con verbo de envío: 'no envíes / no lo mandes / no lo envíes aún' seguidos de una pregunta ya dan rechaza"
+    - "IN-01(b): 'envía el paquete de ec-corp-andina para firma', 'envíalo para firma' y 'dale no más' ya no son rechazos (dan otro)"
+  gaps_remaining:
+    - "G-02-2 / verdad 31: un pedido o una pregunta común que contiene 'para', 'no', 'luego', 'mejor' o 'después' sigue cancelando el caso pendiente (CR-04)"
   regressions:
-    - "(warning, ninguna verdad falla) WR-15: 'No envíes nada todavía, ¿qué falta?' da 'otro'. Antes de D-63.6 eso cancelaba; ahora el servidor agrega '¿Confirmas el envío simulado…?' justo después de la negación, y el 'sí' siguiente envía. Reproducido por el verificador"
-    - "(warning, ninguna verdad falla) WR-03 agravado: con el presupuesto de la sesión agotado, cualquier mensaje que no sea una negación ('sí', 'envía', 'hola') vuelve a recibir la pregunta de confirmación, que ya no se puede cumplir. Reproducido por el verificador"
-human_verification:
-  - test: "Lee las cinco respuestas de la corrida en vivo de 02-21 (A1, A2 'ok', A3 'sí', B1 §11, B2 'envía'), registradas en 02-21-SUMMARY.md con la línea 'VIVO PASS modelo=deepseek-flash llamadas=15 tokens=113249'. Confirma también que diste el 'correr' y que solo se gastó una corrida"
-    expected: "A2 es breve y su única pregunta o pedido de confirmación es el del servidor (último párrafo). A3 y B2 informan solo el envío simulado registrado. B1 tiene caso, out/ec-corp-andina/, 13/1/1, RUC por confirmar con su nota, Certificado de cumplimiento tributario y BLOQUEADO. Ningún valor sin máscara ni ninguna afirmación de lleno, enviado o firmado sin un resultado ok (CA2)"
-    why_human: "Es una prohibición de nivel judgment y la lectura la hizo el ejecutor (un LLM). El propio ejecutor anotó que A2 incumple en parte: el modelo escribió su propio pedido de confirmación ('dime de forma explícita algo como \"sí, envía co-industrias-delta\"') sin '¿', y ninguna aserción lo detecta. Hay que decidir si se acepta como varianza del modelo (T-02-41) o si se ajusta el prompt con una segunda corrida autorizada"
-  - test: "Decide sobre WR-16 (y WR-15): con un caso pendiente, un pedido ajeno que contiene una palabra de NEGACIONES ('para', 'no', 'luego', 'mejor', 'después', 'aún', 'momento', 'nada', 'ni') se clasifica como 'rechaza' y cancela el caso, aunque prompt.md:53 y RN4 digan que sigue pendiente; y una negación seguida de una pregunta da 'otro' y deja el caso pendiente"
-    expected: "Una de dos: (a) aceptar la clase amplia de negaciones como límite conocido, con un override en este archivo que lo justifique (falla del lado seguro; IN-01 sigue abierto), o (b) abrir un plan de cierre que acote NEGACIONES y ponga la negación antes que la pregunta, con pruebas de bucle de 'procesa el caso Y para…' y 'No envíes nada todavía, ¿qué falta?'"
-    why_human: "La verdad 10 y la prohibición 4 de 02-19 se cumplen a la letra, porque definen el rechazo explícito como la decisión 'rechaza' del clasificador, y el plan dejó esto marcado como [ENV-02, unresolved] fuera de alcance (02-19-PLAN.md:405). Pero el síntoma reproducido es el mismo que la ronda anterior trató como bloqueante en CR-01: el modelo dice que el caso sigue pendiente, el servidor ya lo canceló y el 'sí' de la analista se bloquea con CONFIRMACION_REQUERIDA. Elegir entre aceptarlo y corregirlo es una decisión de producto, y ninguna de las dos opciones permite un envío sin confirmación"
+    - "02-22 convirtió en rechazo preguntas que antes dejaban el caso pendiente (otro → rechaza): 'Para pe-andes, ¿qué falta?', 'Luego, ¿qué sigue?', 'Luego ¿qué sigue?' (sin coma), 'Y después, ¿qué hago?', 'Mejor, ¿me das el NIT?', 'Momento, ¿cuál es el NIT?', 'No envié el certificado, ¿lo puedo agregar?', '¿por qué no mandé el RUT?', '¿no lo envié ya?', '¿no confirmo yo después?'. Comparado contra el clasificador de 10a43ad en el scratchpad"
+    - "02-22 convirtió en re-pregunta rechazos que antes cancelaban (rechaza → otro): 'no quiero enviarlo todavía' y 'espera un momento' (WR-19)"
+gaps:
+  - truth: "G-02-2 (02-UAT.md) y verdad 31: con un caso pendiente, solo un rechazo explícito lo cancela; un pedido o una pregunta que solo contiene una palabra como 'para', 'no', 'luego', 'mejor' o 'después' deja el caso pendiente con la pregunta del servidor. También la verdad 3 y la prohibición 3 de 02-22 ('MUST NOT cancel a pending case because an unrelated request or an ordinary question merely contains a word like…')"
+    status: failed
+    reason: "La regla (b) de D-63.8 (cláusula que no es pregunta hecha solo de NEGACIONES y RELLENO) dispara con la cabeza de una pregunta o con un complemento: PATRON_CLAUSULA corta en ',' y también en '¿' sin signo previo, separar() quita los slugs antes de evaluar la cláusula, RELLENO admite 'el', 'la', 'de', 'caso' y 'paquete', y los conectores 'para', 'luego', 'después', 'mejor', 'momento' y 'nada' bastan como núcleo. La forma (a) además toma el pretérito sin tilde ('envié', 'mandé') y 'hagas'/'confirmo' con otro objeto como rechazo. Reproducido de punta a punta con el agente y el LLM falso: el modelo dice 'Sigue pendiente el envío de ec-corp-andina', el turno cierra con needsConfirmation=false y 0 confirmation_required, y el 'sí' siguiente da CONFIRMACION_REQUERIDA con enviados=[]. Es el síntoma de doble confirmación de CR-01 y de G-02-2, y diez de estas preguntas daban 'otro' antes de 02-22 (regresión)"
+    artifacts:
+      - path: "src/domain/policies/confirmacion.policy.ts"
+        issue: "líneas 98-112: esClausulaDeEspera acepta conectores sueltos y rellenos nominales como cláusula de rechazo, y evalúa la cláusula sin los slugs; líneas 86-96: niegaElEnvio no distingue el pretérito ni el objeto de 'hagas'/'confirmo'"
+      - path: "src/config/constants/patterns.constants.ts"
+        issue: "línea 23: PATRON_CLAUSULA convierte la cabeza de una pregunta ('Luego, ', 'Luego ') en una cláusula sin signo de pregunta"
+      - path: "src/config/constants/confirmation.constants.ts"
+        issue: "NEGACIONES (63-89) mezcla núcleos de rechazo con conectores; RELLENO (38-61) incluye artículos y sustantivos; VERBOS_NEGABLES (106-119) incluye 'envie', 'mande', 'despache' (colisión con el pretérito) y 'hagas', 'confirmo', 'autorizo' sin restricción de objeto"
+      - path: "tests/unit/confirmacion.policy.test.ts"
+        issue: "FILAS_RECHAZO_ACOTADO nunca prueba un conector como cabeza separada por coma o por '¿', ni 'para <caso>', 'no <caso>', 'después el paquete' ni el pretérito; no hay invariante simétrico del lado de otro (IN-29)"
+    missing:
+      - "Que un conector ('para', 'luego', 'después', 'mejor', 'momento', 'nada', 'aún', 'todavía', 'ni') solo cuente como rechazo cuando la cláusula es todo el mensaje ('Para.', 'mejor después'), y que una cláusula parcial necesite un núcleo verdadero ('no', 'nunca', 'espera', 'cancela', 'alto', 'detente', 'aguarda')"
+      - "Que la cabeza de una pregunta no sea una cláusula de rechazo: 'Luego ¿qué sigue?' y 'Luego, ¿qué sigue?' dan otro (tratar '¿' como inicio de la cláusula siguiente y la cabeza como parte de la pregunta, o exigir núcleo verdadero)"
+      - "Que un slug o un relleno nominal ('el', 'caso', 'paquete') no quepa en una cláusula de rechazo salvo junto a un verbo de cancelación ('cancela ec-corp-andina')"
+      - "Que la forma (a) descarte el pretérito leyendo los tokens con tilde ('envié', 'mandé', 'despaché') y que 'hagas', 'confirmo' y 'autorizo' solo rechacen sin complemento ajeno ('no lo hagas', 'no confirmo', 'no autorizo el envío' sí; 'No hagas el PDF', 'no confirmo el NIT' no)"
+      - "Filas OTRO para todas las frases de la tabla de CR-04 y de este informe (incluidas 'Luego ¿qué sigue?' sin coma, 'Para pe-andes ¿qué falta?', 'Momento, ¿cuál es el NIT?', 'No envié el certificado, ¿lo puedo agregar?') y un invariante generado del lado de otro (plantillas '${p}, ¿qué falta?', '${p} ¿qué falta?', 'dame el NIT, ${p} el paquete', 'procesa pe-andes, ${p} co-industrias-delta' para p en no/para/luego/mejor/después)"
+      - "Pruebas de bucle 'deja el caso pendiente' para 'Para pe-andes, ¿qué falta?', 'Luego ¿qué sigue?' y 'procesa co-industrias-delta, no pe-andes' (con dos casos pendientes, ninguno se cancela)"
+      - "Mantener en verde las filas RECHAZA actuales ('No, ¿qué falta?', 'Espera, ¿qué falta?', 'Todavía no. ¿Qué falta?', 'Para.', 'mejor después', 'cancela ec-corp-andina', 'no, gracias', 'por ahora no') y registrar el ajuste como enmienda de D-63.8"
+  - truth: "02-22 verdad 6: agent/prompt.md y src/knowledge/registro-proveedor.md describen el mismo rechazo que aplica el servidor"
+    status: partial
+    reason: "Los ejemplos citados coinciden con el clasificador (el contrato pasa), pero la regla en prosa no: prompt.md:53 promete que un pedido 'no es un rechazo aunque traiga palabras como \"no\", \"para\", \"luego\", \"mejor\" o \"después\"' y el servidor cancela con 'procesa co-industrias-delta, no pe-andes' o 'Para pe-andes, ¿qué falta?'; prompt.md:51 cita 'espera' como rechazo y el servidor da otro con 'espera un momento'. RN4 (registro-proveedor.md:42) termina con 'Un pedido que solo contiene palabras como \"no\", \"para\", \"luego\" o \"mejor\" no es un rechazo', que se lee como lo contrario de la forma (b) y contradice la misma oración, que cita 'no' como rechazo (WR-22)"
+    artifacts:
+      - path: "src/knowledge/registro-proveedor.md"
+        issue: "línea 42: la última oración de RN4 dice lo contrario de la regla (b)"
+      - path: "agent/prompt.md"
+        issue: "líneas 51 y 53: la prosa promete conductas que el servidor no cumple (depende del cierre de la brecha anterior)"
+      - path: "tests/contract/instrucciones-agente.test.ts"
+        issue: "fija fragmentos cortos ('no es un rechazo') y solo los ejemplos citados; no detecta la inversión de RN4 (IN-26, IN-29)"
+    missing:
+      - "Redactar RN4 como el prompt: 'Un pedido distinto (por ejemplo \"consulta el NIT para tenerlo a mano\") no es un rechazo aunque traiga palabras como \"no\", \"para\", \"luego\" o \"mejor\".' y fijar la oración completa en el contrato"
+      - "Después de cerrar la brecha anterior, comprobar que la prosa de prompt.md:51,53 coincide con el clasificador corregido"
+  - truth: "02-22 prohibición 2: MUST NOT leave a case pending with a server confirmation question after a message that negates the send"
+    status: partial
+    reason: "La forma (a) solo reconoce doce formas exactas. 'no quiero enviarlo todavía', 'ni se te ocurra enviarlo', 'no lo confirmes', 'no confirmes', 'no autorices' y 'no puedo confirmar todavía' dan otro, así que el servidor agrega '¿Confirmas el envío simulado…?' justo después de que la analista negó el envío. 'no quiero enviarlo todavía' y 'espera un momento' cancelaban antes de 02-22 (regresión). El plan lo marcó como supuesto no resuelto, pero choca con la prohibición tal como está escrita (WR-19). Nunca envía sin un 'sí' posterior"
+    artifacts:
+      - path: "src/config/constants/confirmation.constants.ts"
+        issue: "VERBOS_NEGABLES (106-119) no incluye 'confirmes', 'autorices' ni infinitivos con enclítico tras un modal negado; RELLENO no tiene 'un'"
+    missing:
+      - "Ampliar la forma (a) con 'confirmes', 'autorices' y los infinitivos 'enviar(lo|la)', 'mandar(lo)', 'confirmar' tras 'no quiero', 'no puedo', 'no vayas a', 'ni se te ocurra'; agregar 'un' a los rellenos de espera"
+      - "Filas RECHAZA para las frases de WR-19 y una prueba de bucle para 'no quiero enviarlo todavía'"
 ---
 
 # Fase 2: Agente y compuerta de confirmación. Informe de verificación
 
 **Objetivo de la fase:** Un mensaje de chat como "procesa el caso X" recorre el ciclo propio prompt → DeepSeek → herramientas → respuesta, con topes de costo, resiliencia ante fallas del proveedor y una compuerta de confirmación que el servidor hace cumplir. El modelo nunca ve ni afirma valores reales.
-**Verificado:** 2026-10-14T03:40:00Z
-**Estado:** human_needed
-**Re-verificación:** Sí. Viene después de los planes de cierre 02-19, 02-20 y 02-21, que atacaron CR-01, WR-01, WR-02 y la nota 1 de SECURITY.
+**Verificado:** 2026-10-14T05:40:00Z
+**Estado:** gaps_found
+**Re-verificación:** Sí. Viene después del plan de cierre 02-22 (G-02-2, D-63.8), del code review 02-REVIEW.md (`cec32ac`) y de la auditoría de seguridad posterior.
 
 ## Logro del objetivo
 
-Lo verifiqué en el código, con pruebas nombradas y con sondas propias en el scratchpad. No me fié de los SUMMARY.
+Lo verifiqué en el código, con las pruebas nombradas y con sondas propias en el scratchpad (sin tocar el repo). No me fié del SUMMARY ni del review: reproduje cada afirmación.
 
-- **CR-01 (verdad 27): cerrado.**
-  - `abrirTurno` (`compuerta.policy.ts:46-57`) solo pasa a LIBRE con `rechaza`.
-  - `crearTurno` arrastra `pendientesDe(apertura.siguiente)` (`ejecutar-turno.service.ts:80`).
-  - `recuperarAutorizado` devuelve el caso a pendiente en todo cierre salvo el aborto (`compuerta.policy.ts:133-142`, conectado en `guardado-turno.service.ts:25`).
-  - El describe "CR-01 (D-63.6)" de `tests/loop/compuerta.test.ts:222-285` sigue el guion que pide el prompt: §11 turno 1, luego cada una de las cinco frases sin herramientas y luego "sí". Comprueba `needsConfirmation=true`, un `confirmation_required` con `bloqueos [BLOQUEO_EC]`, el texto exacto `TEXTO + SEPARADOR + cierreConPregunta("", [PENDIENTE_EC])` y una sola línea ok en `out/log.jsonl`. Lo corrí: `-t "D-63.6"` da 13 pass.
-- **Prompt:** `prompt.md:50,53,54` ya no le piden al modelo que pregunte ("no escribas tú ninguna pregunta ni pedido de confirmación"). Lo fija el contrato (`instrucciones-agente.test.ts`, 17 pass).
-- **WR-02 / D-63.7: cerrado.**
-  - `despacharEnvio` emite `FALLIDO` cuando el resultado es `ok:false` (`despacho-llamada.service.ts:78`).
-  - El pliegue reabre el caso por `reabrirConocido` (`compuerta.policy.ts:76-104`).
-  - Lo cubren 4 pruebas de bucle y 8 de unidad, y pasan.
-- **WR-01: cerrado.** `formatearIssues` quita el punto final de cada issue salvo el último.
-  - `env-agente -t WR-01` da 2 pass y `formatear-issues.util.test.ts` da 9 pass.
-  - Sonda propia: 50 llamadas concurrentes a `crearAgente` dan un solo mensaje, igual al literal exacto (verdad de nivel backstop).
-- **Nota 1 de SECURITY: cerrada.** `agente-en-vivo.test.ts:255-259` arma `salidas` con eventos, logs y `...cuerpos`, y comprueba antes `cuerpos.length > 0` y `claves.length > 0`. El diff no quita ni relaja ninguna aserción: las líneas borradas son renombres de `respuestaA` a `respuestaA1` y la expectativa de B2, que pasó a `[CO, EC]` con 2 líneas, como pedía el plan.
-- **Barreras:**
-  - `bun run check` sale con exit 0: tsc, Biome (281 archivos) y `bun audit` sin vulnerabilidades.
-  - `bun test` (una sola vez) da 1199 pass, 1 skip (la prueba en vivo opcional) y 0 fail en 72 archivos.
+- **Lo que 02-22 sí logró:**
+  - Las dos frases de la UAT funcionan de punta a punta. `bun test tests/loop/compuerta.test.ts -t "D-63.8"` da 10 pass y 0 fail.
+  - "No envíes nada todavía, ¿qué falta?" da `rechaza` y cancela sin la pregunta del servidor.
+  - El conjunto de frases que confirman no cambió: la prueba de invariante pasa, mi sonda da los mismos `confirma`, y la auditoría barrió 555.900 mensajes sin cambios en `confirma` ni en `falta_caso`.
+  - No se tocaron la máquina de estados ni el botón: `git diff 10a43ad..HEAD` no lista `compuerta.policy.ts`, `ejecutar-turno.service.ts`, `src/domain/types/` ni `reto-01/`.
+  - Barreras: `bun run check` sale con exit 0 (tsc, Biome con 281 archivos, `bun audit` sin vulnerabilidades). `bun test`, corrido una sola vez, da 1311 pass, 1 skip y 0 fail.
+- **Lo que no logró (CR-04 confirmado, y más amplio de lo que dice el review):**
+  - La regla (b) de D-63.8 cancela el caso pendiente con preguntas y pedidos comunes que solo contienen "para", "no", "luego", "mejor" o "después".
+  - Reproduje las 13 frases de CR-04 (12 dan `rechaza`; "Ahora, ¿qué falta?" da `otro`) y encontré otras nuevas. "**Luego ¿qué sigue?**", **sin coma**, también da `rechaza`, porque `PATRON_CLAUSULA` corta antes de "¿". Lo mismo pasa con "Para pe-andes ¿qué falta?", "Después ¿qué hago?", "Mejor ¿me das el NIT?", "Momento, ¿cuál es el NIT?" y "No, el de pe-andes".
+  - Con dos casos pendientes, "procesa pe-andes, no co-industrias-delta" cancela los dos.
+- **De punta a punta (scratchpad, con el agente y el LLM falso).** Probé el §11 T1, luego cada frase con un modelo que contesta "Sigue pendiente el envío de ec-corp-andina.", y luego "sí".
+  - Con 6 frases ("Para pe-andes, ¿qué falta?", "Luego, ¿qué sigue?", "Luego ¿qué sigue?", "Dame primero el NIT, después el paquete", "procesa co-industrias-delta, no pe-andes" y "Mejor, ¿me das el NIT?"), T2 cierra con `needsConfirmation=false` y 0 `confirmation_required`, y el texto del modelo dice que sigue pendiente. T3 "sí" da `CONFIRMACION_REQUERIDA` y `enviados=[]`.
+  - La fila de control ("…para tenerlo a mano") sí sigue pendiente y envía una vez.
+  - Es exactamente el síntoma de G-02-2 y de CR-01: doble confirmación, y el modelo afirma un estado que el servidor no tiene.
+- **Regresión introducida por 02-22.** Extraje el clasificador de `10a43ad` al scratchpad y comparé.
+  - Diez preguntas que antes daban `otro` (el caso seguía pendiente con la pregunta del servidor) ahora dan `rechaza` y cancelan: "Para pe-andes, ¿qué falta?", "Luego, ¿qué sigue?", "Luego ¿qué sigue?", "Y después, ¿qué hago?", "Mejor, ¿me das el NIT?", "Momento, ¿cuál es el NIT?", "No envié el certificado, ¿lo puedo agregar?", "¿por qué no mandé el RUT?", "¿no lo envié ya?" y "¿no confirmo yo después?".
+  - A la inversa, "no quiero enviarlo todavía" y "espera un momento" cancelaban y ahora vuelven a recibir la pregunta.
 
-Los cinco criterios del ROADMAP se siguen cumpliendo. Ninguna de las advertencias nuevas (WR-15 a WR-18) permite un envío sin una confirmación explícita en el mensaje inmediatamente siguiente a una pregunta del servidor. Lo comprobé en el código: la única fuente de autorización es `abrirTurno` con `confirma` de un caso pendiente, que `evaluarEnvio` consume una sola vez. También lo comprobé con sondas.
-
-Queda **una decisión que necesita a una persona (WR-16)**. Se trata del mismo síntoma que CR-01, en otra familia de frases. Lo explico abajo.
+**Conclusión:** la brecha G-02-2 se cerró para las frases citadas, pero no para la clase que describe su verdad. La usuaria ya decidió en la UAT (HV2: "no-pass → plan de cierre… Mismo síntoma que hizo bloqueante a CR-01") que esta clase es bloqueante, así que la verdad 31 pasa de ? UNCERTAIN a ✗ FAILED. Ningún camino envía sin una confirmación explícita, así que el criterio 2 del ROADMAP sigue cumplido. Lo que falla es la promesa de D-63.6 y D-63.8 de que "un pedido o una pregunta que solo contiene esas palabras da otro", que el propio STATE.md registra como la decisión.
 
 ### Verdades observables
 
 | # | Verdad | Estado | Evidencia |
 |---|--------|--------|-----------|
-| 1 | **ROADMAP C1**: ciclo propio, `deepseek-flash` con thinking desactivado y solo rutas y valores enmascarados hacia el modelo | ✓ VERIFIED | Regresión: suite verde (`trazador-agente`, `pii-modelo`, `inyeccion`). La conducta con el modelo real va al punto humano 1 |
-| 2 | **ROADMAP C2**: "No envíes nada todavía" nunca autoriza; en el guion §11 la confirmación explícita siguiente escribe `ENVIO-SIMULADO.md` una vez y solo para ese caso; el `confirmado: true` del modelo no basta | ✓ VERIFIED | `compuerta.test.ts:129-220` pasa. Sonda: "No envíes nada todavía" y "No envíes nada todavía." dan `rechaza`. Con WR-15, la frase con pregunta tampoco autoriza en ese turno (ver advertencias) |
-| 3 | **ROADMAP C3**: reintentos, respaldo, mensajes en español (402) y CA5 | ✓ VERIFIED | Regresión: `resiliencia` y `fallback` dentro de la suite verde |
-| 4 | **ROADMAP C4**: topes de iteraciones y de tokens con respuesta clara; la inyección no cambia la conducta | ✓ VERIFIED | Regresión verde. Sonda WR-03: el tope de tokens sigue respondiendo "Esta sesión agotó su presupuesto de tokens. Abre una sesión nueva para continuar.", que es claro y no es un error (ver WR-03 agravado) |
-| 5 | **ROADMAP C5**: prompt y conocimiento editables en caliente; logs JSON correlacionados sin clave ni PII; `bun test` cubre el ciclo con un LLM falso | ✓ VERIFIED | 02-19 y 02-20 cambiaron la conducta del modelo solo con texto (`d585b53`, `de1d0ab`). `instrucciones-agente` da 17 pass y la suite está verde |
-| 6–20, 22 | Verdades de los planes 02-01 a 02-14 | ✓ VERIFIED | Regresión: suite completa en verde. Los fallos de `verify.artifacts` y `verify.key-links` en 02-01, 02-02, 02-03, 02-05, 02-10, 02-11, 02-13 y 02-14 son los mismos renombres y divisiones de REVIEW-FIX de la ronda anterior. Volví a comprobar los símbolos en su sitio nuevo: `llm.enviar(` en `tope-iteraciones.service.ts:18`, `createMemorySessionStore<Sesion>(` en `agente.wiring.ts:109`, `ARGUMENTOS_VACIOS` en `paso-herramientas.service.ts:32`, `recuperarAutorizado(` en `guardado-turno.service.ts:25` y `cierreConPregunta` en `cierre-turno.builder.ts:48` |
-| 21 | 02-13: `test:vivo` pasa contra el proveedor real | ? UNCERTAIN | La reemplaza la corrida de 02-21 (verdad 35). No la reproduje, para no gastar la clave personal. Va al punto humano 1 |
-| 23 | **02-15 / G-02-3**: un caso enviado no se reabre | ✓ VERIFIED | Regresión: `compuerta-casos` en verde. `reabrirConocido` ignora los casos de `enviados` (`compuerta.policy.ts:82`), también ante `FALLIDO` |
-| 24 | **02-16 / G-02-18**: tabla del clasificador | ✓ VERIFIED | `confirmacion.policy.ts` no cambió en esta ronda y su prueba unitaria está en verde |
-| 25 | **02-17 / G-02-19**: un solo punto final, sin "sesión abierta" | ✓ VERIFIED | El aviso WR-01 de la ronda anterior queda cerrado por 02-20 (verdad 33) |
-| 26 | **02-18 / G-02-21**: pregunta de cierre del servidor y turno de confirmación breve | ✓ VERIFIED | `prompt.md:30,33,48,55`. El contrato da 17 pass |
-| 27 | **Flujo de re-pregunta (CR-01)**: ante un "ok" el servidor vuelve a preguntar con `needsConfirmation` y los bloqueos, y la confirmación explícita siguiente escribe `ENVIO-SIMULADO.md` una vez | ✓ VERIFIED | `compuerta.test.ts:222-257` sigue el guion exacto del prompt (el modelo no llama herramientas en el turno 2) para "ok", "listo", "si por favor", "si gracias" y "si ec-corp-andina": T2 da `FINAL`, `needsConfirmation=true`, un `confirmation_required` y el texto exacto; T3 "sí" da ok y `[EC]` con una línea ok. Las dos no confirmaciones seguidas (`:259-285`) también pasan |
-| 28 | **02-18 verdad 6**: lectura de la corrida en vivo | ? UNCERTAIN | La reemplaza la verdad 35. Va al punto humano 1 |
-| 29 | **02-19 (verdades 3, 5-9, 11 y 12)**: `abrirTurno` según D-63.6; dos no confirmaciones vuelven a preguntar; un aborto durante un "ok" cierra LIBRE; "no envíes nada" con el modelo obediente cancela; un `simular_envio` desobediente tras una frase dudosa queda bloqueado y vuelve a preguntar; un turno de confirmación sin envío reabre el caso sin recuperar la autorización; D-38, D-63.4 y la regla del aborto no cambian | ✓ VERIFIED | `compuerta.policy.test.ts` da 63 pass. `compuerta.test.ts -t D-63.6` da 13 pass. `compuerta-casos.test.ts -t D-63` da 17 pass, entre ellas `:613` (el turno de confirmación sin envío, luego "ok" y luego "sí") y `:705` (el aborto durante un "ok"). Lo confirma el código de `abrirTurno` y `recuperarAutorizado` |
-| 30 | **02-19 verdad 4**: un pedido ajeno se atiende y no secuestra la confirmación ("procesa el caso co-industrias-delta" deja los dos casos pendientes) | ✓ VERIFIED (⚠️ WR-16) | `compuerta-casos.test.ts:664-703` da 5 turnos en verde. Sonda: "procesa el caso co-industrias-delta" da `otro`. Con otra redacción la verdad deja de cumplirse (verdad 31) |
-| 31 | **02-19 verdad 10 y prohibición 4**: fuera del envío, un caso pendiente sale de la compuerta solo por un rechazo explícito, un aborto o el fin de la sesión, y por ningún otro camino | ? UNCERTAIN (se escala a la usuaria) | A la letra se cumple, porque el plan define el rechazo explícito como "rechaza, or the button". Sonda propia de punta a punta: con ec pendiente, T2 "Consulta el valor del NIT de co-industrias-delta para tenerlo a mano" da `rechaza` por "para"; el turno cierra con `needsConfirmation=false` y 0 `confirmation_required`, mientras el modelo, siguiendo `prompt.md:53`, dice que ec sigue pendiente; T3 "sí" da `CONFIRMACION_REQUERIDA`, `enviados=[]`, y el servidor recién entonces vuelve a preguntar. Es el síntoma de CR-01 en otra familia de frases. El plan lo dejó marcado como `[ENV-02, unresolved]` y fuera de alcance (`02-19-PLAN.md:405`). Ver el punto humano 2 |
-| 32 | **02-20 / D-63.7 (verdades 1-6 y 10)**: un envío autorizado que falla (PAQUETE_NO_ARMADO, PAQUETE_DESACTUALIZADO con re-armado, ERROR_INTERNO más un error del proveedor, dos fallos seguidos) deja el caso pendiente con la pregunta del servidor, sin escribir nada y con `casosEnviados=[]`; un aborto cierra LIBRE; un FALLIDO nunca reabre un caso enviado; el conocimiento dice que no se reintenta | ✓ VERIFIED | `compuerta-casos.test.ts:768-880` da 4 pass, y las 8 filas unitarias de `FALLIDO` están en verde. `registro-proveedor.md` (ERROR_INTERNO) está fijado por el contrato. Artefactos 8/8 y enlaces 3/3 |
-| 33 | **02-20 / WR-01 (verdades 7-9)**: los literales exactos con varios issues tienen un solo punto final y ningún punto antes de "; "; los literales de un solo issue no cambian; con el mismo entorno, llamadas concurrentes dan el mismo mensaje | ✓ VERIFIED | `env-agente -t WR-01` da 2 pass y `formatear-issues` da 9 pass. Para la verdad de nivel backstop observé la conducta directamente: 50 llamadas concurrentes a `crearAgente` dan un solo mensaje, igual al literal de la verdad 7 |
-| 34 | **02-21 verdades 1, 3 y 4**: la prueba en vivo revisa la clave en cuerpos, eventos y logs sin poder pasar en vacío; la sesión B espera `[CO, EC]` y 2 líneas; sin `LLM_EN_VIVO` queda omitida | ✓ VERIFIED | `agente-en-vivo.test.ts:141-144,222-223,255-259`. `bun test tests/live/agente-en-vivo.test.ts` da 0 pass, 1 skip y 0 fail |
-| 35 | **02-21 verdades 2, 5 y 6**: corrida en vivo autorizada ("correr") con A2 "ok", que sigue pendiente con la pregunta del servidor, y A3 "sí", que envía una vez; una línea VIVO PASS nueva; lectura humana de las cinco respuestas | ? UNCERTAIN | 02-21-SUMMARY registra `VIVO PASS modelo=deepseek-flash llamadas=15 tokens=113249`. No la reproduje (costo). Las aserciones del lado del servidor de A2 y A3 están en el código (`:178-201`). El ejecutor anota que A2 trae un pedido de confirmación escrito por el modelo. Va al punto humano 1 |
+| 1 | **ROADMAP C1**: ciclo propio, `deepseek-flash` con thinking desactivado y solo rutas y valores enmascarados hacia el modelo | ✓ VERIFIED | Regresión: suite completa en verde (`trazador-agente`, `pii-modelo`, `inyeccion`). La corrida en vivo de 02-21 se aceptó en la UAT (prueba 1) |
+| 2 | **ROADMAP C2**: "No envíes nada todavía" nunca autoriza; en §11 la confirmación explícita siguiente escribe `ENVIO-SIMULADO.md` una vez y solo para ese caso; `confirmado: true` del modelo no basta | ✓ VERIFIED | `compuerta.test.ts` en verde. Sonda: "No envíes nada todavía" y "No envíes nada todavía, ¿qué falta?" dan `rechaza`. Ninguna frase de CR-04 ni de WR-19 autoriza un envío |
+| 3 | **ROADMAP C3**: reintentos, respaldo, mensajes en español (402) y CA5 | ✓ VERIFIED | Regresión en verde; 02-22 no toca `llm/` |
+| 4 | **ROADMAP C4**: topes con respuesta clara; la inyección no cambia la conducta | ✓ VERIFIED | Regresión en verde (WR-03 agravado sigue abierto, como advertencia) |
+| 5 | **ROADMAP C5**: prompt y conocimiento editables; logs JSON correlacionados sin clave ni PII; `bun test` cubre el ciclo con un LLM falso | ✓ VERIFIED | 02-22 cambió la conducta del modelo solo con texto (`ae2e4c3`); `instrucciones-agente` da 23 pass con `-t G-02-2`; suite en verde |
+| 6–20, 22 | Verdades de los planes 02-01 a 02-14 | ✓ VERIFIED | Regresión: suite completa en verde y sin cambios en esos archivos desde la verificación anterior |
+| 21, 28, 35 | Corrida en vivo de 02-13, 02-18 y 02-21 y su lectura humana | ✓ VERIFIED | La usuaria la leyó y la aceptó en la UAT, prueba 1 (HV1, `pass`), con la nota de que A2 es varianza del modelo (T-02-41 / AR-02-01) |
+| 23–27, 29, 32–34 | Verdades de 02-15 a 02-21 (casos enviados, tabla del clasificador, punto final, re-pregunta CR-01, D-63.6, D-63.7, WR-01, prueba en vivo endurecida) | ✓ VERIFIED | Regresión: `compuerta`, `compuerta-casos` y `compuerta.policy` en verde (121 pass según SUMMARY; mi corrida completa da 0 fail). La fila 24 se cumple porque toda fila de `TABLA_INVESTIGACION` y `FILAS_EXTRA` sigue en verde (199 pass) |
+| 30 | **02-19 verdad 4**: un pedido ajeno no secuestra la confirmación ("procesa el caso co-industrias-delta" deja los dos casos pendientes) | ✓ VERIFIED | `compuerta-casos.test.ts` en verde y sonda `otro`. Con "procesa co-industrias-delta, no pe-andes" sí cancela (ver verdad 31) |
+| 31 | **02-19 verdad 10, prohibición 4 y G-02-2**: un caso pendiente sale de la compuerta solo por un rechazo explícito; un pedido con "para", "no", "luego", "mejor" o "después" lo deja pendiente | ✗ FAILED | Ver el resumen y la brecha 1. Reproducido de punta a punta con 6 frases y por clasificador con más de 20. La usuaria eligió (b), corregir, en HV2. 02-22 no cerró la clase y además agregó regresiones |
+| 36 | **02-22 V1**: §11, luego "Consulta el valor del NIT de co-industrias-delta para tenerlo a mano", luego "sí": T2 con `needsConfirmation` true, una sola `confirmation_required` y el texto exacto; T3 envía una vez | ✓ VERIFIED | `compuerta.test.ts:291-333` pasa (5 filas). Mi prueba de punta a punta la reproduce: T2 da `t2nc=true` y `t2conf=1`, T3 da `ok` con `enviados=[EC]` |
+| 37 | **02-22 V2**: "No envíes nada todavía, ¿qué falta?" cancela sin pregunta y el "sí" siguiente da `CONFIRMACION_REQUERIDA` | ✓ VERIFIED | `compuerta.test.ts:335-369` pasa (5 filas); sonda `rechaza` |
+| 38 | **02-22 V3**: `otro` para las ocho preguntas comunes **y para los pedidos ajenos que solo contienen "para", "no", "luego", "mejor" o "después"**; `rechaza` para una negación que rige el envío y para una cláusula de espera | ✗ FAILED | Las ocho preguntas listadas sí dan `otro`, pero los pedidos ajenos con esas palabras no: "Dame primero el NIT, después el paquete", "procesa co-industrias-delta, no pe-andes", "lee la solicitud de pe-andes, no la de ec-corp-andina", "Para el paquete de pe-andes, revisa el NIT" y "nada, procesa pe-andes" dan `rechaza`. La misma raíz que la verdad 31 |
+| 39 | **02-22 V4**: toda fila previa del clasificador conserva su resultado; "dos respuestas seguidas…" sigue en verde | ✓ VERIFIED | `confirmacion.policy.test.ts` da 199 pass; `compuerta.test.ts` completo en verde |
+| 40 | **02-22 V5**: el conjunto de frases que confirman no cambia; ninguna palabra de NEGACIONES o NEGADORES confirma | ✓ VERIFIED | Describe "una palabra de rechazo nunca confirma (D-63.8, D-39)" en verde. La sonda da los mismos `confirma` ("sí", "envía", "confirmo", "dale", "sí, envía ec-corp-andina"). La auditoría barrió 555.900 mensajes sin cambios (T-02-66) |
+| 41 | **02-22 V6**: el prompt y el conocimiento describen el mismo rechazo que aplica el servidor; cada ejemplo citado se clasifica igual | ✗ FAILED (parcial) | Los ejemplos citados coinciden (el contrato da 23 pass). La prosa no: `prompt.md:53` promete que un pedido con "no", "para", "luego", "mejor" o "después" no es un rechazo, y el servidor sí lo trata como rechazo. `prompt.md:51` cita "espera", y "espera un momento" da `otro`. La última oración de RN4 (`registro-proveedor.md:42`) dice lo contrario de la forma (b) (WR-22, confirmado leyendo el archivo) |
+| 42 | **02-22 V7**: D-63.8 registrado en 02-CONTEXT.md y la línea 02-03 de STATE.md corregida | ✓ VERIFIED | `02-CONTEXT.md:61` dice "ocho lecturas" y D-39 dice "lo define D-63.8". `STATE.md:159` dice "CORREGIDO por 02-22" y `STATE.md:204` tiene la línea 02-22 |
 
-**Puntaje:** 31 de 35 verdades verificadas. 4 son inciertas y van a la persona: las verdades 21, 28 y 35, que forman una sola lectura en vivo, y la verdad 31, que es la decisión sobre WR-16. No hay verdades presentes con comportamiento sin verificar.
+**Puntaje:** 39 de 42 verdades verificadas. Fallan 3: las verdades 31 y 38 tienen la misma raíz, y la 41 es parcial y depende de ellas. No hay verdades con comportamiento sin verificar.
 
 ### Elementos diferidos
 
-Ninguno. Revisé la Fase 3: su criterio 3 pide la tarjeta con Confirmar y Cancelar, pero no define el rechazo por caso (WR-17) ni toca el clasificador (WR-15 y WR-16). No hay evidencia específica para diferir nada.
+Ninguno. La Fase 3 (criterio 3) pide la tarjeta con Confirmar y Cancelar, pero no toca el clasificador de texto ni define el rechazo. No hay evidencia específica para diferir la brecha.
 
 ### Advisory (alcance nuevo, sin evidencia)
 
-Ninguno. Los hallazgos nuevos que reproduje (WR-15, WR-16, WR-03 agravado e IN-23) tienen evidencia determinista, porque mis sondas son reproducibles. Los clasifiqué como advertencias, no como bloqueantes, porque ninguno contradice un criterio del ROADMAP ni una verdad tal como está escrita. La única verdad en tensión (la 31) se escala como decisión humana.
+Ninguno. Cada hallazgo nuevo que uso (CR-04, WR-19, WR-20, WR-21 y WR-22) tiene evidencia determinista: sondas reproducibles del clasificador, una prueba de punta a punta por el bucle y la comparación con el código de `10a43ad`. Además, CR-04 cae sobre una brecha arrastrada (G-02-2), y los archivos marcados se modificaron en esta ronda.
 
-### Artefactos requeridos (planes 02-19 a 02-21)
+### Artefactos requeridos (plan 02-22)
 
 | Artefacto | Esperado | Estado | Detalles |
 |-----------|----------|--------|----------|
-| `src/domain/policies/compuerta.policy.ts` | `abrirTurno` D-63.6, `recuperarAutorizado` con la guarda del aborto y `reabrirConocido` para BLOQUEADO y FALLIDO | ✓ VERIFIED | Conectado desde `ejecutar-turno.service.ts:71,80` y `guardado-turno.service.ts:25,48` |
-| `src/loop/services/ejecutar-turno.service.ts` | `arrastrados: pendientesDe(apertura.siguiente)` | ✓ VERIFIED | Línea 80. `arrastradosDe` ya no existe |
-| `src/domain/types/compuerta.type.ts` | `AperturaTurno {autorizado, siguiente}` y un `EventoCompuerta` con FALLIDO | ✓ VERIFIED | |
-| `src/config/constants/confirmation.constants.ts` | `EVENTO_COMPUERTA.FALLIDO` | ✓ VERIFIED | `NEGACIONES` (líneas 63-89) es la raíz de WR-16 |
-| `src/loop/services/despacho-llamada.service.ts` | ENVIADO o FALLIDO según `resultado.ok` | ✓ VERIFIED | Línea 78 |
-| `src/domain/utils/formatear-issues.util.ts` y `src/config/constants/text.constants.ts` | Unión que conoce el punto final; `FIN_DE_ORACION` y `SEPARADOR_ISSUES` compartidos | ✓ VERIFIED | `strings.ts` importa `FIN_DE_ORACION` |
-| `agent/prompt.md` | Re-pregunta del servidor; el modelo nunca pide la confirmación | ✓ VERIFIED (⚠️ WR-16) | Líneas 50, 53 y 54. La línea 53 promete "sigue pendiente", y el servidor no lo cumple cuando el pedido trae una palabra de `NEGACIONES` |
-| `src/knowledge/registro-proveedor.md` | RN4, "Varios casos" y la línea de ERROR_INTERNO para un envío que falla | ✓ VERIFIED (⚠️ WR-15, WR-18) | RN4 dice que la negación cancela, pero la negación con pregunta no cancela. Las líneas de PAQUETE_NO_ARMADO y PAQUETE_DESACTUALIZADO dicen "La confirmación anterior ya no vale" y el servidor vuelve a ofrecer el envío del paquete viejo |
-| Pruebas: `compuerta`, `compuerta-casos`, `compuerta.policy`, `formatear-issues`, `env-agente`, `instrucciones-agente` y `agente-en-vivo` | Fijan las verdades | ✓ VERIFIED | Ninguna prueba cubre un pedido ajeno con "para", "no" o "luego", ni una negación con pregunta |
+| `src/config/constants/confirmation.constants.ts` | `NEGADORES`, `PRONOMBRES_ATONOS` y `VERBOS_NEGABLES`; `NEGACIONES` sin cambios | ✓ VERIFIED (⚠️ contenido) | Existen y se importan. `VERBOS_NEGABLES` incluye "envie", "mande" y "despache" (colisionan con el pretérito, WR-20) y "hagas", "confirmo" y "autorizo" sin objeto (WR-21) |
+| `src/config/constants/patterns.constants.ts` | `PATRON_CLAUSULA` | ✓ VERIFIED (⚠️ conducta) | Línea 23. Corta la cabeza de una pregunta como cláusula propia (raíz de CR-04) |
+| `src/domain/policies/confirmacion.policy.ts` | Rechazo acotado antes de la pregunta | ✗ Conducta incorrecta | Existe, es sustancial y está conectado (`decisionDe` en `ejecutar-turno.service.ts:55`). La regla (b) es demasiado amplia (brecha 1) |
+| `tests/unit/confirmacion.policy.test.ts` | Filas D-63.8 e invariante | ✓ VERIFIED (⚠️ cobertura) | 199 pass. Ninguna fila cubre las familias de CR-04 (IN-29) |
+| `tests/loop/compuerta.test.ts` | Pruebas de bucle D-63.8 | ✓ VERIFIED | 10 pass |
+| `agent/prompt.md` | Rechazo definido como el servidor | ⚠️ PARCIAL | Líneas 51 y 53, ver la verdad 41 |
+| `src/knowledge/registro-proveedor.md` | RN4 acotada | ⚠️ PARCIAL | La última oración de la línea 42 se contradice (WR-22) |
+| `tests/contract/instrucciones-agente.test.ts` | Ejemplos citados contra el clasificador | ✓ VERIFIED (⚠️ fragmentos cortos) | 23 pass. No detecta WR-22 (IN-26, IN-29) |
 
-`verify.artifacts` da 7/7 para 02-19, 8/8 para 02-20 y 1/1 para 02-21.
+`verify.artifacts` da 8/8 para 02-22 (exit 0). Solo comprueba existencia y patrones, y la conducta falla como se describe arriba.
 
 ### Verificación de enlaces clave
 
 | De | A | Vía | Estado | Detalles |
 |----|---|-----|--------|----------|
-| ejecutar-turno.service | compuerta.policy | `pendientesDe(` | WIRED | |
-| cierre-turno.service | cierre-turno.builder | `cierreConPregunta(` | WIRED | Ahora también después de un turno `otro` |
-| instructions-loader | agent/prompt.md | `ARCHIVO_PROMPT` | WIRED | |
-| despacho-llamada.service | compuerta.policy | `EVENTO_COMPUERTA.FALLIDO` | WIRED | |
-| agente.wiring | formatear-issues.util | `formatearIssues(` | WIRED | |
-| strings | text.constants | `FIN_DE_ORACION` | WIRED | |
-| agente-en-vivo.test | agente.wiring | `fetchGrabador` | WIRED | |
-| agente-en-vivo.test | cierre-turno.builder | `cierreConPregunta(` | WIRED | |
+| confirmacion.policy | confirmation.constants | `VERBOS_NEGABLES`, `NEGADORES`, `PRONOMBRES_ATONOS`, `NEGACIONES` y `RELLENO` | WIRED | |
+| confirmacion.policy | patterns.constants | `PATRON_CLAUSULA` | WIRED | |
+| ejecutar-turno.service | confirmacion.policy | `clasificarConfirmacion(` en `decisionDe` | WIRED | `abrirTurno` (`compuerta.policy.ts:46-49`) convierte cada `rechaza` falso en LIBRE para todos los casos |
+| instrucciones-agente.test | confirmacion.policy | `clasificarConfirmacion` | WIRED | |
 
-`verify.key-links` da 3/3 para 02-19, 3/3 para 02-20 y 2/2 para 02-21.
+`verify.key-links` da 4/4 (exit 0).
 
 ### Traza de datos (nivel 4)
 
 | Artefacto | Dato | Fuente | Datos reales | Estado |
 |-----------|------|--------|--------------|--------|
-| `needsConfirmation` y `confirmation_required` tras un "otro" | Estado de la compuerta | `abrirTurno` → `siguiente` → `arrastrados` → `cerrarTurno` → `pendientesDe` | Sí | ✓ FLOWING (CR-01 cerrado) |
-| Caso reabierto tras un FALLIDO | `CasoPendiente` | `paquetesConocidos` de la sesión (último armado ok) | Sí, pero puede estar desactualizado después de PAQUETE_NO_ARMADO o DESACTUALIZADO | ⚠️ WR-18 |
-| Mensaje de arranque con varios issues | `TEXTO_AGENTE.conDetalle(…, formatearIssues(...))` | Issues de zod | Sí | ✓ FLOWING |
+| `needsConfirmation` y `confirmation_required` tras un pedido ajeno | Estado de la compuerta | mensaje → `clasificarConfirmacion` → `abrirTurno` → `pendientesDe` → `cerrarTurno` | Sí, pero la decisión es incorrecta para la familia CR-04 | ⚠️ El flujo funciona y la entrada viene mal clasificada |
 
 ### Comprobaciones de comportamiento
 
 | Comportamiento | Comando | Resultado | Estado |
 |----------------|---------|-----------|--------|
 | Tipos, lint y auditoría | `bun run check` | exit 0; Biome revisó 281 archivos; 0 vulnerabilidades | ✓ PASS |
-| Suite completa (una sola vez) | `bun test` | 1199 pass, 1 skip, 0 fail, 5372 expect, 72 archivos | ✓ PASS |
-| CR-01 / D-63.6 en el bucle | `bun test tests/loop/compuerta.test.ts -t "D-63.6"` | 13 pass | ✓ PASS |
-| D-63.6 y D-63.7 con varios casos | `bun test tests/loop/compuerta-casos.test.ts -t "D-63"` | 17 pass | ✓ PASS |
-| Política de la compuerta | `bun test tests/unit/compuerta.policy.test.ts` | 63 pass | ✓ PASS |
-| WR-01 | `bun test tests/contract/env-agente.test.ts -t "WR-01"` y `tests/unit/formatear-issues.util.test.ts` | 2 pass y 9 pass | ✓ PASS |
-| Contrato del prompt y del conocimiento | `bun test tests/contract/instrucciones-agente.test.ts` | 17 pass | ✓ PASS |
-| Prueba en vivo sin la bandera | `bun test tests/live/agente-en-vivo.test.ts` | 1 skip, 0 fail | ✓ PASS |
-| Sonda de concurrencia de WR-01 (scratchpad) | 50 llamadas a `crearAgente` con `Promise.all` y el mismo entorno | Un solo mensaje, igual al literal | ✓ PASS |
-| Sonda del clasificador (scratchpad) | `clasificarConfirmacion` con ec pendiente | "procesa el caso co-industrias-delta" da `otro`; "…para tenerlo listo", "…luego vemos el otro", "dame el NIT…, no el RUC", "mejor procesa pe-andes" y "envía el paquete de ec-corp-andina para firma" dan `rechaza`; "No envíes nada todavía, ¿qué falta?" da `otro` | ⚠️ WR-15 y WR-16 reproducidos |
-| Sonda WR-16 de punta a punta (scratchpad) | §11 T1, luego "Consulta el valor del NIT de co-industrias-delta para tenerlo a mano", luego "sí" | T2 da `needsConfirmation=false` y 0 confirmaciones; T3 da `CONFIRMACION_REQUERIDA` y `enviados=[]`, y vuelve a preguntar | ⚠️ (punto humano 2) |
-| Sonda WR-15 de punta a punta (scratchpad) | §11 T1, luego "No envíes nada todavía, ¿qué falta?" (el modelo dice "queda cancelada"), luego "sí" | T2 da `needsConfirmation=true` con la pregunta del servidor después de "queda cancelada"; T3 envía ec una vez | ⚠️ Warning |
-| Sonda IN-23 (scratchpad) | §11 T1, luego "No envíes nada todavía" con un modelo que llama `simular_envio` | Bloqueado, `CONFIRMACION_REQUERIDA`, 0 envíos; el caso se reabre y el servidor vuelve a preguntar | ℹ️ Info (nunca envía) |
-| Sonda WR-03 (scratchpad) | Presupuesto de 1000 agotado al armar ec; luego "sí", "envía" y "hola" | Cada uno da `tope_tokens`, `needsConfirmation=true` y la pregunta de confirmación, con `enviados=[]` | ⚠️ Warning (agravado) |
-| Sonda WR-17 (scratchpad) | `abrirTurno` con dos pendientes y `RECHAZA` | `{autorizado:null, siguiente: LIBRE}` | ⚠️ Warning (coincide con 02-19 verdad 3) |
+| Suite completa (una sola vez) | `bun test` | 1311 pass, 1 skip, 0 fail, 5929 expect, 72 archivos | ✓ PASS |
+| Bucle D-63.8 | `bun test tests/loop/compuerta.test.ts -t "D-63.8"` | 10 pruebas, 0 fail | ✓ PASS |
+| Clasificador | `bun test tests/unit/confirmacion.policy.test.ts` | 199 pass, 0 fail | ✓ PASS |
+| Contrato G-02-2 | `bun test tests/contract/instrucciones-agente.test.ts -t "G-02-2"` | 23 pruebas, 0 fail | ✓ PASS |
+| Sonda del clasificador (scratchpad, `bun run probe.ts`) | `clasificarConfirmacion(f, ["ec-corp-andina"])` con las frases de CR-04, WR-19, WR-20 y WR-21, los ejemplos del prompt y las confirmaciones | Coincide con el review, sin excepción: 12 de 13 frases de CR-04 dan `rechaza`, las de WR-19 dan `otro`, y las de WR-20 y WR-21 dan `rechaza`. Las confirmaciones no cambian | ✗ FAIL (CR-04) |
+| Variantes propias (scratchpad) | Igual | "Luego ¿qué sigue?", "Para pe-andes ¿qué falta?", "Después ¿qué hago?", "Mejor ¿me das el NIT?", "Momento, ¿cuál es el NIT?", "Y luego ¿qué?", "Bueno, luego ¿qué sigue?", "No, el de pe-andes" y "nada, procesa pe-andes" dan `rechaza`. Con dos pendientes, "procesa pe-andes, no co-industrias-delta" da `rechaza` | ✗ FAIL |
+| De punta a punta (scratchpad, `bun test e2e-cr04.test.ts`, LLM falso) | §11 T1, luego la frase y luego "sí" | 6 frases de CR-04: T2 da `needsConfirmation=false`, 0 confirmaciones y el modelo dice "Sigue pendiente…"; T3 da `CONFIRMACION_REQUERIDA` y `enviados=[]`. La fila de control envía una vez | ✗ FAIL (síntoma de G-02-2) |
+| Regresión contra `10a43ad` (scratchpad, `bun run comparar.ts`) | Clasificador viejo contra el nuevo | 10 preguntas pasan de `otro` a `rechaza`; "no quiero enviarlo todavía" y "espera un momento" pasan de `rechaza` a `otro` | ✗ Regresión |
+| Alcance de 02-22 | `git diff --name-only 10a43ad..HEAD -- compuerta.policy.ts ejecutar-turno.service.ts src/domain/types reto-01` | vacío | ✓ PASS |
 
-Las sondas viven solo en el scratchpad. `git status` no muestra cambios fuera de `.planning/`.
+Las sondas viven solo en el scratchpad de la sesión. `git status` no muestra cambios fuera de `.planning/`.
 
 ### Ejecución de probes
 
-No aplica: la fase no declara probes `scripts/*/tests/probe-*.sh` y el repositorio no tiene ninguno.
+No aplica. La fase no declara probes `scripts/*/tests/probe-*.sh` y el repositorio no tiene ninguno.
 
 ### Cobertura de requisitos
 
 | Requisito | Planes | Descripción (resumen) | Estado | Evidencia |
 |-----------|--------|----------------------|--------|-----------|
-| SOLI-03 | 02-06 | El cuerpo no llega al modelo; fixture inyectado | ✓ SATISFIED | `inyeccion.test.ts` en verde. REQUIREMENTS.md:22,185 lo sigue marcando "Pending" (ℹ️ trazabilidad) |
-| ENV-02 | 02-03, 02-06, 02-10, 02-13 a 02-16, 02-18 a 02-21 | El servidor hace cumplir la compuerta; una vez, ese caso y el mensaje siguiente; clasificador con negaciones | ✓ SATISFIED (⚠️ WR-15, WR-16) | Verdades 2, 27, 29 y 32. El clasificador reconoce las negaciones de más (WR-16) y, si el mensaje trae una pregunta, deja pasar la negación (WR-15). Las dos cosas fallan del lado seguro |
-| ENV-03 | 02-03, 02-06, 02-10, 02-13 a 02-16, 02-18 a 02-21 | Si una acción requiere confirmación, el turno termina con una pregunta que lista los bloqueos; el servidor calcula `needsConfirmation` | ✓ SATISFIED | Verdad 27: el bloqueo de la ronda anterior quedó cerrado |
+| SOLI-03 | 02-06 | El cuerpo no llega al modelo; fixture inyectado | ✓ SATISFIED | `inyeccion.test.ts` en verde. REQUIREMENTS.md:185 sigue diciendo "Pending" (ℹ️ trazabilidad) |
+| ENV-02 | 02-03, 02-06, 02-10, 02-13 a 02-16, 02-18 a 02-22 | El servidor hace cumplir la compuerta; clasificador determinista que entiende negaciones | ✓ SATISFIED en lo que exige el requisito (⚠️ precisión) | Ninguna autorización sin confirmación explícita. La precisión del rechazo que exige la brecha G-02-2 falla (brecha 1), y REQUIREMENTS.md:203 la marca "Complete" de forma prematura |
+| ENV-03 | 02-03, 02-06, 02-10, 02-13 a 02-16, 02-18 a 02-22 | El turno termina con la pregunta que lista los bloqueos; el servidor calcula `needsConfirmation` | ✗ BLOCKED (parcial) | Con la familia CR-04, el turno de un caso que sigue esperando no trae la pregunta ni `needsConfirmation`, porque el servidor lo canceló sin un rechazo real. Con WR-19, la pregunta aparece después de una negación |
 | AGT-01 | 02-01, 02-07 | Ciclo propio y tope de 25 | ✓ SATISFIED | Regresión |
-| AGT-02 | 02-01, 02-02, 02-09, 02-18, 02-19 | Prompt y conocimiento separados y editables | ✓ SATISFIED | Verdades 5 y 26 |
-| AGT-03 | 02-09, 02-18, 02-19, 02-21 | El prompt prohíbe afirmar sin herramienta | ✓ SATISFIED (la conducta va al punto humano 1) | `prompt.md:13-17,58` |
-| AGT-04 | 02-02, 02-06, 02-08, 02-11 a 02-13, 02-15, 02-19, 02-20 | Sesiones; historial íntegro; CA5 | ✓ SATISFIED | `historialSano` en cada prueba de bucle nueva |
-| AGT-05 | 02-04, 02-08, 02-17, 02-20 | Errores en español desde un catálogo | ✓ SATISFIED | Verdad 33 |
-| LLM-01 | 02-01, 02-02, 02-09 | Puerto propio y adaptador genérico | ✓ SATISFIED | Regresión |
-| LLM-02 | 02-01, 02-04, 02-09, 02-17, 02-20 | fetch directo, preset DeepSeek y thinking desactivado | ✓ SATISFIED | Regresión y verdad 33 |
-| LLM-03 | 02-04, 02-08 | Timeout, backoff y 402 | ✓ SATISFIED | Regresión |
-| LLM-04 | 02-01, 02-04, 02-08, 02-09 | Respaldo | ✓ SATISFIED | Regresión |
-| LLM-05 | 02-07 | Topes configurables con mensaje claro | ✓ SATISFIED (⚠️ WR-03) | El mensaje es claro, pero la pregunta de confirmación se repite en una sesión agotada |
-| SEG-03 | 02-05, 02-08, 02-15, 02-21 | Logs JSON sin clave ni PII | ✓ SATISFIED | Verdad 34 y regresión |
-| DEMO-03 | todos | Tests con un LLM falso | ✓ SATISFIED | Ya existe la prueba del guion que pide el prompt ("ok" sin herramientas y luego "sí") |
+| AGT-02 | 02-01, 02-02, 02-09, 02-18, 02-19, 02-22 | Prompt y conocimiento separados y editables | ✓ SATISFIED (⚠️ verdad 41) | La editabilidad se cumple. La coherencia del texto con el servidor es parcial (WR-22) |
+| AGT-03 | 02-09, 02-18, 02-19, 02-21 | El prompt prohíbe afirmar sin herramienta | ✓ SATISFIED | HV1 aceptada en la UAT |
+| AGT-04 | 02-02, 02-06, 02-08, 02-11 a 02-13, 02-15, 02-19, 02-20 | Sesiones; historial íntegro; CA5 | ✓ SATISFIED | `historialSano` en las pruebas nuevas |
+| AGT-05 | 02-04, 02-08, 02-17, 02-20 | Errores en español desde un catálogo | ✓ SATISFIED | Regresión |
+| LLM-01 a LLM-04 | 02-01, 02-02, 02-04, 02-08, 02-09, 02-17, 02-20 | Puerto, adaptador, resiliencia y respaldo | ✓ SATISFIED | Regresión |
+| LLM-05 | 02-07 | Topes configurables con mensaje claro | ✓ SATISFIED (⚠️ WR-03) | Sin cambios |
+| SEG-03 | 02-05, 02-08, 02-15, 02-21 | Logs JSON sin clave ni PII | ✓ SATISFIED | Regresión |
+| DEMO-03 | todos, 02-22 | Tests con un LLM falso | ✓ SATISFIED (⚠️ IN-29) | Las pruebas existen y pasan, pero no cubren las familias de CR-04, y por eso la brecha pasa en verde |
 
-Requisitos huérfanos: ninguno. Los 15 IDs de la fase en REQUIREMENTS.md coinciden con la unión de los `requirements:` de los 21 planes. REQUIREMENTS.md:203-236 todavía dice "Gaps Found". Lo actualiza el orquestador.
+Requisitos huérfanos: ninguno. Los 15 IDs de la fase en REQUIREMENTS.md coinciden con la unión de los `requirements:` de los 22 planes.
 
 ### Antipatrones y hallazgos
 
 | Archivo | Línea | Patrón | Severidad | Impacto |
 |---------|-------|--------|-----------|---------|
-| `src/config/constants/confirmation.constants.ts`, `src/domain/policies/confirmacion.policy.ts`, `agent/prompt.md` | 63-89 / 86 / 53 | **WR-16**: un pedido ajeno con "para", "no", "luego", "mejor", "después", "aún" o "momento" da `rechaza` y cancela el caso pendiente; el prompt le hace decir al modelo que sigue pendiente | ⚠️ Warning, se escala (punto humano 2) | Reproducido de punta a punta. La analista tiene que confirmar dos veces, igual que en CR-01. Nunca hay envío sin confirmación. El plan 02-19 lo dejó marcado como no resuelto (IN-01) |
-| `src/domain/policies/confirmacion.policy.ts` | 84-86 | **WR-15**: la pregunta se evalúa antes que la negación, así que "No envíes nada todavía, ¿qué falta?" da `otro` y el servidor pide confirmar justo después de la negación | ⚠️ Warning (regresión de conducta con D-63.6) | Reproducido. El "sí" siguiente envía, pero responde a una pregunta explícita del servidor, así que el criterio 2 se cumple. Contradice RN4 del conocimiento. Entra en la misma decisión que WR-16 |
-| `src/loop/services/conversacion-turno.service.ts` (tope de tokens) y `compuerta.policy.ts` | — | **WR-03 agravado**: con la sesión agotada, todo mensaje que no sea una negación vuelve a recibir "¿Confirmas…?" y un "sí" no puede enviar | ⚠️ Warning | Reproducido. El primer párrafo dice "Abre una sesión nueva para continuar.", así que el criterio 4 se cumple. La pregunta promete algo que no se puede cumplir |
-| `src/loop/services/ejecutar-turno.service.ts` | 57-59 | **WR-17**: el botón con `aprobada:false` y un caso cancela todos los pendientes | ⚠️ Warning | Coincide con la verdad 3 de 02-19, que lo especifica así. Importa para la tarjeta de la Fase 3 |
-| `src/loop/services/despacho-llamada.service.ts`, `src/config/strings.ts` | 78 / 226-229 | **WR-18**: después de PAQUETE_NO_ARMADO o DESACTUALIZADO el servidor vuelve a ofrecer el paquete viejo ("queda BLOQUEADO/LISTO…") | ⚠️ Warning | Lo decidió la usuaria en D-63.7, que enumera esos dos códigos. `simularEnvio` vuelve a validar el paquete, así que nada viejo se envía. Es un texto de estado desactualizado y un posible bucle |
-| `src/domain/policies/compuerta.policy.ts` | 76-104 | IN-23: un `simular_envio` desobediente en el turno de un rechazo reabre el caso | ℹ️ Info | Reproducido. Nunca envía |
-| `src/loop/services/despacho-llamada.service.ts` | 78 | IN-27: un fallo después de escribir `ENVIO-SIMULADO.md` emitiría FALLIDO y permitiría un segundo envío con otra confirmación | ℹ️ Info | Ventana estrecha. No lo reproduje porque exige inyectar fallas. Siempre hace falta una confirmación explícita |
-| `tests/contract/instrucciones-agente.test.ts`, `tests/loop/compuerta-casos.test.ts` | — | IN-25 e IN-26: aserciones débiles (fragmentos cortos; prueba de PAQUETE_DESACTUALIZADO sin bloqueos distintos) | ℹ️ Info | No afectan al producto |
-| `.planning/REQUIREMENTS.md` | 22, 185 | SOLI-03 sigue "Pending" | ℹ️ Info | Trazabilidad |
+| `confirmacion.policy.ts`, `patterns.constants.ts`, `confirmation.constants.ts` | 98-112 / 23 / 38-89 | **CR-04**: la regla (b) toma conectores y rellenos nominales como rechazo y corta la cabeza de una pregunta | 🛑 Blocker | Es la brecha 1: síntoma de doble confirmación, regresión respecto de `10a43ad` y una brecha arrastrada (G-02-2) |
+| `confirmacion.policy.ts`, `confirmation.constants.ts` | 86-96 / 106-119 | **WR-20 y WR-21**: el pretérito sin tilde y "hagas"/"confirmo" con otro objeto dan `rechaza` | 🛑 Blocker (parte de la brecha 1) | "No envié el certificado, ¿lo puedo agregar?" y "No hagas el PDF, solo el xlsx" cancelan. La misma consecuencia que CR-04 |
+| `confirmation.constants.ts` | 106-119 | **WR-19**: rechazos claros dan `otro` y el servidor vuelve a preguntar | ⚠️ Warning (brecha 3, parcial) | Nunca envía sin un "sí" posterior. Choca con la prohibición 2 de 02-22. "no quiero enviarlo todavía" y "espera un momento" son regresiones |
+| `src/knowledge/registro-proveedor.md` | 42 | **WR-22**: RN4 se contradice | ⚠️ Warning (brecha 2) | El modelo recibe una definición contradictoria |
+| `confirmacion.policy.ts` | 86-88 | **IN-28 / T-02-71**: `slice` por negador, tiempo cuadrático | ℹ️ Info | Sigue abierto en SECURITY como bajo y no bloqueante. Depende de API-04 (Fase 3) |
+| `tests/contract/instrucciones-agente.test.ts`, `tests/unit/confirmacion.policy.test.ts` | — | **IN-29 e IN-26**: fragmentos cortos y sin invariante del lado de `otro` | ℹ️ Info | Por eso CR-04 pasa en verde |
+| `patterns.constants.ts` | 23 | **IN-30**: ":" corta las cláusulas ("el cliente respondió: no." da `rechaza`); "no¿" se trata distinto de "no ?" | ℹ️ Info | Se resuelve junto con la brecha 1 |
+| `ejecutar-turno.service.ts`, `compuerta.policy.ts` | 57-59 / 47-48 | WR-17 (el rechazo por botón de un caso cancela todos) y WR-18 | ⚠️ Warning, abierto | Fuera de alcance por decisión de la usuaria. Amplifica CR-04 cuando hay varios casos pendientes |
+| `conversacion-turno.service.ts` | — | WR-03 agravado | ⚠️ Warning, abierto | Sin cambios |
 
-No hay marcadores TBD, FIXME, XXX, TODO, HACK ni PLACEHOLDER en `src/`, `agent/` ni `tests/` (el único resultado, `METODO_POST`, es un falso positivo). `tests/sin-comentarios.test.ts` pasa y `reto-01/` no tiene diferencias.
+No hay marcadores TBD, FIXME, XXX, TODO, HACK ni PLACEHOLDER en los 8 archivos que modificó 02-22. `reto-01/` no tiene diferencias.
 
-**¿Alguna advertencia nueva anula un criterio del objetivo?** Las juzgué contra la frase "ninguna acción externa sin confirmación explícita" y contra los must-haves escritos:
+### Prohibiciones (02-22)
 
-- **Seguridad.** WR-15, WR-16, WR-17, WR-18, WR-03, IN-23 e IN-27 fallan todas del lado seguro. La autorización nace solo de `confirma` sobre un caso pendiente en el mensaje siguiente a la pregunta del servidor, y se consume una vez. Ninguna rompe los criterios 2 o 4 del ROADMAP.
-- **Must-haves.**
-  - WR-17 y WR-18 coinciden con lo que especificaron 02-19 (verdad 3) y D-63.7. Son propuestas de diseño, no incumplimientos.
-  - WR-15 contradice el espíritu de RN4 y de la verdad 7 de 02-19, pero no su letra ("no envíes nada" cancela).
-  - WR-16 es el caso límite. Reproduce el mismo costo que hizo bloqueante a CR-01: la analista confirma dos veces y el modelo afirma un estado que el servidor no tiene. A la letra, la verdad 31 se cumple por la definición del plan, y el plan lo marcó como no resuelto.
-- **Escalada.** Por eso no lo marco FAILED, pero tampoco lo absorbo en un `passed`. Queda como decisión de producto (punto humano 2). Si la usuaria no acepta el límite, se convierte en brecha y hay que abrir un plan de cierre que acote el clasificador.
-
-### Prohibiciones
-
-| Prohibición | Plan | Nivel | Disposición |
-|-------------|------|-------|-------------|
-| No dejar que una respuesta que ni confirma ni rechaza autorice un envío, ni que una confirmación a secas envíe un caso arrastrado cuando la pregunta nombra varios | 02-19 | test | Cumplida: la red de seguridad (`compuerta.test.ts:287-319`) y `compuerta-casos.test.ts:159` (falta_caso) |
-| No indicarle al modelo que escriba su propia pregunta o pedido de confirmación | 02-19 | test | Cumplida: `prompt.md:50,53,54` y `instrucciones-agente` (RETIRADOS_CR01). Que el modelo lo haga por su cuenta (A2 en vivo) va al punto humano 1 |
-| No bloquear ni secuestrar el trabajo que pide la analista con un caso pendiente | 02-19 | test | Cumplida: `compuerta-casos.test.ts:664-703` |
-| No dejar que un caso pendiente salga de la compuerta sin envío salvo por un rechazo explícito, un aborto o el fin de la sesión | 02-19 | test | **Marcada.** La letra se cumple con las pruebas actuales. Hay un contraejemplo semántico reproducido (WR-16): un pedido ajeno con "para" lo saca. Va al punto humano 2 |
-| No volver a otorgar ni reutilizar una autorización después de un envío autorizado que falla | 02-20 | test | Cumplida: las pruebas D-63.7, "dos envíos que fallan seguidos" y el `evaluacion.siguiente` usado |
-| No sacar en silencio de la compuerta un caso cuyo envío autorizado falló; solo el aborto lo cierra LIBRE | 02-20 | test | Cumplida: las 4 pruebas de bucle y las filas de `cerrarTurno` con aborto |
-| No relajar aserciones para obtener VIVO PASS, no gastar la corrida sin el visto bueno y no hacer una segunda corrida sin un visto bueno nuevo | 02-21 | judgment | **unverified-prohibition: se recomienda revisión humana.** Veredicto no autoritativo: el diff de `agente-en-vivo.test.ts` no quita ninguna aserción (solo renombres y la expectativa de B2 que pidió el plan), y 02-21-SUMMARY registra una sola corrida |
-| No imprimir la clave, no nombrar el archivo de secretos en un comando y no guardar la salida de la corrida en el repo | 02-21 | judgment | **unverified-prohibition: se recomienda revisión humana.** Veredicto no autoritativo: `git status` limpio fuera de `.planning/`, y ninguna cadena con forma de clave en los artefactos de la fase, salvo el ejemplo sintético de 02-05-PLAN |
-| No presentar valores como llenos, enviados o firmados sin una herramienta | 02-09 | judgment | **unverified-prohibition: se recomienda revisión humana** (punto humano 1) |
+| Prohibición | Nivel | Disposición |
+|-------------|-------|-------------|
+| No ampliar lo que autoriza un envío | test | **Cumplida.** La prueba de invariante, mi sonda y el barrido de 555.900 mensajes de la auditoría lo confirman |
+| No dejar un caso pendiente con la pregunta del servidor después de un mensaje que niega el envío | test | **Incumplida en parte (brecha 3).** Las formas citadas cumplen. "no quiero enviarlo todavía", "no lo confirmes" y "ni se te ocurra enviarlo" dan `otro` con la pregunta del servidor |
+| No cancelar un caso pendiente porque un pedido o una pregunta solo contiene "para", "no", "luego", "mejor" o "después" | test | **Incumplida (brecha 1).** Hay un contraejemplo determinista, reproducido de punta a punta |
+| No cambiar el camino del botón ni la máquina de estados | test | **Cumplida.** `git diff` vacío para `compuerta.policy.ts`, `ejecutar-turno.service.ts` y `confirmacion.type.ts` |
 
 ### Verificación humana requerida
 
-1. **Lectura de las cinco respuestas de la corrida en vivo de 02-21 (verdades 21, 28 y 35, CA2).**
-   - **Prueba:** lee A1, A2 ("ok"), A3 ("sí"), B1 (§11) y B2 ("envía") en 02-21-SUMMARY.md (`VIVO PASS modelo=deepseek-flash llamadas=15 tokens=113249`). Confirma también que diste el "correr" y que solo se hizo una corrida.
-   - **Esperado:**
-     - A2 es breve, y su única pregunta o pedido de confirmación es el del servidor.
-     - A3 y B2 informan solo el envío simulado.
-     - B1 trae caso, ruta, 13/1/1, la nota del RUC, el soporte ausente y BLOQUEADO.
-     - Ningún valor aparece sin máscara, y nada se da por hecho sin una herramienta que lo respalde.
-   - **Por qué humana:** es una prohibición de nivel judgment leída por un LLM. El ejecutor ya observó que A2 escribió su propio pedido de confirmación ("dime de forma explícita algo como …") sin "¿". Hay que decidir si se acepta como varianza del modelo (T-02-41) o si se ajusta el prompt con una segunda corrida autorizada.
-2. **Decisión de producto sobre WR-16 (y WR-15): precisión del clasificador bajo D-63.6.**
-   - **Prueba:** revisa la sonda de este informe. Con ec pendiente, "Consulta el valor del NIT de co-industrias-delta para tenerlo a mano" cancela ec, el modelo dice que sigue pendiente y el "sí" siguiente da `CONFIRMACION_REQUERIDA`. Además, "No envíes nada todavía, ¿qué falta?" deja ec pendiente y el servidor pide confirmar.
-   - **Esperado:** elegir una de dos.
-     - **(a) Aceptarlo como límite conocido.** Se agrega este override al frontmatter y se vuelve a verificar:
-       ```yaml
-       overrides:
-         - must_have: "Besides a send, a pending case leaves the gate only through an explicit rejection, a caller abort or the end of the session"
-           reason: "La clase amplia de NEGACIONES (IN-01/WR-16) puede cancelar un caso con un pedido ajeno; falla del lado seguro, nunca envía sin confirmación y se corrige en una fase posterior"
-           accepted_by: "{tu nombre}"
-           accepted_at: "{ISO timestamp}"
-       ```
-     - **(b) Corregirlo ahora.** Se abre un plan de cierre que acote `NEGACIONES` (que una negación cancele solo junto a un verbo de envío o a "nada/todavía/espera/cancela") y que evalúe la negación antes que la pregunta. Lleva pruebas de bucle para los dos guiones y se registra en D-63.5 y D-63.6.
-   - **Por qué humana:** la verdad 31 se cumple a la letra pero no en su intención. El plan lo dejó fuera de alcance, y en la ronda anterior este mismo síntoma se trató como bloqueante (CR-01). Es una decisión de producto con reversibilidad "costly" sobre D-37, D-39 y D-63.6.
+No hay puntos que bloqueen esta verificación: el estado es `gaps_found`. Después del cierre de las brechas, conviene repetir dos cosas:
+
+1. **D5 de 02-22:** comprobar que el modelo en vivo sigue el prompt alineado y solo dice "cancelada" cuando el servidor cancela. El SUMMARY lo dejó como `human_judgment: true` y no hubo corrida en vivo.
+2. **Repetir HV2 de la UAT** con las frases de este informe.
 
 ### Resumen de brechas
 
-No quedan brechas bloqueantes:
+El plan 02-22 cerró las dos frases que reportó la usuaria, pero no la clase de frases que describe la verdad de G-02-2. Además, agregó regresiones.
 
-- **CR-01:** la verdad 27, el único bloqueante de la ronda anterior, está cerrada con una prueba que sigue el guion exacto que pide el prompt.
-- **WR-01 y WR-02:** cerradas, con pruebas de unidad y de bucle.
-- **Nota 1 de SECURITY:** cerrada, sin aserciones relajadas.
-- **Regresiones:** no hay regresiones en lo verificado antes, y las barreras pasan (`bun run check` en verde; 1199 pass, 1 skip y 0 fail).
+1. **Brecha 1 (bloqueante, raíz única: la regla (b) y la forma (a) de D-63.8 son demasiado amplias).**
+   - **Qué pasa.** Preguntas y pedidos comunes con "para", "no", "luego", "mejor", "después" o "momento" cancelan el caso pendiente. Por ejemplo: "Luego ¿qué sigue?" (sin coma), "Para pe-andes, ¿qué falta?", "Dame primero el NIT, después el paquete" y "procesa co-industrias-delta, no pe-andes". También lo cancelan las preguntas en pretérito ("No envié el certificado, ¿lo puedo agregar?") y "No hagas el PDF".
+   - **Consecuencia.** El modelo dice que el caso sigue pendiente y el "sí" siguiente queda bloqueado. Es la doble confirmación de CR-01, que la usuaria trató como bloqueante en HV2.
+   - **Regresión.** Diez de esas preguntas dejaban el caso pendiente antes de 02-22.
+2. **Brecha 2 (parcial).** RN4 se contradice (WR-22), y la prosa de `prompt.md:51,53` promete conductas que el servidor no cumple. Se corrige junto con la brecha 1.
+3. **Brecha 3 (parcial).** Rechazos claros sin una de las doce formas exactas ("no quiero enviarlo todavía", "espera un momento" o "no lo confirmes") reciben la pregunta del servidor justo después de la negación (WR-19). Dos de ellas son regresiones.
 
-El estado es `human_needed` por dos motivos:
+**Seguridad.** Ninguna brecha permite un envío sin confirmación explícita, así que los criterios 1 a 5 del ROADMAP se siguen cumpliendo a la letra. Lo que falla es la promesa de D-63.6 y D-63.8 y la decisión que la usuaria tomó en la UAT.
 
-1. La evidencia en vivo y la lectura de las respuestas (CA2) son de nivel judgment. La hizo el ejecutor, y él mismo dejó una observación abierta sobre A2.
-2. WR-16 reproduce el costo de CR-01 en otra familia de frases. El plan lo dejó conscientemente fuera de alcance, así que hay que aceptarlo con un override o corregirlo con un plan de cierre.
-
-Las demás advertencias de la revisión (WR-15, WR-17, WR-18 y WR-03 agravado) fallan del lado seguro y no anulan ningún criterio del objetivo. Conviene resolver WR-15 junto con WR-16, porque las dos están en el mismo clasificador y se arreglan en pocas líneas.
+**Pruebas.** Todas pasan (1311 pass y 0 fail) porque no cubren estas familias (IN-29). El arreglo propuesto en CR-04 (núcleos de rechazo frente a conectores, cláusula completa frente a parcial, slugs solo junto a "cancela") y los de WR-19 a WR-21 son un buen punto de partida para un plan 02-23 con `/gsd-plan-phase --gaps`. Ese plan debe incluir un invariante generado del lado de `otro`.
 
 ---
 
-_Verificado: 2026-10-14T03:40:00Z_
+_Verificado: 2026-10-14T05:40:00Z_
 _Verificador: Claude (gsd-verifier)_
