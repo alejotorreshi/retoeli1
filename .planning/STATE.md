@@ -4,10 +4,10 @@ current_phase: 02
 current_phase_name: Agente y compuerta de confirmación
 status: executing
 stopped_at: Completed 02-24-PLAN.md
-last_updated: "2026-10-14T18:52:05.632Z"
+last_updated: "2026-10-14T19:39:06.459Z"
 last_activity: 2026-10-14
 last_activity_desc: Completed 02-24 (CR-05 closed, D-63.10)
-state_head: 03a46ceea10dab5ceb8bf011571866f53d08562b
+state_head: 7b5ed7db1113170a6e32f97b1d503e1f671cedd7
 progress:
   total_phases: 4
   completed_phases: 1
@@ -30,7 +30,7 @@ See: .planning/PROJECT.md (updated 2026-10-13)
 Phase: 02 (Agente y compuerta de confirmación) — READY TO VERIFY
 Plan: 24 of 24
 Status: Ready to verify (gap closure 02-24 complete)
-Last activity: 2026-10-14 — Completed 02-24 (24 of 24 plans complete, CR-05 closed by D-63.10, WR-25 fixed)
+Last activity: 2026-10-14 - Completed quick task 261014-jz4: aceptar la regla de primera palabra (D-63.11) para CR-06
 
 Progress: [███░░░░░░░] 25%
 
@@ -222,7 +222,14 @@ None yet.
 - [Phase 3]: Desde D-63.6, mientras un caso esté pendiente cada turno emite confirmation_required: la tarjeta de confirmación sigue visible entre turnos, y Cancelar (aprobada false) cancela todos los casos pendientes.
 - [Phase 4]: modulo/agent.md se genera desde agent/prompt.md, que desde 02-18 deja la pregunta de confirmación al servidor; sin servidor (OpenCode) nadie la escribiría, así que el generador de la Phase 4 debe decidir quién pide la confirmación (nota del generador o párrafo propio del módulo).
 - [Phase 4]: SOLUCION.md debe explicar los ids canónicos en la consola de la demo y el `resumen` (WR-03), mover desde docs/plantillas.md la nota de NOMBRE_SOPORTE (IN-01) y registrar SEG-02 como parcial hasta que exista `redactar()`.
+- [Phase 4]: SOLUCION.md debe registrar AR-02-06 (D-63.11): un pedido que nombra el caso pendiente y no empieza con un verbo de pedido tras una respuesta de espera cancela el caso; va al lado seguro y el botón de la Phase 3 (D-39) lo evita.
 - [General]: PRD §10 no trae la tabla de puntos de la rúbrica; cada "debe/obligatorio/evaluamos" se trata como ítem y el supuesto va en SOLUCION.md §7.
+
+### Quick Tasks Completed
+
+| # | Description | Date | Commit | Directory |
+|---|-------------|------|--------|-----------|
+| 261014-jz4 | Aceptar la regla de primera palabra (D-63.11) para CR-06 / T-02-83 y alinear prompt, RN4 y registros | 2026-10-14 | 7b5ed7d | [261014-jz4-aceptar-la-regla-de-primera-palabra-para](./quick/261014-jz4-aceptar-la-regla-de-primera-palabra-para/) |
 
 ## Deferred Items
 
