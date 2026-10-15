@@ -12,7 +12,7 @@ function contadorVisible(caracteres: number, maximo: number | null): maximo is n
   return maximo !== null && caracteres >= maximo - MARGEN_AVISO_CONTADOR;
 }
 
-export function Compositor({ valor, maximo, enCurso, alCambiar, alEnviar }: PropsCompositor) {
+export function Compositor({ valor, maximo, enCurso, bloqueado, alCambiar, alEnviar }: PropsCompositor) {
   const idAyuda = useId();
   const idContador = useId();
   const caracteres = valor.length;
@@ -40,6 +40,7 @@ export function Compositor({ valor, maximo, enCurso, alCambiar, alEnviar }: Prop
           maxLength={maximo ?? undefined}
           placeholder={TEXTO_CHAT.placeholder}
           value={valor}
+          disabled={bloqueado}
           onChange={(evento) => alCambiar(evento.target.value)}
           onKeyDown={alPresionarTecla}
         />
@@ -55,7 +56,7 @@ export function Compositor({ valor, maximo, enCurso, alCambiar, alEnviar }: Prop
               {TEXTO_CHAT.contador(caracteres, maximo)}
             </p>
           ) : null}
-          <button type="submit" className={estilos.enviar} disabled={enCurso}>
+          <button type="submit" className={estilos.enviar} disabled={enCurso || bloqueado}>
             {TEXTO_CHAT.enviar}
           </button>
         </div>

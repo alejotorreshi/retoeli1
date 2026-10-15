@@ -1,15 +1,22 @@
-import { AvisoError } from "@web/components/aviso.tsx";
+import { AvisoError, AvisoSistema } from "@web/components/aviso.tsx";
 import { GrupoHerramientas } from "@web/components/grupo-herramientas.tsx";
+import { IndicadorPensando } from "@web/components/indicador-pensando.tsx";
 import estilos from "@web/components/linea-de-tiempo.module.css";
 import { MensajeAgente, MensajeUsuaria } from "@web/components/mensaje.tsx";
 import { PilaConfirmaciones } from "@web/components/tarjeta-confirmacion.tsx";
 import { TarjetaResultado } from "@web/components/tarjeta-resultado.tsx";
-import { CLASE_GLOBAL, DISTANCIA_PEGADO_AL_FINAL } from "@web/config/constants/ui.constants.ts";
+import { AVISO_SESION, CLASE_GLOBAL, DISTANCIA_PEGADO_AL_FINAL } from "@web/config/constants/ui.constants.ts";
 import { TEXTO_CHAT } from "@web/config/strings.ts";
 import { resultadosDelTurno } from "@web/state/casos.ts";
 import { tarjetasDelTurno } from "@web/state/confirmaciones.ts";
 import { anuncioDeEstado } from "@web/state/conversacion.ts";
-import type { PropsEstadoVacio, PropsLineaDeTiempo, PropsTurno } from "@web/types/ui.type.ts";
+import type {
+  PropsAvisoInicial,
+  PropsCuerpoLinea,
+  PropsEstadoVacio,
+  PropsLineaDeTiempo,
+  PropsTurno,
+} from "@web/types/ui.type.ts";
 import { useEffect, useRef, useState } from "react";
 
 function Turno({ turno, enCurso, resultados, confirmaciones }: PropsTurno) {
@@ -43,6 +50,46 @@ function EstadoVacio({ acciones }: PropsEstadoVacio) {
   );
 }
 
+function AvisoInicial({ aviso }: PropsAvisoInicial) {
+  return aviso.tipo === AVISO_SESION.NO_CARGADA ? (
+    <AvisoError mensaje={aviso.mensaje} />
+  ) : (
+    <AvisoSistema mensaje={aviso.mensaje} />
+  );
+}
+
+function CuerpoLinea({
+  turnos,
+  cargando,
+  enCurso,
+  tarjetasConfirmacion,
+  alResponderConfirmacion,
+  acciones,
+}: PropsCuerpoLinea) {
+  if (cargando) return <IndicadorPensando etiqueta={TEXTO_CHAT.cargandoConversacion} marca={0} />;
+  if (turnos.length === 0) return <EstadoVacio acciones={acciones} />;
+  return (
+    <ol className={estilos.lista}>
+      {turnos.map((turno, indice) => (
+        <Turno
+          key={turno.clave}
+          turno={turno}
+          enCurso={enCurso && indice === turnos.length - 1}
+          resultados={resultadosDelTurno(turnos, indice)}
+          confirmaciones={
+            <PilaConfirmaciones
+              tarjetas={tarjetasDelTurno(tarjetasConfirmacion, turno.clave)}
+              turnos={turnos}
+              ocupada={enCurso}
+              alResponder={alResponderConfirmacion}
+            />
+          }
+        />
+      ))}
+    </ol>
+  );
+}
+
 function estaCercaDelFinal(zona: HTMLElement): boolean {
   return zona.scrollHeight - zona.scrollTop - zona.clientHeight <= DISTANCIA_PEGADO_AL_FINAL;
 }
@@ -53,6 +100,8 @@ function bajarAlFinal(zona: HTMLElement): void {
 
 export function LineaDeTiempo({
   turnos,
+  cargando,
+  aviso,
   enCurso,
   tarjetasConfirmacion,
   alResponderConfirmacion,
@@ -98,28 +147,15 @@ export function LineaDeTiempo({
         onScroll={alDesplazar}
       >
         <div ref={contenido} className={estilos.contenido}>
-          {turnos.length === 0 ? (
-            <EstadoVacio acciones={acciones} />
-          ) : (
-            <ol className={estilos.lista}>
-              {turnos.map((turno, indice) => (
-                <Turno
-                  key={turno.clave}
-                  turno={turno}
-                  enCurso={enCurso && indice === turnos.length - 1}
-                  resultados={resultadosDelTurno(turnos, indice)}
-                  confirmaciones={
-                    <PilaConfirmaciones
-                      tarjetas={tarjetasDelTurno(tarjetasConfirmacion, turno.clave)}
-                      turnos={turnos}
-                      ocupada={enCurso}
-                      alResponder={alResponderConfirmacion}
-                    />
-                  }
-                />
-              ))}
-            </ol>
-          )}
+          {aviso === null ? null : <AvisoInicial aviso={aviso} />}
+          <CuerpoLinea
+            turnos={turnos}
+            cargando={cargando}
+            enCurso={enCurso}
+            tarjetasConfirmacion={tarjetasConfirmacion}
+            alResponderConfirmacion={alResponderConfirmacion}
+            acciones={acciones}
+          />
           {children}
         </div>
       </section>

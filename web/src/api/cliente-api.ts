@@ -1,7 +1,7 @@
 import { PEDIDO_JSON, RESULTADO_API } from "@web/config/constants/ui.constants.ts";
 import { TEXTO_ACCESO } from "@web/config/strings.ts";
-import type { EstadoModelo, ResultadoApi, ResultadoFallido } from "@web/types/chat.type.ts";
-import { RESPUESTA_HTTP, RUTA_API } from "@/config/constants/http.constants.ts";
+import type { EstadoModelo, ResultadoApi, ResultadoFallido, VistaSesionUi } from "@web/types/chat.type.ts";
+import { PARAMETRO_SESION, RESPUESTA_HTTP, RUTA_API } from "@/config/constants/http.constants.ts";
 import { ESTADO_LLM } from "@/config/constants/llm.constants.ts";
 import type { AccessBody, ConfigResponse, ErrorResponse, HealthResponse } from "@/http/types/api.type.ts";
 
@@ -44,6 +44,73 @@ function esConfig(valor: unknown): valor is ConfigResponse {
     "mensajeMaximo" in valor &&
     esEnteroPositivo(valor.mensajeMaximo)
   );
+}
+
+function esTextoONulo(valor: unknown): valor is string | null {
+  return valor === null || typeof valor === "string";
+}
+
+function esHerramientaVista(valor: unknown): boolean {
+  return (
+    esObjeto(valor) &&
+    "llamadaId" in valor &&
+    typeof valor.llamadaId === "string" &&
+    "herramienta" in valor &&
+    typeof valor.herramienta === "string" &&
+    "caso" in valor &&
+    esTextoONulo(valor.caso) &&
+    "ok" in valor &&
+    typeof valor.ok === "boolean" &&
+    "codigo" in valor &&
+    esTextoONulo(valor.codigo) &&
+    "resumen" in valor &&
+    esTextoONulo(valor.resumen) &&
+    "resultado" in valor &&
+    (valor.resultado === null || esObjeto(valor.resultado))
+  );
+}
+
+function esTurnoVista(valor: unknown): boolean {
+  return (
+    esObjeto(valor) &&
+    "mensaje" in valor &&
+    typeof valor.mensaje === "string" &&
+    "herramientas" in valor &&
+    Array.isArray(valor.herramientas) &&
+    valor.herramientas.every(esHerramientaVista) &&
+    "texto" in valor &&
+    esTextoONulo(valor.texto)
+  );
+}
+
+function esPendienteVista(valor: unknown): boolean {
+  return (
+    esObjeto(valor) &&
+    "caso" in valor &&
+    typeof valor.caso === "string" &&
+    "bloqueosLegibles" in valor &&
+    esListaDeTextos(valor.bloqueosLegibles)
+  );
+}
+
+function esVistaSesion(valor: unknown): valor is VistaSesionUi {
+  return (
+    esObjeto(valor) &&
+    "sesionId" in valor &&
+    typeof valor.sesionId === "string" &&
+    "turnos" in valor &&
+    Array.isArray(valor.turnos) &&
+    valor.turnos.every(esTurnoVista) &&
+    "pendientes" in valor &&
+    Array.isArray(valor.pendientes) &&
+    valor.pendientes.every(esPendienteVista) &&
+    "casosEnviados" in valor &&
+    esListaDeTextos(valor.casosEnviados)
+  );
+}
+
+function rutaDeSesion(sesionId: string): string {
+  return RUTA_API.SESION.replace(`:${PARAMETRO_SESION}`, encodeURIComponent(sesionId));
 }
 
 function esEstadoDelModelo(valor: unknown): valor is EstadoModelo {
@@ -114,4 +181,15 @@ export async function obtenerSalud(signal: AbortSignal | null = null): Promise<R
   if (!respuesta.ok) return resultadoDelRechazo(respuesta);
   const valor = await leerJson(respuesta);
   return esSalud(valor) ? { tipo: RESULTADO_API.OK, valor } : SIN_RED;
+}
+
+export async function obtenerSesion(
+  sesionId: string,
+  signal: AbortSignal | null = null,
+): Promise<ResultadoApi<VistaSesionUi>> {
+  const respuesta = await pedir(rutaDeSesion(sesionId), { signal });
+  if (respuesta === null) return SIN_RED;
+  if (!respuesta.ok) return resultadoDelRechazo(respuesta);
+  const valor = await leerJson(respuesta);
+  return esVistaSesion(valor) ? { tipo: RESULTADO_API.OK, valor } : SIN_RED;
 }

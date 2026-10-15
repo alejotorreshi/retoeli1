@@ -1,5 +1,6 @@
 import type {
   ACCION_UI,
+  AVISO_SESION,
   ESTADO_ACCESO,
   ESTADO_ETAPA,
   ESTADO_FIRMA,
@@ -15,6 +16,7 @@ import type {
   ConfigResponse,
   ErrorResponse,
   HealthResponse,
+  SessionViewResponse,
   SseEvent,
 } from "@/http/types/api.type.ts";
 
@@ -153,6 +155,13 @@ export type ResultadoApi<T> =
 
 export type ResultadoFallido = Exclude<ResultadoApi<never>, { readonly tipo: typeof RESULTADO_API.OK }>;
 
+export type TipoAvisoSesion = ValorDe<typeof AVISO_SESION>;
+
+export type AvisoDeSesion = {
+  readonly tipo: TipoAvisoSesion;
+  readonly mensaje: string;
+};
+
 export type EstadoConversacion = {
   readonly sesionId: string | null;
   readonly turnos: readonly TurnoConversacion[];
@@ -161,6 +170,22 @@ export type EstadoConversacion = {
   readonly acceso: EstadoAcceso;
   readonly config: ConfigResponse | null;
   readonly borrador: string;
+  readonly hidratando: boolean;
+  readonly avisoSesion: AvisoDeSesion | null;
+};
+
+export type VistaSesionUi = SessionViewResponse;
+
+export type TurnoVistaUi = VistaSesionUi["turnos"][number];
+
+export type HerramientaVistaUi = TurnoVistaUi["herramientas"][number];
+
+export type PendienteVistaUi = VistaSesionUi["pendientes"][number];
+
+export type EstadoHidratado = {
+  readonly sesionId: string;
+  readonly turnos: readonly TurnoConversacion[];
+  readonly tarjetasConfirmacion: readonly TarjetaDeConfirmacion[];
 };
 
 export type AccionEnviar = {
@@ -208,6 +233,16 @@ export type AccionAceptado = {
   readonly mensaje: string;
 };
 
+export type AccionHidratar = {
+  readonly tipo: typeof ACCION_UI.HIDRATAR;
+  readonly hidratado: EstadoHidratado;
+};
+
+export type AccionSesionNoCargada = {
+  readonly tipo: typeof ACCION_UI.SESION_NO_CARGADA;
+  readonly mensaje: string;
+};
+
 export type AccionUi =
   | AccionEnviar
   | AccionEvento
@@ -217,7 +252,9 @@ export type AccionUi =
   | AccionConfigRecibida
   | AccionAccesoPedido
   | AccionCambiarBorrador
-  | AccionAceptado;
+  | AccionAceptado
+  | AccionHidratar
+  | AccionSesionNoCargada;
 
 export type Despachar = (accion: AccionUi) => void;
 
@@ -229,6 +266,7 @@ export type ControlChat = {
   readonly enviarTexto: (mensaje: string) => void;
   readonly responderConfirmacion: (accion: AccionDeTarjeta) => void;
   readonly recibirConfig: (resultado: ResultadoApi<ConfigResponse>) => void;
+  readonly recibirSesion: (resultado: ResultadoApi<VistaSesionUi>) => void;
 };
 
 export type EstadoModelo = HealthResponse["llm"];

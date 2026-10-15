@@ -51,7 +51,7 @@ const turnoCompleto: readonly AccionUi[] = [
 ];
 
 describe("reducirConversacion", () => {
-  test("el estado inicial no tiene sesión, turnos, turno en curso ni config, y verifica el acceso", () => {
+  test("el estado inicial no tiene sesión, turnos, turno en curso, config ni carga pendiente, y verifica el acceso", () => {
     expect(estadoInicialConversacion).toEqual({
       sesionId: null,
       turnos: [],
@@ -60,6 +60,8 @@ describe("reducirConversacion", () => {
       acceso: { tipo: ESTADO_ACCESO.VERIFICANDO },
       config: null,
       borrador: "",
+      hidratando: false,
+      avisoSesion: null,
     });
   });
 

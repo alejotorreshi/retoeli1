@@ -17,7 +17,16 @@ export const ACCION_UI = {
   ACCESO_PEDIDO: "acceso_pedido",
   CAMBIAR_BORRADOR: "cambiar_borrador",
   ACEPTADO: "aceptado",
+  HIDRATAR: "hidratar",
+  SESION_NO_CARGADA: "sesion_no_cargada",
 } as const;
+
+export const AVISO_SESION = {
+  EXPIRADA: "expirada",
+  NO_CARGADA: "no_cargada",
+} as const;
+
+export const CLAVE_SESION_LOCAL = "registro-proveedor.sesion-id";
 
 export const ESTADO_ACCESO = {
   VERIFICANDO: "verificando",

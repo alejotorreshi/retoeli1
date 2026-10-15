@@ -1,22 +1,40 @@
 import { enviarMensaje } from "@web/api/flujo-chat.ts";
+import { guardarSesionId, leerSesionGuardada } from "@web/api/sesion-local.ts";
 import { ACCION_UI } from "@web/config/constants/ui.constants.ts";
 import { TEXTO_CONFIRMACION } from "@web/config/strings.ts";
 import { hayTarjetaAbierta } from "@web/state/confirmaciones.ts";
 import {
   accionDeConfig,
   esFalloDeTurno,
-  estadoInicialConversacion,
+  estadoAlCargar,
   reducirConversacion,
+  sesionDelEvento,
 } from "@web/state/conversacion.ts";
-import type { AccionDeTarjeta, ControlChat, Despachar, ResultadoApi } from "@web/types/chat.type.ts";
+import { accionDeSesion } from "@web/state/hidratacion.ts";
+import type {
+  AccionDeTarjeta,
+  ControlChat,
+  Despachar,
+  EstadoConversacion,
+  ResultadoApi,
+  VistaSesionUi,
+} from "@web/types/chat.type.ts";
 import { useCallback, useReducer, useRef } from "react";
 import type { ConfigResponse } from "@/http/types/api.type.ts";
 
+function estadoConSesionGuardada(): EstadoConversacion {
+  return estadoAlCargar(leerSesionGuardada());
+}
+
 export function useChat(alFallarTurno: () => void): ControlChat {
-  const [estado, despachar] = useReducer(reducirConversacion, estadoInicialConversacion);
+  const [estado, despachar] = useReducer(reducirConversacion, null, estadoConSesionGuardada);
   const turnoActivo = useRef<AbortController | null>(null);
   const recibirConfig = useCallback(
     (resultado: ResultadoApi<ConfigResponse>) => despachar(accionDeConfig(resultado)),
+    [],
+  );
+  const recibirSesion = useCallback(
+    (resultado: ResultadoApi<VistaSesionUi>) => despachar(accionDeSesion(resultado)),
     [],
   );
 
@@ -26,12 +44,14 @@ export function useChat(alFallarTurno: () => void): ControlChat {
 
   function iniciarTurno(texto: string, accion: AccionDeTarjeta | null): void {
     const mensaje = texto.trim();
-    if (mensaje.length === 0 || estado.enCurso || turnoActivo.current !== null) return;
+    if (mensaje.length === 0 || estado.enCurso || estado.hidratando || turnoActivo.current !== null) return;
     const controlador = new AbortController();
     turnoActivo.current = controlador;
     let turnoFallido = false;
     const despacharDelTurno: Despachar = (accionUi) => {
       if (esFalloDeTurno(accionUi)) turnoFallido = true;
+      const sesionId = sesionDelEvento(accionUi);
+      if (sesionId !== null) guardarSesionId(sesionId);
       despachar(accionUi);
     };
     const pedido = { sessionId: estado.sesionId, message: mensaje };
@@ -69,5 +89,6 @@ export function useChat(alFallarTurno: () => void): ControlChat {
     enviarTexto,
     responderConfirmacion,
     recibirConfig,
+    recibirSesion,
   };
 }

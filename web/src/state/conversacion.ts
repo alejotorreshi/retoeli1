@@ -1,5 +1,6 @@
 import {
   ACCION_UI,
+  AVISO_SESION,
   ESTADO_ACCESO,
   ESTADO_HERRAMIENTA,
   MAXIMO_TARJETAS_ABIERTAS,
@@ -20,6 +21,7 @@ import type {
   ConfirmacionDelTurno,
   ErrorVisible,
   EstadoConversacion,
+  EstadoHidratado,
   EventoConfirmacionUi,
   EventoFinHerramientaUi,
   EventoInicioHerramientaUi,
@@ -42,7 +44,21 @@ export const estadoInicialConversacion: EstadoConversacion = {
   acceso: { tipo: ESTADO_ACCESO.VERIFICANDO },
   config: null,
   borrador: "",
+  hidratando: false,
+  avisoSesion: null,
 };
+
+export function estadoAlCargar(sesionGuardada: string | null): EstadoConversacion {
+  return sesionGuardada === null
+    ? estadoInicialConversacion
+    : { ...estadoInicialConversacion, sesionId: sesionGuardada, hidratando: true };
+}
+
+export function sesionDelEvento(accion: AccionUi): string | null {
+  return accion.tipo === ACCION_UI.EVENTO && accion.evento.tipo === TIPO_EVENTO.INICIO_TURNO
+    ? accion.evento.sesionId
+    : null;
+}
 
 export function accionDeConfig(resultado: ResultadoApi<ConfigResponse>): AccionUi {
   switch (resultado.tipo) {
@@ -181,6 +197,14 @@ function contarEvento(estado: EstadoConversacion): EstadoConversacion {
   return conUltimoTurno(estado, (turno) => ({ ...turno, eventos: turno.eventos + 1 }));
 }
 
+function hidratar(estado: EstadoConversacion, hidratado: EstadoHidratado): EstadoConversacion {
+  return { ...estado, ...hidratado, enCurso: false, hidratando: false, avisoSesion: null };
+}
+
+function sesionNoCargada(estado: EstadoConversacion, mensaje: string): EstadoConversacion {
+  return { ...estado, hidratando: false, avisoSesion: { tipo: AVISO_SESION.NO_CARGADA, mensaje } };
+}
+
 function aplicarEvento(estado: EstadoConversacion, evento: SseEvent): EstadoConversacion {
   switch (evento.tipo) {
     case TIPO_EVENTO.INICIO_TURNO:
@@ -241,6 +265,10 @@ export function reducirConversacion(estado: EstadoConversacion, accion: AccionUi
       return { ...estado, borrador: accion.borrador };
     case ACCION_UI.ACEPTADO:
       return vaciarBorradorEnviado(estado, accion.mensaje);
+    case ACCION_UI.HIDRATAR:
+      return hidratar(estado, accion.hidratado);
+    case ACCION_UI.SESION_NO_CARGADA:
+      return sesionNoCargada(estado, accion.mensaje);
     default:
       return estado;
   }

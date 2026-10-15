@@ -62,6 +62,7 @@ export const TEXTO_CHAT = {
   vacioCuerpo:
     'Pide un caso por su nombre, por ejemplo "procesa el caso co-industrias-delta", o usa una acción rápida. El agente lee la solicitud, mapea cada campo contra el maestro, genera el formulario y arma el paquete para firma. No registra ningún envío sin tu confirmación.',
   pensando: "Pensando…",
+  cargandoConversacion: "Cargando la conversación…",
   pensandoEn: (gerundio: string, caso: string | null) =>
     caso === null ? `${gerundio}…` : `${gerundio} ${SEPARADOR} ${caso}…`,
   despertando: "El servidor puede estar despertando; la primera respuesta tarda hasta un minuto.",

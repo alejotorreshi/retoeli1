@@ -1,4 +1,4 @@
-import { obtenerConfig } from "@web/api/cliente-api.ts";
+import { obtenerConfig, obtenerSesion } from "@web/api/cliente-api.ts";
 import { AccionesRapidas } from "@web/components/acciones-rapidas.tsx";
 import { AvisoModelo } from "@web/components/aviso-modelo.tsx";
 import { Compositor } from "@web/components/compositor.tsx";
@@ -111,8 +111,16 @@ function atributosDeVista(
 
 export function App() {
   const { salud, refrescar } = useSalud();
-  const { estado, borrador, cambiarBorrador, enviar, enviarTexto, responderConfirmacion, recibirConfig } =
-    useChat(refrescar);
+  const {
+    estado,
+    borrador,
+    cambiarBorrador,
+    enviar,
+    enviarTexto,
+    responderConfirmacion,
+    recibirConfig,
+    recibirSesion,
+  } = useChat(refrescar);
   const diseno = useDiseno();
   const conPestanas = diseno !== DISENO.ANCHO;
   const progresos = progresoPorCaso(estado);
@@ -130,6 +138,18 @@ export function App() {
     });
     return () => controlador.abort();
   }, [recibirConfig]);
+
+  const accesoConcedido = estado.acceso.tipo === ESTADO_ACCESO.CONCEDIDO;
+  const sesionPorCargar = estado.hidratando ? estado.sesionId : null;
+
+  useEffect(() => {
+    if (!accesoConcedido || sesionPorCargar === null) return;
+    const controlador = new AbortController();
+    void obtenerSesion(sesionPorCargar, controlador.signal).then((resultado) => {
+      if (!controlador.signal.aborted) recibirSesion(resultado);
+    });
+    return () => controlador.abort();
+  }, [accesoConcedido, sesionPorCargar, recibirSesion]);
 
   async function alEntrar(): Promise<void> {
     recibirConfig(await obtenerConfig());
@@ -165,6 +185,8 @@ export function App() {
           <main className={CLASE_GLOBAL.CHAT}>
             <LineaDeTiempo
               turnos={estado.turnos}
+              cargando={estado.hidratando}
+              aviso={estado.avisoSesion}
               enCurso={estado.enCurso}
               tarjetasConfirmacion={estado.tarjetasConfirmacion}
               alResponderConfirmacion={responderConfirmacion}
@@ -193,6 +215,7 @@ export function App() {
               valor={borrador}
               maximo={estado.config?.mensajeMaximo ?? null}
               enCurso={estado.enCurso}
+              bloqueado={estado.hidratando}
               alCambiar={cambiarBorrador}
               alEnviar={enviar}
             />

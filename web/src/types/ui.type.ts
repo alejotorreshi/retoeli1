@@ -1,6 +1,7 @@
 import type { DISENO, PESTANA, TAMANO_ICONO, TONO } from "@web/config/constants/ui.constants.ts";
 import type {
   AccionDeTarjeta,
+  AvisoDeSesion,
   EstadoEtapa,
   EstadoHerramienta,
   EstadoModelo,
@@ -34,11 +35,26 @@ export type PropsAviso = {
 
 export type PropsLineaDeTiempo = {
   readonly turnos: readonly TurnoConversacion[];
+  readonly cargando: boolean;
+  readonly aviso: AvisoDeSesion | null;
   readonly enCurso: boolean;
   readonly tarjetasConfirmacion: readonly TarjetaDeConfirmacion[];
   readonly alResponderConfirmacion: (accion: AccionDeTarjeta) => void;
   readonly acciones: ReactNode;
   readonly children?: ReactNode;
+};
+
+export type PropsAvisoInicial = {
+  readonly aviso: AvisoDeSesion;
+};
+
+export type PropsCuerpoLinea = {
+  readonly turnos: readonly TurnoConversacion[];
+  readonly cargando: boolean;
+  readonly enCurso: boolean;
+  readonly tarjetasConfirmacion: readonly TarjetaDeConfirmacion[];
+  readonly alResponderConfirmacion: (accion: AccionDeTarjeta) => void;
+  readonly acciones: ReactNode;
 };
 
 export type PropsEstadoVacio = {
@@ -107,6 +123,7 @@ export type PropsCompositor = {
   readonly valor: string;
   readonly maximo: number | null;
   readonly enCurso: boolean;
+  readonly bloqueado: boolean;
   readonly alCambiar: (valor: string) => void;
   readonly alEnviar: () => void;
 };
