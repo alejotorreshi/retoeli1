@@ -281,6 +281,7 @@ export const EVENTO_COMPUERTA = {
   BLOQUEADO: "bloqueado",
   ENVIADO: "enviado",
   FALLIDO: "fallido",
+  TRUNCADO: "truncado",
 } as const;
 
 export const DESENLACE_ENVIO = {

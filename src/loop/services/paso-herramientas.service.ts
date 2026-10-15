@@ -1,6 +1,7 @@
 import { CODIGO_AGENTE, TIPO_EVENTO } from "@/config/constants/agent.constants.ts";
+import { EVENTO_COMPUERTA } from "@/config/constants/confirmation.constants.ts";
 import { ARGUMENTOS_VACIOS, FIN_LLM, ROL_MENSAJE } from "@/config/constants/llm.constants.ts";
-import { HERRAMIENTA_POR_NOMBRE_VISIBLE } from "@/config/constants/tools.constants.ts";
+import { HERRAMIENTA, HERRAMIENTA_POR_NOMBRE_VISIBLE } from "@/config/constants/tools.constants.ts";
 import { MENSAJE_AGENTE } from "@/config/strings.ts";
 import { redactar } from "@/domain/policies/redaccion.policy.ts";
 import type { LlamadaResumida } from "@/domain/types/cierre-turno.type.ts";
@@ -31,7 +32,18 @@ function asistenteDelPaso(respuesta: RespuestaLlm): MensajeAsistente {
   };
 }
 
-function pasoTruncado(respuesta: RespuestaLlm): readonly Mensaje[] {
+function esSimularEnvio(llamada: LlamadaHerramienta): boolean {
+  return HERRAMIENTA_POR_NOMBRE_VISIBLE.get(llamada.nombre) === HERRAMIENTA.SIMULAR_ENVIO;
+}
+
+function anotarEnviosTruncados(turno: Turno, llamadas: readonly LlamadaHerramienta[]): void {
+  for (const llamada of llamadas.filter(esSimularEnvio)) {
+    turno.eventosCompuerta.push({ tipo: EVENTO_COMPUERTA.TRUNCADO, caso: casoDeLlamada(llamada) });
+  }
+}
+
+function pasoTruncado(turno: Turno, respuesta: RespuestaLlm): readonly Mensaje[] {
+  anotarEnviosTruncados(turno, respuesta.llamadas);
   const codigo = CODIGO_AGENTE.ARGUMENTOS_TRUNCADOS;
   const contenido = JSON.stringify(cuerpoDeFallo({ codigo, error: MENSAJE_AGENTE[codigo] }, null));
   const llamadas = respuesta.llamadas.map((llamada) => ({ ...llamada, argumentos: ARGUMENTOS_VACIOS }));
@@ -91,6 +103,6 @@ async function* ejecutarPaso(turno: Turno, respuesta: RespuestaLlm): Ejecucion<r
 }
 
 export async function* darPaso(turno: Turno, respuesta: RespuestaLlm): Ejecucion<readonly Mensaje[] | null> {
-  if (respuesta.fin === FIN_LLM.LIMITE) return pasoTruncado(respuesta);
+  if (respuesta.fin === FIN_LLM.LIMITE) return pasoTruncado(turno, respuesta);
   return yield* ejecutarPaso(turno, respuesta);
 }

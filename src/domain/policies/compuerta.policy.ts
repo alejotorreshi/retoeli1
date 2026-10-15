@@ -108,6 +108,9 @@ function aplicarEvento(
     case EVENTO_COMPUERTA.BLOQUEADO:
     case EVENTO_COMPUERTA.FALLIDO:
       reabrirConocido(pendientes, enviados, evento.caso, conocidos);
+      return;
+    case EVENTO_COMPUERTA.TRUNCADO:
+      if (evento.caso !== null) reabrirConocido(pendientes, enviados, evento.caso, conocidos);
   }
 }
 
@@ -129,6 +132,17 @@ export function cerrarTurno(entrada: EntradaCierreCompuerta): EstadoCompuerta {
   return estadoCon([...pendientes.values()]);
 }
 
+function desenlaceDeBloqueo(
+  pendientes: ReadonlyMap<string, CasoPendiente>,
+  enviados: ReadonlySet<string>,
+  caso: string,
+  conocidos: PaquetesConocidos,
+): DesenlaceEnvio {
+  if (enviados.has(caso)) return { tipo: DESENLACE_ENVIO.YA_ENVIADO, caso };
+  if (conocido(caso, conocidos, pendientes) === undefined) return { tipo: DESENLACE_ENVIO.SIN_PAQUETE, caso };
+  return { tipo: DESENLACE_ENVIO.REQUIERE_CONFIRMACION, caso };
+}
+
 function desenlaceDeEvento(
   pendientes: ReadonlyMap<string, CasoPendiente>,
   enviados: ReadonlySet<string>,
@@ -142,11 +156,10 @@ function desenlaceDeEvento(
     case EVENTO_COMPUERTA.FALLIDO:
       return { tipo: DESENLACE_ENVIO.FALLIDO, caso: evento.caso };
     case EVENTO_COMPUERTA.BLOQUEADO:
-      if (enviados.has(evento.caso)) return { tipo: DESENLACE_ENVIO.YA_ENVIADO, caso: evento.caso };
-      if (conocido(evento.caso, conocidos, pendientes) === undefined) {
-        return { tipo: DESENLACE_ENVIO.SIN_PAQUETE, caso: evento.caso };
-      }
-      return { tipo: DESENLACE_ENVIO.REQUIERE_CONFIRMACION, caso: evento.caso };
+      return desenlaceDeBloqueo(pendientes, enviados, evento.caso, conocidos);
+    case EVENTO_COMPUERTA.TRUNCADO:
+      if (evento.caso === null) return null;
+      return desenlaceDeBloqueo(pendientes, enviados, evento.caso, conocidos);
   }
 }
 
@@ -162,10 +175,19 @@ function desenlacesDeCasos(entrada: EntradaCierreCompuerta): readonly DesenlaceE
   return desenlaces;
 }
 
+function truncadoSinCaso(evento: EventoCompuerta): boolean {
+  return evento.tipo === EVENTO_COMPUERTA.TRUNCADO && evento.caso === null;
+}
+
+function hayEnvioSinCaso(entrada: EntradaDesenlaces): boolean {
+  return entrada.enviosSinCaso > 0 || entrada.eventos.some(truncadoSinCaso);
+}
+
 export function desenlacesDeEnvio(entrada: EntradaDesenlaces): readonly DesenlaceEnvio[] {
   if (entrada.abortado) return [];
-  const sinCaso: readonly DesenlaceEnvio[] =
-    entrada.enviosSinCaso > 0 ? [{ tipo: DESENLACE_ENVIO.SIN_CASO, caso: null }] : [];
+  const sinCaso: readonly DesenlaceEnvio[] = hayEnvioSinCaso(entrada)
+    ? [{ tipo: DESENLACE_ENVIO.SIN_CASO, caso: null }]
+    : [];
   return [...desenlacesDeCasos(entrada), ...sinCaso];
 }
 
