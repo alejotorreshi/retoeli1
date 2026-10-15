@@ -332,20 +332,6 @@ function aplicarEvento(estado: EstadoConversacion, evento: SseEvent): EstadoConv
   }
 }
 
-export function esFalloDeTurno(accion: AccionUi): boolean {
-  switch (accion.tipo) {
-    case ACCION_UI.EVENTO:
-      return accion.evento.tipo === TIPO_EVENTO.ERROR;
-    case ACCION_UI.ERROR_HTTP:
-      return accion.status !== RESPUESTA_HTTP.NO_AUTORIZADO;
-    case ACCION_UI.ERROR_RED:
-    case ACCION_UI.FIN_STREAM:
-      return true;
-    default:
-      return false;
-  }
-}
-
 export function reducirConversacion(estado: EstadoConversacion, accion: AccionUi): EstadoConversacion {
   switch (accion.tipo) {
     case ACCION_UI.ENVIAR:

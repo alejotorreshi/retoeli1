@@ -11,7 +11,6 @@ import { TEXTO_ERROR } from "@web/config/strings.ts";
 import {
   accionDeConfig,
   configResuelta,
-  esFalloDeTurno,
   estadoInicialConversacion,
   faltaConfig,
   reducirConversacion,
@@ -527,10 +526,6 @@ describe("Detener respuesta y Recargar conversación", () => {
     const enCurso = aplicar(estadoInicialConversacion, turnoCompleto.slice(0, 2));
     expect(reducirConversacion(enCurso, { tipo: ACCION_UI.RECARGAR })).toBe(enCurso);
   });
-
-  test("detener no cuenta como falla del turno", () => {
-    expect(esFalloDeTurno({ tipo: ACCION_UI.DETENER })).toBe(false);
-  });
 });
 
 const EXPIRADA = "La sesión anterior expiró; empezamos de cero.";
@@ -620,47 +615,5 @@ describe("sesión expirada, presupuesto agotado, uso y Nueva sesión (UI-08)", (
     const estado = { ...conTarjetaAbierta, tokensSesion: 12_999 };
     expect(usoDeSesion(estado)).toEqual({ usados: 12, tope: CONFIG.presupuestoSesion / 1000 });
     expect(usoDeSesion({ ...estado, config: null })).toBeNull();
-  });
-});
-
-describe("esFalloDeTurno", () => {
-  const errorDelAgente = evento({
-    tipo: TIPO_EVENTO.ERROR,
-    turnoId: TURNO,
-    codigo: CODIGO_AGENTE.PROVEEDOR_TIMEOUT,
-    mensaje: MENSAJE_ERROR_AGENTE,
-  });
-
-  test("el evento error marca el turno como fallido para refrescar health al cerrarlo", () => {
-    expect(esFalloDeTurno(errorDelAgente)).toBe(true);
-  });
-
-  test("un turno sin error no pide refrescar health", () => {
-    expect(turnoCompleto.some(esFalloDeTurno)).toBe(false);
-    expect(esFalloDeTurno({ tipo: ACCION_UI.ACEPTADO, mensaje: MENSAJE })).toBe(false);
-  });
-
-  test("los rechazos HTTP 413, 429 y 503 marcan el turno como fallido", () => {
-    const rechazos = [
-      RESPUESTA_HTTP.CUERPO_DEMASIADO_GRANDE,
-      RESPUESTA_HTTP.DEMASIADOS_PEDIDOS,
-      RESPUESTA_HTTP.NO_DISPONIBLE,
-    ].map((status): AccionUi => ({ tipo: ACCION_UI.ERROR_HTTP, status, mensaje: TOPE_DIARIO }));
-    expect(rechazos.map(esFalloDeTurno)).toEqual([true, true, true]);
-  });
-
-  test("la red caída y el stream cortado marcan el turno como fallido", () => {
-    expect(esFalloDeTurno({ tipo: ACCION_UI.ERROR_RED })).toBe(true);
-    expect(esFalloDeTurno({ tipo: ACCION_UI.FIN_STREAM })).toBe(true);
-  });
-
-  test("un 401 pide el acceso y no cuenta como falla del modelo", () => {
-    expect(
-      esFalloDeTurno({
-        tipo: ACCION_UI.ERROR_HTTP,
-        status: RESPUESTA_HTTP.NO_AUTORIZADO,
-        mensaje: ACCESO_VENCIDO,
-      }),
-    ).toBe(false);
   });
 });
