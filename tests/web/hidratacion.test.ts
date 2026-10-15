@@ -31,6 +31,7 @@ import { ACCION, MOTIVO_FIN, TIPO_EVENTO } from "@/config/constants/agent.consta
 import { TIPO_ACCION } from "@/config/constants/confirmation.constants.ts";
 import { CODIGO_ERROR } from "@/config/constants/errors.constants.ts";
 import { FORMATO } from "@/config/constants/forms.constants.ts";
+import { RESPUESTA_HTTP } from "@/config/constants/http.constants.ts";
 import { HERRAMIENTA, NOMBRE_VISIBLE } from "@/config/constants/tools.constants.ts";
 import type { SseEvent } from "@/http/types/api.type.ts";
 
@@ -55,7 +56,8 @@ const HN = "hn-agroexport-sula";
 const VENCIDO = "Certificado bancario vencido";
 const SIN_FIRMA = "Falta la firma del representante legal";
 const BLOQUEOS: Readonly<Record<string, readonly string[]>> = { [EC]: [VENCIDO], [HN]: [SIN_FIRMA] };
-const { ABIERTA, CANCELADA } = ESTADO_TARJETA_CONFIRMACION;
+const EXPIRADA = "La sesión anterior expiró; empezamos de cero.";
+const { ABIERTA, REGISTRADA, CANCELADA } = ESTADO_TARJETA_CONFIRMACION;
 
 function resultado(herramienta: LlamadaGuion["herramienta"], caso: string): ResultadoVisibleUi {
   const vacio: ResultadoVisibleUi = {
@@ -391,5 +393,73 @@ describe("HIDRATAR y la carga inicial", () => {
   test("solo turn_start entrega el id que se guarda en el navegador", () => {
     const inicio = accionesEnVivo(DEMO[0] ?? { mensaje: "", llamadas: [], texto: "", pendientes: [] }, 0);
     expect(inicio.map(sesionDelEvento).filter((id) => id !== null)).toEqual([SESION]);
+  });
+});
+
+describe("tarjetas resueltas y sesión vencida al recargar", () => {
+  test("un caso enviado vuelve como Envío registrado, sin botones, en el turno donde se pidió", () => {
+    const { tarjetasConfirmacion } = estadoDesdeVista(vistaDe(DOS_CASOS_Y_UN_ENVIO, [EC]));
+    const ec = tarjetasConfirmacion.find((tarjeta) => tarjeta.caso === EC);
+    expect(ec).toEqual({
+      clave: 0,
+      caso: EC,
+      turno: 0,
+      bloqueosLegibles: [VENCIDO],
+      estado: REGISTRADA,
+      resueltaEnTurno: 1,
+      enviando: null,
+    });
+    expect(TEXTO_CONFIRMACION.desenlace(ec?.estado ?? ABIERTA)).toBe("Envío registrado");
+  });
+
+  test("el caso que sigue pendiente junto al enviado vuelve abierto con sus botones", () => {
+    const { tarjetasConfirmacion } = estadoDesdeVista(vistaDe(DOS_CASOS_Y_UN_ENVIO, [EC]));
+    expect(
+      tarjetasConfirmacion.filter((tarjeta) => tarjeta.estado === ABIERTA).map(({ caso }) => caso),
+    ).toEqual([HN]);
+  });
+
+  test("una vista sin pendientes no deja ninguna tarjeta abierta", () => {
+    const guion: readonly TurnoGuion[] = [
+      { mensaje: "¿Qué casos hay?", llamadas: [], texto: "Hay cinco casos.", pendientes: [] },
+    ];
+    expect(estadoDesdeVista(vistaDe(guion)).tarjetasConfirmacion).toEqual([]);
+  });
+
+  test("un paquete que el servidor ya no tiene pendiente no vuelve abierto aunque no haya rastro del rechazo", () => {
+    const guion: readonly TurnoGuion[] = [
+      ...DEMO,
+      { mensaje: "no, mejor no", llamadas: [], texto: "Entendido, no envío nada.", pendientes: [] },
+    ];
+    const { tarjetasConfirmacion } = estadoDesdeVista(vistaDe(guion));
+    expect(tarjetasConfirmacion.some((tarjeta) => tarjeta.estado === ABIERTA)).toBe(false);
+  });
+
+  test("un 404 al cargar deja el aviso del servidor al inicio y olvida el id: el próximo mensaje abre sesión nueva", () => {
+    const despues = reducirConversacion(
+      estadoAlCargar(SESION),
+      accionDeSesion({
+        tipo: RESULTADO_API.RECHAZO,
+        status: RESPUESTA_HTTP.NO_ENCONTRADO,
+        mensaje: EXPIRADA,
+      }),
+    );
+    expect(despues.avisoSesion).toEqual({ tipo: AVISO_SESION.EXPIRADA, mensaje: EXPIRADA });
+    expect(despues.sesionId).toBeNull();
+    expect(despues.hidratando).toBe(false);
+    expect(despues.turnos).toEqual([]);
+  });
+
+  test("otro rechazo al cargar avisa el error sin olvidar el id", () => {
+    const despues = reducirConversacion(
+      estadoAlCargar(SESION),
+      accionDeSesion({
+        tipo: RESULTADO_API.RECHAZO,
+        status: RESPUESTA_HTTP.ERROR_INTERNO,
+        mensaje: "Falló.",
+      }),
+    );
+    expect(despues.avisoSesion).toEqual({ tipo: AVISO_SESION.NO_CARGADA, mensaje: "Falló." });
+    expect(despues.sesionId).toBe(SESION);
   });
 });
