@@ -11,6 +11,7 @@ import { firmaDelProgreso, progresoPorCaso } from "@web/state/casos.ts";
 import { estadoInicialConversacion, reducirConversacion } from "@web/state/conversacion.ts";
 import type { AccionUi, EstadoConversacion, EstadoEtapa, ProgresoDeCaso } from "@web/types/chat.type.ts";
 import { ACCION, MOTIVO_FIN, TIPO_EVENTO } from "@/config/constants/agent.constants.ts";
+import { TIPO_ACCION } from "@/config/constants/confirmation.constants.ts";
 import { CODIGO_ERROR } from "@/config/constants/errors.constants.ts";
 import { HERRAMIENTA, NOMBRE_VISIBLE, ORDEN_FLUJO_HERRAMIENTAS } from "@/config/constants/tools.constants.ts";
 import type { SseEvent } from "@/http/types/api.type.ts";
@@ -122,7 +123,24 @@ function estadosDe(acciones: readonly AccionUi[], caso: string): readonly Estado
   return delCaso === undefined ? [] : delCaso.etapas.map((etapa) => etapa.estado);
 }
 
-const { PENDIENTE, EN_CURSO, HECHA, ERROR, ESPERANDO } = ESTADO_ETAPA;
+const { PENDIENTE, EN_CURSO, HECHA, ERROR, ESPERANDO, CANCELADA } = ESTADO_ETAPA;
+
+function cancelar(caso: string): readonly AccionUi[] {
+  return [
+    {
+      tipo: ACCION_UI.ENVIAR,
+      mensaje: `Cancela el envío de ${caso}`,
+      accion: { tipo: TIPO_ACCION.CANCELAR, caso },
+    },
+    evento({
+      tipo: TIPO_EVENTO.INICIO_TURNO,
+      sesionId: SESION,
+      turnoId: TURNO,
+      sesionNueva: false,
+      sesionExpirada: false,
+    }),
+  ];
+}
 
 describe("las seis etapas del progreso por caso (UI-08)", () => {
   test("el orden de las etapas sigue el flujo de las herramientas y deja la confirmación antes del envío", () => {
@@ -276,6 +294,65 @@ describe("las seis etapas del progreso por caso (UI-08)", () => {
       resultado: null,
     });
     expect(progreso([...turno("¿Qué casos hay disponibles?"), sinCaso, finDeTurno])).toEqual([]);
+  });
+});
+
+describe("la etapa 5 sigue a la tarjeta de confirmación (D-69)", () => {
+  const dosPendientes = [
+    ...turno("procesa los casos"),
+    ...flujoHastaPaquete(EC),
+    ...flujoHastaPaquete(CO),
+    confirmacion(EC),
+    confirmacion(CO),
+    finDeTurno,
+  ];
+
+  test("mientras la tarjeta está abierta la etapa 5 espera", () => {
+    expect(estadosDe(dosPendientes, EC)).toEqual([HECHA, HECHA, HECHA, HECHA, ESPERANDO, PENDIENTE]);
+    expect(estadosDe(dosPendientes, CO)).toEqual([HECHA, HECHA, HECHA, HECHA, ESPERANDO, PENDIENTE]);
+  });
+
+  test("Cancelar en co deja su etapa 5 cancelada y la de ec sigue esperando", () => {
+    const acciones = [...dosPendientes, ...cancelar(CO), confirmacion(EC), finDeTurno];
+    expect(estadosDe(acciones, CO)).toEqual([HECHA, HECHA, HECHA, HECHA, CANCELADA, PENDIENTE]);
+    expect(estadosDe(acciones, EC)).toEqual([HECHA, HECHA, HECHA, HECHA, ESPERANDO, PENDIENTE]);
+  });
+
+  test("la cancelación solo se marca al cerrar el turno, nunca por el clic", () => {
+    const enCurso = [...dosPendientes, ...cancelar(CO)];
+    expect(estadosDe(enCurso, CO)).toEqual([HECHA, HECHA, HECHA, HECHA, ESPERANDO, PENDIENTE]);
+  });
+
+  test("la etapa 5 queda hecha cuando la tarjeta registra el envío", () => {
+    const acciones = [
+      ...dosPendientes,
+      ...turno(`Sí, envía ${EC}`),
+      ...llamada(ENVIAR, EC),
+      confirmacion(CO),
+      finDeTurno,
+    ];
+    expect(estadosDe(acciones, EC)).toEqual([HECHA, HECHA, HECHA, HECHA, HECHA, HECHA]);
+    expect(estadosDe(acciones, CO)).toEqual([HECHA, HECHA, HECHA, HECHA, ESPERANDO, PENDIENTE]);
+  });
+
+  test("un paquete nuevo después de cancelar reinicia las etapas 5 y 6 y vuelve a esperar", () => {
+    const acciones = [
+      ...dosPendientes,
+      ...cancelar(CO),
+      confirmacion(EC),
+      finDeTurno,
+      ...turno(`arma de nuevo el paquete de ${CO}`),
+      ...llamada(ARMAR, CO),
+      confirmacion(EC),
+      confirmacion(CO),
+      finDeTurno,
+    ];
+    expect(estadosDe(acciones, CO)).toEqual([HECHA, HECHA, HECHA, HECHA, ESPERANDO, PENDIENTE]);
+  });
+
+  test("la cancelación cuenta como actividad del caso en el panel", () => {
+    const acciones = [...dosPendientes, ...cancelar(EC), confirmacion(CO), finDeTurno];
+    expect(progreso(acciones).map((elemento) => elemento.caso)).toEqual([EC, CO]);
   });
 });
 

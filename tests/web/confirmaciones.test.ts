@@ -98,6 +98,10 @@ function confirmar(caso: string): AccionDeTarjeta {
   return { tipo: TIPO_ACCION.CONFIRMAR, caso };
 }
 
+function cancelarCaso(caso: string): AccionDeTarjeta {
+  return { tipo: TIPO_ACCION.CANCELAR, caso };
+}
+
 function resumen(tarjetas: readonly TarjetaDeConfirmacion[]) {
   return tarjetas.map(({ caso, turno: abiertaEn, estado, enviando }) => ({
     caso,
@@ -321,6 +325,77 @@ describe("el botón de la tarjeta queda 'Enviando…' hasta turn_end (UI-03)", (
     expect(resumen(estado.tarjetasConfirmacion)).toEqual([
       { caso: EC, abiertaEn: 0, estado: ABIERTA, enviando: null },
     ]);
+  });
+});
+
+describe("Cancelar envío termina solo su tarjeta y varias tarjetas conviven (D-69)", () => {
+  const dosPendientes: readonly AccionUi[] = [
+    ...turno("Procesa los 4 casos"),
+    ...llamada(ARMAR, EC),
+    ...llamada(ARMAR, HN),
+    confirmacion(EC),
+    confirmacion(HN, [VENCIDO, SIN_FIRMA]),
+    finDeTurno,
+  ];
+
+  test("dos casos pendientes abren dos tarjetas apiladas en el mismo turno", () => {
+    const estado = aplicar(dosPendientes);
+    expect(resumen(tarjetasDelTurno(estado.tarjetasConfirmacion, 0))).toEqual([
+      { caso: EC, abiertaEn: 0, estado: ABIERTA, enviando: null },
+      { caso: HN, abiertaEn: 0, estado: ABIERTA, enviando: null },
+    ]);
+    expect(anuncioDeEstado(estado)).toBe(
+      `${TEXTO_CHAT.respuestaLista}. Confirmación requerida para ${EC}, ${HN}`,
+    );
+  });
+
+  test("mientras corre el turno del clic solo la tarjeta pulsada queda enviando", () => {
+    const estado = aplicar([...dosPendientes, ...turno(`Cancela el envío de ${HN}`, cancelarCaso(HN))]);
+    expect(resumen(estado.tarjetasConfirmacion)).toEqual([
+      { caso: EC, abiertaEn: 0, estado: ABIERTA, enviando: null },
+      { caso: HN, abiertaEn: 0, estado: ABIERTA, enviando: TIPO_ACCION.CANCELAR },
+    ]);
+    expect(estado.enCurso).toBe(true);
+  });
+
+  test("Cancelar en hn la deja 'Envío cancelado' y ec sigue abierta con sus botones", () => {
+    const estado = aplicar([
+      ...dosPendientes,
+      ...turno(`Cancela el envío de ${HN}`, cancelarCaso(HN)),
+      confirmacion(EC),
+      finDeTurno,
+    ]);
+    expect(resumen(estado.tarjetasConfirmacion)).toEqual([
+      { caso: EC, abiertaEn: 0, estado: ABIERTA, enviando: null },
+      { caso: HN, abiertaEn: 0, estado: CANCELADA, enviando: null },
+    ]);
+    expect(estado.enCurso).toBe(false);
+  });
+
+  test("después de cancelar hn, Confirmar en ec registra su envío y hn no cambia", () => {
+    const estado = aplicar([
+      ...dosPendientes,
+      ...turno(`Cancela el envío de ${HN}`, cancelarCaso(HN)),
+      confirmacion(EC),
+      finDeTurno,
+      ...turno(`Sí, envía ${EC}`, confirmar(EC)),
+      ...llamada(ENVIAR, EC),
+      finDeTurno,
+    ]);
+    expect(resumen(estado.tarjetasConfirmacion)).toEqual([
+      { caso: EC, abiertaEn: 0, estado: REGISTRADA, enviando: null },
+      { caso: HN, abiertaEn: 0, estado: CANCELADA, enviando: null },
+    ]);
+  });
+
+  test("un rechazo por texto, que cancela todo en el servidor, cierra todas las tarjetas", () => {
+    const estado = aplicar([...dosPendientes, ...turno("No, no envíes nada"), finDeTurno]);
+    expect(estado.tarjetasConfirmacion.map((tarjeta) => tarjeta.estado)).toEqual([CANCELADA, CANCELADA]);
+  });
+
+  test("el botón Cancelar manda el texto visible 'Cancela el envío de {caso}'", () => {
+    expect(TEXTO_CONFIRMACION.cancelar).toBe("Cancelar envío");
+    expect(TEXTO_CONFIRMACION.mensaje(cancelarCaso(HN))).toBe(`Cancela el envío de ${HN}`);
   });
 });
 
