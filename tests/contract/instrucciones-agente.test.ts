@@ -97,6 +97,13 @@ describe("contrato de contenido de agent/prompt.md y del conocimiento del proces
     expect(prompt).toContain("out/co-industrias-delta/formulario.xlsx");
   });
 
+  test("el conocimiento lista los casos con leer_solicitud y el caso vacío, sin una sexta herramienta (UI-07, HERR-01)", () => {
+    expect(conocimiento).toContain(
+      `llama a ${NOMBRE_VISIBLE[HERRAMIENTA.LEER_SOLICITUD]} con el caso vacío ("") y muéstrale la lista casos_disponibles`,
+    );
+    expect(herramientas).toHaveLength(5);
+  });
+
   test("el detector de nombres sin prefijo muerde", () => {
     expect(nombresSinPrefijo("usa mapear_campos y luego proveedor_armar_paquete")).toEqual([
       HERRAMIENTA.MAPEAR_CAMPOS,
