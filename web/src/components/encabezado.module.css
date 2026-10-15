@@ -77,6 +77,10 @@
   border-radius: var(--radio-chico);
 }
 
+.texto {
+  min-width: 0;
+}
+
 .punto {
   flex: none;
   width: var(--punto-estado);
@@ -125,7 +129,18 @@
 
 :global([data-diseno="angosto"]) .meta {
   flex-basis: 100%;
+  flex-wrap: nowrap;
   margin-inline-start: 0;
+}
+
+:global([data-diseno="angosto"]) .meta > * {
+  min-width: 0;
+}
+
+:global([data-diseno="angosto"]) .texto {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 :global([data-diseno="angosto"]) .fecha,

@@ -176,6 +176,7 @@ export type PropsCompositor = {
 export type PropsEncabezado = {
   readonly fechaEjecucion: string | null;
   readonly salud: SaludModelo | null;
+  readonly angosto: boolean;
   readonly nuevaSesionDeshabilitada: boolean;
   readonly alNuevaSesion: () => void;
 };
@@ -211,6 +212,7 @@ export type PropsCuerpoAvisoModelo = {
 
 export type PropsEstadoDelModelo = {
   readonly salud: SaludModelo;
+  readonly angosto: boolean;
 };
 
 export type PropsPantallaAcceso = {

@@ -38,13 +38,20 @@ const TITULO_APP = "Registro como proveedor";
 const SUBTITULO_APP = "Periferia IT Group";
 const SEPARADOR = "·";
 const SIN_DATO = "—";
+const PREFIJO_FECHA = "Fecha de ejecución ";
+
+function valorFecha(fecha: string | null): string {
+  return fecha ?? SIN_DATO;
+}
 
 export const TEXTO_APP = {
   titulo: TITULO_APP,
   subtitulo: SUBTITULO_APP,
   separador: SEPARADOR,
   tituloDocumento: `${TITULO_APP} ${SEPARADOR} ${SUBTITULO_APP}`,
-  fechaEjecucion: (fecha: string | null) => `Fecha de ejecución ${fecha ?? SIN_DATO}`,
+  prefijoFecha: PREFIJO_FECHA,
+  valorFecha,
+  fechaEjecucion: (fecha: string | null) => `${PREFIJO_FECHA}${valorFecha(fecha)}`,
   cargando: "Cargando el agente…",
 } as const;
 
@@ -116,6 +123,14 @@ const ETIQUETA_DEL_MODELO = {
   [ESTADO_LLM.TOPE_DIARIO]: "Tope diario",
 } as const satisfies Record<EstadoModelo, string>;
 
+function prefijoDelModelo(modelo: string): string {
+  return `${modelo} ${SEPARADOR} `;
+}
+
+function etiquetaDelModelo(estado: EstadoModelo): string {
+  return ETIQUETA_DEL_MODELO[estado];
+}
+
 const COMPROBAR_MODELO = "Comprobar de nuevo";
 const MIENTRAS_TANTO =
   "Mientras tanto, puedes ver y descargar los archivos ya generados en el panel de casos.";
@@ -153,7 +168,9 @@ const AVISO_DEL_MODELO = {
 } as const satisfies Record<EstadoModeloConAviso, (zona: string | null) => PartesAvisoModelo>;
 
 export const TEXTO_MODELO = {
-  estado: (modelo: string, estado: EstadoModelo) => `${modelo} ${SEPARADOR} ${ETIQUETA_DEL_MODELO[estado]}`,
+  prefijoModelo: prefijoDelModelo,
+  etiqueta: etiquetaDelModelo,
+  estado: (modelo: string, estado: EstadoModelo) => `${prefijoDelModelo(modelo)}${etiquetaDelModelo(estado)}`,
   aviso: (estado: EstadoModeloConAviso, zona: string | null): PartesAvisoModelo =>
     AVISO_DEL_MODELO[estado](zona),
   comprobar: COMPROBAR_MODELO,

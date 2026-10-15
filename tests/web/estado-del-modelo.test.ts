@@ -2,7 +2,7 @@ import { describe, expect, test } from "bun:test";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { TONO, TONO_DEL_MODELO } from "@web/config/constants/ui.constants.ts";
-import { TEXTO_CHAT, TEXTO_CONFIRMACION, TEXTO_MODELO } from "@web/config/strings.ts";
+import { TEXTO_APP, TEXTO_CHAT, TEXTO_CONFIRMACION, TEXTO_MODELO } from "@web/config/strings.ts";
 import { envioEnPausa } from "@web/state/modelo.ts";
 import { CODIGO_AGENTE } from "@/config/constants/agent.constants.ts";
 import { ESTADO_LLM } from "@/config/constants/llm.constants.ts";
@@ -10,6 +10,7 @@ import { MENSAJE_AGENTE } from "@/config/strings.ts";
 
 const MODELO = "deepseek-flash";
 const ZONA = "America/Bogota";
+const FECHA = "2026-09-03";
 const ESTADOS_CON_AVISO = [
   ESTADO_LLM.SIN_CLAVE,
   ESTADO_LLM.SALDO_AGOTADO,
@@ -26,6 +27,24 @@ describe("estado del modelo en el encabezado", () => {
       "deepseek-flash · No disponible",
       "deepseek-flash · Tope diario",
     ]);
+  });
+
+  test("el prefijo del modelo y la etiqueta arman el texto completo de cada estado", () => {
+    for (const estado of Object.values(ESTADO_LLM)) {
+      expect(`${TEXTO_MODELO.prefijoModelo(MODELO)}${TEXTO_MODELO.etiqueta(estado)}`).toBe(
+        TEXTO_MODELO.estado(MODELO, estado),
+      );
+    }
+    expect(TEXTO_MODELO.prefijoModelo(MODELO)).toBe("deepseek-flash · ");
+    expect(TEXTO_MODELO.etiqueta(ESTADO_LLM.DISPONIBLE)).toBe("Disponible");
+  });
+
+  test("el prefijo de la fecha y su valor arman 'Fecha de ejecución {fecha}'", () => {
+    expect(`${TEXTO_APP.prefijoFecha}${TEXTO_APP.valorFecha(FECHA)}`).toBe(TEXTO_APP.fechaEjecucion(FECHA));
+    expect(TEXTO_APP.fechaEjecucion(FECHA)).toBe("Fecha de ejecución 2026-09-03");
+    expect(TEXTO_APP.prefijoFecha).toBe("Fecha de ejecución ");
+    expect(TEXTO_APP.valorFecha(FECHA)).toBe(FECHA);
+    expect(`${TEXTO_APP.prefijoFecha}${TEXTO_APP.valorFecha(null)}`).toBe(TEXTO_APP.fechaEjecucion(null));
   });
 
   test("el color sale del estado: éxito, error para clave y saldo, atención para caída y tope", () => {

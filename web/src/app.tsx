@@ -183,6 +183,7 @@ export function App() {
       <Encabezado
         fechaEjecucion={estado.config?.fechaEjecucion ?? null}
         salud={salud}
+        angosto={diseno === DISENO.ANGOSTO}
         nuevaSesionDeshabilitada={estado.enCurso}
         alNuevaSesion={() => setNuevaSesionAbierta(true)}
       />
