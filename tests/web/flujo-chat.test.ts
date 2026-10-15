@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, spyOn, test } from "bun:test";
-import { enviarMensaje } from "@web/api/flujo-chat.ts";
+import { enviarMensaje, enviarTurno } from "@web/api/flujo-chat.ts";
 import { ACCION_UI } from "@web/config/constants/ui.constants.ts";
 import { TEXTO_ACCESO } from "@web/config/strings.ts";
 import type { AccionUi } from "@web/types/chat.type.ts";
@@ -59,6 +59,25 @@ async function despachosDe(signal: AbortSignal = new AbortController().signal): 
   const acciones: AccionUi[] = [];
   await enviarMensaje(PEDIDO, (accion) => acciones.push(accion), signal);
   return acciones;
+}
+
+const CIERRE = "cierre";
+
+async function bitacoraDelTurno(signal: AbortSignal = new AbortController().signal): Promise<string[]> {
+  const bitacora: string[] = [];
+  await expect(
+    enviarTurno(
+      PEDIDO,
+      (accion) => bitacora.push(accion.tipo),
+      signal,
+      () => bitacora.push(CIERRE),
+    ),
+  ).resolves.toBeUndefined();
+  return bitacora;
+}
+
+function cierres(bitacora: readonly string[]): number {
+  return bitacora.filter((entrada) => entrada === CIERRE).length;
 }
 
 function tipos(acciones: readonly AccionUi[]): string[] {
@@ -159,5 +178,54 @@ describe("enviarMensaje", () => {
     });
     const acciones = await despachosDe(controlador.signal);
     expect(acciones).toEqual([]);
+  });
+});
+
+describe("enviarTurno", () => {
+  test("un turno completo avisa el cierre una vez, después del último despacho", async () => {
+    simularFetch(async () => respuestaSse(marcos([inicio, texto, fin])));
+    const bitacora = await bitacoraDelTurno();
+    expect(cierres(bitacora)).toBe(1);
+    expect(bitacora.at(-1)).toBe(CIERRE);
+    expect(bitacora.length).toBe(5);
+  });
+
+  test("un 429 con mensaje avisa el cierre una vez", async () => {
+    simularFetch(async () =>
+      Response.json({ mensaje: MENSAJE_MUY_LARGO }, { status: RESPUESTA_HTTP.DEMASIADOS_PEDIDOS }),
+    );
+    const bitacora = await bitacoraDelTurno();
+    expect(bitacora).toEqual([ACCION_UI.ERROR_HTTP, CIERRE]);
+  });
+
+  test("un 401 avisa el cierre una vez", async () => {
+    simularFetch(async () => new Response("", { status: RESPUESTA_HTTP.NO_AUTORIZADO }));
+    const bitacora = await bitacoraDelTurno();
+    expect(bitacora).toEqual([ACCION_UI.ERROR_HTTP, CIERRE]);
+  });
+
+  test("la red caída avisa el cierre una vez", async () => {
+    simularFetch(async () => {
+      throw new TypeError("Failed to fetch");
+    });
+    const bitacora = await bitacoraDelTurno();
+    expect(bitacora).toEqual([ACCION_UI.ERROR_RED, CIERRE]);
+  });
+
+  test("un stream que se corta avisa el cierre una vez", async () => {
+    simularFetch(async () => streamQueSeCorta(marcos([inicio])));
+    const bitacora = await bitacoraDelTurno();
+    expect(cierres(bitacora)).toBe(1);
+    expect(bitacora.slice(-2)).toEqual([ACCION_UI.FIN_STREAM, CIERRE]);
+  });
+
+  test("un pedido abortado antes de responder avisa el cierre una vez", async () => {
+    const controlador = new AbortController();
+    controlador.abort();
+    simularFetch(async () => {
+      throw new DOMException("pedido abortado", "AbortError");
+    });
+    const bitacora = await bitacoraDelTurno(controlador.signal);
+    expect(bitacora).toEqual([CIERRE]);
   });
 });
