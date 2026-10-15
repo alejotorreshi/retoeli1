@@ -3,16 +3,16 @@ gsd_state_version: "1.0"
 current_phase: 03
 current_phase_name: Chat web, API SSE y despliegue
 status: executing
-stopped_at: Completed 03-20-PLAN.md
-last_updated: "2026-10-15T03:08:21.515Z"
+stopped_at: Completed 03-21-PLAN.md
+last_updated: "2026-10-15T04:22:45.856Z"
 last_activity: 2026-10-14
 last_activity_desc: Phase 03 execution started
-state_head: 8086b270a0caeb589a328ac01878c05973874e23
+state_head: 5a8960b3f456ef531fc0beedfcd55b1d99a73af1
 progress:
   total_phases: 4
   completed_phases: 2
   total_plans: 66
-  completed_plans: 59
+  completed_plans: 60
   percent: 50
 ---
 
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-10-14)
 ## Current Position
 
 Phase: 03 (Chat web, API SSE y despliegue) — EXECUTING
-Plan: 21 of 27
+Plan: 22 of 27
 Status: Ready to execute
 Last activity: 2026-10-14 — Phase 03 execution started
 
@@ -116,6 +116,7 @@ Progress: [█████░░░░░] 50%
 | Phase 03 P18 | 4min | 2 tasks | 12 files |
 | Phase 03 P19 | 7 min | 2 tasks | 15 files |
 | Phase 03 P20 | 6 min | 2 tasks | 14 files |
+| Phase 03 P21 | 25min | 2 tasks | 19 files |
 
 ## Accumulated Context
 
@@ -272,6 +273,8 @@ Recent decisions affecting current work:
 - [Phase 03]: 03-20: la vista de recarga (GET /api/sessions/:id) se reconstruye desde el historial de mensajes con las mismas proyecciones del stream (resultadoDeContenido, resultadoVisible, casoDeArgumentos); no se guardan eventos
 - [Phase 03]: 03-20: consultarSesion usa solo AlmacenSesiones.leer; un id desconocido, vencido o mal formado (o sin agente) responde 404 con TEXTO_SESION.expirada
 - [Phase 03]: 03-20: OpcionesAgente.ahora lleva el reloj inyectado del servidor al almacén de sesiones (sin inyectar sigue Date.now)
+- [Phase 03]: 03-21: la TarjetaResultado se pliega solo desde el resultado de los tool_end (nunca del texto del modelo); sin armar_paquete dice Paquete sin armar y — en bloqueos y ruta
+- [Phase 03]: 03-21: el listado de casos usa proveedor_leer_solicitud con caso vacío (casos_disponibles); sin sexta herramienta ni cambio de prompt.md
 
 ### Pending Todos
 
@@ -307,6 +310,6 @@ Items acknowledged and deferred at milestone close, most recent first:
 
 ## Session Continuity
 
-Last session: 2026-10-15T03:08:21.432Z
-Stopped at: Completed 03-20-PLAN.md
+Last session: 2026-10-15T04:22:45.700Z
+Stopped at: Completed 03-21-PLAN.md
 Resume file: None
