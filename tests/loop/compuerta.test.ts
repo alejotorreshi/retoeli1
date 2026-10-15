@@ -35,6 +35,8 @@ const EC = "ec-corp-andina";
 const LITERAL = "requiere confirmación explícita";
 const BLOQUEO_EC = "ausente: certificado_cumplimiento_tributario";
 const NOMBRE_BLOQUEO_EC = "Certificado de cumplimiento tributario";
+const BLOQUEO_LEGIBLE_EC = `ausente: ${NOMBRE_BLOQUEO_EC}`;
+const CO = "co-industrias-delta";
 const RECHAZO_LITERAL =
   '{"ok":false,"error":"requiere confirmación explícita","codigo":"CONFIRMACION_REQUERIDA","resumen":"simular_envio: CONFIRMACION_REQUERIDA"}';
 const MENSAJE_TURNO_1 =
@@ -141,7 +143,12 @@ describe("guion PRD §11 de punta a punta con el LLM falso (ENV-02, ENV-03, CA3)
     expect(bloqueadas).toHaveLength(1);
     expect(bloqueadas[0]).toMatchObject({ ok: false, codigo: CODIGO_ERROR.CONFIRMACION_REQUERIDA, caso: EC });
     expect(confirmaciones(turno1)).toEqual([
-      expect.objectContaining({ caso: EC, accion: ACCION.ENVIO, bloqueos: [BLOQUEO_EC] }),
+      expect.objectContaining({
+        caso: EC,
+        accion: ACCION.ENVIO,
+        bloqueos: [BLOQUEO_EC],
+        bloqueosLegibles: [BLOQUEO_LEGIBLE_EC],
+      }),
     ]);
     const texto1 = textoFinal(turno1);
     expect(texto1.startsWith(TEXTO_TURNO_1)).toBe(true);
@@ -498,5 +505,28 @@ describe("CR-02: con un caso pendiente la pregunta del servidor cierra el turno 
     const turno1 = await prueba.turno(MENSAJE_TURNO_1);
     const texto = textoFinal(turno1);
     expect(texto).toBe(`${TEXTO_TURNO_1}${SEPARADOR_PARRAFOS}${cierreConPregunta("", [PENDIENTE_EC])}`);
+  });
+});
+
+describe("confirmation_required nombra sus bloqueos de forma legible sin cambiar los ids crudos", () => {
+  test("ec-corp-andina lleva el id crudo en bloqueos y el nombre del checklist en bloqueosLegibles, en el mismo orden", async () => {
+    const turno = await agente(GUION_TURNO_1).turno(MENSAJE_TURNO_1);
+    const [confirmacion] = confirmaciones(turno);
+    expect(confirmaciones(turno)).toHaveLength(1);
+    expect(confirmacion?.bloqueos).toEqual([BLOQUEO_EC]);
+    expect(confirmacion?.bloqueosLegibles).toEqual([BLOQUEO_LEGIBLE_EC]);
+  });
+
+  test("un caso sin bloqueos lleva bloqueosLegibles vacío", async () => {
+    const turno = await agente([
+      respuestaHerramientas(llamar("leer-co", HERRAMIENTA.LEER_SOLICITUD, { caso: CO })),
+      respuestaHerramientas(llamar("mapear-co", HERRAMIENTA.MAPEAR_CAMPOS, { caso: CO, campos: [] })),
+      pasoGenerarConMapeo(CO),
+      respuestaHerramientas(llamar("armar-co", HERRAMIENTA.ARMAR_PAQUETE, { caso: CO })),
+      respuestaTexto(`Armé el paquete de ${CO}.`),
+    ]).turno(`Procesa el caso ${CO}.`);
+    expect(confirmaciones(turno)).toEqual([
+      expect.objectContaining({ caso: CO, accion: ACCION.ENVIO, bloqueos: [], bloqueosLegibles: [] }),
+    ]);
   });
 });
