@@ -3,16 +3,16 @@ gsd_state_version: "1.0"
 current_phase: 03
 current_phase_name: Chat web, API SSE y despliegue
 status: executing
-stopped_at: Completed 03-30-PLAN.md
-last_updated: "2026-10-15T17:17:58.901Z"
+stopped_at: Completed 03-32-PLAN.md
+last_updated: "2026-10-15T17:21:24.380Z"
 last_activity: 2026-10-15
 last_activity_desc: Phase 03 execution started
-state_head: f8fe91a9ade75af9fc8e00868f544428c8fc6a63
+state_head: b51880110dbaab50ec638877be7f6c9514b081e3
 progress:
   total_phases: 4
   completed_phases: 2
   total_plans: 78
-  completed_plans: 70
+  completed_plans: 71
   percent: 50
 ---
 
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-10-14)
 ## Current Position
 
 Phase: 03 (Chat web, API SSE y despliegue) — EXECUTING
-Plan: 5 of 39
+Plan: 6 of 39
 Status: Ready to execute
 Last activity: 2026-10-15 — Phase 03 execution started
 
@@ -127,6 +127,7 @@ Progress: [█████░░░░░] 50%
 | Phase 03 P29 | 9 min | 2 tasks | 10 files |
 | Phase 03 P31 | 3 min | 2 tasks | 6 files |
 | Phase 03 P30 | 5 min | 2 tasks | 9 files |
+| Phase 03 P32 | 2 min | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -307,6 +308,7 @@ Recent decisions affecting current work:
 - [Phase 03]: G-03-10: el error de la vista previa lleva su texto en el estado; solo el 404 muestra la pista de reinicio y dispara el aviso de disco (mismo predicado esArchivoNoEncontrado); 422/500/503 y acceso vencido muestran el mensaje del servidor; SIN_RED muestra errorSinConexion
 - [Phase 03]: 03-30 G-03-26: un simular_envio sin caso legible agrega el aviso SIN_CASO una vez por turno (tras los avisos legibles, antes de la pregunta; no en turnos abortados), contado en turno.llamadas como enviosSinCaso
 - [Phase 03]: 03-30 T-03-49: gate_permit y gate_blocked registran casoDeLlamada (caso normalizado por PATRON_CASO o null), no solo casos con paquete conocido
+- [Phase 03]: G-03-14: la UI pide /api/health al cerrar cada pedido de chat (enviarTurno avisa en un finally); esFalloDeTurno se borra y no hay sondeo por intervalo
 
 ### Pending Todos
 
@@ -342,6 +344,6 @@ Items acknowledged and deferred at milestone close, most recent first:
 
 ## Session Continuity
 
-Last session: 2026-10-15T17:17:37.028Z
-Stopped at: Completed 03-30-PLAN.md
+Last session: 2026-10-15T17:21:24.263Z
+Stopped at: Completed 03-32-PLAN.md
 Resume file: None
