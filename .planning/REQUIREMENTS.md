@@ -91,7 +91,7 @@ Fuente vinculante: `reto-01/PRD.md`, sin modificar. Fixtures: `reto-01/fixtures/
 
 ### Seguridad, PII y observabilidad (§8, RN5, CA4)
 
-- [ ] **SEG-01**: La clave del LLM vive solo en una env var del backend y nunca aparece en el front (sin el prefijo `VITE_`), los logs, las respuestas de la API ni el repo. Existe un `.env.example` sin valores y un test verifica que la clave no esté en `web/dist` ni en las respuestas.
+- [x] **SEG-01**: La clave del LLM vive solo en una env var del backend y nunca aparece en el front (sin el prefijo `VITE_`), los logs, las respuestas de la API ni el repo. Existe un `.env.example` sin valores y un test verifica que la clave no esté en `web/dist` ni en las respuestas.
 - [ ] **SEG-02**: Una única función `redactar()`, basada en una política de rutas sensibles, se aplica a los logs, la API, el SSE y los resúmenes de tool calls. Un test busca con grep valores PII conocidos y verifica que no aparezcan fuera de los archivos de salida.
 - [x] **SEG-03**: Los logs son JSON estructurados, con IDs de correlación por sesión, turno y tool call, y nunca registran la clave ni PII.
 - [x] **SEG-04**: Cada tool call queda registrada en `out/log.jsonl` (CA4) y en `out/<caso>/log.jsonl` (RN5) con `{ ts, herramienta, ok, resumen }`, con el resumen redactado.
@@ -114,8 +114,8 @@ Fuente vinculante: `reto-01/PRD.md`, sin modificar. Fixtures: `reto-01/fixtures/
 
 ### Despliegue (§8, §9.3)
 
-- [ ] **DEP-01**: `bun run dev` levanta el front y el backend en local con un solo comando, en menos de 2 minutos en una máquina limpia con las variables de `.env.example`.
-- [ ] **DEP-02**: Un Dockerfile portable y un `render.yaml` despliegan en Render free un único servicio que sirve la API y la SPA, con la clave como secret, `FECHA_EJECUCION=2026-09-03` y el health check en `/api/health`. El link público está activo.
+- [x] **DEP-01**: `bun run dev` levanta el front y el backend en local con un solo comando, en menos de 2 minutos en una máquina limpia con las variables de `.env.example`.
+- [x] **DEP-02**: Un Dockerfile portable y un `render.yaml` despliegan en Render free un único servicio que sirve la API y la SPA, con la clave como secret, `FECHA_EJECUCION=2026-09-03` y el health check en `/api/health`. El link público está activo.
 - [ ] **DEP-03**: Un script de pre-flight calienta el servicio y verifica health y SSE antes de la defensa. El guion §11 se ensaya sobre el link público.
 
 ### Documentación de entrega (§9)
@@ -227,7 +227,7 @@ Cada requisito v1 está asignado a exactamente una fase del roadmap (`.planning/
 | UI-07 | Phase 3 | Pending |
 | UI-08 | Phase 3 | Pending |
 | UI-09 | Phase 3 | Complete |
-| SEG-01 | Phase 3 | Partial — código y secreto de acceso redactados en logs HTTP, logs del agente y SSE, y `.env.example` completo (03-08); falta el test de la clave en `web/dist` |
+| SEG-01 | Phase 3 | Complete |
 | SEG-02 | Phase 1 | Partial — política de rutas PII, test grep y redactar() única para logs y resúmenes de tool calls (Fase 2) listos; falta aplicarla a API/SSE (Fase 3) |
 | SEG-03 | Phase 2 | Complete |
 | SEG-04 | Phase 1 | Complete |
@@ -241,8 +241,8 @@ Cada requisito v1 está asignado a exactamente una fase del roadmap (`.planning/
 | CAL-03 | Phase 1 | Complete |
 | CAL-04 | Phase 1 | Complete |
 | CAL-05 | Phase 4 | Pending |
-| DEP-01 | Phase 3 | Pending |
-| DEP-02 | Phase 3 | Pending |
+| DEP-01 | Phase 3 | Complete |
+| DEP-02 | Phase 3 | Complete |
 | DEP-03 | Phase 4 | Pending |
 | DOC-01 | Phase 4 | Pending |
 | DOC-02 | Phase 4 | Pending |

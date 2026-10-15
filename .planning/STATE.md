@@ -3,16 +3,16 @@ gsd_state_version: "1.0"
 current_phase: 03
 current_phase_name: Chat web, API SSE y despliegue
 status: executing
-stopped_at: Completed 03-10-PLAN.md
-last_updated: "2026-10-15T01:04:43.838Z"
+stopped_at: Completed 03-11-PLAN.md
+last_updated: "2026-10-15T01:48:20.936Z"
 last_activity: 2026-10-14
 last_activity_desc: Phase 03 execution started
-state_head: 6e7e01bf1320ab8da6d65f49dd41affcfb1b9aa4
+state_head: 17745b31e65d6d658041a515788d2a811d077df5
 progress:
   total_phases: 4
   completed_phases: 2
   total_plans: 66
-  completed_plans: 49
+  completed_plans: 50
   percent: 50
 ---
 
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-10-14)
 ## Current Position
 
 Phase: 03 (Chat web, API SSE y despliegue) — EXECUTING
-Plan: 11 of 27
+Plan: 12 of 27
 Status: Ready to execute
 Last activity: 2026-10-14 — Phase 03 execution started
 
@@ -106,6 +106,7 @@ Progress: [█████░░░░░] 50%
 | Phase 03 P08 | 8 min | 2 tasks | 11 files |
 | Phase 03 P09 | 6 min | 2 tasks | 17 files |
 | Phase 03 P10 | 9 min | 2 tasks | 19 files |
+| Phase 03 P11 | 70min | 3 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -238,6 +239,8 @@ Recent decisions affecting current work:
 - [Phase 03]: 03-08: /api/config toma la fecha y la zona de readToolEnv (process.env), la misma fuente que las herramientas, y se evalúa en cada pedido
 - [Phase 03]: 03-08: los secretos de acceso entran al agente por OpcionesAgente.secretosAdicionales; server.wiring arma el acceso antes del agente
 - [Phase 03]: 03-09: las rutas estáticas dejan pasar /api con next(); json-only y bodyLimit van antes del acceso y cubren /api/acceso; la CSP agrega img-src 'self' data: por el favicon
+- [Phase 03]: Render free (Docker) queda como host: el SSE llega en vivo por el borde de Render y Cloudflare (turn_start 389 ms, turn_end 8592 ms); no se usa el plan B
+- [Phase 03]: TRUSTED_PROXY_HOPS=1 es incorrecto en Render: la clave del limitador es una IP de proxy compartida; el valor final lo mide la usuaria (entradasXff en logs debug) antes de cambiar render.yaml
 
 ### Pending Todos
 
@@ -255,6 +258,7 @@ None yet.
 - [Phase 4]: SOLUCION.md debe explicar los ids canónicos en la consola de la demo y el `resumen` (WR-03), mover desde docs/plantillas.md la nota de NOMBRE_SOPORTE (IN-01) y registrar SEG-02 como parcial hasta que exista `redactar()`.
 - [Phase 4]: SOLUCION.md debe registrar AR-02-06 (D-63.11): un pedido que nombra el caso pendiente y no empieza con un verbo de pedido tras una respuesta de espera cancela el caso; va al lado seguro y el botón de la Phase 3 (D-39) lo evita.
 - [General]: PRD §10 no trae la tabla de puntos de la rúbrica; cada "debe/obligatorio/evaluamos" se trata como ítem y el supuesto va en SOLUCION.md §7.
+- 03-11: el limitador de acceso en Render cuenta por una IP de proxy compartida (TRUSTED_PROXY_HOPS=1); la usuaria debe medir entradasXff y ajustar TRUSTED_PROXY_HOPS (y render.yaml) antes de publicar el código en el README; luego LOG_LEVEL=info
 
 ### Quick Tasks Completed
 
@@ -272,6 +276,6 @@ Items acknowledged and deferred at milestone close, most recent first:
 
 ## Session Continuity
 
-Last session: 2026-10-15T01:04:43.757Z
-Stopped at: Completed 03-10-PLAN.md
+Last session: 2026-10-15T01:48:20.846Z
+Stopped at: Completed 03-11-PLAN.md
 Resume file: None
