@@ -7,6 +7,7 @@ import {
   ETAPA_DE_HERRAMIENTA,
   ETAPAS_QUE_REINICIA_EL_PAQUETE,
   ORDEN_ETAPAS,
+  RESULTADO_API,
   SEPARADOR_FIRMA,
   SEPARADOR_RUTA,
 } from "@web/config/constants/ui.constants.ts";
@@ -18,13 +19,16 @@ import type {
   Etapa,
   LlamadaDelTurno,
   ProgresoDeCaso,
+  ResultadoApi,
   ResultadoDeCaso,
   ResultadoVisibleUi,
   TarjetaDeConfirmacion,
   TurnoConversacion,
   VistaConConfirmaciones,
+  VistaTurnos,
 } from "@web/types/chat.type.ts";
 import { OUT_DIR } from "@/config/constants/files.constants.ts";
+import { RESPUESTA_HTTP } from "@/config/constants/http.constants.ts";
 import { ESTADO_CAMPO } from "@/config/constants/mapping.constants.ts";
 import { HERRAMIENTA, HERRAMIENTA_POR_NOMBRE_VISIBLE } from "@/config/constants/tools.constants.ts";
 
@@ -251,4 +255,21 @@ export function firmaDelProgreso(progresos: readonly ProgresoDeCaso[]): string {
     .map(({ caso, etapas }) => [caso, ...etapas.map(({ estado }) => estado)].join(SEPARADOR_FIRMA))
     .sort()
     .join(SEPARADOR_FIRMA);
+}
+
+function casosDelTurno(turno: TurnoConversacion): ReadonlySet<string> {
+  return new Set(turno.llamadas.flatMap((llamada) => (llamada.caso === null ? [] : [llamada.caso])));
+}
+
+export function marcasDeArchivos({ turnos, enCurso }: VistaTurnos): ReadonlyMap<string, number> {
+  const terminados = enCurso ? turnos.slice(0, -1) : turnos;
+  const marcas = new Map<string, number>();
+  for (const caso of terminados.flatMap((turno) => [...casosDelTurno(turno)])) {
+    marcas.set(caso, (marcas.get(caso) ?? 0) + 1);
+  }
+  return marcas;
+}
+
+export function esArchivoNoEncontrado(resultado: ResultadoApi<unknown>): boolean {
+  return resultado.tipo === RESULTADO_API.RECHAZO && resultado.status === RESPUESTA_HTTP.NO_ENCONTRADO;
 }

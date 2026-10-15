@@ -2,7 +2,9 @@ import type { DISENO, PESTANA, TAMANO_ICONO, TONO } from "@web/config/constants/
 import type {
   AccionDeAviso,
   AccionDeTarjeta,
+  ArchivoUi,
   AvisoDeSesion,
+  ControlArchivos,
   ErrorVisible,
   EstadoEtapa,
   EstadoHerramienta,
@@ -193,11 +195,34 @@ export type PropsIconoDeEtapa = {
 
 export type PropsPanelCasos = {
   readonly progresos: readonly ProgresoDeCaso[];
+  readonly marcas: ReadonlyMap<string, number>;
+  readonly enCurso: boolean;
+  readonly alEnviar: (mensaje: string) => void;
+  readonly alVencerAcceso: (aviso: string) => void;
 };
 
 export type PropsBloqueCaso = {
   readonly progreso: ProgresoDeCaso;
   readonly reciente: boolean;
+  readonly marca: number;
+  readonly enCurso: boolean;
+  readonly alEnviar: (mensaje: string) => void;
+  readonly alVencerAcceso: (aviso: string) => void;
+};
+
+export type AlVerArchivo = (archivo: ArchivoUi, disparador: HTMLElement) => void;
+
+export type PropsListaArchivos = {
+  readonly caso: string;
+  readonly control: ControlArchivos;
+  readonly alVer: AlVerArchivo;
+};
+
+export type PropsFilaArchivo = {
+  readonly caso: string;
+  readonly archivo: ArchivoUi;
+  readonly alVer: AlVerArchivo;
+  readonly alDescargar: (archivo: ArchivoUi) => void;
 };
 
 export type Diseno = ValorDe<typeof DISENO>;

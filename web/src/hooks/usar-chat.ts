@@ -40,6 +40,11 @@ export function useChat(alFallarTurno: () => void): ControlChat {
     despachar(accion);
   }, []);
 
+  const vencerAcceso = useCallback(
+    (aviso: string) => despachar({ tipo: ACCION_UI.ACCESO_PEDIDO, aviso }),
+    [],
+  );
+
   const accesoConcedido = estado.acceso.tipo === ESTADO_ACCESO.CONCEDIDO;
   const sesionPorCargar = estado.hidratando ? estado.sesionId : null;
 
@@ -125,5 +130,6 @@ export function useChat(alFallarTurno: () => void): ControlChat {
     detener,
     recargar,
     nuevaSesion,
+    vencerAcceso,
   };
 }

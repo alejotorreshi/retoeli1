@@ -6,6 +6,7 @@ import type {
   ESTADO_ETAPA,
   ESTADO_FIRMA,
   ESTADO_HERRAMIENTA,
+  ESTADO_LISTA_ARCHIVOS,
   ESTADO_TARJETA_CONFIRMACION,
   ETAPA,
   RESULTADO_API,
@@ -16,6 +17,7 @@ import type {
   ChatBody,
   ConfigResponse,
   ErrorResponse,
+  FileListResponse,
   HealthResponse,
   SessionViewResponse,
   SseEvent,
@@ -302,6 +304,7 @@ export type ControlChat = {
   readonly detener: () => void;
   readonly recargar: () => void;
   readonly nuevaSesion: () => void;
+  readonly vencerAcceso: (aviso: string) => void;
 };
 
 export type EstadoModelo = HealthResponse["llm"];
@@ -311,4 +314,30 @@ export type SaludModelo = Pick<HealthResponse, "model" | "llm">;
 export type ControlSalud = {
   readonly salud: HealthResponse | null;
   readonly refrescar: () => void;
+};
+
+export type ArchivoUi = FileListResponse["archivos"][number];
+
+export type TipoArchivoUi = ArchivoUi["tipo"];
+
+export type EstadoListaArchivos =
+  | { readonly tipo: typeof ESTADO_LISTA_ARCHIVOS.CARGANDO }
+  | { readonly tipo: typeof ESTADO_LISTA_ARCHIVOS.ERROR }
+  | { readonly tipo: typeof ESTADO_LISTA_ARCHIVOS.LISTA; readonly archivos: readonly ArchivoUi[] };
+
+export type GuardarDescarga = (cuerpo: Blob, nombre: string) => void;
+
+export type OpcionesArchivos = {
+  readonly caso: string;
+  readonly activo: boolean;
+  readonly marca: number;
+  readonly alVencerAcceso: (aviso: string) => void;
+};
+
+export type ControlArchivos = {
+  readonly estado: EstadoListaArchivos;
+  readonly borrados: boolean;
+  readonly reintentar: () => void;
+  readonly descargar: (archivo: ArchivoUi) => void;
+  readonly marcarBorrados: () => void;
 };

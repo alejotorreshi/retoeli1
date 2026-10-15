@@ -223,3 +223,11 @@ export const SUFIJO_ID = {
   PESTANA: "-pestana-",
   VISTA: "-vista-",
 } as const;
+
+export const ESTADO_LISTA_ARCHIVOS = {
+  CARGANDO: "cargando",
+  ERROR: "error",
+  LISTA: "lista",
+} as const;
+
+export const ESPERA_LIBERAR_DESCARGA_MS = 1_000;

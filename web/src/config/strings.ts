@@ -21,10 +21,11 @@ import type {
   Etapa,
   FormatoVisible,
   ResumenLlamadas,
+  TipoArchivoUi,
 } from "@web/types/chat.type.ts";
 import type { EstadoModeloConAviso, PartesAvisoModelo, Pestana } from "@web/types/ui.type.ts";
 import { TIPO_ACCION } from "@/config/constants/confirmation.constants.ts";
-import { ARCHIVOS_SALIDA } from "@/config/constants/files.constants.ts";
+import { ARCHIVOS_SALIDA, TIPO_ARCHIVO_CASO } from "@/config/constants/files.constants.ts";
 import { FORMATO } from "@/config/constants/forms.constants.ts";
 import { VIGENCIA_ACCESO_HORAS_POR_DEFECTO } from "@/config/constants/http.constants.ts";
 import { ESTADO_LLM } from "@/config/constants/llm.constants.ts";
@@ -274,6 +275,32 @@ export const TEXTO_PANEL = {
   titulo: "Casos de esta sesión",
   vacio: "Todavía no se procesó ningún caso. Aquí verás el avance de cada caso y sus archivos.",
   pie: "Los archivos viven en el disco temporal del servidor y se borran si se reinicia.",
+} as const;
+
+const TIPO_DE_ARCHIVO = {
+  [TIPO_ARCHIVO_CASO.FORMULARIO]: "Formulario",
+  [TIPO_ARCHIVO_CASO.VALORES_PORTAL]: "Valores para portal",
+  [TIPO_ARCHIVO_CASO.CHECKLIST]: "Checklist",
+  [TIPO_ARCHIVO_CASO.BORRADOR]: "Borrador de correo",
+  [TIPO_ARCHIVO_CASO.ENVIO_SIMULADO]: "Envío simulado",
+  [TIPO_ARCHIVO_CASO.SOPORTE]: "Soporte",
+} as const satisfies Record<TipoArchivoUi, string>;
+
+const VER = "Ver";
+const DESCARGAR = "Descargar";
+
+export const TEXTO_ARCHIVOS = {
+  lista: (caso: string) => `Archivos de ${caso}`,
+  cargando: "Cargando archivos…",
+  error: "No pudimos traer los archivos de este caso.",
+  reintentar: "Reintentar",
+  vacio:
+    "Todavía no hay archivos de este caso. Aparecen cuando el agente genera el formulario o arma el paquete.",
+  tipo: (tipo: TipoArchivoUi) => TIPO_DE_ARCHIVO[tipo],
+  ver: VER,
+  descargar: DESCARGAR,
+  verArchivo: (nombre: string) => `${VER} ${nombre}`,
+  descargarArchivo: (nombre: string) => `${DESCARGAR} ${nombre}`,
 } as const;
 
 const ETIQUETA_DE_PESTANA = {

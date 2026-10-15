@@ -23,7 +23,7 @@ import { useChat } from "@web/hooks/usar-chat.ts";
 import { useDiseno } from "@web/hooks/usar-diseno.ts";
 import { usePestanas } from "@web/hooks/usar-pestanas.ts";
 import { useSalud } from "@web/hooks/usar-salud.ts";
-import { firmaDelProgreso, progresoPorCaso } from "@web/state/casos.ts";
+import { firmaDelProgreso, marcasDeArchivos, progresoPorCaso } from "@web/state/casos.ts";
 import { etiquetaPensando, eventosDelTurno, usoDeSesion } from "@web/state/conversacion.ts";
 import type { AccionDeAviso } from "@web/types/chat.type.ts";
 import type { ControlPestanas, IdsDePestanas, Pestana, PropsBarraDePestanas } from "@web/types/ui.type.ts";
@@ -125,6 +125,7 @@ export function App() {
     detener,
     recargar,
     nuevaSesion,
+    vencerAcceso,
   } = useChat(refrescar);
   const [nuevaSesionAbierta, setNuevaSesionAbierta] = useState(false);
   const diseno = useDiseno();
@@ -232,7 +233,13 @@ export function App() {
           className={CLASE_GLOBAL.VISTA_CASOS}
           {...atributosDeVista(conPestanas, pestanas, ids, PESTANA.CASOS)}
         >
-          <PanelCasos progresos={progresos} />
+          <PanelCasos
+            progresos={progresos}
+            marcas={marcasDeArchivos(estado)}
+            enCurso={estado.enCurso}
+            alEnviar={enviarTexto}
+            alVencerAcceso={vencerAcceso}
+          />
         </div>
       </div>
       <DialogoNuevaSesion

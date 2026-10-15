@@ -3,17 +3,40 @@ import {
   PEDIDO_JSON,
   REINTENTO_OCUPADA_MS,
   RESULTADO_API,
+  SEPARADOR_RUTA,
 } from "@web/config/constants/ui.constants.ts";
 import { TEXTO_ACCESO } from "@web/config/strings.ts";
 import { sigueOcupada } from "@web/state/hidratacion.ts";
-import type { EstadoModelo, ResultadoApi, ResultadoFallido, VistaSesionUi } from "@web/types/chat.type.ts";
-import { PARAMETRO_SESION, RESPUESTA_HTTP, RUTA_API } from "@/config/constants/http.constants.ts";
+import type {
+  ArchivoUi,
+  EstadoModelo,
+  GuardarDescarga,
+  ResultadoApi,
+  ResultadoFallido,
+  VistaSesionUi,
+} from "@web/types/chat.type.ts";
+import { PREFIJO_PAQUETE, TIPO_ARCHIVO_CASO } from "@/config/constants/files.constants.ts";
+import {
+  PARAMETRO_ARCHIVO,
+  PARAMETRO_CASO,
+  PARAMETRO_SESION,
+  RESPUESTA_HTTP,
+  RUTA_API,
+} from "@/config/constants/http.constants.ts";
 import { ESTADO_LLM } from "@/config/constants/llm.constants.ts";
-import type { AccessBody, ConfigResponse, ErrorResponse, HealthResponse } from "@/http/types/api.type.ts";
+import type {
+  AccessBody,
+  ConfigResponse,
+  ErrorResponse,
+  FileListResponse,
+  HealthResponse,
+} from "@/http/types/api.type.ts";
 
 const SIN_RED: ResultadoFallido = { tipo: RESULTADO_API.SIN_RED };
 
 const ESTADOS_DEL_MODELO: ReadonlySet<string> = new Set(Object.values(ESTADO_LLM));
+
+const TIPOS_DE_ARCHIVO: ReadonlySet<string> = new Set(Object.values(TIPO_ARCHIVO_CASO));
 
 function esObjeto(valor: unknown): valor is object {
   return typeof valor === "object" && valor !== null;
@@ -230,4 +253,87 @@ export async function obtenerSesionAsentada(
   if (!sigueOcupada(primera)) return primera;
   const esperado = await esperar(REINTENTO_OCUPADA_MS, signal);
   return esperado ? obtenerSesion(sesionId, signal) : primera;
+}
+
+function esArchivo(valor: unknown): valor is ArchivoUi {
+  return (
+    esObjeto(valor) &&
+    "nombre" in valor &&
+    typeof valor.nombre === "string" &&
+    "tipo" in valor &&
+    typeof valor.tipo === "string" &&
+    TIPOS_DE_ARCHIVO.has(valor.tipo) &&
+    "previsualizable" in valor &&
+    typeof valor.previsualizable === "boolean"
+  );
+}
+
+function esListaDeArchivos(valor: unknown): valor is FileListResponse {
+  return (
+    esObjeto(valor) && "archivos" in valor && Array.isArray(valor.archivos) && valor.archivos.every(esArchivo)
+  );
+}
+
+function estaEnElPaquete(nombre: string): boolean {
+  return nombre.startsWith(PREFIJO_PAQUETE);
+}
+
+export function nombreDeDescarga(nombre: string): string {
+  return estaEnElPaquete(nombre) ? nombre.slice(PREFIJO_PAQUETE.length) : nombre;
+}
+
+function rutaConParametros(patron: string, caso: string, nombre: string | null): string {
+  const valores = new Map([
+    [`:${PARAMETRO_CASO}`, caso],
+    [`:${PARAMETRO_ARCHIVO}`, nombre === null ? null : nombreDeDescarga(nombre)],
+  ]);
+  return patron
+    .split(SEPARADOR_RUTA)
+    .map((segmento) => {
+      const valor = valores.get(segmento);
+      return valor === undefined || valor === null ? segmento : encodeURIComponent(valor);
+    })
+    .join(SEPARADOR_RUTA);
+}
+
+export function rutaDeArchivos(caso: string): string {
+  return rutaConParametros(RUTA_API.ARCHIVOS, caso, null);
+}
+
+export function rutaDeDescarga(caso: string, nombre: string): string {
+  const patron = estaEnElPaquete(nombre) ? RUTA_API.ARCHIVO_PAQUETE : RUTA_API.ARCHIVO;
+  return rutaConParametros(patron, caso, nombre);
+}
+
+export async function listarArchivos(
+  caso: string,
+  signal: AbortSignal | null = null,
+): Promise<ResultadoApi<readonly ArchivoUi[]>> {
+  const respuesta = await pedir(rutaDeArchivos(caso), { signal });
+  if (respuesta === null) return SIN_RED;
+  if (!respuesta.ok) return resultadoDelRechazo(respuesta);
+  const valor = await leerJson(respuesta);
+  return esListaDeArchivos(valor) ? { tipo: RESULTADO_API.OK, valor: valor.archivos } : SIN_RED;
+}
+
+async function leerCuerpo(respuesta: Response): Promise<Blob | null> {
+  try {
+    return await respuesta.blob();
+  } catch {
+    return null;
+  }
+}
+
+export async function descargarArchivo(
+  caso: string,
+  nombre: string,
+  guardar: GuardarDescarga,
+): Promise<ResultadoApi<null>> {
+  const respuesta = await pedir(rutaDeDescarga(caso, nombre), {});
+  if (respuesta === null) return SIN_RED;
+  if (!respuesta.ok) return resultadoDelRechazo(respuesta);
+  const cuerpo = await leerCuerpo(respuesta);
+  if (cuerpo === null) return SIN_RED;
+  guardar(cuerpo, nombreDeDescarga(nombre));
+  return { tipo: RESULTADO_API.OK, valor: null };
 }
