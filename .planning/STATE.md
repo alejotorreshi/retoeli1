@@ -3,16 +3,16 @@ gsd_state_version: "1.0"
 current_phase: 03
 current_phase_name: Chat web, API SSE y despliegue
 status: executing
-stopped_at: Completed 03-24-PLAN.md
-last_updated: "2026-10-15T04:34:19.712Z"
+stopped_at: Completed 03-22-PLAN.md
+last_updated: "2026-10-15T04:51:05.187Z"
 last_activity: 2026-10-14
 last_activity_desc: Phase 03 execution started
-state_head: c95ed48fda93e9be9abb2a8e49f4056c0cc13027
+state_head: c6f7c5c0afa0914f5e3e1d65ae92708c358832f2
 progress:
   total_phases: 4
   completed_phases: 2
   total_plans: 66
-  completed_plans: 61
+  completed_plans: 62
   percent: 50
 ---
 
@@ -118,6 +118,7 @@ Progress: [█████░░░░░] 50%
 | Phase 03 P20 | 6 min | 2 tasks | 14 files |
 | Phase 03 P21 | 25min | 2 tasks | 19 files |
 | Phase 03 P24 | 9 min | 2 tasks | 16 files |
+| Phase 03 P22 | 12 min | 2 tasks | 21 files |
 
 ## Accumulated Context
 
@@ -279,6 +280,9 @@ Recent decisions affecting current work:
 - [Phase 03]: 03-24: un caso conocido sin salida en disco lista [] (no 404) para el aviso de reinicio de D-67; un caso desconocido da 404
 - [Phase 03]: 03-24: la vista previa del borrador muestra completos el nombre y el cargo del firmante (D-74); formulario y valores-portal salen de mapeo.json enmascarado
 - [Phase 03]: 03-24: las descargas llevan attachment, nosniff y Cache-Control no-store; el nombre del cliente solo se compara con la lista blanca calculada
+- [Phase 03]: 03-22: los puntos de quiebre viven solo en ui.constants.ts (PUNTO_DE_QUIEBRE_PX); useDiseno marca data-diseno y el CSS responde con :global([data-diseno]) sin media queries en px
+- [Phase 03]: 03-22: progresoPorCaso pliega solo tool_start/tool_end y confirmation_required por posición en el turno; la confirmación que el servidor repite al cerrar cada turno no cuenta como actividad
+- [Phase 03]: 03-22: simular_envio ok marca hechas las etapas 5 y 6; un turno cortado no deja etapas en curso; 03-23 completa la etapa 5 desde las tarjetas
 
 ### Pending Todos
 
@@ -314,6 +318,6 @@ Items acknowledged and deferred at milestone close, most recent first:
 
 ## Session Continuity
 
-Last session: 2026-10-15T04:34:19.627Z
-Stopped at: Completed 03-24-PLAN.md
+Last session: 2026-10-15T04:51:05.104Z
+Stopped at: Completed 03-22-PLAN.md
 Resume file: None
