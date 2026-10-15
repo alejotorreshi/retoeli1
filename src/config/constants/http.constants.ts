@@ -40,6 +40,13 @@ export const SAME_SITE_COOKIE = "Strict";
 
 export const PREFIJO_BEARER = "Bearer ";
 
+export const RESULTADO_BEARER = {
+  AUSENTE: "absent",
+  VALIDO: "valid",
+  INVALIDO: "invalid",
+  BLOQUEADO: "locked",
+} as const;
+
 export const LONGITUD_MINIMA_CODIGO_ACCESO = 12;
 
 export const LONGITUD_MAXIMA_CODIGO_ACCESO = 256;

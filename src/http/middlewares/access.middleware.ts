@@ -1,4 +1,4 @@
-import type { MiddlewareHandler } from "hono";
+import type { Context, MiddlewareHandler } from "hono";
 import { getSignedCookie } from "hono/cookie";
 import { timingSafeEqual } from "hono/utils/buffer";
 import {
@@ -6,20 +6,31 @@ import {
   NOMBRE_COOKIE_ACCESO,
   PREFIJO_BEARER,
   RESPUESTA_HTTP,
+  RESULTADO_BEARER,
 } from "@/config/constants/http.constants.ts";
 import { MENSAJE_HTTP } from "@/config/strings.ts";
 import { isAccessTokenValid } from "@/http/services/access-token.service.ts";
 import type { ErrorResponse } from "@/http/types/api.type.ts";
-import type { AccessSettings, HttpEnv } from "@/http/types/server.type.ts";
+import type { AccessSettings, BearerCheck, HttpEnv } from "@/http/types/server.type.ts";
 
-async function bearerMatches(header: string | undefined, code: string): Promise<boolean> {
-  if (header === undefined || !header.startsWith(PREFIJO_BEARER)) return false;
-  return timingSafeEqual(header.slice(PREFIJO_BEARER.length), code);
+async function checkBearer(c: Context<HttpEnv>, access: AccessSettings): Promise<BearerCheck> {
+  const header = c.req.header(CABECERA.AUTORIZACION);
+  if (header === undefined || !header.startsWith(PREFIJO_BEARER)) return RESULTADO_BEARER.AUSENTE;
+  const clientIp = c.get("clientIp");
+  if (access.failedAttempts.isLocked(clientIp)) return RESULTADO_BEARER.BLOQUEADO;
+  if (await timingSafeEqual(header.slice(PREFIJO_BEARER.length), access.code)) return RESULTADO_BEARER.VALIDO;
+  access.failedAttempts.hit(clientIp);
+  return RESULTADO_BEARER.INVALIDO;
 }
 
 export function requireAccess(access: AccessSettings): MiddlewareHandler<HttpEnv> {
   return async (c, next) => {
-    if (await bearerMatches(c.req.header(CABECERA.AUTORIZACION), access.code)) return next();
+    const bearer = await checkBearer(c, access);
+    if (bearer === RESULTADO_BEARER.VALIDO) return next();
+    if (bearer === RESULTADO_BEARER.BLOQUEADO) {
+      const locked: ErrorResponse = { mensaje: access.lockedMessage };
+      return c.json(locked, RESPUESTA_HTTP.DEMASIADOS_PEDIDOS);
+    }
     const token = await getSignedCookie(c, access.tokenSecret, NOMBRE_COOKIE_ACCESO);
     if (typeof token === "string" && isAccessTokenValid(token, access.now())) return next();
     const body: ErrorResponse = { mensaje: MENSAJE_HTTP.accesoVencido };

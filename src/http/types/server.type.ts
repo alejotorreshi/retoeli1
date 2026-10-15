@@ -1,5 +1,7 @@
 import type { Hono } from "hono";
 import type { BitacoraEstructurada, DestinoBitacora } from "@/application/types/puertos-agente.type.ts";
+import type { RESULTADO_BEARER } from "@/config/constants/http.constants.ts";
+import type { ValorDe } from "@/config/types/valor-de.type.ts";
 import type { FetchLike } from "@/llm/types/provider.type.ts";
 import type { RetryOptions } from "@/llm/types/resilience.type.ts";
 
@@ -11,6 +13,8 @@ export type HttpBindings = {
 export type HttpVariables = { clientIp: string };
 
 export type HttpEnv = { Bindings: HttpBindings; Variables: HttpVariables };
+
+export type BearerCheck = ValorDe<typeof RESULTADO_BEARER>;
 
 export type RateLimiterOptions = {
   readonly limit: number;

@@ -22,6 +22,7 @@ import {
 import { CODIGO_ERROR, CODIGO_FS } from "@/config/constants/errors.constants.ts";
 import { ARCHIVOS_PAQUETE, ARCHIVOS_SALIDA } from "@/config/constants/files.constants.ts";
 import { FORMATO, TIPO_PLANTILLA } from "@/config/constants/forms.constants.ts";
+import { RESULTADO_BEARER } from "@/config/constants/http.constants.ts";
 import { ESTADO_LECTURA, ORIGEN_COPIA } from "@/config/constants/io.constants.ts";
 import { CLAVE_PLANTILLA } from "@/config/constants/knowledge.constants.ts";
 import {
@@ -148,6 +149,7 @@ const FAMILIAS_DE_CODIGOS: readonly Readonly<Record<string, string>>[] = [
   MOTIVO_FIN,
   CODIGO_AGENTE,
   ACCION,
+  RESULTADO_BEARER,
   NIVELES_LOG,
   BOOLEANO_ENV,
   DECISION_CONFIRMACION,
