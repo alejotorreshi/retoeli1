@@ -1,12 +1,11 @@
 import { obtenerSesionAsentada } from "@web/api/cliente-api.ts";
-import { enviarMensaje } from "@web/api/flujo-chat.ts";
+import { enviarTurno } from "@web/api/flujo-chat.ts";
 import { guardarSesionId, leerSesionGuardada, olvidarSesion } from "@web/api/sesion-local.ts";
 import { ACCION_UI, ESTADO_ACCESO } from "@web/config/constants/ui.constants.ts";
 import { TEXTO_CONFIRMACION } from "@web/config/strings.ts";
 import { hayTarjetaAbierta } from "@web/state/confirmaciones.ts";
 import {
   accionDeConfig,
-  esFalloDeTurno,
   estadoAlCargar,
   reducirConversacion,
   sesionDelEvento,
@@ -27,7 +26,7 @@ function estadoConSesionGuardada(): EstadoConversacion {
   return estadoAlCargar(leerSesionGuardada());
 }
 
-export function useChat(alFallarTurno: () => void): ControlChat {
+export function useChat(alTerminarTurno: () => void): ControlChat {
   const [estado, despachar] = useReducer(reducirConversacion, null, estadoConSesionGuardada);
   const turnoActivo = useRef<AbortController | null>(null);
   const recibirConfig = useCallback(
@@ -66,10 +65,8 @@ export function useChat(alFallarTurno: () => void): ControlChat {
     if (mensaje.length === 0 || estado.enCurso || estado.hidratando || turnoActivo.current !== null) return;
     const controlador = new AbortController();
     turnoActivo.current = controlador;
-    let turnoFallido = false;
     const despacharDelTurno: Despachar = (accionUi) => {
       if (controlador.signal.aborted) return;
-      if (esFalloDeTurno(accionUi)) turnoFallido = true;
       const sesionId = sesionDelEvento(accionUi);
       if (sesionId !== null) guardarSesionId(sesionId);
       despachar(accionUi);
@@ -78,13 +75,13 @@ export function useChat(alFallarTurno: () => void): ControlChat {
     despachar(
       accion === null ? { tipo: ACCION_UI.ENVIAR, mensaje } : { tipo: ACCION_UI.ENVIAR, mensaje, accion },
     );
-    void enviarMensaje(
+    void enviarTurno(
       accion === null ? pedido : { ...pedido, accion },
       despacharDelTurno,
       controlador.signal,
+      alTerminarTurno,
     ).finally(() => {
       if (turnoActivo.current === controlador) turnoActivo.current = null;
-      if (turnoFallido) alFallarTurno();
     });
   }
 

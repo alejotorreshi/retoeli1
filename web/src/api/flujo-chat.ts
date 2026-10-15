@@ -86,3 +86,16 @@ export async function enviarMensaje(
   const turnoTerminado = respuesta.body === null ? false : await leerEventos(respuesta.body, despachar);
   if (!turnoTerminado && !signal.aborted) despachar({ tipo: ACCION_UI.FIN_STREAM });
 }
+
+export async function enviarTurno(
+  pedido: ChatBody,
+  despachar: Despachar,
+  signal: AbortSignal,
+  alTerminarTurno: () => void,
+): Promise<void> {
+  try {
+    await enviarMensaje(pedido, despachar, signal);
+  } finally {
+    alTerminarTurno();
+  }
+}
