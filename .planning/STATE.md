@@ -3,16 +3,16 @@ gsd_state_version: "1.0"
 current_phase: 03
 current_phase_name: Chat web, API SSE y despliegue
 status: executing
-stopped_at: Completed 03-19-PLAN.md
-last_updated: "2026-10-15T02:58:21.529Z"
+stopped_at: Completed 03-20-PLAN.md
+last_updated: "2026-10-15T03:08:21.515Z"
 last_activity: 2026-10-14
 last_activity_desc: Phase 03 execution started
-state_head: 9e3457d20eb774e3eadcba092711b84a59c574c3
+state_head: 8086b270a0caeb589a328ac01878c05973874e23
 progress:
   total_phases: 4
   completed_phases: 2
   total_plans: 66
-  completed_plans: 58
+  completed_plans: 59
   percent: 50
 ---
 
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-10-14)
 ## Current Position
 
 Phase: 03 (Chat web, API SSE y despliegue) — EXECUTING
-Plan: 20 of 27
+Plan: 21 of 27
 Status: Ready to execute
 Last activity: 2026-10-14 — Phase 03 execution started
 
@@ -115,6 +115,7 @@ Progress: [█████░░░░░] 50%
 | Phase 03 P17 | 6 min | 3 tasks | 18 files |
 | Phase 03 P18 | 4min | 2 tasks | 12 files |
 | Phase 03 P19 | 7 min | 2 tasks | 15 files |
+| Phase 03 P20 | 6 min | 2 tasks | 14 files |
 
 ## Accumulated Context
 
@@ -268,6 +269,9 @@ Recent decisions affecting current work:
 - [Phase 03]: 03-19: La herramienta en curso se deriva de la última tarjeta En curso del turno (llamadaEnCurso), no se guarda aparte
 - [Phase 03]: 03-19: Cada turno cuenta sus eventos SSE; AvisoDespertar se remonta con esa marca y muestra la línea de servidor despertando a los 10 s sin eventos
 - [Phase 03]: 03-19: El resumen del grupo concuerda en número ('1 correcta'); una herramienta desconocida muestra su nombre técnico en la tarjeta y 'Ejecutando {nombre}…' en el indicador
+- [Phase 03]: 03-20: la vista de recarga (GET /api/sessions/:id) se reconstruye desde el historial de mensajes con las mismas proyecciones del stream (resultadoDeContenido, resultadoVisible, casoDeArgumentos); no se guardan eventos
+- [Phase 03]: 03-20: consultarSesion usa solo AlmacenSesiones.leer; un id desconocido, vencido o mal formado (o sin agente) responde 404 con TEXTO_SESION.expirada
+- [Phase 03]: 03-20: OpcionesAgente.ahora lleva el reloj inyectado del servidor al almacén de sesiones (sin inyectar sigue Date.now)
 
 ### Pending Todos
 
@@ -303,6 +307,6 @@ Items acknowledged and deferred at milestone close, most recent first:
 
 ## Session Continuity
 
-Last session: 2026-10-15T02:58:21.442Z
-Stopped at: Completed 03-19-PLAN.md
+Last session: 2026-10-15T03:08:21.432Z
+Stopped at: Completed 03-20-PLAN.md
 Resume file: None
