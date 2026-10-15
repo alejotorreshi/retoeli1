@@ -2,6 +2,7 @@ import { describe, expect, test } from "bun:test";
 import { ACCION, MOTIVO_FIN } from "@/config/constants/agent.constants.ts";
 import {
   DECISION_CONFIRMACION,
+  DESENLACE_ENVIO,
   ESTADO_COMPUERTA,
   EVENTO_COMPUERTA,
 } from "@/config/constants/confirmation.constants.ts";
@@ -10,6 +11,7 @@ import {
   abrirTurno,
   casosPendientes,
   cerrarTurno,
+  desenlacesDeEnvio,
   enviadosTrasEventos,
   estadoLibre,
   evaluarEnvio,
@@ -21,6 +23,7 @@ import {
 import type {
   AutorizacionTurno,
   CasoPendiente,
+  DesenlaceEnvio,
   EntradaCierreCompuerta,
   EstadoCompuerta,
   EventoCompuerta,
@@ -408,4 +411,76 @@ describe("lectura del estado y de los paquetes conocidos", () => {
     expect(paqueteConocido(conocidos, CO)).toBeUndefined();
     expect(paqueteConocido(conocidos, "toString")).toBeUndefined();
   });
+});
+
+describe("desenlacesDeEnvio (G-03-26, D-44, D-63.4, D-63.7)", () => {
+  const CONOCIDOS = { [EC]: PENDIENTE_EC };
+  const desenlace = (
+    tipo: Exclude<DesenlaceEnvio["tipo"], typeof DESENLACE_ENVIO.SIN_CASO>,
+    caso: string,
+  ): DesenlaceEnvio => ({ tipo, caso });
+  const filas: readonly (readonly [string, Partial<EntradaCierreCompuerta>, readonly DesenlaceEnvio[]])[] = [
+    [
+      "un bloqueado de un caso ya enviado en la sesión da YA_ENVIADO",
+      { eventos: [bloqueado(EC)], conocidos: CONOCIDOS, enviados: [EC] },
+      [desenlace(DESENLACE_ENVIO.YA_ENVIADO, EC)],
+    ],
+    [
+      "un bloqueado tras el envío del mismo turno da YA_ENVIADO",
+      { eventos: [enviado(EC), bloqueado(EC)], conocidos: CONOCIDOS },
+      [desenlace(DESENLACE_ENVIO.YA_ENVIADO, EC)],
+    ],
+    [
+      "un bloqueado de un caso con paquete conocido da REQUIERE_CONFIRMACION",
+      { eventos: [bloqueado(EC)], conocidos: CONOCIDOS },
+      [desenlace(DESENLACE_ENVIO.REQUIERE_CONFIRMACION, EC)],
+    ],
+    [
+      "un bloqueado de un caso arrastrado da REQUIERE_CONFIRMACION",
+      { arrastrados: [PENDIENTE_CO], eventos: [bloqueado(CO)] },
+      [desenlace(DESENLACE_ENVIO.REQUIERE_CONFIRMACION, CO)],
+    ],
+    [
+      "un bloqueado tras armar en el mismo turno da REQUIERE_CONFIRMACION",
+      { eventos: [armado(PENDIENTE_EC), bloqueado(EC)] },
+      [desenlace(DESENLACE_ENVIO.REQUIERE_CONFIRMACION, EC)],
+    ],
+    [
+      "un bloqueado de un caso desconocido da SIN_PAQUETE",
+      { eventos: [bloqueado(CO)], conocidos: CONOCIDOS },
+      [desenlace(DESENLACE_ENVIO.SIN_PAQUETE, CO)],
+    ],
+    [
+      "un envío fallido da FALLIDO",
+      { eventos: [fallido(EC)], conocidos: CONOCIDOS },
+      [desenlace(DESENLACE_ENVIO.FALLIDO, EC)],
+    ],
+    ["un envío exitoso no da desenlace", { eventos: [enviado(EC)], conocidos: CONOCIDOS }, []],
+    ["un armado no da desenlace", { eventos: [armado(PENDIENTE_EC)] }, []],
+    [
+      "un armado posterior a un envío del mismo caso hace que el bloqueado siguiente pida confirmación",
+      { eventos: [enviado(EC), armado(PENDIENTE_EC), bloqueado(EC)], conocidos: CONOCIDOS },
+      [desenlace(DESENLACE_ENVIO.REQUIERE_CONFIRMACION, EC)],
+    ],
+    [
+      "los desenlaces salen en el orden de los eventos",
+      { eventos: [bloqueado(CO), enviado(EC), bloqueado(EC), fallido(CO)], conocidos: CONOCIDOS },
+      [
+        desenlace(DESENLACE_ENVIO.SIN_PAQUETE, CO),
+        desenlace(DESENLACE_ENVIO.YA_ENVIADO, EC),
+        desenlace(DESENLACE_ENVIO.FALLIDO, CO),
+      ],
+    ],
+    [
+      "un turno abortado no da desenlaces",
+      { eventos: [bloqueado(CO), fallido(EC)], conocidos: CONOCIDOS, abortado: true },
+      [],
+    ],
+  ];
+
+  for (const [nombre, entrada, esperado] of filas) {
+    test(nombre, () => {
+      expect(desenlacesDeEnvio(cierre(entrada))).toEqual(esperado);
+    });
+  }
 });

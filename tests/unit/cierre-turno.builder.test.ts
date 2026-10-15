@@ -1,12 +1,17 @@
 import { describe, expect, test } from "bun:test";
+import { DESENLACE_ENVIO } from "@/config/constants/confirmation.constants.ts";
 import { PATRON_PREGUNTA } from "@/config/constants/patterns.constants.ts";
 import { ESTADO_SOPORTE } from "@/config/constants/supports.constants.ts";
 import { SALTO_DE_LINEA, SEPARADOR_PARRAFOS } from "@/config/constants/text.constants.ts";
 import { HERRAMIENTA, NOMBRE_VISIBLE } from "@/config/constants/tools.constants.ts";
-import { TEXTO_CHECKLIST, TEXTO_CIERRE } from "@/config/strings.ts";
-import { cierreConPregunta, cierreDeterminista } from "@/domain/builders/cierre-turno.builder.ts";
+import { TEXTO_CHECKLIST, TEXTO_CIERRE, TEXTO_ENVIO_NO_REGISTRADO } from "@/config/strings.ts";
+import {
+  cierreConPregunta,
+  cierreDelTurno,
+  cierreDeterminista,
+} from "@/domain/builders/cierre-turno.builder.ts";
 import type { LlamadaResumida } from "@/domain/types/cierre-turno.type.ts";
-import type { CasoPendiente } from "@/domain/types/compuerta.type.ts";
+import type { CasoPendiente, DesenlaceEnvio } from "@/domain/types/compuerta.type.ts";
 
 const EC = "ec-corp-andina";
 const CO = "co-industrias-delta";
@@ -212,4 +217,63 @@ describe("cierreConPregunta (D-44, CR-02)", () => {
       expect(intacta || ultima.endsWith(".") || ultima.endsWith("!")).toBe(true);
     },
   );
+});
+
+describe("cierreDelTurno: texto del modelo, aviso del servidor y pregunta (G-03-26, D-44)", () => {
+  const TEXTO = "Registré el envío simulado.";
+  const SIN_PAQUETE_CO: DesenlaceEnvio = { tipo: DESENLACE_ENVIO.SIN_PAQUETE, caso: CO };
+  const REQUIERE_EC: DesenlaceEnvio = { tipo: DESENLACE_ENVIO.REQUIERE_CONFIRMACION, caso: EC };
+  const SIN_CASO: DesenlaceEnvio = { tipo: DESENLACE_ENVIO.SIN_CASO, caso: null };
+  const AVISO_SIN_PAQUETE_CO = TEXTO_ENVIO_NO_REGISTRADO[DESENLACE_ENVIO.SIN_PAQUETE](CO);
+  const AVISO_REQUIERE_EC = TEXTO_ENVIO_NO_REGISTRADO[DESENLACE_ENVIO.REQUIERE_CONFIRMACION](EC);
+  const PREGUNTA_EC = cierreConPregunta("", [PENDIENTE_EC]);
+
+  test("sin desenlaces es igual a cierreConPregunta, con y sin pendientes", () => {
+    for (const pendientes of [[], [PENDIENTE_EC], [PENDIENTE_EC, PENDIENTE_CO]]) {
+      for (const texto of ["", TEXTO, `${TEXTO} ¿Confirmas?`, "Hecho.\n\n"]) {
+        expect(cierreDelTurno(texto, [], pendientes)).toBe(cierreConPregunta(texto, pendientes));
+      }
+    }
+  });
+
+  test("con desenlaces y sin pendientes agrega el aviso después del texto del modelo", () => {
+    expect(cierreDelTurno(TEXTO, [SIN_PAQUETE_CO], [])).toBe(
+      `${TEXTO}${SEPARADOR_PARRAFOS}${AVISO_SIN_PAQUETE_CO}`,
+    );
+  });
+
+  test("con pendientes quita la pregunta final del modelo y deja aviso y pregunta del servidor al final", () => {
+    const texto = cierreDelTurno(`${TEXTO} ¿Confirmas el envío?`, [REQUIERE_EC], [PENDIENTE_EC]);
+    expect(texto).toBe(
+      `${TEXTO}${SEPARADOR_PARRAFOS}${AVISO_REQUIERE_EC}${SEPARADOR_PARRAFOS}${PREGUNTA_EC}`,
+    );
+    expect(texto.split(SEPARADOR_PARRAFOS).at(-1)).toBe(PREGUNTA_EC);
+  });
+
+  test("con el texto del modelo vacío el aviso queda primero", () => {
+    expect(cierreDelTurno("", [SIN_PAQUETE_CO], [])).toBe(AVISO_SIN_PAQUETE_CO);
+    expect(cierreDelTurno("", [REQUIERE_EC], [PENDIENTE_EC])).toBe(
+      `${AVISO_REQUIERE_EC}${SEPARADOR_PARRAFOS}${PREGUNTA_EC}`,
+    );
+  });
+
+  test("un desenlace repetido sale una vez y desenlaces distintos van en líneas del mismo párrafo", () => {
+    expect(cierreDelTurno(TEXTO, [SIN_PAQUETE_CO, REQUIERE_EC, SIN_PAQUETE_CO], [])).toBe(
+      `${TEXTO}${SEPARADOR_PARRAFOS}${AVISO_SIN_PAQUETE_CO}${SALTO_DE_LINEA}${AVISO_REQUIERE_EC}`,
+    );
+  });
+
+  test("un desenlace SIN_CASO se pinta con su texto, sin caso", () => {
+    expect(cierreDelTurno(TEXTO, [SIN_CASO], [])).toBe(
+      `${TEXTO}${SEPARADOR_PARRAFOS}${TEXTO_ENVIO_NO_REGISTRADO[DESENLACE_ENVIO.SIN_CASO]()}`,
+    );
+  });
+
+  test("ningún aviso lleva signos de pregunta", () => {
+    for (const desenlace of Object.values(DESENLACE_ENVIO)) {
+      const aviso = TEXTO_ENVIO_NO_REGISTRADO[desenlace](EC);
+      expect(PATRON_PREGUNTA.test(aviso)).toBe(false);
+      expect(aviso).not.toContain("¿");
+    }
+  });
 });

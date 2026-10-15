@@ -53,6 +53,7 @@ import { ESTADO_SOPORTE } from "@/config/constants/supports.constants.ts";
 import { SEPARADOR_PARRAFOS } from "@/config/constants/text.constants.ts";
 import { HERRAMIENTA, NOMBRE_VISIBLE } from "@/config/constants/tools.constants.ts";
 import { pinExecutionDate } from "@/config/env.ts";
+import type { ValorDe } from "@/config/types/valor-de.type.ts";
 import {
   MENSAJE_AGENTE,
   MENSAJE_ERROR,
@@ -144,6 +145,13 @@ function bloqueada() {
 
 function exitosa() {
   return expect.objectContaining({ ok: true });
+}
+
+function avisoDe(
+  desenlace: Exclude<ValorDe<typeof DESENLACE_ENVIO>, typeof DESENLACE_ENVIO.SIN_CASO>,
+  caso: string,
+): string {
+  return TEXTO_ENVIO_NO_REGISTRADO[desenlace](caso);
 }
 
 function casosPorConfirmar(eventos: readonly EventoAgente[]): string[] {
@@ -338,7 +346,7 @@ describe("D-38: la autorización vale una vez, para un caso y en el turno siguie
     expect(await enviosOk()).toBe(1);
     expect(confirmaciones(turno2)).toEqual([]);
     expect(finDeTurno(turno2).needsConfirmation).toBe(false);
-    expect(textoFinal(turno2)).toBe("Hecho.");
+    expect(textoFinal(turno2)).toBe(`Hecho.${SEPARADOR_PARRAFOS}${avisoDe(DESENLACE_ENVIO.YA_ENVIADO, EC)}`);
 
     const turno3 = await prueba.turno("envía");
     expect(finesDeHerramienta(turno3)).toEqual([bloqueada()]);
@@ -389,7 +397,7 @@ describe("AGT-04 (G-02-3, D-63.4): un caso ya enviado no se reabre ni se envía 
     expect(finesDeHerramienta(turno3)).toEqual([bloqueada()]);
     expect(confirmaciones(turno3)).toEqual([]);
     expect(finDeTurno(turno3).needsConfirmation).toBe(false);
-    expect(textoFinal(turno3)).toBe("Hecho.");
+    expect(textoFinal(turno3)).toBe(`Hecho.${SEPARADOR_PARRAFOS}${avisoDe(DESENLACE_ENVIO.YA_ENVIADO, EC)}`);
     expect(await enviosOk()).toBe(1);
     expect(await readFile(ruta, "utf8")).toBe(primero);
     const sesion = prueba.sesionActual();
@@ -597,6 +605,9 @@ describe("D-69: Cancelar estructurado cancela solo ese caso", () => {
     expect(finesDeHerramienta(turno2)).toEqual([bloqueada()]);
     expect(await enviosOk()).toBe(0);
     expect(await casosConEnvioSimulado(proyecto.raiz)).toEqual([]);
+    expect(textoFinal(turno2)).toBe(
+      `Hecho.${SEPARADOR_PARRAFOS}${avisoDe(DESENLACE_ENVIO.REQUIERE_CONFIRMACION, EC)}${SEPARADOR_PARRAFOS}${PREGUNTA_EC}`,
+    );
     historialSano(prueba);
   });
 });
@@ -1083,5 +1094,87 @@ describe("WR-02 (D-63.7): un envío autorizado que falla vuelve a dejar el caso 
       { ok: false, codigo: CODIGO_ERROR.PAQUETE_NO_ARMADO },
     ]);
     historialSano(prueba);
+  });
+});
+
+describe("G-03-26: cada envío de un caso legible que no ocurrió deja su aviso (escenarios B, C y FALLIDO)", () => {
+  test("escenario B: armar ec y simular ec en el mismo turno deja el aviso de confirmación antes de la pregunta (D-44)", async () => {
+    const afirmacion = `Registré el envío simulado de ${EC}.`;
+    const prueba = agente([
+      ...prepararCaso(EC),
+      respuestaHerramientas(
+        llamar("armar-1", HERRAMIENTA.ARMAR_PAQUETE, { caso: EC }),
+        simular("simular-1", { caso: EC, confirmado: true }),
+      ),
+      respuestaTexto(afirmacion),
+    ]);
+    const eventos = await prueba.turno(`procesa ${EC}`);
+    expect(finesDeHerramienta(eventos, NOMBRE_VISIBLE[HERRAMIENTA.SIMULAR_ENVIO])).toEqual([bloqueada()]);
+    expect(await casosConEnvioSimulado(proyecto.raiz)).toEqual([]);
+    expect(casosPorConfirmar(eventos)).toEqual([EC]);
+    expect(finDeTurno(eventos).needsConfirmation).toBe(true);
+    expect(textoFinal(eventos)).toBe(
+      `${afirmacion}${SEPARADOR_PARRAFOS}${avisoDe(DESENLACE_ENVIO.REQUIERE_CONFIRMACION, EC)}${SEPARADOR_PARRAFOS}${PREGUNTA_EC}`,
+    );
+    expect(ultimoParrafo(textoFinal(eventos))).toBe(PREGUNTA_EC);
+    historialSano(prueba);
+  });
+
+  test("escenario C: un reintento sobre un caso ya enviado dice que ya tiene un envío registrado y no lo reabre (D-63.4)", async () => {
+    const afirmacion = "Registré el envío simulado otra vez.";
+    const prueba = agente([
+      ...armarCaso(EC),
+      ...enviar("simular-1", EC),
+      respuestaHerramientas(simular("simular-2", { caso: EC, confirmado: true })),
+      respuestaTexto(afirmacion),
+    ]);
+    await prueba.turno(`procesa ${EC}`);
+    await prueba.turno("envía");
+    const turno3 = await prueba.turno(`Sí, envía ${EC}`);
+    expect(finesDeHerramienta(turno3)).toEqual([bloqueada()]);
+    expect(await enviosOk()).toBe(1);
+    expect(confirmaciones(turno3)).toEqual([]);
+    expect(finDeTurno(turno3).needsConfirmation).toBe(false);
+    const aviso = avisoDe(DESENLACE_ENVIO.YA_ENVIADO, EC);
+    expect(aviso).toContain(ARCHIVOS_SALIDA.ENVIO_SIMULADO);
+    expect(textoFinal(turno3)).toBe(`${afirmacion}${SEPARADOR_PARRAFOS}${aviso}`);
+    expect(prueba.sesionActual().compuerta).toEqual({ tipo: ESTADO_COMPUERTA.LIBRE });
+    historialSano(prueba);
+  });
+
+  test("FALLIDO: un envío autorizado que la herramienta rechaza deja el aviso antes de la pregunta (D-63.7)", async () => {
+    const texto = "No pude registrar el envío simulado.";
+    const prueba = agente([
+      ...armarCaso(EC),
+      respuestaHerramientas(simular("simular-1", { caso: EC })),
+      respuestaTexto(texto),
+    ]);
+    await prueba.turno(`procesa ${EC}`);
+    await quitarChecklist(EC);
+
+    const turno2 = await prueba.turno("envía");
+    expect(finesDeHerramienta(turno2)).toEqual([falloDeEnvio(CODIGO_ERROR.PAQUETE_NO_ARMADO)]);
+    vuelvePreguntandoPorEc(turno2, MOTIVO_FIN.FINAL);
+    expect(textoFinal(turno2)).toBe(
+      `${texto}${SEPARADOR_PARRAFOS}${avisoDe(DESENLACE_ENVIO.FALLIDO, EC)}${SEPARADOR_PARRAFOS}${PREGUNTA_EC}`,
+    );
+    expect(await casosConEnvioSimulado(proyecto.raiz)).toEqual([]);
+    historialSano(prueba);
+  });
+
+  test("un turno sin simular_envio responde igual que antes", async () => {
+    const texto = "Falta el certificado de cumplimiento tributario.";
+    const prueba = agente([...armarCaso(EC), respuestaTexto(texto)]);
+    await prueba.turno(`procesa ${EC}`);
+    const turno2 = await prueba.turno("dime qué falta");
+    expect(textoFinal(turno2)).toBe(`${texto}${SEPARADOR_PARRAFOS}${PREGUNTA_EC}`);
+  });
+
+  test("un turno cuyo simular_envio terminó ENVIADO responde igual que antes", async () => {
+    const prueba = agente([...armarCaso(EC), ...enviar("simular-1", EC)]);
+    await prueba.turno(`procesa ${EC}`);
+    const turno2 = await prueba.turno("envía");
+    expect(finesDeHerramienta(turno2)).toEqual([exitosa()]);
+    expect(textoFinal(turno2)).toBe("Hecho.");
   });
 });
