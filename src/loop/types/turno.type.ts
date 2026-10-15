@@ -102,7 +102,6 @@ export type ResultadoDespacho = {
 export type HerramientaAnotada = {
   readonly llamada: LlamadaHerramienta;
   readonly despacho: ResultadoDespacho;
-  readonly conocidos: PaquetesConocidos;
   readonly duracionMs: number;
 };
 
