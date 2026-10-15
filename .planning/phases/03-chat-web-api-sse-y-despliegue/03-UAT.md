@@ -244,6 +244,7 @@ blocked: 0
     - "Option A (human decision, reverses D-70, phase 3.1 or 4): deterministic server-side 'Procesar sin el modelo' action feeding darPaso with the fixed tool order, same cards and gate"
     - "Option B (provider switch) not recommended"
   debug_session: .planning/debug/estrategia-sin-modelo.md
+  decision: "Human 2026-10-15: implement Option C+ now in the gap closure (per-state copy without demo.ts, composer/chips disabled only in sin_clave and tope_diario, Comprobar de nuevo button, unified saldo copy, AUTENTICACION state decision, rewrite D-70/LLM-06/SC4/UI-SPEC). Option A (server-side deterministic Procesar sin el modelo, reverses D-70) is deferred to a later phase (3.1 or 4), see Deferred Follow-Ups."
 - gap_id: G-03-17
   truth: "result numbers equal tool_end data (compare with SSE capture); chips disabled mid-turn; progress stages follow tool events only; card readable"
   status: failed
@@ -309,8 +310,13 @@ blocked: 0
     - "Update the 4 pinned test rows and add regression scenarios A (new session), C (already sent), D (no caso)"
     - "Log the case in gate_blocked when it matches PATRON_CASO"
   debug_session: .planning/debug/envio-falso-sin-pendiente.md
+  decision: "Human 2026-10-15: append a deterministic server notice for every simular_envio that did not end ENVIADO (keep AGT-03/T-02-41: the server does not rewrite model prose). Do not replace the model text."
 
 ## Deferred Follow-Ups
+
+- test: 15
+  idea: "Option A for G-03-15: server-side deterministic 'Procesar sin el modelo' action (fixed tool order leer→mapear→generar→armar through darPaso, same cards, gate and log; confirmations can complete without a model). Reverses D-70; plan as phase 3.1 or in phase 4 before the defense."
+  deferred_at: 2026-10-15
 
 - test: 24
   idea: "Document in docs/limites-del-demo.md that the /api/acceso lockout also rejects the correct code for 15 min (same IP/NAT)"
