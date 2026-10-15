@@ -170,11 +170,15 @@ export type PartesAvisoModelo = {
 export type PropsAvisoModelo = {
   readonly estado: EstadoModelo | null;
   readonly zona: string | null;
+  readonly comprobando: boolean;
+  readonly alComprobar: () => void;
 };
 
 export type PropsCuerpoAvisoModelo = {
   readonly estado: EstadoModeloConAviso;
   readonly zona: string | null;
+  readonly comprobando: boolean;
+  readonly alComprobar: () => void;
 };
 
 export type PropsEstadoDelModelo = {

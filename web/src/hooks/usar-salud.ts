@@ -6,17 +6,24 @@ import type { HealthResponse } from "@/http/types/api.type.ts";
 
 export function useSalud(): ControlSalud {
   const [salud, setSalud] = useState<HealthResponse | null>(null);
+  const [comprobando, setComprobando] = useState(false);
   const pedidoActivo = useRef<AbortController | null>(null);
 
   const refrescar = useCallback(() => {
     pedidoActivo.current?.abort();
     const controlador = new AbortController();
     pedidoActivo.current = controlador;
-    void obtenerSalud(controlador.signal).then((resultado) => {
-      if (controlador.signal.aborted) return;
-      if (pedidoActivo.current === controlador) pedidoActivo.current = null;
-      if (resultado.tipo === RESULTADO_API.OK) setSalud(resultado.valor);
-    });
+    setComprobando(true);
+    void obtenerSalud(controlador.signal)
+      .then((resultado) => {
+        if (controlador.signal.aborted) return;
+        if (resultado.tipo === RESULTADO_API.OK) setSalud(resultado.valor);
+      })
+      .finally(() => {
+        if (pedidoActivo.current !== controlador) return;
+        pedidoActivo.current = null;
+        setComprobando(false);
+      });
   }, []);
 
   useEffect(() => {
@@ -31,5 +38,5 @@ export function useSalud(): ControlSalud {
     };
   }, [refrescar]);
 
-  return { salud, refrescar };
+  return { salud, refrescar, comprobando };
 }

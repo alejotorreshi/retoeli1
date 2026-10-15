@@ -317,6 +317,7 @@ export type SaludModelo = Pick<HealthResponse, "model" | "llm">;
 export type ControlSalud = {
   readonly salud: HealthResponse | null;
   readonly refrescar: () => void;
+  readonly comprobando: boolean;
 };
 
 export type ArchivoUi = FileListResponse["archivos"][number];

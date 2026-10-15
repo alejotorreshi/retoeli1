@@ -47,3 +47,23 @@
 .detalle {
   margin: 0;
 }
+
+.comprobar {
+  align-self: flex-start;
+  min-height: var(--alto-control);
+  margin-block-start: var(--espacio-xs);
+  padding-inline: var(--espacio-md);
+  font-size: var(--etiqueta-tamano);
+  font-weight: var(--etiqueta-peso-fuerte);
+  line-height: var(--etiqueta-interlinea);
+  color: var(--texto);
+  background: var(--dominante);
+  border: var(--borde-ancho) solid var(--borde);
+  border-radius: var(--radio-chico);
+  cursor: pointer;
+}
+
+.comprobar:disabled {
+  color: var(--texto-tenue);
+  cursor: not-allowed;
+}

@@ -5,7 +5,7 @@ import { TEXTO_MODELO } from "@web/config/strings.ts";
 import type { PropsAvisoModelo, PropsCuerpoAvisoModelo } from "@web/types/ui.type.ts";
 import { ESTADO_LLM } from "@/config/constants/llm.constants.ts";
 
-function CuerpoAvisoModelo({ estado, zona }: PropsCuerpoAvisoModelo) {
+function CuerpoAvisoModelo({ estado, zona, comprobando, alComprobar }: PropsCuerpoAvisoModelo) {
   const partes = TEXTO_MODELO.aviso(estado, zona);
   return (
     <div className={`${estilos.aviso} ${estilos[TONO_DEL_MODELO[estado]]}`}>
@@ -15,16 +15,19 @@ function CuerpoAvisoModelo({ estado, zona }: PropsCuerpoAvisoModelo) {
       <div className={estilos.texto}>
         <p className={estilos.titulo}>{partes.titulo}</p>
         <p className={estilos.detalle}>{partes.detalle}</p>
+        <button type="button" className={estilos.comprobar} disabled={comprobando} onClick={alComprobar}>
+          {comprobando ? TEXTO_MODELO.comprobando : TEXTO_MODELO.comprobar}
+        </button>
       </div>
     </div>
   );
 }
 
-export function AvisoModelo({ estado, zona }: PropsAvisoModelo) {
+export function AvisoModelo({ estado, zona, comprobando, alComprobar }: PropsAvisoModelo) {
   return (
     <div role="status" className={estilos.region}>
       {estado === null || estado === ESTADO_LLM.DISPONIBLE ? null : (
-        <CuerpoAvisoModelo estado={estado} zona={zona} />
+        <CuerpoAvisoModelo estado={estado} zona={zona} comprobando={comprobando} alComprobar={alComprobar} />
       )}
     </div>
   );

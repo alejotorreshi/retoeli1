@@ -114,7 +114,7 @@ function atributosDeVista(
 }
 
 export function App() {
-  const { salud, refrescar } = useSalud();
+  const { salud, refrescar, comprobando } = useSalud();
   const {
     estado,
     borrador,
@@ -183,7 +183,12 @@ export function App() {
         nuevaSesionDeshabilitada={estado.enCurso}
         alNuevaSesion={() => setNuevaSesionAbierta(true)}
       />
-      <AvisoModelo estado={salud?.llm ?? null} zona={estado.config?.zona ?? null} />
+      <AvisoModelo
+        estado={salud?.llm ?? null}
+        zona={estado.config?.zona ?? null}
+        comprobando={comprobando}
+        alComprobar={refrescar}
+      />
       {conPestanas ? <BarraDePestanas control={pestanas} ids={ids} /> : null}
       <div className={CLASE_GLOBAL.COLUMNAS}>
         <div
