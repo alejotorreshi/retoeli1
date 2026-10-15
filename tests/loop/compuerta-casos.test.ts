@@ -31,7 +31,11 @@ import {
   MOTIVO_FIN,
   TIPO_EVENTO,
 } from "@/config/constants/agent.constants.ts";
-import { ESTADO_COMPUERTA } from "@/config/constants/confirmation.constants.ts";
+import {
+  DECISION_CONFIRMACION,
+  ESTADO_COMPUERTA,
+  TIPO_ACCION,
+} from "@/config/constants/confirmation.constants.ts";
 import { FECHA_DEMO } from "@/config/constants/demo.constants.ts";
 import { CODIGO_ERROR } from "@/config/constants/errors.constants.ts";
 import {
@@ -50,6 +54,7 @@ import { HERRAMIENTA, NOMBRE_VISIBLE } from "@/config/constants/tools.constants.
 import { pinExecutionDate } from "@/config/env.ts";
 import { MENSAJE_AGENTE, MENSAJE_ERROR, RESUMEN_HERRAMIENTA } from "@/config/strings.ts";
 import { cierreConPregunta } from "@/domain/builders/cierre-turno.builder.ts";
+import { clasificarConfirmacion } from "@/domain/policies/confirmacion.policy.ts";
 import type { CasoPendiente } from "@/domain/types/compuerta.type.ts";
 import { cuerpoDeFallo } from "@/domain/utils/respuesta-herramienta.util.ts";
 import { createInstructionsLoader } from "@/infra/knowledge/instructions-loader.adapter.ts";
@@ -412,45 +417,65 @@ describe("D-63.4: un armado nuevo tras el envío abre otro ciclo", () => {
   });
 });
 
-describe("D-39: la confirmación estructurada del botón tiene precedencia sobre el texto", () => {
-  test("{aprobada: true, caso: ec} con mensaje vacío autoriza ec", async () => {
+describe("D-68: la acción estructurada de un caso pendiente tiene precedencia sobre el texto", () => {
+  test("confirmar ec con el texto visible del botón autoriza ec", async () => {
     const prueba = agente([...armarCaso(EC), ...enviar("simular-1", EC)]);
     await prueba.turno(`procesa ${EC}`);
-    const turno2 = await prueba.turno("", { confirmacion: { aprobada: true, caso: EC } });
-    expect(finesDeHerramienta(turno2)).toEqual([exitosa()]);
-    expect(await casosConEnvioSimulado(proyecto.raiz)).toEqual([EC]);
-    historialSano(prueba);
-  });
-
-  test("el botón aprobado gana aunque el texto diga que no", async () => {
-    const prueba = agente([...armarCaso(EC), ...enviar("simular-1", EC)]);
-    await prueba.turno(`procesa ${EC}`);
-    const turno2 = await prueba.turno("No envíes nada todavía", {
-      confirmacion: { aprobada: true, caso: EC },
+    const turno2 = await prueba.turno(`Sí, envía ${EC}`, {
+      accion: { tipo: TIPO_ACCION.CONFIRMAR, caso: EC },
     });
     expect(finesDeHerramienta(turno2)).toEqual([exitosa()]);
-  });
-
-  test("{aprobada: false, caso: ec} cancela lo pendiente", async () => {
-    const prueba = agente([...armarCaso(EC), respuestaTexto("No envío nada.")]);
-    await prueba.turno(`procesa ${EC}`);
-    const turno2 = await prueba.turno("envía", { confirmacion: { aprobada: false, caso: EC } });
-    expect(confirmaciones(turno2)).toEqual([]);
+    expect(await casosConEnvioSimulado(proyecto.raiz)).toEqual([EC]);
     expect(finDeTurno(turno2).needsConfirmation).toBe(false);
-    expect(textoFinal(turno2)).toBe("No envío nada.");
     historialSano(prueba);
   });
 
-  test("{aprobada: true, caso: co} con solo ec pendiente no autoriza nada", async () => {
+  test("confirmar ec gana aunque el texto diga que no", async () => {
+    const prueba = agente([...armarCaso(EC), ...enviar("simular-1", EC)]);
+    await prueba.turno(`procesa ${EC}`);
+    const texto = "No envíes nada todavía";
+    expect(clasificarConfirmacion(texto, [EC]).decision).toBe(DECISION_CONFIRMACION.RECHAZA);
+    const turno2 = await prueba.turno(texto, { accion: { tipo: TIPO_ACCION.CONFIRMAR, caso: EC } });
+    expect(finesDeHerramienta(turno2)).toEqual([exitosa()]);
+    expect(await casosConEnvioSimulado(proyecto.raiz)).toEqual([EC]);
+  });
+
+  test("con dos pendientes, confirmar ec con un 'sí' a secas autoriza solo ec y co sigue pendiente", async () => {
+    const prueba = agente([
+      ...armarCaso(EC),
+      ...armarCaso(CO),
+      respuestaHerramientas(simular("simular-co", { caso: CO }), simular("simular-ec", { caso: EC })),
+      respuestaTexto("Hecho."),
+    ]);
+    await prueba.turno(`procesa ${EC}`);
+    const turno2 = await prueba.turno(`procesa el caso ${CO}`);
+    expect(casosPorConfirmar(turno2)).toEqual([EC, CO]);
+    expect(clasificarConfirmacion("sí", [EC, CO]).decision).toBe(DECISION_CONFIRMACION.FALTA_CASO);
+
+    const turno3 = await prueba.turno("sí", { accion: { tipo: TIPO_ACCION.CONFIRMAR, caso: EC } });
+    expect(finesDeHerramienta(turno3)).toEqual([bloqueada(), exitosa()]);
+    expect(await casosConEnvioSimulado(proyecto.raiz)).toEqual([EC]);
+    expect(casosPorConfirmar(turno3)).toEqual([CO]);
+    terminaPreguntandoPor(textoFinal(turno3), CO);
+    expect(finDeTurno(turno3).needsConfirmation).toBe(true);
+    historialSano(prueba);
+  });
+
+  test("confirmar co con solo ec pendiente no autoriza nada, el texto visible pasa por el clasificador y ec sigue pendiente", async () => {
     const prueba = agente([
       ...armarCaso(EC),
       respuestaHerramientas(simular("simular-ec", { caso: EC }), simular("simular-co", { caso: CO })),
       respuestaTexto("Hecho."),
     ]);
     await prueba.turno(`procesa ${EC}`);
-    const turno2 = await prueba.turno("", { confirmacion: { aprobada: true, caso: CO } });
+    const texto = `Sí, envía ${CO}`;
+    expect(clasificarConfirmacion(texto, [EC])).toEqual({ decision: DECISION_CONFIRMACION.OTRO });
+    const turno2 = await prueba.turno(texto, { accion: { tipo: TIPO_ACCION.CONFIRMAR, caso: CO } });
     expect(finesDeHerramienta(turno2)).toEqual([bloqueada(), bloqueada()]);
     expect(await casosConEnvioSimulado(proyecto.raiz)).toEqual([]);
+    expect(casosPorConfirmar(turno2)).toEqual([EC]);
+    terminaPreguntandoPor(textoFinal(turno2), EC);
+    expect(finDeTurno(turno2).needsConfirmation).toBe(true);
     historialSano(prueba);
   });
 });

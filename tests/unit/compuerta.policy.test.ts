@@ -46,6 +46,10 @@ const confirma = (caso: string): DecisionConfirmacion => ({ decision: DECISION_C
 const RECHAZA: DecisionConfirmacion = { decision: DECISION_CONFIRMACION.RECHAZA };
 const FALTA_CASO: DecisionConfirmacion = { decision: DECISION_CONFIRMACION.FALTA_CASO };
 const OTRO: DecisionConfirmacion = { decision: DECISION_CONFIRMACION.OTRO };
+const cancelaCaso = (caso: string): DecisionConfirmacion => ({
+  decision: DECISION_CONFIRMACION.CANCELA_CASO,
+  caso,
+});
 
 const armado = (caso: CasoPendiente): EventoCompuerta => ({ tipo: EVENTO_COMPUERTA.ARMADO, pendiente: caso });
 const bloqueado = (caso: string): EventoCompuerta => ({ tipo: EVENTO_COMPUERTA.BLOQUEADO, caso });
@@ -68,9 +72,12 @@ describe("estado inicial y casos pendientes", () => {
 });
 
 describe("abrirTurno (D-37, D-40, D-63.3, D-63.6)", () => {
-  test.each([confirma(EC), RECHAZA, FALTA_CASO, OTRO])("LIBRE nunca autoriza: %p", (decision) => {
-    expect(abrirTurno(LIBRE, decision)).toEqual({ autorizado: null, siguiente: LIBRE });
-  });
+  test.each([confirma(EC), RECHAZA, FALTA_CASO, OTRO, cancelaCaso(EC)])(
+    "LIBRE nunca autoriza: %p",
+    (decision) => {
+      expect(abrirTurno(LIBRE, decision)).toEqual({ autorizado: null, siguiente: LIBRE });
+    },
+  );
 
   test("PENDIENTE más confirma de un caso pendiente autoriza solo ese caso y vuelve a LIBRE", () => {
     expect(abrirTurno(pendiente(PENDIENTE_EC), confirma(EC))).toEqual({ autorizado: EC, siguiente: LIBRE });
@@ -104,6 +111,27 @@ describe("abrirTurno (D-37, D-40, D-63.3, D-63.6)", () => {
 
   test("confirma de un caso que no está pendiente no autoriza nada y conserva los pendientes (D-63.6)", () => {
     expect(abrirTurno(pendiente(PENDIENTE_EC), confirma(CO))).toEqual({
+      autorizado: null,
+      siguiente: pendiente(PENDIENTE_EC),
+    });
+  });
+
+  test("cancela_caso con dos casos quita solo ese caso y no autoriza nada (D-69)", () => {
+    expect(abrirTurno(pendiente(PENDIENTE_EC, PENDIENTE_CO), cancelaCaso(CO))).toEqual({
+      autorizado: null,
+      siguiente: pendiente(PENDIENTE_EC),
+    });
+  });
+
+  test("cancela_caso del único caso pendiente vuelve a LIBRE (D-69)", () => {
+    expect(abrirTurno(pendiente(PENDIENTE_EC), cancelaCaso(EC))).toEqual({
+      autorizado: null,
+      siguiente: LIBRE,
+    });
+  });
+
+  test("cancela_caso de un caso que no está pendiente conserva los pendientes (D-69)", () => {
+    expect(abrirTurno(pendiente(PENDIENTE_EC), cancelaCaso(CO))).toEqual({
       autorizado: null,
       siguiente: pendiente(PENDIENTE_EC),
     });

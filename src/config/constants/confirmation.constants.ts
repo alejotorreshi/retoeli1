@@ -3,6 +3,12 @@ export const DECISION_CONFIRMACION = {
   RECHAZA: "rechaza",
   FALTA_CASO: "falta_caso",
   OTRO: "otro",
+  CANCELA_CASO: "cancela_caso",
+} as const;
+
+export const TIPO_ACCION = {
+  CONFIRMAR: "confirmar",
+  CANCELAR: "cancelar",
 } as const;
 
 export const MAX_PALABRAS_CONFIRMACION = 12;

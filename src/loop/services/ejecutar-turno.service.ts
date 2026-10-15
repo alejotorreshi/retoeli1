@@ -6,7 +6,7 @@ import {
   MOTIVO_FIN,
   TIPO_EVENTO,
 } from "@/config/constants/agent.constants.ts";
-import { DECISION_CONFIRMACION } from "@/config/constants/confirmation.constants.ts";
+import { DECISION_CONFIRMACION, TIPO_ACCION } from "@/config/constants/confirmation.constants.ts";
 import { ROL_MENSAJE } from "@/config/constants/llm.constants.ts";
 import { MENSAJE_AGENTE, TEXTO_SESION } from "@/config/strings.ts";
 import {
@@ -50,13 +50,14 @@ export function sesionVacia(id: string): Sesion {
 }
 
 function decisionDe(entrada: EntradaTurno, compuerta: EstadoCompuerta): DecisionConfirmacion {
-  const { confirmacion } = entrada;
-  if (confirmacion === undefined) {
-    return clasificarConfirmacion(entrada.mensaje, casosPendientes(compuerta));
+  const pendientes = casosPendientes(compuerta);
+  const { accion } = entrada;
+  if (accion === undefined || !pendientes.includes(accion.caso)) {
+    return clasificarConfirmacion(entrada.mensaje, pendientes);
   }
-  return confirmacion.aprobada
-    ? { decision: DECISION_CONFIRMACION.CONFIRMA, caso: confirmacion.caso }
-    : { decision: DECISION_CONFIRMACION.RECHAZA };
+  return accion.tipo === TIPO_ACCION.CONFIRMAR
+    ? { decision: DECISION_CONFIRMACION.CONFIRMA, caso: accion.caso }
+    : { decision: DECISION_CONFIRMACION.CANCELA_CASO, caso: accion.caso };
 }
 
 function crearTurno(

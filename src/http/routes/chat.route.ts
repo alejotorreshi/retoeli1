@@ -20,6 +20,7 @@ import type { HttpEnv, RateLimiter, TurnSlots } from "@/http/types/server.type.t
 import { respuestaDeTurno } from "@/loop/services/respuesta-turno.service.ts";
 import type { Agente } from "@/loop/types/agente.type.ts";
 import type { EventoAgente } from "@/loop/types/evento.type.ts";
+import type { EntradaTurno } from "@/loop/types/turno.type.ts";
 
 type ChatDeps = {
   readonly agente: Agente | null;
@@ -77,6 +78,11 @@ function opensSession(agente: Agente, sessionId: string | null): boolean {
   return sessionId === null || !agente.existeSesion(sessionId);
 }
 
+function turnInput(body: ChatBody, signal: AbortSignal): EntradaTurno {
+  const base = { sesionId: body.sessionId, mensaje: body.message, signal };
+  return body.accion === undefined ? base : { ...base, accion: body.accion };
+}
+
 function internalErrorData(): string {
   const body: ErrorResponse = { mensaje: MENSAJE_HTTP.errorInterno };
   return JSON.stringify(body);
@@ -88,7 +94,7 @@ function streamTurn(c: Context<HttpEnv>, body: ChatBody, deps: TurnDeps): Respon
     stream.onAbort(() => cut.abort());
     const stopHeartbeat = startHeartbeat((comment) => stream.write(comment), deps.heartbeatMs);
     try {
-      const turn = deps.agente.turno({ sesionId: body.sessionId, mensaje: body.message, signal: cut.signal });
+      const turn = deps.agente.turno(turnInput(body, cut.signal));
       for await (const evento of turn) await stream.writeSSE(toSseFrame(evento, deps.secrets));
     } catch (error) {
       deps.logger.error(EVENTO_HTTP.STREAM_FALLIDO, { error });
@@ -115,11 +121,7 @@ function sessionIdOf(eventos: readonly EventoAgente[]): string | null {
 
 async function foldTurn(c: Context<HttpEnv>, body: ChatBody, deps: TurnDeps): Promise<EventoAgente[]> {
   const eventos: EventoAgente[] = [];
-  const turn = deps.agente.turno({
-    sesionId: body.sessionId,
-    mensaje: body.message,
-    signal: c.req.raw.signal,
-  });
+  const turn = deps.agente.turno(turnInput(body, c.req.raw.signal));
   try {
     for await (const evento of turn) eventos.push(evento);
   } finally {

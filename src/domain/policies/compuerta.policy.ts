@@ -47,6 +47,9 @@ export function abrirTurno(estado: EstadoCompuerta, decision: DecisionConfirmaci
   if (estado.tipo === ESTADO_COMPUERTA.LIBRE || decision.decision === DECISION_CONFIRMACION.RECHAZA) {
     return { autorizado: null, siguiente: estadoLibre() };
   }
+  if (decision.decision === DECISION_CONFIRMACION.CANCELA_CASO) {
+    return { autorizado: null, siguiente: estadoSin(estado, decision.caso) };
+  }
   if (
     decision.decision === DECISION_CONFIRMACION.CONFIRMA &&
     casosPendientes(estado).includes(decision.caso)

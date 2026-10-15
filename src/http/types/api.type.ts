@@ -1,5 +1,6 @@
 import type { LlmHealthState } from "@/llm/types/resilience.type.ts";
 import type { EventoAgente } from "@/loop/types/evento.type.ts";
+import type { AccionEstructurada } from "@/loop/types/turno.type.ts";
 
 export type HealthResponse = {
   readonly ok: true;
@@ -11,6 +12,7 @@ export type HealthResponse = {
 export type ChatBody = {
   readonly sessionId: string | null;
   readonly message: string;
+  readonly accion?: AccionEstructurada | undefined;
 };
 
 export type AccessBody = {

@@ -18,6 +18,7 @@ import {
   DECISION_CONFIRMACION,
   ESTADO_COMPUERTA,
   EVENTO_COMPUERTA,
+  TIPO_ACCION,
 } from "@/config/constants/confirmation.constants.ts";
 import { CODIGO_ERROR, CODIGO_FS } from "@/config/constants/errors.constants.ts";
 import { ARCHIVOS_PAQUETE, ARCHIVOS_SALIDA } from "@/config/constants/files.constants.ts";
@@ -158,6 +159,7 @@ const FAMILIAS_DE_CODIGOS: readonly Readonly<Record<string, string>>[] = [
   DECISION_CONFIRMACION,
   ESTADO_COMPUERTA,
   EVENTO_COMPUERTA,
+  TIPO_ACCION,
 ];
 
 function escaparRegex(texto: string): string {

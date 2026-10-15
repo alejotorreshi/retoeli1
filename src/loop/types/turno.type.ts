@@ -4,6 +4,8 @@ import type {
   BitacoraEstructurada,
   CargarInstrucciones,
 } from "@/application/types/puertos-agente.type.ts";
+import type { TIPO_ACCION } from "@/config/constants/confirmation.constants.ts";
+import type { ValorDe } from "@/config/types/valor-de.type.ts";
 import type { LlamadaResumida } from "@/domain/types/cierre-turno.type.ts";
 import type {
   AutorizacionTurno,
@@ -39,13 +41,16 @@ export type Sesion = {
   readonly casosEnviados: CasosEnviados;
 };
 
-export type ConfirmacionEstructurada = { readonly aprobada: boolean; readonly caso: string };
+export type AccionEstructurada = {
+  readonly tipo: ValorDe<typeof TIPO_ACCION>;
+  readonly caso: string;
+};
 
 export type EntradaTurno = {
   readonly sesionId: string | null;
   readonly mensaje: string;
   readonly signal?: AbortSignal;
-  readonly confirmacion?: ConfirmacionEstructurada;
+  readonly accion?: AccionEstructurada;
 };
 
 export type ResultadoLlamada = {

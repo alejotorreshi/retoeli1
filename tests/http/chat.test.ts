@@ -1,10 +1,24 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import { CLAVE_PRUEBA } from "@tests/helpers/agente-fetch.helper.ts";
+import {
+  casosConEnvioSimulado,
+  confirmaciones,
+  finDeTurno,
+  finesDeHerramienta,
+} from "@tests/helpers/eventos.helper.ts";
 import { crearFetchFalso, cuerpoConHerramientas, cuerpoConTexto } from "@tests/helpers/fetch-falso.helper.ts";
+import { mapearProyectado } from "@tests/helpers/flujo.helper.ts";
 import { crearProyectoTemporal } from "@tests/helpers/proyecto-temporal.helper.ts";
-import { crearServidorPrueba, eventoDeFrame, inicioDeFrames } from "@tests/helpers/servidor-prueba.helper.ts";
+import {
+  crearServidorPrueba,
+  eventoDeFrame,
+  inicioDeFrames,
+  leerSse,
+} from "@tests/helpers/servidor-prueba.helper.ts";
+import type { RespuestaGuion } from "@tests/helpers/types/fetch-falso.type.ts";
 import type { ProyectoTemporal } from "@tests/helpers/types/proyecto-temporal.type.ts";
 import { TIPO_EVENTO } from "@/config/constants/agent.constants.ts";
+import { TIPO_ACCION } from "@/config/constants/confirmation.constants.ts";
 import { FECHA_DEMO } from "@/config/constants/demo.constants.ts";
 import {
   CABECERA,
@@ -15,9 +29,16 @@ import {
 } from "@/config/constants/http.constants.ts";
 import { HERRAMIENTA, NOMBRE_VISIBLE } from "@/config/constants/tools.constants.ts";
 import { pinExecutionDate } from "@/config/env.ts";
+import { MENSAJE_HTTP } from "@/config/strings.ts";
+import type { EventoAgente } from "@/loop/types/evento.type.ts";
+import { crearHerramientas } from "@/tools/factories/herramientas.factory.ts";
 
 const CASO = "co-industrias-delta";
 const LEER = NOMBRE_VISIBLE[HERRAMIENTA.LEER_SOLICITUD];
+const MAPEAR = NOMBRE_VISIBLE[HERRAMIENTA.MAPEAR_CAMPOS];
+const GENERAR = NOMBRE_VISIBLE[HERRAMIENTA.GENERAR_FORMULARIO];
+const ARMAR = NOMBRE_VISIBLE[HERRAMIENTA.ARMAR_PAQUETE];
+const SIMULAR = NOMBRE_VISIBLE[HERRAMIENTA.SIMULAR_ENVIO];
 
 let proyecto: ProyectoTemporal;
 let restaurarFecha: () => void;
@@ -32,8 +53,14 @@ afterAll(async () => {
   await proyecto.limpiar();
 });
 
-function cuerpoChat(sessionId: string | null, message: string): RequestInit {
-  return { method: "POST", body: JSON.stringify({ sessionId, message }) };
+function cuerpoChat(sessionId: string | null, message: string, accion?: unknown): RequestInit {
+  const cuerpo = accion === undefined ? { sessionId, message } : { sessionId, message, accion };
+  return { method: "POST", body: JSON.stringify(cuerpo) };
+}
+
+async function lecturaDe(respuesta: Response): Promise<{ sesionId: string; eventos: EventoAgente[] }> {
+  const { eventos } = await leerSse(respuesta);
+  return { sesionId: inicioDeFrames(eventos).sesionId, eventos: eventos.map(eventoDeFrame) };
 }
 
 describe("POST /api/chat por SSE", () => {
@@ -75,4 +102,66 @@ describe("POST /api/chat por SSE", () => {
     expect(continuacion.sesionId).toBe(inicio.sesionId);
     expect(continuacion.sesionNueva).toBe(false);
   });
+});
+
+describe("POST /api/chat con accion estructurada (D-68)", () => {
+  async function armarPorChat(siguientes: readonly RespuestaGuion[]) {
+    const ctx = { directory: proyecto.raiz, sessionId: "preparacion-accion" };
+    const mapeo = await mapearProyectado(crearHerramientas(), ctx, CASO);
+    const falso = crearFetchFalso([
+      { cuerpo: cuerpoConHerramientas({ nombre: MAPEAR, argumentos: { caso: CASO, campos: [] } }) },
+      { cuerpo: cuerpoConHerramientas({ nombre: GENERAR, argumentos: { caso: CASO, mapeo } }) },
+      { cuerpo: cuerpoConHerramientas({ nombre: ARMAR, argumentos: { caso: CASO } }) },
+      { cuerpo: cuerpoConTexto(`Armé el paquete de ${CASO}.`) },
+      ...siguientes,
+    ]);
+    const servidor = crearServidorPrueba({ raiz: proyecto.raiz, fetch: falso.fetch });
+    const procesar = await servidor.pedir(RUTA_API.CHAT, cuerpoChat(null, `procesa el caso ${CASO}`));
+    const { sesionId, eventos } = await lecturaDe(procesar);
+    expect(confirmaciones(eventos).map(({ caso }) => caso)).toEqual([CASO]);
+    expect(finDeTurno(eventos).needsConfirmation).toBe(true);
+    return { servidor, sesionId };
+  }
+
+  test("confirmar un caso pendiente autoriza su simular_envio en ese turno", async () => {
+    const { servidor, sesionId } = await armarPorChat([
+      { cuerpo: cuerpoConHerramientas({ nombre: SIMULAR, argumentos: { caso: CASO } }) },
+      { cuerpo: cuerpoConTexto("Envío simulado registrado.") },
+    ]);
+    const accion = { tipo: TIPO_ACCION.CONFIRMAR, caso: CASO };
+    const respuesta = await servidor.pedir(RUTA_API.CHAT, cuerpoChat(sesionId, `Sí, envía ${CASO}`, accion));
+    expect(respuesta.status).toBe(RESPUESTA_HTTP.OK);
+    const { eventos } = await lecturaDe(respuesta);
+    expect(finesDeHerramienta(eventos, SIMULAR)).toEqual([expect.objectContaining({ ok: true })]);
+    expect(confirmaciones(eventos)).toEqual([]);
+    expect(finDeTurno(eventos).needsConfirmation).toBe(false);
+    expect(await casosConEnvioSimulado(proyecto.raiz)).toContain(CASO);
+  });
+
+  test("la accion viaja hasta la compuerta: cancelar decide aunque el texto visible confirme", async () => {
+    const { servidor, sesionId } = await armarPorChat([{ cuerpo: cuerpoConTexto("No envío nada.") }]);
+    const accion = { tipo: TIPO_ACCION.CANCELAR, caso: CASO };
+    const respuesta = await servidor.pedir(RUTA_API.CHAT, cuerpoChat(sesionId, `Sí, envía ${CASO}`, accion));
+    expect(respuesta.status).toBe(RESPUESTA_HTTP.OK);
+    const { eventos } = await lecturaDe(respuesta);
+    expect(finesDeHerramienta(eventos, SIMULAR)).toEqual([]);
+    expect(confirmaciones(eventos)).toEqual([]);
+    expect(finDeTurno(eventos).needsConfirmation).toBe(false);
+  });
+
+  const accionesInvalidas: readonly (readonly [string, unknown])[] = [
+    ["un tipo desconocido", { tipo: "aprobar", caso: CASO }],
+    ["un campo extra en accion", { tipo: TIPO_ACCION.CONFIRMAR, caso: CASO, extra: 1 }],
+  ];
+
+  for (const [nombre, accion] of accionesInvalidas) {
+    test(`${nombre} responde 400 sin llamar al proveedor`, async () => {
+      const falso = crearFetchFalso([]);
+      const servidor = crearServidorPrueba({ raiz: proyecto.raiz, fetch: falso.fetch });
+      const respuesta = await servidor.pedir(RUTA_API.CHAT, cuerpoChat(null, `Sí, envía ${CASO}`, accion));
+      expect(respuesta.status).toBe(RESPUESTA_HTTP.PEDIDO_INVALIDO);
+      expect(await respuesta.json()).toEqual({ mensaje: MENSAJE_HTTP.cuerpoInvalido });
+      expect(falso.pedidos).toHaveLength(0);
+    });
+  }
 });
