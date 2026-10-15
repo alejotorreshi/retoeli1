@@ -3,16 +3,16 @@ gsd_state_version: "1.0"
 current_phase: 03
 current_phase_name: Chat web, API SSE y despliegue
 status: executing
-stopped_at: Completed 03-16-PLAN.md
-last_updated: "2026-10-15T02:30:59.551Z"
+stopped_at: Completed 03-17-PLAN.md
+last_updated: "2026-10-15T02:39:16.703Z"
 last_activity: 2026-10-14
 last_activity_desc: Phase 03 execution started
-state_head: d8357715f4c7d3e34935d9c26fcd4308273fcb46
+state_head: 9a1a8d47ef730f8bc5e33bec2e5ffd5afce2fd00
 progress:
   total_phases: 4
   completed_phases: 2
   total_plans: 66
-  completed_plans: 55
+  completed_plans: 56
   percent: 50
 ---
 
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-10-14)
 ## Current Position
 
 Phase: 03 (Chat web, API SSE y despliegue) — EXECUTING
-Plan: 17 of 27
+Plan: 18 of 27
 Status: Ready to execute
 Last activity: 2026-10-14 — Phase 03 execution started
 
@@ -112,6 +112,7 @@ Progress: [█████░░░░░] 50%
 | Phase 03 P14 | 9 min | 2 tasks | 15 files |
 | Phase 03 P15 | 5 min | 2 tasks | 14 files |
 | Phase 03 P16 | 6 min | 2 tasks | 12 files |
+| Phase 03 P17 | 6 min | 3 tasks | 18 files |
 
 ## Accumulated Context
 
@@ -258,6 +259,8 @@ Recent decisions affecting current work:
 - [Phase 03]: 03-16: tool_start/tool_end llevan caso (de los argumentos redactados) y tool_end lleva resultado: ResultadoVisible proyectado en el servidor desde el JSON de la herramienta, redactado y revalidado con zod; null si la herramienta falla
 - [Phase 03]: 03-16: generar_formulario no expone conteo en su respuesta; la UI toma los contadores del resultado de mapear_campos
 - [Phase 03]: 03-16: confirmation_required agrega bloqueosLegibles (motivosDeBloqueo, mismo texto que checklist.md); bloqueos sigue con ids crudos del contrato v1
+- [Phase 03]: 03-17: el hook de health se exporta como useSalud (convención useChat de 03-07) y vive fuera del reducer; useChat avisa el turno fallido con un callback al cerrar el pedido
+- [Phase 03]: 03-17: health se refresca tras evento error, rechazo HTTP salvo 401, red caída o stream cortado; nunca por intervalo
 
 ### Pending Todos
 
@@ -293,6 +296,6 @@ Items acknowledged and deferred at milestone close, most recent first:
 
 ## Session Continuity
 
-Last session: 2026-10-15T02:30:59.468Z
-Stopped at: Completed 03-16-PLAN.md
+Last session: 2026-10-15T02:39:16.620Z
+Stopped at: Completed 03-17-PLAN.md
 Resume file: None
