@@ -3,8 +3,9 @@ import { enviarMensaje } from "@web/api/flujo-chat.ts";
 import { ACCION_UI } from "@web/config/constants/ui.constants.ts";
 import { TEXTO_ACCESO } from "@web/config/strings.ts";
 import type { AccionUi } from "@web/types/chat.type.ts";
-import { MOTIVO_FIN, TIPO_EVENTO } from "@/config/constants/agent.constants.ts";
+import { CODIGO_AGENTE, MOTIVO_FIN, TIPO_EVENTO } from "@/config/constants/agent.constants.ts";
 import { RESPUESTA_HTTP, RUTA_API } from "@/config/constants/http.constants.ts";
+import { MENSAJE_HTTP } from "@/config/strings.ts";
 import type { SseEvent } from "@/http/types/api.type.ts";
 
 const PEDIDO = { sessionId: null, message: "procesa el caso co-industrias-delta" } as const;
@@ -100,6 +101,20 @@ describe("enviarMensaje", () => {
       ACCION_UI.EVENTO,
       ACCION_UI.FIN_STREAM,
     ]);
+  });
+
+  test("un error interno del servidor llega como evento de error y cierra el turno sin FIN_STREAM", async () => {
+    const error: SseEvent = {
+      tipo: TIPO_EVENTO.ERROR,
+      turnoId: TURNO,
+      codigo: CODIGO_AGENTE.TURNO_INTERRUMPIDO,
+      mensaje: MENSAJE_HTTP.errorInterno,
+    };
+    const cierre: SseEvent = { ...fin, motivo: MOTIVO_FIN.ERROR };
+    simularFetch(async () => respuestaSse(marcos([inicio, error, cierre])));
+    const acciones = await despachosDe();
+    expect(acciones).toContainEqual({ tipo: ACCION_UI.EVENTO, evento: error });
+    expect(tipos(acciones)).not.toContain(ACCION_UI.FIN_STREAM);
   });
 
   test("un stream que se corta con error despacha FIN_STREAM", async () => {

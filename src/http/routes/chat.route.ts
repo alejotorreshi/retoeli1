@@ -1,7 +1,7 @@
 import type { Context, Hono } from "hono";
 import { streamSSE } from "hono/streaming";
 import type { BitacoraEstructurada } from "@/application/types/puertos-agente.type.ts";
-import { CODIGO_AGENTE, TIPO_EVENTO } from "@/config/constants/agent.constants.ts";
+import { CODIGO_AGENTE, MOTIVO_FIN, TIPO_EVENTO } from "@/config/constants/agent.constants.ts";
 import {
   CABECERA,
   EVENTO_HTTP,
@@ -83,9 +83,16 @@ function turnInput(body: ChatBody, signal: AbortSignal): EntradaTurno {
   return body.accion === undefined ? base : { ...base, accion: body.accion };
 }
 
-function internalErrorData(): string {
-  const body: ErrorResponse = { mensaje: MENSAJE_HTTP.errorInterno };
-  return JSON.stringify(body);
+function internalErrorEvents(turnoId: string): readonly EventoAgente[] {
+  return [
+    {
+      tipo: TIPO_EVENTO.ERROR,
+      turnoId,
+      codigo: CODIGO_AGENTE.TURNO_INTERRUMPIDO,
+      mensaje: MENSAJE_HTTP.errorInterno,
+    },
+    { tipo: TIPO_EVENTO.FIN_TURNO, turnoId, motivo: MOTIVO_FIN.ERROR, needsConfirmation: false },
+  ];
 }
 
 function streamTurn(c: Context<HttpEnv>, body: ChatBody, deps: TurnDeps): Response {
@@ -93,12 +100,17 @@ function streamTurn(c: Context<HttpEnv>, body: ChatBody, deps: TurnDeps): Respon
     const cut = new AbortController();
     stream.onAbort(() => cut.abort());
     const stopHeartbeat = startHeartbeat((comment) => stream.write(comment), deps.heartbeatMs);
+    let turnoId = "";
     try {
       const turn = deps.agente.turno(turnInput(body, cut.signal));
-      for await (const evento of turn) await stream.writeSSE(toSseFrame(evento, deps.secrets));
+      for await (const evento of turn) {
+        turnoId = evento.turnoId;
+        await stream.writeSSE(toSseFrame(evento, deps.secrets));
+      }
     } catch (error) {
       deps.logger.error(EVENTO_HTTP.STREAM_FALLIDO, { error });
-      await stream.writeSSE({ event: TIPO_EVENTO.ERROR, data: internalErrorData() });
+      for (const evento of internalErrorEvents(turnoId))
+        await stream.writeSSE(toSseFrame(evento, deps.secrets));
     } finally {
       stopHeartbeat();
       deps.turnSlots.release();

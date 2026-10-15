@@ -23,7 +23,7 @@ import type { ProyectoTemporal } from "@tests/helpers/types/proyecto-temporal.ty
 import type { ServidorPrueba } from "@tests/helpers/types/servidor-prueba.type.ts";
 import { Hono } from "hono";
 import type { BitacoraEstructurada, CamposBitacora } from "@/application/types/puertos-agente.type.ts";
-import { TIPO_EVENTO } from "@/config/constants/agent.constants.ts";
+import { CODIGO_AGENTE, MOTIVO_FIN, TIPO_EVENTO } from "@/config/constants/agent.constants.ts";
 import { FECHA_DEMO } from "@/config/constants/demo.constants.ts";
 import {
   CABECERA,
@@ -250,7 +250,7 @@ describe("POST /api/chat: cuerpos inválidos y errores contenidos", () => {
     });
   }
 
-  test("una excepción dentro del stream llega solo como un frame error con el mensaje genérico", async () => {
+  test("una excepción dentro del stream llega como error del contrato y cierra el turno", async () => {
     const registrados: CamposBitacora[] = [];
     const logger: BitacoraEstructurada = {
       ...bitacoraMuda(),
@@ -295,8 +295,23 @@ describe("POST /api/chat: cuerpos inválidos y errores contenidos", () => {
     const respuesta = await app.request(RUTA_API.CHAT, pedidoChat(null, "hola"), BINDINGS_PRUEBA);
     const crudo = await respuesta.clone().text();
     const { eventos } = await leerSse(respuesta);
-    expect(eventos.map((frame) => frame.event)).toEqual([TIPO_EVENTO.INICIO_TURNO, TIPO_EVENTO.ERROR]);
-    expect(JSON.parse(eventos[1]?.data ?? "null")).toEqual({ mensaje: MENSAJE_HTTP.errorInterno });
+    expect(eventos.map((frame) => frame.event)).toEqual([
+      TIPO_EVENTO.INICIO_TURNO,
+      TIPO_EVENTO.ERROR,
+      TIPO_EVENTO.FIN_TURNO,
+    ]);
+    expect(JSON.parse(eventos[1]?.data ?? "null")).toEqual({
+      tipo: TIPO_EVENTO.ERROR,
+      turnoId: "t1",
+      codigo: CODIGO_AGENTE.TURNO_INTERRUMPIDO,
+      mensaje: MENSAJE_HTTP.errorInterno,
+    });
+    expect(JSON.parse(eventos[2]?.data ?? "null")).toEqual({
+      tipo: TIPO_EVENTO.FIN_TURNO,
+      turnoId: "t1",
+      motivo: MOTIVO_FIN.ERROR,
+      needsConfirmation: false,
+    });
     expect(crudo).not.toContain(DETALLE_INTERNO);
     expect(registrados).toHaveLength(1);
     expect(cupos.inUse()).toBe(0);
