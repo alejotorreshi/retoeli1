@@ -107,6 +107,7 @@ function aplicarEvento(
       return;
     case EVENTO_COMPUERTA.BLOQUEADO:
     case EVENTO_COMPUERTA.FALLIDO:
+    case EVENTO_COMPUERTA.TRUNCADO_CONFIRMADO:
       reabrirConocido(pendientes, enviados, evento.caso, conocidos);
       return;
     case EVENTO_COMPUERTA.TRUNCADO:
@@ -143,6 +144,17 @@ function desenlaceDeBloqueo(
   return { tipo: DESENLACE_ENVIO.REQUIERE_CONFIRMACION, caso };
 }
 
+function desenlaceDeTruncadoConfirmado(
+  pendientes: ReadonlyMap<string, CasoPendiente>,
+  enviados: ReadonlySet<string>,
+  caso: string,
+  conocidos: PaquetesConocidos,
+): DesenlaceEnvio {
+  const desenlace = desenlaceDeBloqueo(pendientes, enviados, caso, conocidos);
+  if (desenlace.tipo !== DESENLACE_ENVIO.REQUIERE_CONFIRMACION) return desenlace;
+  return { tipo: DESENLACE_ENVIO.TRUNCADO_CONFIRMADO, caso };
+}
+
 function desenlaceDeEvento(
   pendientes: ReadonlyMap<string, CasoPendiente>,
   enviados: ReadonlySet<string>,
@@ -160,6 +172,8 @@ function desenlaceDeEvento(
     case EVENTO_COMPUERTA.TRUNCADO:
       if (evento.caso === null) return null;
       return desenlaceDeBloqueo(pendientes, enviados, evento.caso, conocidos);
+    case EVENTO_COMPUERTA.TRUNCADO_CONFIRMADO:
+      return desenlaceDeTruncadoConfirmado(pendientes, enviados, evento.caso, conocidos);
   }
 }
 
@@ -171,10 +185,16 @@ function reintentadoDespues(eventos: readonly EventoCompuerta[], indice: number,
   return eventos.slice(indice + 1).some((evento) => casoIntentado(evento) === caso);
 }
 
+function casoDeTruncado(evento: EventoCompuerta | undefined): string | null {
+  if (evento?.tipo === EVENTO_COMPUERTA.TRUNCADO || evento?.tipo === EVENTO_COMPUERTA.TRUNCADO_CONFIRMADO) {
+    return evento.caso;
+  }
+  return null;
+}
+
 function reemplazadoPorReintento(eventos: readonly EventoCompuerta[], indice: number): boolean {
-  const evento = eventos[indice];
-  if (evento?.tipo !== EVENTO_COMPUERTA.TRUNCADO || evento.caso === null) return false;
-  return reintentadoDespues(eventos, indice, evento.caso);
+  const caso = casoDeTruncado(eventos[indice]);
+  return caso !== null && reintentadoDespues(eventos, indice, caso);
 }
 
 function desenlacesDeCasos(entrada: EntradaCierreCompuerta): readonly DesenlaceEnvio[] {

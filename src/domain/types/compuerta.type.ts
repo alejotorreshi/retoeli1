@@ -39,7 +39,8 @@ export type EventoCompuerta =
   | { readonly tipo: typeof EVENTO_COMPUERTA.BLOQUEADO; readonly caso: string }
   | { readonly tipo: typeof EVENTO_COMPUERTA.ENVIADO; readonly caso: string }
   | { readonly tipo: typeof EVENTO_COMPUERTA.FALLIDO; readonly caso: string }
-  | { readonly tipo: typeof EVENTO_COMPUERTA.TRUNCADO; readonly caso: string | null };
+  | { readonly tipo: typeof EVENTO_COMPUERTA.TRUNCADO; readonly caso: string | null }
+  | { readonly tipo: typeof EVENTO_COMPUERTA.TRUNCADO_CONFIRMADO; readonly caso: string };
 
 export type EntradaCierreCompuerta = {
   readonly arrastrados: readonly CasoPendiente[];

@@ -254,8 +254,9 @@ export const TEXTO_ENVIO_NO_REGISTRADO = {
     `No se registró otro envío simulado de ${caso}: ya tiene uno registrado en esta sesión (${ARCHIVOS_SALIDA.ENVIO_SIMULADO}); para registrar otro hay que volver a armar el paquete.`,
   [DESENLACE_ENVIO.FALLIDO]: (caso: string): string =>
     `No se registró el envío simulado de ${caso}: la herramienta no pudo registrarlo.`,
-  [DESENLACE_ENVIO.SIN_CASO]: (): string =>
-    "No se registró ningún envío simulado: el pedido no indicó un caso válido.",
+  [DESENLACE_ENVIO.SIN_CASO]: (): string => "Un intento de envío no indicó un caso válido y no se registró.",
+  [DESENLACE_ENVIO.TRUNCADO_CONFIRMADO]: (caso: string): string =>
+    `No se registró el envío simulado de ${caso}: se cortó antes de ejecutarse y hay que pedirlo de nuevo.`,
 } as const satisfies Record<ValorDe<typeof DESENLACE_ENVIO>, (caso: string) => string>;
 
 const SIGUIENTE_PASO = {

@@ -5,6 +5,7 @@ import { HERRAMIENTA, HERRAMIENTA_POR_NOMBRE_VISIBLE } from "@/config/constants/
 import { MENSAJE_AGENTE } from "@/config/strings.ts";
 import { redactar } from "@/domain/policies/redaccion.policy.ts";
 import type { LlamadaResumida } from "@/domain/types/cierre-turno.type.ts";
+import type { EventoCompuerta } from "@/domain/types/compuerta.type.ts";
 import { cuerpoDeFallo } from "@/domain/utils/respuesta-herramienta.util.ts";
 import type { LlamadaHerramienta, Mensaje, MensajeAsistente, RespuestaLlm } from "@/llm/types/llm.type.ts";
 import { anotarHerramienta } from "@/loop/services/bitacora-turno.service.ts";
@@ -36,9 +37,17 @@ function esSimularEnvio(llamada: LlamadaHerramienta): boolean {
   return HERRAMIENTA_POR_NOMBRE_VISIBLE.get(llamada.nombre) === HERRAMIENTA.SIMULAR_ENVIO;
 }
 
+function eventoDeTruncado(turno: Turno, llamada: LlamadaHerramienta): EventoCompuerta {
+  const caso = casoDeLlamada(llamada);
+  if (caso !== null && caso === turno.autorizacion.caso) {
+    return { tipo: EVENTO_COMPUERTA.TRUNCADO_CONFIRMADO, caso };
+  }
+  return { tipo: EVENTO_COMPUERTA.TRUNCADO, caso };
+}
+
 function anotarEnviosTruncados(turno: Turno, llamadas: readonly LlamadaHerramienta[]): void {
   for (const llamada of llamadas.filter(esSimularEnvio)) {
-    turno.eventosCompuerta.push({ tipo: EVENTO_COMPUERTA.TRUNCADO, caso: casoDeLlamada(llamada) });
+    turno.eventosCompuerta.push(eventoDeTruncado(turno, llamada));
   }
 }
 

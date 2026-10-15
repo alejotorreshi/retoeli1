@@ -1418,7 +1418,7 @@ describe("D-76.1: un reintento del mismo caso legible manda sobre su intento tru
     await prueba.turno(`procesa ${EC}`);
     const turno2 = await prueba.turno(`envía ${EC}`);
     expect(textoFinal(turno2)).toBe(
-      `${afirmacion}${SEPARADOR_PARRAFOS}${avisoDe(DESENLACE_ENVIO.REQUIERE_CONFIRMACION, EC)}${SEPARADOR_PARRAFOS}${PREGUNTA_EC}`,
+      `${afirmacion}${SEPARADOR_PARRAFOS}${avisoDe(DESENLACE_ENVIO.TRUNCADO_CONFIRMADO, EC)}${SEPARADOR_PARRAFOS}${PREGUNTA_EC}`,
     );
     expect(ultimoParrafo(textoFinal(turno2))).toBe(PREGUNTA_EC);
     expect(finDeTurno(turno2).needsConfirmation).toBe(true);
@@ -1428,6 +1428,63 @@ describe("D-76.1: un reintento del mismo caso legible manda sobre su intento tru
     const turno3 = await prueba.turno(`envía ${EC}`);
     expect(finesDeHerramienta(turno3)).toEqual([exitosa()]);
     expect(await enviosOk()).toBe(1);
+    historialSano(prueba);
+  });
+});
+
+describe("D-76.2: los avisos del servidor son exactos", () => {
+  test("copia decidida: el aviso sin caso habla solo del intento ilegible y el truncado confirmado dice que se cortó", () => {
+    expect(TEXTO_ENVIO_NO_REGISTRADO[DESENLACE_ENVIO.SIN_CASO]()).toBe(
+      "Un intento de envío no indicó un caso válido y no se registró.",
+    );
+    expect(TEXTO_ENVIO_NO_REGISTRADO[DESENLACE_ENVIO.TRUNCADO_CONFIRMADO](EC)).toBe(
+      "No se registró el envío simulado de ec-corp-andina: se cortó antes de ejecutarse y hay que pedirlo de nuevo.",
+    );
+  });
+
+  test("WR-03: un envío confirmado que se corta por el límite dice que se cortó, vuelve a preguntar y el 'envía' siguiente envía una sola vez", async () => {
+    const afirmacion = `Registré el envío simulado de ${EC}.`;
+    const prueba = agente([
+      ...armarCaso(EC),
+      pasoCortado(simularCrudo("simular-1", JSON.stringify({ caso: EC, confirmado: true }))),
+      respuestaTexto(afirmacion),
+      ...enviar("simular-3", EC),
+    ]);
+    await prueba.turno(`procesa ${EC}`);
+    const turno2 = await prueba.turno(`envía ${EC}`);
+    const esperado = `${afirmacion}${SEPARADOR_PARRAFOS}${avisoDe(DESENLACE_ENVIO.TRUNCADO_CONFIRMADO, EC)}${SEPARADOR_PARRAFOS}${PREGUNTA_EC}`;
+    expect(textoFinal(turno2)).toBe(esperado);
+    expect(textoFinal(turno2)).not.toContain(avisoDe(DESENLACE_ENVIO.REQUIERE_CONFIRMACION, EC));
+    expect(ultimoParrafo(textoFinal(turno2))).toBe(PREGUNTA_EC);
+    expect(finDeTurno(turno2).needsConfirmation).toBe(true);
+    expect(casosPorConfirmar(turno2)).toEqual([EC]);
+    expect(await casosConEnvioSimulado(proyecto.raiz)).toEqual([]);
+    const respuesta = respuestaDeTurno(turno2);
+    expect(respuesta.reply).toBe(esperado);
+    expect(respuesta.needsConfirmation).toBe(true);
+
+    const turno3 = await prueba.turno(`envía ${EC}`);
+    expect(finesDeHerramienta(turno3)).toEqual([exitosa()]);
+    expect(await casosConEnvioSimulado(proyecto.raiz)).toEqual([EC]);
+    expect(await enviosOk()).toBe(1);
+    historialSano(prueba);
+  });
+
+  test("sin confirmación del caso en el turno, el truncado legible sigue diciendo que falta la confirmación", async () => {
+    const afirmacion = `Registré el envío simulado de ${EC}.`;
+    const prueba = agente([
+      ...armarCaso(EC),
+      pasoCortado(simularCrudo("simular-1", JSON.stringify({ caso: EC, confirmado: true }))),
+      respuestaTexto(afirmacion),
+    ]);
+    await prueba.turno(`procesa ${EC}`);
+    const turno2 = await prueba.turno(`procesa el caso ${CO}`);
+    expect(textoFinal(turno2)).toBe(
+      `${afirmacion}${SEPARADOR_PARRAFOS}${avisoDe(DESENLACE_ENVIO.REQUIERE_CONFIRMACION, EC)}${SEPARADOR_PARRAFOS}${PREGUNTA_EC}`,
+    );
+    expect(finDeTurno(turno2).needsConfirmation).toBe(true);
+    expect(casosPorConfirmar(turno2)).toEqual([EC]);
+    expect(await casosConEnvioSimulado(proyecto.raiz)).toEqual([]);
     historialSano(prueba);
   });
 });

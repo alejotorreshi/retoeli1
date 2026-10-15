@@ -282,6 +282,7 @@ export const EVENTO_COMPUERTA = {
   ENVIADO: "enviado",
   FALLIDO: "fallido",
   TRUNCADO: "truncado",
+  TRUNCADO_CONFIRMADO: "truncado_confirmado",
 } as const;
 
 export const DESENLACE_ENVIO = {
@@ -290,4 +291,5 @@ export const DESENLACE_ENVIO = {
   YA_ENVIADO: "ya_enviado",
   FALLIDO: "fallido",
   SIN_CASO: "sin_caso",
+  TRUNCADO_CONFIRMADO: "truncado_confirmado",
 } as const;
