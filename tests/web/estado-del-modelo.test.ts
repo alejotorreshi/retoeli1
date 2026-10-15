@@ -2,7 +2,8 @@ import { describe, expect, test } from "bun:test";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { TONO, TONO_DEL_MODELO } from "@web/config/constants/ui.constants.ts";
-import { TEXTO_MODELO } from "@web/config/strings.ts";
+import { TEXTO_CHAT, TEXTO_MODELO } from "@web/config/strings.ts";
+import { envioEnPausa } from "@web/state/modelo.ts";
 import { CODIGO_AGENTE } from "@/config/constants/agent.constants.ts";
 import { ESTADO_LLM } from "@/config/constants/llm.constants.ts";
 import { MENSAJE_AGENTE } from "@/config/strings.ts";
@@ -132,5 +133,22 @@ describe("botón Comprobar de nuevo", () => {
     }
     expect(AVISO_MODELO).toContain("onClick={alComprobar}");
     expect(AVISO_MODELO).toContain("disabled={comprobando}");
+  });
+});
+
+describe("envío en pausa según el estado del modelo", () => {
+  test("solo sin clave y tope diario pausan el envío; sin respuesta de health no hay pausa", () => {
+    expect(envioEnPausa(ESTADO_LLM.SIN_CLAVE)).toBe(true);
+    expect(envioEnPausa(ESTADO_LLM.TOPE_DIARIO)).toBe(true);
+    expect(envioEnPausa(ESTADO_LLM.SALDO_AGOTADO)).toBe(false);
+    expect(envioEnPausa(ESTADO_LLM.NO_DISPONIBLE)).toBe(false);
+    expect(envioEnPausa(ESTADO_LLM.DISPONIBLE)).toBe(false);
+    expect(envioEnPausa(null)).toBe(false);
+  });
+
+  test("la ayuda del compositor explica la pausa y remite al aviso", () => {
+    expect(TEXTO_CHAT.enPausa).toBe(
+      "El envío está en pausa mientras el modelo no esté disponible; el aviso de arriba explica qué hacer.",
+    );
   });
 });
