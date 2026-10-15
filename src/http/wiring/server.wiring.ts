@@ -47,6 +47,7 @@ import { registerConfigRoute } from "@/http/routes/config.route.ts";
 import { registerHealthRoute } from "@/http/routes/health.route.ts";
 import { registerStaticRoutes } from "@/http/routes/static.route.ts";
 import { createRateLimiter } from "@/http/services/rate-limiter.service.ts";
+import { createTurnSlots } from "@/http/services/turn-slots.service.ts";
 import type { ErrorResponse } from "@/http/types/api.type.ts";
 import type {
   AccessSettings,
@@ -235,6 +236,7 @@ export function createServer(options: ServerOptions): ServerCreation {
     logger,
     heartbeatMs: options.heartbeatMs ?? LATIDO_SSE_MS,
     maxMessageChars: env.data.MAX_MESSAGE_CHARS,
+    turnSlots: createTurnSlots(env.data.MAX_CONCURRENT_TURNS),
     businessZone: () => businessCalendar().zone,
   });
   registerStaticRoutes(app, { webDirectory: webDirectory(options) });

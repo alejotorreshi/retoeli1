@@ -41,6 +41,7 @@ import { HERRAMIENTA, NOMBRE_VISIBLE } from "@/config/constants/tools.constants.
 import { pinExecutionDate } from "@/config/env.ts";
 import { MENSAJE_HTTP } from "@/config/strings.ts";
 import { registerChatRoute } from "@/http/routes/chat.route.ts";
+import { createTurnSlots } from "@/http/services/turn-slots.service.ts";
 import type { ChatJsonResponse } from "@/http/types/api.type.ts";
 import type { HttpEnv } from "@/http/types/server.type.ts";
 import type { FetchLike } from "@/llm/types/provider.type.ts";
@@ -271,12 +272,15 @@ describe("POST /api/chat: cuerpos inválidos y errores contenidos", () => {
       },
     };
     const app = new Hono<HttpEnv>();
+    app.onError(() => new Response(null, { status: RESPUESTA_HTTP.ERROR_INTERNO }));
+    const cupos = createTurnSlots(1);
     registerChatRoute(app, {
       agente,
       secrets: [],
       logger,
       heartbeatMs: LATIDO_CORTO_MS,
       maxMessageChars: MENSAJE_MAXIMO_CARACTERES_POR_DEFECTO,
+      turnSlots: cupos,
       businessZone: () => ZONA_HORARIA_POR_DEFECTO,
     });
     const respuesta = await app.request(RUTA_API.CHAT, pedidoChat(null, "hola"), BINDINGS_PRUEBA);
@@ -286,6 +290,15 @@ describe("POST /api/chat: cuerpos inválidos y errores contenidos", () => {
     expect(JSON.parse(eventos[1]?.data ?? "null")).toEqual({ mensaje: MENSAJE_HTTP.errorInterno });
     expect(crudo).not.toContain(DETALLE_INTERNO);
     expect(registrados).toHaveLength(1);
+    expect(cupos.inUse()).toBe(0);
+
+    const porJson = await app.request(
+      RUTA_API.CHAT,
+      pedidoChat(null, "hola", TIPO_CONTENIDO.JSON),
+      BINDINGS_PRUEBA,
+    );
+    expect(porJson.status).toBe(RESPUESTA_HTTP.ERROR_INTERNO);
+    expect(cupos.inUse()).toBe(0);
   });
 
   test("una ruta /api desconocida responde 404 con mensaje en español", async () => {

@@ -29,6 +29,12 @@ export type RateLimiter = {
   trackedKeys(): number;
 };
 
+export type TurnSlots = {
+  tryAcquire(): boolean;
+  release(): void;
+  inUse(): number;
+};
+
 export type ClientIpInput = {
   readonly forwardedFor: string | undefined;
   readonly socketAddress: string | undefined;

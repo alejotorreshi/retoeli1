@@ -16,7 +16,7 @@ import { redactar } from "@/domain/policies/redaccion.policy.ts";
 import { chatBodySchema } from "@/http/schemas/chat-body.schema.ts";
 import { startHeartbeat, toSseFrame } from "@/http/services/sse.service.ts";
 import type { ChatBody, ChatJsonResponse, ErrorResponse } from "@/http/types/api.type.ts";
-import type { HttpEnv } from "@/http/types/server.type.ts";
+import type { HttpEnv, TurnSlots } from "@/http/types/server.type.ts";
 import { respuestaDeTurno } from "@/loop/services/respuesta-turno.service.ts";
 import type { Agente } from "@/loop/types/agente.type.ts";
 import type { EventoAgente } from "@/loop/types/evento.type.ts";
@@ -27,6 +27,7 @@ type ChatDeps = {
   readonly logger: BitacoraEstructurada;
   readonly heartbeatMs: number;
   readonly maxMessageChars: number;
+  readonly turnSlots: TurnSlots;
   businessZone(): string;
 };
 
@@ -61,6 +62,11 @@ function dailyCapReached(c: Context<HttpEnv>, zone: string): Response {
   return c.json(body, RESPUESTA_HTTP.DEMASIADOS_PEDIDOS);
 }
 
+function serverBusy(c: Context<HttpEnv>): Response {
+  const body: ErrorResponse = { mensaje: MENSAJE_HTTP.servidorOcupado };
+  return c.json(body, RESPUESTA_HTTP.NO_DISPONIBLE);
+}
+
 function internalErrorData(): string {
   const body: ErrorResponse = { mensaje: MENSAJE_HTTP.errorInterno };
   return JSON.stringify(body);
@@ -79,6 +85,7 @@ function streamTurn(c: Context<HttpEnv>, body: ChatBody, deps: TurnDeps): Respon
       await stream.writeSSE({ event: TIPO_EVENTO.ERROR, data: internalErrorData() });
     } finally {
       stopHeartbeat();
+      deps.turnSlots.release();
     }
   });
   response.headers.set(CABECERA.CACHE_CONTROL, VALOR_CABECERA.SIN_CACHE_NI_TRANSFORMACION);
@@ -96,14 +103,23 @@ function sessionIdOf(eventos: readonly EventoAgente[]): string | null {
   return inicio?.tipo === TIPO_EVENTO.INICIO_TURNO ? inicio.sesionId : null;
 }
 
-async function jsonTurn(c: Context<HttpEnv>, body: ChatBody, deps: TurnDeps): Promise<Response> {
+async function foldTurn(c: Context<HttpEnv>, body: ChatBody, deps: TurnDeps): Promise<EventoAgente[]> {
   const eventos: EventoAgente[] = [];
   const turn = deps.agente.turno({
     sesionId: body.sessionId,
     mensaje: body.message,
     signal: c.req.raw.signal,
   });
-  for await (const evento of turn) eventos.push(evento);
+  try {
+    for await (const evento of turn) eventos.push(evento);
+  } finally {
+    deps.turnSlots.release();
+  }
+  return eventos;
+}
+
+async function jsonTurn(c: Context<HttpEnv>, body: ChatBody, deps: TurnDeps): Promise<Response> {
+  const eventos = await foldTurn(c, body, deps);
   const reply: ChatJsonResponse = { sessionId: sessionIdOf(eventos), ...respuestaDeTurno(eventos) };
   return c.json(redactar(reply, deps.secrets), RESPUESTA_HTTP.OK);
 }
@@ -117,6 +133,7 @@ export function registerChatRoute(app: Hono<HttpEnv>, deps: ChatDeps): void {
     const { agente } = deps;
     if (agente === null) return missingProviderKey(c);
     if (agente.estadoLlm() === ESTADO_LLM.TOPE_DIARIO) return dailyCapReached(c, deps.businessZone());
+    if (!deps.turnSlots.tryAcquire()) return serverBusy(c);
     const turnDeps: TurnDeps = { ...deps, agente };
     return wantsJson(c) ? jsonTurn(c, body, turnDeps) : streamTurn(c, body, turnDeps);
   });

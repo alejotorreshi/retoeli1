@@ -10,7 +10,6 @@ import { crearProyectoTemporal } from "@tests/helpers/proyecto-temporal.helper.t
 import { crearServidorPrueba, eventoDeFrame, eventosSse } from "@tests/helpers/servidor-prueba.helper.ts";
 import type { RespuestaGuion } from "@tests/helpers/types/fetch-falso.type.ts";
 import type { ServidorPrueba } from "@tests/helpers/types/servidor-prueba.type.ts";
-import type { EventSourceMessage } from "eventsource-parser/stream";
 import { CODIGO_AGENTE, MOTIVO_FIN, TIPO_EVENTO } from "@/config/constants/agent.constants.ts";
 import { FECHA_DEMO } from "@/config/constants/demo.constants.ts";
 import { CABECERA, RESPUESTA_HTTP, RUTA_API, TIPO_CONTENIDO } from "@/config/constants/http.constants.ts";
@@ -110,15 +109,13 @@ async function hastaQueHayaCupo(intentar: () => Promise<Response>): Promise<Resp
   throw new Error("el cupo no se liberó");
 }
 
-async function primerEvento(lector: ReadableStreamDefaultReader<EventSourceMessage>) {
+async function primerEvento(lector: ReturnType<typeof lectorDe>) {
   const { value } = await lector.read();
   if (value === undefined) throw new Error("el stream terminó sin eventos");
   return eventoDeFrame({ event: value.event ?? "", data: value.data });
 }
 
-async function restoDeEventos(
-  lector: ReadableStreamDefaultReader<EventSourceMessage>,
-): Promise<EventoAgente[]> {
+async function restoDeEventos(lector: ReturnType<typeof lectorDe>): Promise<EventoAgente[]> {
   const eventos: EventoAgente[] = [];
   for (let leido = await lector.read(); !leido.done; leido = await lector.read()) {
     eventos.push(eventoDeFrame({ event: leido.value.event ?? "", data: leido.value.data }));
