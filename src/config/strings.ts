@@ -360,6 +360,7 @@ export const MENSAJE_HTTP = {
   mensajeDemasiadoLargo: (maximo: number): string =>
     `El mensaje supera los ${maximo} caracteres. Acórtalo y vuelve a enviarlo.`,
   topeDiario: (zona: string): string => `${TOPE_DIARIO_ALCANZADO} (${zona}).`,
+  demasiadosMensajes: "Enviaste muchos mensajes seguidos. Espera un minuto y vuelve a intentarlo.",
 } as const;
 
 export const TEXTO_SESION = {

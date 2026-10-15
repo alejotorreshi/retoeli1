@@ -19,6 +19,12 @@ const CASO = "co-industrias-delta";
 const LEER = NOMBRE_VISIBLE[HERRAMIENTA.LEER_SOLICITUD];
 const ANTES_DE_MEDIANOCHE_EN_LIMA = new Date("2026-10-15T04:59:00Z");
 const DESPUES_DE_MEDIANOCHE_EN_LIMA = new Date("2026-10-15T05:01:00Z");
+const IP_CLIENTE = "192.0.2.10";
+const IP_OTRO_CLIENTE = "192.0.2.20";
+const MENSAJES_POR_MINUTO = 10;
+const UN_MINUTO_MS = 60_000;
+const AHORA = 1_790_000_000_000;
+const CUERPO_INVALIDO = JSON.stringify({});
 const NO_DISPONIBLE: RespuestaGuion = {
   estado: RESPUESTA_HTTP.NO_DISPONIBLE,
   cuerpo: { error: { message: "servicio no disponible" } },
@@ -69,6 +75,10 @@ async function turno(
 async function salud(servidor: ServidorPrueba): Promise<unknown> {
   const respuesta = await servidor.pedir(RUTA_API.SALUD);
   return respuesta.json();
+}
+
+function pedidoInvalido(): RequestInit {
+  return { method: "POST", body: CUERPO_INVALIDO };
 }
 
 function conEstado(llm: HealthResponse["llm"]): Partial<HealthResponse> {
@@ -146,5 +156,60 @@ describe("tope diario", () => {
     };
     expect(await siguiente.json()).toMatchObject(esperada);
     expect(pedidos).toHaveLength(2);
+  });
+});
+
+describe("mensajes por minuto", () => {
+  test("diez POST /api/chat de un cliente pasan, el undécimo recibe 429, otro cliente sigue y al vencer el minuto vuelve a pasar", async () => {
+    let ahora = AHORA;
+    const proyecto = await crearProyectoTemporal();
+    limpiezas.push(proyecto.limpiar);
+    const falso = crearFetchFalso([]);
+    const servidor = crearServidorPrueba({ raiz: proyecto.raiz, fetch: falso.fetch, ahora: () => ahora });
+
+    const estados: number[] = [];
+    for (let envio = 0; envio < MENSAJES_POR_MINUTO; envio += 1) {
+      estados.push((await servidor.pedirDesde(IP_CLIENTE, RUTA_API.CHAT, pedidoInvalido())).status);
+    }
+    expect(estados).toEqual(Array(MENSAJES_POR_MINUTO).fill(RESPUESTA_HTTP.PEDIDO_INVALIDO));
+
+    const undecimo = await servidor.pedirDesde(IP_CLIENTE, RUTA_API.CHAT, pedidoInvalido());
+    expect(undecimo.status).toBe(RESPUESTA_HTTP.DEMASIADOS_PEDIDOS);
+    expect(await undecimo.json()).toEqual({ mensaje: MENSAJE_HTTP.demasiadosMensajes });
+
+    const otro = await servidor.pedirDesde(IP_OTRO_CLIENTE, RUTA_API.CHAT, pedidoInvalido());
+    expect(otro.status).toBe(RESPUESTA_HTTP.PEDIDO_INVALIDO);
+
+    ahora = AHORA + UN_MINUTO_MS - 1;
+    expect((await servidor.pedirDesde(IP_CLIENTE, RUTA_API.CHAT, pedidoInvalido())).status).toBe(
+      RESPUESTA_HTTP.DEMASIADOS_PEDIDOS,
+    );
+    ahora = AHORA + UN_MINUTO_MS;
+    expect((await servidor.pedirDesde(IP_CLIENTE, RUTA_API.CHAT, pedidoInvalido())).status).toBe(
+      RESPUESTA_HTTP.PEDIDO_INVALIDO,
+    );
+    expect(falso.pedidos).toHaveLength(0);
+  });
+
+  test("RATE_LIMIT_CHAT_PER_MINUTE cambia el tope y los mensajes válidos también cuentan", async () => {
+    const { servidor, pedidos } = await servidorCon({ RATE_LIMIT_CHAT_PER_MINUTE: "1" }, [
+      { cuerpo: cuerpoConTexto("Listo.") },
+    ]);
+    expect((await turno(servidor, "hola", TIPO_CONTENIDO.JSON)).status).toBe(RESPUESTA_HTTP.OK);
+    const segundo = await turno(servidor, "¿sigues?", TIPO_CONTENIDO.JSON);
+    expect(segundo.status).toBe(RESPUESTA_HTTP.DEMASIADOS_PEDIDOS);
+    expect(await segundo.json()).toEqual({ mensaje: MENSAJE_HTTP.demasiadosMensajes });
+    expect(pedidos).toHaveLength(1);
+  });
+
+  test("GET /api/config y /api/health no cuentan para el tope de mensajes", async () => {
+    const { servidor } = await servidorCon({ RATE_LIMIT_CHAT_PER_MINUTE: "1" }, []);
+    for (let pedido = 0; pedido < MENSAJES_POR_MINUTO; pedido += 1) {
+      await servidor.pedir(RUTA_API.SALUD);
+      await servidor.pedir(RUTA_API.CONFIG);
+    }
+    expect((await servidor.pedir(RUTA_API.CHAT, pedidoInvalido())).status).toBe(
+      RESPUESTA_HTTP.PEDIDO_INVALIDO,
+    );
   });
 });

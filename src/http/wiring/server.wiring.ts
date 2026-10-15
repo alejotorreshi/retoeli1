@@ -14,9 +14,11 @@ import {
   HOST_SERVIDOR,
   LATIDO_SSE_MS,
   RESPUESTA_HTTP,
+  RUTA_API,
   RUTA_API_PROTEGIDA,
   RUTA_COMODIN,
   VARIABLE_SECRETO_TOKEN,
+  VENTANA_MENSAJES_CHAT_MINUTOS,
 } from "@/config/constants/http.constants.ts";
 import { MAX_ISSUES_ARGS } from "@/config/constants/limits.constants.ts";
 import {
@@ -38,6 +40,7 @@ import { formatearIssues } from "@/domain/utils/formatear-issues.util.ts";
 import { requireAccess } from "@/http/middlewares/access.middleware.ts";
 import { resolveClientIp } from "@/http/middlewares/client-ip.middleware.ts";
 import { requireJson } from "@/http/middlewares/json-only.middleware.ts";
+import { limitByClientIp } from "@/http/middlewares/rate-limit.middleware.ts";
 import { registerAccessRoute } from "@/http/routes/access.route.ts";
 import { registerChatRoute } from "@/http/routes/chat.route.ts";
 import { registerConfigRoute } from "@/http/routes/config.route.ts";
@@ -49,6 +52,7 @@ import type {
   AccessSettings,
   ConfigSource,
   HttpEnv,
+  RateLimiter,
   ServerCreation,
   ServerOptions,
   ServerStart,
@@ -84,8 +88,12 @@ function ephemeralTokenSecret(): string {
   return Buffer.from(bytes).toString(CODIFICACION_SECRETO_TOKEN);
 }
 
+function clockOf(options: ServerOptions): () => number {
+  return options.now ?? Date.now;
+}
+
 function accessSettings(env: ServerEnv, options: ServerOptions): AccessSettings {
-  const now = options.now ?? Date.now;
+  const now = clockOf(options);
   return {
     code: env.ACCESS_CODE,
     tokenSecret: env.ACCESS_TOKEN_SECRET ?? ephemeralTokenSecret(),
@@ -99,6 +107,14 @@ function accessSettings(env: ServerEnv, options: ServerOptions): AccessSettings 
     }),
     lockedMessage: TEXTO_HTTP.demasiadosIntentos(env.ACCESS_FAILED_WINDOW_MINUTES),
   };
+}
+
+function chatMessagesLimiter(env: ServerEnv, options: ServerOptions): RateLimiter {
+  return createRateLimiter({
+    limit: env.RATE_LIMIT_CHAT_PER_MINUTE,
+    windowMs: VENTANA_MENSAJES_CHAT_MINUTOS * MS_POR_MINUTO,
+    now: clockOf(options),
+  });
 }
 
 function sharedTokenSecretReason(): string {
@@ -209,6 +225,10 @@ export function createServer(options: ServerOptions): ServerCreation {
   registerAccessRoute(app, access);
   app.use(RUTA_API_PROTEGIDA, requireAccess(access));
   registerConfigRoute(app, configSource(options.rootDirectory, config.data, env.data));
+  app.post(
+    RUTA_API.CHAT,
+    limitByClientIp(chatMessagesLimiter(env.data, options), MENSAJE_HTTP.demasiadosMensajes),
+  );
   registerChatRoute(app, {
     agente,
     secrets,

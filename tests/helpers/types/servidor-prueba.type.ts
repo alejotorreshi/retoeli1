@@ -10,6 +10,7 @@ export type OpcionesServidorPrueba = {
   readonly latidoMs?: number;
   readonly destinoLogs?: DestinoBitacora;
   readonly directorioWeb?: string;
+  readonly ahora?: () => number;
 };
 
 export type FrameSse = {
@@ -27,5 +28,6 @@ export type ServidorPrueba = {
   readonly app: Hono<HttpEnv>;
   readonly port: number;
   pedir(ruta: string, init?: RequestInit): Promise<Response>;
+  pedirDesde(ip: string, ruta: string, init?: RequestInit): Promise<Response>;
   leerSse(respuesta: Response): Promise<LecturaSse>;
 };

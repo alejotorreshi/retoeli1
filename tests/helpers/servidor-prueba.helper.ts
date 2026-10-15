@@ -30,6 +30,10 @@ export const BINDINGS_PRUEBA: HttpBindings = {
   requestIP: () => ({ address: "127.0.0.1" }),
 };
 
+export function bindingsDesde(ip: string): HttpBindings {
+  return { ...BINDINGS_PRUEBA, requestIP: () => ({ address: ip }) };
+}
+
 export function cabecerasPrueba(extra?: RequestInit["headers"]): Headers {
   const cabeceras = new Headers({
     "Content-Type": TIPO_CONTENIDO.JSON,
@@ -86,6 +90,7 @@ export function crearServidorPrueba(opciones: OpcionesServidorPrueba): ServidorP
     ...(opciones.latidoMs === undefined ? {} : { heartbeatMs: opciones.latidoMs }),
     ...(opciones.destinoLogs === undefined ? {} : { logDestination: opciones.destinoLogs }),
     ...(opciones.directorioWeb === undefined ? {} : { webDirectory: opciones.directorioWeb }),
+    ...(opciones.ahora === undefined ? {} : { now: opciones.ahora }),
   });
   if (!creacion.ok) throw new Error(creacion.mensaje);
   const { app, port } = creacion;
@@ -94,6 +99,8 @@ export function crearServidorPrueba(opciones: OpcionesServidorPrueba): ServidorP
     port,
     pedir: async (ruta, init = {}) =>
       app.request(ruta, { ...init, headers: cabecerasPrueba(init.headers) }, BINDINGS_PRUEBA),
+    pedirDesde: async (ip, ruta, init = {}) =>
+      app.request(ruta, { ...init, headers: cabecerasPrueba(init.headers) }, bindingsDesde(ip)),
     leerSse,
   };
 }
