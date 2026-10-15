@@ -95,6 +95,7 @@ function abrirLlamada(turno: TurnoConversacion, evento: EventoInicioHerramientaU
     estado: ESTADO_HERRAMIENTA.EN_CURSO,
     resumen: null,
     codigo: null,
+    resultado: null,
   };
   return { ...turno, llamadas: [...turno.llamadas, llamada] };
 }
@@ -107,6 +108,7 @@ function llamadaCerrada(llamada: LlamadaDelTurno, evento: EventoFinHerramientaUi
     estado: evento.ok ? ESTADO_HERRAMIENTA.CORRECTA : ESTADO_HERRAMIENTA.ERROR,
     resumen: evento.resumen,
     codigo: evento.ok ? null : evento.codigo,
+    resultado: evento.resultado,
   };
 }
 
@@ -120,6 +122,7 @@ function cerrarLlamada(turno: TurnoConversacion, evento: EventoFinHerramientaUi)
     estado: ESTADO_HERRAMIENTA.EN_CURSO,
     resumen: null,
     codigo: null,
+    resultado: null,
   };
   const llamadas = abierta ? turno.llamadas : [...turno.llamadas, sinInicio];
   return {

@@ -1,10 +1,12 @@
 import { describe, expect, test } from "bun:test";
 import {
   ACCION_UI,
+  ESTADO_FIRMA,
   ESTADO_HERRAMIENTA,
   MAXIMO_TARJETAS_ABIERTAS,
 } from "@web/config/constants/ui.constants.ts";
-import { TEXTO_CHAT, TEXTO_HERRAMIENTA } from "@web/config/strings.ts";
+import { TEXTO_CHAT, TEXTO_HERRAMIENTA, TEXTO_RESULTADO } from "@web/config/strings.ts";
+import { contadoresDe, estadoDeFirma, resultadosDelTurno, resultadosPorCaso } from "@web/state/casos.ts";
 import {
   anuncioDeEstado,
   argumentosLegibles,
@@ -16,9 +18,11 @@ import {
   reducirConversacion,
   resumenDeLlamadas,
 } from "@web/state/conversacion.ts";
-import type { AccionUi, EstadoConversacion } from "@web/types/chat.type.ts";
+import type { AccionUi, EstadoConversacion, ResultadoVisibleUi } from "@web/types/chat.type.ts";
 import { MOTIVO_FIN, TIPO_EVENTO } from "@/config/constants/agent.constants.ts";
 import { CODIGO_ERROR } from "@/config/constants/errors.constants.ts";
+import { FORMATO } from "@/config/constants/forms.constants.ts";
+import { ESTADO_CAMPO } from "@/config/constants/mapping.constants.ts";
 import { HERRAMIENTA, NOMBRE_VISIBLE } from "@/config/constants/tools.constants.ts";
 import type { SseEvent } from "@/http/types/api.type.ts";
 
@@ -63,17 +67,24 @@ function inicio(llamadaId: string, herramienta: string, caso: string | null = CA
   });
 }
 
-function fin(llamadaId: string, herramienta: string, ok: boolean, resumen: string): AccionUi {
+function fin(
+  llamadaId: string,
+  herramienta: string,
+  ok: boolean,
+  resumen: string,
+  resultado: ResultadoVisibleUi | null = null,
+  caso: string = CASO,
+): AccionUi {
   return evento({
     tipo: TIPO_EVENTO.FIN_HERRAMIENTA,
     turnoId: TURNO,
     llamadaId,
     herramienta,
-    caso: CASO,
+    caso,
     ok,
     codigo: ok ? null : CODIGO_FALLO,
     resumen,
-    resultado: null,
+    resultado,
   });
 }
 
@@ -104,6 +115,7 @@ describe("tarjetas de herramienta del turno", () => {
         estado: ESTADO_HERRAMIENTA.EN_CURSO,
         resumen: null,
         codigo: null,
+        resultado: null,
       },
     ]);
   });
@@ -169,6 +181,7 @@ describe("tarjetas de herramienta del turno", () => {
         estado: ESTADO_HERRAMIENTA.CORRECTA,
         resumen: RESUMEN_MAPEAR,
         codigo: null,
+        resultado: null,
       },
     ]);
   });
@@ -318,5 +331,236 @@ describe("indicador pensando", () => {
     ]);
     expect(eventosDelTurno(estado)).toBe(3);
     expect(eventosDelTurno(aplicar([...inicioDeTurno, finDeTurno, ...inicioDeTurno]))).toBe(1);
+  });
+});
+
+const GENERAR = NOMBRE_VISIBLE[HERRAMIENTA.GENERAR_FORMULARIO];
+const ARMAR = NOMBRE_VISIBLE[HERRAMIENTA.ARMAR_PAQUETE];
+const SIMULAR = NOMBRE_VISIBLE[HERRAMIENTA.SIMULAR_ENVIO];
+const OTRO_CASO = "pa-logistica-istmo";
+const BLOQUEO_LEGIBLE = "ausente: Certificado de cumplimiento tributario";
+const CONTEO_EC = {
+  [ESTADO_CAMPO.LLENO]: 13,
+  [ESTADO_CAMPO.FALTANTE]: 1,
+  [ESTADO_CAMPO.REQUIERE_CONFIRMACION]: 1,
+};
+const CONTEO_PA = {
+  [ESTADO_CAMPO.LLENO]: 9,
+  [ESTADO_CAMPO.FALTANTE]: 0,
+  [ESTADO_CAMPO.REQUIERE_CONFIRMACION]: 2,
+};
+
+const VACIO: Omit<ResultadoVisibleUi, "herramienta"> = {
+  pais: null,
+  formato: null,
+  conteo: null,
+  listoParaFirma: null,
+  bloqueosLegibles: null,
+  ruta: null,
+  aviso: null,
+};
+
+const RESULTADO_LEER: ResultadoVisibleUi = {
+  ...VACIO,
+  herramienta: HERRAMIENTA.LEER_SOLICITUD,
+  pais: "EC",
+  formato: FORMATO.PDF,
+};
+const RESULTADO_MAPEAR: ResultadoVisibleUi = {
+  ...VACIO,
+  herramienta: HERRAMIENTA.MAPEAR_CAMPOS,
+  pais: "EC",
+  conteo: CONTEO_EC,
+};
+const RESULTADO_GENERAR: ResultadoVisibleUi = {
+  ...VACIO,
+  herramienta: HERRAMIENTA.GENERAR_FORMULARIO,
+  formato: FORMATO.PDF,
+  ruta: `out/${CASO}/formulario.pdf`,
+};
+const RESULTADO_ARMAR: ResultadoVisibleUi = {
+  ...VACIO,
+  herramienta: HERRAMIENTA.ARMAR_PAQUETE,
+  listoParaFirma: false,
+  bloqueosLegibles: [BLOQUEO_LEGIBLE],
+  ruta: `out/${CASO}/paquete`,
+};
+const RESULTADO_ENVIO: ResultadoVisibleUi = {
+  ...VACIO,
+  herramienta: HERRAMIENTA.SIMULAR_ENVIO,
+  ruta: `out/${CASO}/ENVIO-SIMULADO.md`,
+};
+
+const turnoCompleto: readonly AccionUi[] = [
+  ...inicioDeTurno,
+  fin("leer", LEER, true, RESUMEN_LEER, RESULTADO_LEER),
+  fin("mapear", MAPEAR, true, RESUMEN_MAPEAR, RESULTADO_MAPEAR),
+  fin("generar", GENERAR, true, RESUMEN_MAPEAR, RESULTADO_GENERAR),
+  fin("armar", ARMAR, true, RESUMEN_MAPEAR, RESULTADO_ARMAR),
+  finDeTurno,
+];
+
+describe("resultado por caso armado solo con los datos de las herramientas (UI-05)", () => {
+  test("leer, mapear, generar y armar de un caso se suman en una sola tarjeta", () => {
+    expect(resultadosPorCaso(aplicar(turnoCompleto).turnos)).toEqual([
+      {
+        caso: CASO,
+        pais: "EC",
+        formato: FORMATO.PDF,
+        conteo: CONTEO_EC,
+        listoParaFirma: false,
+        bloqueosLegibles: [BLOQUEO_LEGIBLE],
+        carpeta: `out/${CASO}/`,
+        aviso: null,
+      },
+    ]);
+  });
+
+  test("los contadores salen del mapeo en el orden Llenos, Faltantes y Por confirmar", () => {
+    const [resultado] = resultadosPorCaso(aplicar(turnoCompleto).turnos);
+    if (resultado === undefined) throw new Error("falta el resultado del caso");
+    expect(contadoresDe(resultado)).toEqual([
+      { estado: ESTADO_CAMPO.LLENO, cantidad: 13 },
+      { estado: ESTADO_CAMPO.FALTANTE, cantidad: 1 },
+      { estado: ESTADO_CAMPO.REQUIERE_CONFIRMACION, cantidad: 1 },
+    ]);
+    expect(contadoresDe(resultado).map(({ estado }) => TEXTO_RESULTADO.contador(estado))).toEqual([
+      "Llenos",
+      "Faltantes",
+      "Por confirmar",
+    ]);
+    expect(TEXTO_RESULTADO.firma(estadoDeFirma(resultado.listoParaFirma))).toBe("No listo para firma");
+  });
+
+  test("un turno sin armar_paquete deja Paquete sin armar, con contadores y sin ruta ni bloqueos", () => {
+    const estado = aplicar([
+      ...inicioDeTurno,
+      fin("leer", LEER, true, RESUMEN_LEER, RESULTADO_LEER),
+      fin("mapear", MAPEAR, true, RESUMEN_MAPEAR, RESULTADO_MAPEAR),
+      fin("generar", GENERAR, true, RESUMEN_MAPEAR, RESULTADO_GENERAR),
+      finDeTurno,
+    ]);
+    const [resultado] = resultadosPorCaso(estado.turnos);
+    expect(resultado).toMatchObject({
+      conteo: CONTEO_EC,
+      listoParaFirma: null,
+      bloqueosLegibles: null,
+      carpeta: null,
+    });
+    expect(estadoDeFirma(resultado?.listoParaFirma ?? null)).toBe(ESTADO_FIRMA.SIN_ARMAR);
+    expect(TEXTO_RESULTADO.firma(ESTADO_FIRMA.SIN_ARMAR)).toBe("Paquete sin armar");
+  });
+
+  test("un turno sin mapeo deja los contadores en —", () => {
+    const estado = aplicar([...inicioDeTurno, fin("leer", LEER, true, RESUMEN_LEER, RESULTADO_LEER)]);
+    const [resultado] = resultadosPorCaso(estado.turnos);
+    if (resultado === undefined) throw new Error("falta el resultado del caso");
+    expect(contadoresDe(resultado).map(({ cantidad }) => TEXTO_RESULTADO.cantidad(cantidad))).toEqual([
+      "—",
+      "—",
+      "—",
+    ]);
+  });
+
+  test("un tool_end fallido (resultado null) no cambia nada", () => {
+    const antes = resultadosPorCaso(aplicar(turnoCompleto).turnos);
+    const despues = resultadosPorCaso(
+      aplicar([...turnoCompleto.slice(0, -1), fin("armar-2", ARMAR, false, RESUMEN_FALLO), finDeTurno])
+        .turnos,
+    );
+    expect(despues).toEqual(antes);
+  });
+
+  test("un caso que solo tuvo llamadas fallidas no tiene tarjeta", () => {
+    const estado = aplicar([...inicioDeTurno, fin("leer", LEER, false, RESUMEN_FALLO, null, ""), finDeTurno]);
+    expect(resultadosPorCaso(estado.turnos)).toEqual([]);
+    expect(resultadosDelTurno(estado.turnos, 0)).toEqual([]);
+  });
+
+  test("un paquete listo dice Listo para firma y sin bloqueos queda Sin bloqueos", () => {
+    const estado = aplicar([
+      ...inicioDeTurno,
+      fin("armar", ARMAR, true, RESUMEN_MAPEAR, {
+        ...RESULTADO_ARMAR,
+        listoParaFirma: true,
+        bloqueosLegibles: [],
+      }),
+    ]);
+    const [resultado] = resultadosPorCaso(estado.turnos);
+    expect(TEXTO_RESULTADO.firma(estadoDeFirma(resultado?.listoParaFirma ?? null))).toBe("Listo para firma");
+    expect(resultado?.bloqueosLegibles).toEqual([]);
+    expect(TEXTO_RESULTADO.sinBloqueos).toBe("Sin bloqueos");
+  });
+
+  test("el caso portal trae el aviso y el formato Portal", () => {
+    const estado = aplicar([
+      ...inicioDeTurno,
+      fin(
+        "mapear",
+        MAPEAR,
+        true,
+        RESUMEN_MAPEAR,
+        { ...RESULTADO_MAPEAR, pais: "PA", conteo: CONTEO_PA },
+        OTRO_CASO,
+      ),
+      fin(
+        "generar",
+        GENERAR,
+        true,
+        RESUMEN_MAPEAR,
+        {
+          ...RESULTADO_GENERAR,
+          formato: FORMATO.PORTAL,
+          ruta: `out/${OTRO_CASO}/valores-portal.md`,
+          aviso: "formato no soportado",
+        },
+        OTRO_CASO,
+      ),
+    ]);
+    const [resultado] = resultadosPorCaso(estado.turnos);
+    expect(resultado).toMatchObject({ caso: OTRO_CASO, pais: "PA", aviso: "formato no soportado" });
+    expect(TEXTO_RESULTADO.formato(resultado?.formato ?? null)).toBe("Portal");
+    expect(TEXTO_RESULTADO.portal).toBe(
+      "Formato no soportado: se generaron los valores para cargar a mano en el portal.",
+    );
+  });
+
+  test("dos casos del mismo turno dan dos tarjetas en el orden en que aparecieron", () => {
+    const estado = aplicar([
+      ...inicioDeTurno,
+      fin("mapear-pa", MAPEAR, true, RESUMEN_MAPEAR, RESULTADO_MAPEAR, OTRO_CASO),
+      fin("mapear-ec", MAPEAR, true, RESUMEN_MAPEAR, RESULTADO_MAPEAR),
+      fin("mapear-pa-2", MAPEAR, true, RESUMEN_MAPEAR, RESULTADO_MAPEAR, OTRO_CASO),
+    ]);
+    expect(resultadosDelTurno(estado.turnos, 0).map(({ caso }) => caso)).toEqual([OTRO_CASO, CASO]);
+  });
+
+  test("un turno posterior que toca el caso muestra su último estado conocido; uno que no lo toca, ninguna tarjeta", () => {
+    const estado = aplicar([
+      ...turnoCompleto,
+      ...inicioDeTurno,
+      fin("enviar", SIMULAR, true, RESUMEN_MAPEAR, RESULTADO_ENVIO),
+      finDeTurno,
+      ...inicioDeTurno,
+      finDeTurno,
+    ]);
+    expect(resultadosDelTurno(estado.turnos, 1)).toEqual(resultadosDelTurno(estado.turnos, 0));
+    expect(resultadosDelTurno(estado.turnos, 1)[0]?.carpeta).toBe(`out/${CASO}/`);
+    expect(resultadosDelTurno(estado.turnos, 2)).toEqual([]);
+    expect(resultadosDelTurno(estado.turnos, 9)).toEqual([]);
+  });
+
+  test("una ruta fuera de out/{caso}/ no se muestra como ruta de salida", () => {
+    const estado = aplicar([
+      ...inicioDeTurno,
+      fin("armar", ARMAR, true, RESUMEN_MAPEAR, { ...RESULTADO_ARMAR, ruta: "otra/carpeta/paquete" }),
+    ]);
+    expect(resultadosPorCaso(estado.turnos)[0]?.carpeta).toBeNull();
+  });
+
+  test("el formato y el país sin dato se muestran como —", () => {
+    expect(TEXTO_RESULTADO.formato(null)).toBe("—");
+    expect(TEXTO_RESULTADO.pais(null)).toBe("—");
+    expect(TEXTO_RESULTADO.formato(FORMATO.XLSX)).toBe("XLSX");
   });
 });

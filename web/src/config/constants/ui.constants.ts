@@ -88,3 +88,11 @@ export const MAXIMO_TARJETAS_ABIERTAS = 6;
 export const SANGRIA_JSON = 2;
 
 export const ESPERA_DESPERTAR_MS = 10_000;
+
+export const ESTADO_FIRMA = {
+  LISTO: "listo",
+  NO_LISTO: "no_listo",
+  SIN_ARMAR: "sin_armar",
+} as const;
+
+export const SEPARADOR_RUTA = "/";

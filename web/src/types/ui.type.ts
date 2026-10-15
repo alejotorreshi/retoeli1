@@ -3,6 +3,7 @@ import type {
   EstadoHerramienta,
   EstadoModelo,
   LlamadaDelTurno,
+  ResultadoDeCaso,
   SaludModelo,
   TurnoConversacion,
 } from "@web/types/chat.type.ts";
@@ -36,6 +37,15 @@ export type PropsLineaDeTiempo = {
 export type PropsTurno = {
   readonly turno: TurnoConversacion;
   readonly enCurso: boolean;
+  readonly resultados: readonly ResultadoDeCaso[];
+};
+
+export type PropsTarjetaResultado = {
+  readonly resultado: ResultadoDeCaso;
+};
+
+export type PropsBloqueosResultado = {
+  readonly bloqueos: readonly string[] | null;
 };
 
 export type PropsGrupoHerramientas = {

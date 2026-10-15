@@ -2,19 +2,24 @@ import { AvisoError } from "@web/components/aviso.tsx";
 import { GrupoHerramientas } from "@web/components/grupo-herramientas.tsx";
 import estilos from "@web/components/linea-de-tiempo.module.css";
 import { MensajeAgente, MensajeUsuaria } from "@web/components/mensaje.tsx";
+import { TarjetaResultado } from "@web/components/tarjeta-resultado.tsx";
 import { CLASE_GLOBAL, DISTANCIA_PEGADO_AL_FINAL } from "@web/config/constants/ui.constants.ts";
 import { TEXTO_CHAT } from "@web/config/strings.ts";
+import { resultadosDelTurno } from "@web/state/casos.ts";
 import { anuncioDeEstado } from "@web/state/conversacion.ts";
 import type { PropsLineaDeTiempo, PropsTurno } from "@web/types/ui.type.ts";
 import { useEffect, useRef, useState } from "react";
 
-function Turno({ turno, enCurso }: PropsTurno) {
+function Turno({ turno, enCurso, resultados }: PropsTurno) {
   return (
     <>
       <MensajeUsuaria texto={turno.mensaje} />
       {turno.llamadas.length === 0 ? null : <GrupoHerramientas llamadas={turno.llamadas} enCurso={enCurso} />}
       {turno.textos.map((texto) => (
         <MensajeAgente key={texto.clave} texto={texto.texto} />
+      ))}
+      {resultados.map((resultado) => (
+        <TarjetaResultado key={resultado.caso} resultado={resultado} />
       ))}
       {turno.error === null ? null : (
         <li>
@@ -87,7 +92,12 @@ export function LineaDeTiempo({ turnos, enCurso, children }: PropsLineaDeTiempo)
           ) : (
             <ol className={estilos.lista}>
               {turnos.map((turno, indice) => (
-                <Turno key={turno.clave} turno={turno} enCurso={enCurso && indice === turnos.length - 1} />
+                <Turno
+                  key={turno.clave}
+                  turno={turno}
+                  enCurso={enCurso && indice === turnos.length - 1}
+                  resultados={resultadosDelTurno(turnos, indice)}
+                />
               ))}
             </ol>
           )}

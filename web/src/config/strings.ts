@@ -1,8 +1,17 @@
-import { ESTADO_HERRAMIENTA } from "@web/config/constants/ui.constants.ts";
-import type { EstadoHerramienta, EstadoModelo, ResumenLlamadas } from "@web/types/chat.type.ts";
+import { ESTADO_FIRMA, ESTADO_HERRAMIENTA } from "@web/config/constants/ui.constants.ts";
+import type {
+  EstadoCampoUi,
+  EstadoFirma,
+  EstadoHerramienta,
+  EstadoModelo,
+  FormatoVisible,
+  ResumenLlamadas,
+} from "@web/types/chat.type.ts";
 import type { EstadoModeloConAviso, PartesAvisoModelo } from "@web/types/ui.type.ts";
+import { FORMATO } from "@/config/constants/forms.constants.ts";
 import { VIGENCIA_ACCESO_HORAS_POR_DEFECTO } from "@/config/constants/http.constants.ts";
 import { ESTADO_LLM } from "@/config/constants/llm.constants.ts";
+import { ESTADO_CAMPO } from "@/config/constants/mapping.constants.ts";
 import { HERRAMIENTA, HERRAMIENTA_POR_NOMBRE_VISIBLE } from "@/config/constants/tools.constants.ts";
 import type { ValorDe } from "@/config/types/valor-de.type.ts";
 
@@ -154,4 +163,36 @@ export const TEXTO_HERRAMIENTA = {
     caso === null
       ? `Ejecutando ${etiquetaDeHerramienta(nombre)}`
       : `Ejecutando ${etiquetaDeHerramienta(nombre)} de ${caso}`,
+} as const;
+
+const FORMATO_VISIBLE = {
+  [FORMATO.XLSX]: "XLSX",
+  [FORMATO.PDF]: "PDF",
+  [FORMATO.PORTAL]: "Portal",
+} as const satisfies Record<FormatoVisible, string>;
+
+const CONTADOR_DE_ESTADO = {
+  [ESTADO_CAMPO.LLENO]: "Llenos",
+  [ESTADO_CAMPO.FALTANTE]: "Faltantes",
+  [ESTADO_CAMPO.REQUIERE_CONFIRMACION]: "Por confirmar",
+} as const satisfies Record<EstadoCampoUi, string>;
+
+const FIRMA = {
+  [ESTADO_FIRMA.LISTO]: "Listo para firma",
+  [ESTADO_FIRMA.NO_LISTO]: "No listo para firma",
+  [ESTADO_FIRMA.SIN_ARMAR]: "Paquete sin armar",
+} as const satisfies Record<EstadoFirma, string>;
+
+export const TEXTO_RESULTADO = {
+  sinDato: SIN_DATO,
+  formato: (formato: FormatoVisible | null) => (formato === null ? SIN_DATO : FORMATO_VISIBLE[formato]),
+  pais: (pais: string | null) => pais ?? SIN_DATO,
+  cantidad: (cantidad: number | null) => (cantidad === null ? SIN_DATO : String(cantidad)),
+  contador: (estado: EstadoCampoUi) => CONTADOR_DE_ESTADO[estado],
+  firma: (estado: EstadoFirma) => FIRMA[estado],
+  bloqueos: "Bloqueos",
+  sinBloqueos: "Sin bloqueos",
+  ruta: "Ruta de salida",
+  portal: "Formato no soportado: se generaron los valores para cargar a mano en el portal.",
+  etiqueta: (caso: string) => `Resultado de ${caso}`,
 } as const;

@@ -1,6 +1,7 @@
 import type {
   ACCION_UI,
   ESTADO_ACCESO,
+  ESTADO_FIRMA,
   ESTADO_HERRAMIENTA,
   RESULTADO_API,
 } from "@web/config/constants/ui.constants.ts";
@@ -28,6 +29,7 @@ export type LlamadaDelTurno = {
   readonly estado: EstadoHerramienta;
   readonly resumen: string | null;
   readonly codigo: string | null;
+  readonly resultado: ResultadoVisibleUi | null;
 };
 
 export type ResumenLlamadas = {
@@ -42,6 +44,32 @@ export type EventoInicioHerramientaUi = Extract<
 >;
 
 export type EventoFinHerramientaUi = Extract<SseEvent, { readonly tipo: typeof TIPO_EVENTO.FIN_HERRAMIENTA }>;
+
+export type ResultadoVisibleUi = NonNullable<EventoFinHerramientaUi["resultado"]>;
+
+export type FormatoVisible = NonNullable<ResultadoVisibleUi["formato"]>;
+
+export type ConteoUi = NonNullable<ResultadoVisibleUi["conteo"]>;
+
+export type EstadoCampoUi = keyof ConteoUi;
+
+export type EstadoFirma = ValorDe<typeof ESTADO_FIRMA>;
+
+export type ResultadoDeCaso = {
+  readonly caso: string;
+  readonly pais: string | null;
+  readonly formato: FormatoVisible | null;
+  readonly conteo: ConteoUi | null;
+  readonly listoParaFirma: boolean | null;
+  readonly bloqueosLegibles: readonly string[] | null;
+  readonly carpeta: string | null;
+  readonly aviso: string | null;
+};
+
+export type ContadorDeCaso = {
+  readonly estado: EstadoCampoUi;
+  readonly cantidad: number | null;
+};
 
 export type TurnoConversacion = {
   readonly clave: number;
