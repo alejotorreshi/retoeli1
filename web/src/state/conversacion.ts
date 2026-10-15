@@ -43,6 +43,7 @@ import type { ConfigResponse, SseEvent } from "@/http/types/api.type.ts";
 
 export const estadoInicialConversacion: EstadoConversacion = {
   sesionId: null,
+  sesionAnterior: null,
   turnos: [],
   enCurso: false,
   tarjetasConfirmacion: [],
@@ -128,8 +129,28 @@ function registrarError(estado: EstadoConversacion, error: ErrorVisible): Estado
   return conUltimoTurno(estado, (turno) => ({ ...turno, error }));
 }
 
-function cerrarConError(estado: EstadoConversacion, mensaje: string): EstadoConversacion {
-  return terminarTurno(registrarError(estado, { codigo: null, mensaje, accion: null }), false);
+function cerrarConError(
+  estado: EstadoConversacion,
+  mensaje: string,
+  accion: AccionDeAviso | null = null,
+): EstadoConversacion {
+  return terminarTurno(registrarError(estado, { codigo: null, mensaje, accion }), false);
+}
+
+function puedeVolverASesionAnterior(estado: EstadoConversacion): boolean {
+  return estado.sesionId === null && estado.sesionAnterior !== null;
+}
+
+function accionDelRechazo(estado: EstadoConversacion, status: number): AccionDeAviso | null {
+  return status === RESPUESTA_HTTP.DEMASIADOS_PEDIDOS && puedeVolverASesionAnterior(estado)
+    ? ACCION_AVISO.VOLVER_SESION_ANTERIOR
+    : null;
+}
+
+function rechazarPedido(estado: EstadoConversacion, status: number, mensaje: string): EstadoConversacion {
+  return status === RESPUESTA_HTTP.NO_AUTORIZADO
+    ? pedirAcceso(estado, mensaje)
+    : cerrarConError(estado, mensaje, accionDelRechazo(estado, status));
 }
 
 function cortarStream(estado: EstadoConversacion): EstadoConversacion {
@@ -253,6 +274,17 @@ function hidratar(estado: EstadoConversacion, hidratado: EstadoHidratado): Estad
 function empezarSesionNueva(estado: EstadoConversacion): EstadoConversacion {
   return {
     ...estadoInicialConversacion,
+    sesionAnterior: estado.sesionId ?? estado.sesionAnterior,
+    acceso: estado.acceso,
+    config: estado.config,
+    borrador: estado.borrador,
+  };
+}
+
+function volverASesionAnterior(estado: EstadoConversacion): EstadoConversacion {
+  if (estado.sesionAnterior === null || estado.enCurso) return estado;
+  return {
+    ...estadoAlCargar(estado.sesionAnterior),
     acceso: estado.acceso,
     config: estado.config,
     borrador: estado.borrador,
@@ -307,8 +339,8 @@ function aplicarEvento(estado: EstadoConversacion, evento: SseEvent): EstadoConv
   switch (evento.tipo) {
     case TIPO_EVENTO.INICIO_TURNO:
       return evento.sesionExpirada
-        ? seguirTrasExpirar(estado, evento.sesionId)
-        : { ...estado, sesionId: evento.sesionId };
+        ? seguirTrasExpirar({ ...estado, sesionAnterior: null }, evento.sesionId)
+        : { ...estado, sesionId: evento.sesionId, sesionAnterior: null };
     case TIPO_EVENTO.INICIO_HERRAMIENTA:
       return conUltimoTurno(estado, (turno) => abrirLlamada(turno, evento));
     case TIPO_EVENTO.FIN_HERRAMIENTA:
@@ -339,9 +371,7 @@ export function reducirConversacion(estado: EstadoConversacion, accion: AccionUi
     case ACCION_UI.EVENTO:
       return aplicarEvento(contarEvento(estado), accion.evento);
     case ACCION_UI.ERROR_HTTP:
-      return accion.status === RESPUESTA_HTTP.NO_AUTORIZADO
-        ? pedirAcceso(estado, accion.mensaje)
-        : cerrarConError(estado, accion.mensaje);
+      return rechazarPedido(estado, accion.status, accion.mensaje);
     case ACCION_UI.ERROR_RED:
       return cerrarConError(estado, TEXTO_ERROR.sinConexion);
     case ACCION_UI.FIN_STREAM:
@@ -366,6 +396,8 @@ export function reducirConversacion(estado: EstadoConversacion, accion: AccionUi
       return recargarSesion(estado);
     case ACCION_UI.NUEVA_SESION:
       return empezarSesionNueva(estado);
+    case ACCION_UI.VOLVER_SESION_ANTERIOR:
+      return volverASesionAnterior(estado);
     default:
       return estado;
   }

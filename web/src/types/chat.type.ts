@@ -173,6 +173,7 @@ export type AvisoDeSesion = {
 
 export type EstadoConversacion = {
   readonly sesionId: string | null;
+  readonly sesionAnterior: string | null;
   readonly turnos: readonly TurnoConversacion[];
   readonly enCurso: boolean;
   readonly tarjetasConfirmacion: readonly TarjetaDeConfirmacion[];
@@ -277,6 +278,10 @@ export type AccionNuevaSesion = {
   readonly tipo: typeof ACCION_UI.NUEVA_SESION;
 };
 
+export type AccionVolverSesionAnterior = {
+  readonly tipo: typeof ACCION_UI.VOLVER_SESION_ANTERIOR;
+};
+
 export type AccionUi =
   | AccionEnviar
   | AccionEvento
@@ -292,7 +297,8 @@ export type AccionUi =
   | AccionSesionNoCargada
   | AccionDetener
   | AccionRecargar
-  | AccionNuevaSesion;
+  | AccionNuevaSesion
+  | AccionVolverSesionAnterior;
 
 export type Despachar = (accion: AccionUi) => void;
 

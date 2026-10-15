@@ -100,6 +100,7 @@ export const TEXTO_ERROR = {
 const ACCION_DEL_AVISO = {
   [ACCION_AVISO.RECARGAR]: "Recargar conversación",
   [ACCION_AVISO.NUEVA_SESION]: "Empezar sesión nueva",
+  [ACCION_AVISO.VOLVER_SESION_ANTERIOR]: "Volver a la sesión anterior",
 } as const satisfies Record<AccionDeAviso, string>;
 
 export const TEXTO_AVISO = {

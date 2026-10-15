@@ -64,6 +64,7 @@ describe("reducirConversacion", () => {
   test("el estado inicial no tiene sesión, turnos, turno en curso, config ni carga pendiente, y verifica el acceso", () => {
     expect(estadoInicialConversacion).toEqual({
       sesionId: null,
+      sesionAnterior: null,
       turnos: [],
       enCurso: false,
       tarjetasConfirmacion: [],
@@ -608,6 +609,7 @@ describe("sesión expirada, presupuesto agotado, uso y Nueva sesión (UI-08)", (
       acceso: { tipo: ESTADO_ACCESO.CONCEDIDO },
       config: CONFIG,
       borrador: "hola",
+      sesionAnterior: SESION_NUEVA,
     });
   });
 
@@ -615,5 +617,99 @@ describe("sesión expirada, presupuesto agotado, uso y Nueva sesión (UI-08)", (
     const estado = { ...conTarjetaAbierta, tokensSesion: 12_999 };
     expect(usoDeSesion(estado)).toEqual({ usados: 12, tope: CONFIG.presupuestoSesion / 1000 });
     expect(usoDeSesion({ ...estado, config: null })).toBeNull();
+  });
+});
+
+const SESION_ACEPTADA = "sesion-aceptada";
+const TOPE_SESIONES =
+  "Abriste demasiadas sesiones nuevas en la última hora. Podrás abrir otra en 60 minutos.";
+
+describe("volver a la sesión anterior tras un 429 de sesión nueva (G-03-04)", () => {
+  const enSesion = aplicar(estadoInicialConversacion, [
+    { tipo: ACCION_UI.CONFIG_RECIBIDA, config: CONFIG },
+    ...turnoCompleto,
+  ]);
+  const nueva = reducirConversacion(enSesion, { tipo: ACCION_UI.NUEVA_SESION });
+  const rechazada = aplicar(nueva, [
+    { tipo: ACCION_UI.CAMBIAR_BORRADOR, borrador: MENSAJE },
+    { tipo: ACCION_UI.ENVIAR, mensaje: MENSAJE },
+    { tipo: ACCION_UI.ERROR_HTTP, status: RESPUESTA_HTTP.DEMASIADOS_PEDIDOS, mensaje: TOPE_SESIONES },
+  ]);
+
+  test("NUEVA_SESION guarda la sesión vigente como anterior y conserva acceso, config y borrador", () => {
+    const conBorrador = reducirConversacion(enSesion, { tipo: ACCION_UI.CAMBIAR_BORRADOR, borrador: "hola" });
+    const estado = reducirConversacion(conBorrador, { tipo: ACCION_UI.NUEVA_SESION });
+    expect(estado.sesionId).toBeNull();
+    expect(estado.sesionAnterior).toBe(SESION);
+    expect(estado.turnos).toEqual([]);
+    expect(estado.acceso).toEqual({ tipo: ESTADO_ACCESO.CONCEDIDO });
+    expect(estado.config).toEqual(CONFIG);
+    expect(estado.borrador).toBe("hola");
+  });
+
+  test("una segunda NUEVA_SESION sin mandar nada conserva la misma sesión anterior", () => {
+    const estado = reducirConversacion(nueva, { tipo: ACCION_UI.NUEVA_SESION });
+    expect(estado.sesionAnterior).toBe(SESION);
+  });
+
+  test("un 429 de la sesión nueva ofrece volver a la anterior y deja el texto en el compositor", () => {
+    expect(rechazada.enCurso).toBe(false);
+    expect(rechazada.borrador).toBe(MENSAJE);
+    expect(rechazada.turnos.at(-1)?.error).toEqual({
+      codigo: null,
+      mensaje: TOPE_SESIONES,
+      accion: ACCION_AVISO.VOLVER_SESION_ANTERIOR,
+    });
+  });
+
+  test("VOLVER_SESION_ANTERIOR recupera el id anterior, pide su historial y conserva el borrador", () => {
+    const estado = reducirConversacion(rechazada, { tipo: ACCION_UI.VOLVER_SESION_ANTERIOR });
+    expect(estado).toEqual({
+      ...estadoInicialConversacion,
+      sesionId: SESION,
+      hidratando: true,
+      acceso: { tipo: ESTADO_ACCESO.CONCEDIDO },
+      config: CONFIG,
+      borrador: MENSAJE,
+    });
+  });
+
+  test("VOLVER_SESION_ANTERIOR no hace nada sin sesión anterior o con un turno en curso", () => {
+    expect(reducirConversacion(enSesion, { tipo: ACCION_UI.VOLVER_SESION_ANTERIOR })).toBe(enSesion);
+    const enCurso = reducirConversacion(nueva, { tipo: ACCION_UI.ENVIAR, mensaje: MENSAJE });
+    expect(reducirConversacion(enCurso, { tipo: ACCION_UI.VOLVER_SESION_ANTERIOR })).toBe(enCurso);
+  });
+
+  test("el turn_start de la sesión nueva olvida la anterior", () => {
+    const estado = aplicar(nueva, [
+      { tipo: ACCION_UI.ENVIAR, mensaje: MENSAJE },
+      evento({
+        tipo: TIPO_EVENTO.INICIO_TURNO,
+        sesionId: SESION_ACEPTADA,
+        turnoId: "turno-2",
+        sesionNueva: true,
+        sesionExpirada: false,
+      }),
+    ]);
+    expect(estado.sesionId).toBe(SESION_ACEPTADA);
+    expect(estado.sesionAnterior).toBeNull();
+  });
+
+  test("sin sesión anterior un 429 no ofrece volver", () => {
+    const estado = aplicar(estadoInicialConversacion, [
+      { tipo: ACCION_UI.ENVIAR, mensaje: MENSAJE },
+      { tipo: ACCION_UI.ERROR_HTTP, status: RESPUESTA_HTTP.DEMASIADOS_PEDIDOS, mensaje: TOPE_SESIONES },
+    ]);
+    expect(estado.turnos.at(-1)?.error).toEqual({ codigo: null, mensaje: TOPE_SESIONES, accion: null });
+  });
+
+  test("con sesión anterior un 413 o un 503 no ofrecen volver", () => {
+    for (const status of [RESPUESTA_HTTP.CUERPO_DEMASIADO_GRANDE, RESPUESTA_HTTP.NO_DISPONIBLE]) {
+      const estado = aplicar(nueva, [
+        { tipo: ACCION_UI.ENVIAR, mensaje: MENSAJE },
+        { tipo: ACCION_UI.ERROR_HTTP, status, mensaje: TOPE_DIARIO },
+      ]);
+      expect(estado.turnos.at(-1)?.error).toEqual({ codigo: null, mensaje: TOPE_DIARIO, accion: null });
+    }
   });
 });

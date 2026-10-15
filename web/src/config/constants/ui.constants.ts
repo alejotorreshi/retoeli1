@@ -21,11 +21,13 @@ export const ACCION_UI = {
   DETENER: "detener",
   RECARGAR: "recargar",
   NUEVA_SESION: "nueva_sesion",
+  VOLVER_SESION_ANTERIOR: "volver_sesion_anterior",
 } as const;
 
 export const ACCION_AVISO = {
   RECARGAR: "recargar",
   NUEVA_SESION: "nueva_sesion",
+  VOLVER_SESION_ANTERIOR: "volver_sesion_anterior",
 } as const;
 
 export const REINTENTO_OCUPADA_MS = 1_000;
