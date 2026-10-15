@@ -55,6 +55,26 @@ Ese número solo vale para ese camino. Si el servicio también se publicara por 
 - si se agrega otro hostname, hay que volver a medir los saltos en cada uno (`curl` con y sin `-H "X-Forwarded-For: 203.0.113.9"` y `LOG_LEVEL=debug`, mirando `entradasXff` en el evento `http_client_ip_resolved`) y usar un solo valor que sirva para todos, o dejar uno solo;
 - si la entrada elegida no es una IP válida, el servidor cuenta por la dirección del socket en lugar de usar ese texto como clave.
 
+## Tope de claves de los limitadores
+
+Los tres limitadores por IP (intentos fallidos de acceso, mensajes por minuto y sesiones nuevas por hora) usan `http/services/rate-limiter.service.ts`, y cada uno guarda como máximo `MAX_CLAVES_LIMITADOR` (10 000) claves. La clave es la IP del cliente. Las IPv6 se agrupan por prefijo /64 (`GRUPOS_PREFIJO_IPV6`), porque un solo cliente suele tener un /64 entero.
+
+El tope existe para que la memoria no crezca sin límite, y su regla es la de D-77: al llegar a 10 000 claves, una clave nueva desaloja la clave **no bloqueada** más antigua, y nunca una bloqueada antes de que venza su ventana. Así, rotar prefijos IPv6 no devuelve intentos. Quien tiene un bloque /48 dispone de 65 536 prefijos /64, pero sus claves bloqueadas siguen bloqueadas. Además, los golpes que se pierden al desalojar claves libres no pasan del tope de una clave por ventana. Si no fuera así, rotar en ronda más de 10 000 claves, con un intento en cada una, desalojaría siempre claves con un solo golpe y nunca llegaría a bloquear ninguna. Con 10 000 claves y 5 intentos, el máximo queda en unos 50 000 intentos evaluados por ventana (50 005, contando el cupo de desalojos), contra un código de al menos 12 caracteres.
+
+Si las 10 000 claves de un limitador están bloqueadas, o el cupo de desalojos está agotado, ese limitador **falla cerrado**. Una IP nueva no se guarda y queda bloqueada hasta que vence la ventana más antigua (o el cupo de desalojos, si vence antes). Como las IP ya rastreadas agotaron su tope, el efecto alcanza a toda IP. Todo se recupera solo, a lo sumo una ventana después de que el ataque se detiene.
+
+El alcance de esa falla cerrada cambia según el limitador:
+
+| Limitador | Quién lo puede llenar | Qué pasa saturado |
+|---|---|---|
+| Intentos fallidos de acceso (`ACCESS_MAX_FAILED_ATTEMPTS` en `ACCESS_FAILED_WINDOW_MINUTES`, 5 cada 15 min por defecto) | Cualquiera que falle el código, sin acceso previo. | `/api/acceso` y `Authorization: Bearer` responden 429 a toda IP, aun con el código correcto, hasta 15 minutos después del ataque. Quien ya tiene la cookie firmada no pasa por este limitador y sigue entrando. |
+| Mensajes por minuto (`RATE_LIMIT_CHAT_PER_MINUTE`, ventana de 1 min) | Solo quien ya pasó el acceso, porque va después de `requireAccess`, y con 10 000 IP o prefijos /64 que agotan su tope en el mismo minuto. | `POST /api/chat` responde 429 a toda IP, **también con la cookie de acceso**. Nadie puede mandar mensajes ni seguir su sesión hasta a lo sumo un minuto después de que el ataque se detiene. |
+| Sesiones nuevas por hora (`NEW_SESSIONS_PER_HOUR`, ventana de 1 h) | Solo quien ya pasó el acceso, igual que el anterior. | Nadie abre una sesión nueva, tampoco con la cookie: el 429 dice los minutos de espera, hasta 60. Quien ya tiene una sesión abierta sigue conversando en ella, mientras el limitador de mensajes no esté saturado. |
+
+Se acepta por dos motivos. Los dos limitadores de `/api/chat` solo los satura alguien que ya conoce el código de acceso. Y las alternativas son peores: soltar claves bloqueadas reabre la fuerza bruta contra el código, y crecer sin tope reabre el agotamiento de memoria. Un balde compartido de desborde tampoco ayuda, porque también deja fuera a los recién llegados y suma estado.
+
+Un despliegue real movería estos contadores a un almacén compartido con vencimiento (Redis o equivalente), sin tope de claves en la memoria del proceso.
+
 ## Qué haría un despliegue real
 
 - Guardar contadores, bloqueos y sesiones en un almacén compartido y persistente (Redis o una base de datos), con claves que venzan solas, para que sobrevivan a reinicios y valgan entre varias instancias.
