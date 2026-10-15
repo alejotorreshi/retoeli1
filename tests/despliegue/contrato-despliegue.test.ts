@@ -19,7 +19,7 @@ const SECRETO_GENERADO = "ACCESS_TOKEN_SECRET";
 
 const COPIAS_DE_EJECUCION = ["tsconfig.json", "src", "agent", "reto-01/fixtures"];
 
-const DIRECTORIOS_DEL_BUILD_WEB = ["config/", "http/types/"];
+const PREFIJO_SRC = "src/";
 
 const EXCLUSIONES_DOCKER = [
   "node_modules/",
@@ -125,8 +125,19 @@ function nombresDeEnvExample(): string[] {
 }
 
 function importacionesDeValor(codigo: string): string[] {
-  const importaciones = codigo.matchAll(/import\s+(type\s+)?[^;]*?from\s+"@\/([^"]+)"/g);
+  const importaciones = codigo.matchAll(/(?:import|export)\s+(type\s+)?[^;]*?from\s+"@\/([^"]+)"/g);
   return [...importaciones].filter((coincidencia) => coincidencia[1] === undefined).map((c) => c[2] ?? "");
+}
+
+function directoriosSrcCopiados(etapa: Etapa | undefined): string[] {
+  if (etapa === undefined) return [];
+  return origenesCopiados(etapa)
+    .filter((origen) => origen.startsWith(PREFIJO_SRC))
+    .map((origen) => `${origen.slice(PREFIJO_SRC.length)}/`);
+}
+
+function fueraDelBuild(alcance: readonly string[], directorios: readonly string[]): string[] {
+  return alcance.filter((ruta) => !directorios.some((directorio) => ruta.startsWith(directorio)));
 }
 
 function alcanceDesdeWeb(): string[] {
@@ -179,9 +190,18 @@ describe("Dockerfile (DEP-02)", () => {
   test("todo lo que la SPA importa como valor desde src/ está dentro de lo que copia la etapa build", () => {
     const alcance = alcanceDesdeWeb();
     expect(alcance.length).toBeGreaterThan(0);
-    expect(alcance.filter((ruta) => !DIRECTORIOS_DEL_BUILD_WEB.some((dir) => ruta.startsWith(dir)))).toEqual(
-      [],
-    );
+    expect(fueraDelBuild(alcance, directoriosSrcCopiados(build))).toEqual([]);
+  });
+
+  test("el guardián del build web lee los COPY reales y separa importaciones de valor y de tipo", () => {
+    expect(directoriosSrcCopiados(build)).toEqual(["config/", "http/types/"]);
+    const codigo = [
+      'import type { A } from "@/loop/types/a.type.ts";',
+      'import { B } from "@/config/b.ts";',
+      'export { C } from "@/llm/c.ts";',
+    ].join("\n");
+    expect(importacionesDeValor(codigo)).toEqual(["config/b.ts", "llm/c.ts"]);
+    expect(fueraDelBuild(["config/b.ts", "llm/c.ts"], ["config/"])).toEqual(["llm/c.ts"]);
   });
 
   test("la etapa de ejecución instala solo dependencias de producción con el lockfile congelado", () => {
