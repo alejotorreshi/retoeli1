@@ -3,16 +3,16 @@ gsd_state_version: "1.0"
 current_phase: 03
 current_phase_name: Chat web, API SSE y despliegue
 status: executing
-stopped_at: Completed 03-36-PLAN.md
-last_updated: "2026-10-15T17:41:46.055Z"
+stopped_at: Completed 03-37-PLAN.md
+last_updated: "2026-10-15T17:46:39.414Z"
 last_activity: 2026-10-15
 last_activity_desc: Phase 03 execution started
-state_head: 814fb43a85d6277416debccedfe82a23fd4f3496
+state_head: 24ff9c6f375be8bf1a3ec37b4bb73de40f1c13e9
 progress:
   total_phases: 4
   completed_phases: 2
   total_plans: 78
-  completed_plans: 75
+  completed_plans: 76
   percent: 50
 ---
 
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-10-14)
 ## Current Position
 
 Phase: 03 (Chat web, API SSE y despliegue) — EXECUTING
-Plan: 10 of 39
+Plan: 11 of 39
 Status: Ready to execute
 Last activity: 2026-10-15 — Phase 03 execution started
 
@@ -132,6 +132,7 @@ Progress: [█████░░░░░] 50%
 | Phase 03 P34 | 3 min | 2 tasks | 11 files |
 | Phase 03 P35 | 3min | 2 tasks | 10 files |
 | Phase 03 P36 | 3 min | 2 tasks | 6 files |
+| Phase 03 P37 | 3min | 2 tasks | 9 files |
 
 ## Accumulated Context
 
@@ -321,6 +322,9 @@ Recent decisions affecting current work:
 - [Phase 03]: El 429 de sesiones nuevas informa los minutos de espera con techo y mínimo 1 desde RateLimiter.retryAfterMs, sin cabecera Retry-After
 - [Phase 03]: 03-36: el seguimiento del final se deriva de la intención de la usuaria (rueda, toque, puntero o teclas de navegación en los 600 ms previos); el estado vive en un ref síncrono que pasa por reducirSeguimiento y solo repinta cuando cambia pegado o contenidoNuevo
 - [Phase 03]: 03-36: un turno nuevo (enviar o hidratar) re-ancla la línea de tiempo al final con useLayoutEffect; .zona lleva overflow-anchor: none solo mientras sigue el final
+- [Phase 03]: 03-37: prefijo y valor de fecha y modelo van en un span inline común; en inline-flex el espacio final del prefijo se colapsaba entre flex items
+- [Phase 03]: 03-37: en angosto el prefijo de fecha y modelo es sr-only (CLASE_GLOBAL.OCULTO) y la fila meta usa nowrap con elipsis; el texto completo queda para lectores de pantalla
+- [Phase 03]: 03-37: la franja compacta en angosto usa etiquetas cortas (Demo §11, Los {n} casos) con aria-label completo y flex-wrap sin scroll horizontal; todos(n) se deriva de todosCorto(n)
 
 ### Pending Todos
 
@@ -356,6 +360,6 @@ Items acknowledged and deferred at milestone close, most recent first:
 
 ## Session Continuity
 
-Last session: 2026-10-15T17:41:45.932Z
-Stopped at: Completed 03-36-PLAN.md
+Last session: 2026-10-15T17:46:33.671Z
+Stopped at: Completed 03-37-PLAN.md
 Resume file: None

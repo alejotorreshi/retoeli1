@@ -166,7 +166,7 @@ Plans:
   4. Desde el panel de artefactos, la analista descarga o previsualiza los archivos generados del caso; solo se sirven nombres en lista blanca y detrás del código de acceso. Si no hay clave, se agotó el saldo, el proveedor cayó o se alcanzó el tope diario, `/api/health` lo reporta y la UI muestra un aviso claro; el flujo sin modelo sigue disponible con `demo.ts`.
   5. Sin código de acceso, la API rechaza toda petición salvo `/api/health`. El rate limit por IP y el límite de tamaño de mensaje responden con un mensaje claro. Un test verifica que la clave del LLM no aparece en `web/dist`, en las respuestas de la API ni en el stream SSE.
 
-**Plans:** 36/39 plans executed
+**Plans:** 37/39 plans executed
 
 Plans:
 **Wave 1**
@@ -256,7 +256,7 @@ Plans:
 - [x] 03-36-PLAN.md — La línea de tiempo sigue el turno salvo que la usuaria suba y se re-ancla al enviar; "Ir al final" solo con ícono a 375 (G-03-04, G-03-20)
 
 **Cierre de brechas de la UAT, Wave 5** *(blocked on 03-36)*
-- [ ] 03-37-PLAN.md — A 375 el encabezado ocupa dos líneas y los chips compactos una fila, sin perder el texto accesible (G-03-04)
+- [x] 03-37-PLAN.md — A 375 el encabezado ocupa dos líneas y los chips compactos una fila, sin perder el texto accesible (G-03-04)
 
 **Cierre de brechas de la UAT, Wave 6** *(blocked on 03-32, 03-35 and 03-37)*
 - [ ] 03-38-PLAN.md — Nueva sesión conserva el id anterior hasta que el servidor la acepta y el 429 ofrece "Volver a la sesión anterior" (G-03-04)
@@ -291,5 +291,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 |-------|----------------|--------|-----------|
 | 1. Núcleo determinista | 15/15 | Complete    | 2026-10-13 |
 | 2. Agente y compuerta de confirmación | 24/24 | Complete    | 2026-10-14 |
-| 3. Chat web, API SSE y despliegue | 36/39 | In Progress | - |
+| 3. Chat web, API SSE y despliegue | 37/39 | In Progress | - |
 | 4. Módulo, documentación y defensa | 0/TBD | Not started | - |
