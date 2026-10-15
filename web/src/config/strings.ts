@@ -379,6 +379,7 @@ export const TEXTO_CONFIRMACION = {
   cancelar: "Cancelar envío",
   enviando: "Enviando…",
   ocupada: "Espera a que termine la respuesta actual.",
+  enPausa: "Podrás confirmar o cancelar cuando el modelo vuelva a estar disponible.",
   desenlace: (estado: EstadoTarjetaConfirmacion) => DESENLACE_DE_TARJETA[estado],
   mensaje: ({ tipo, caso }: AccionDeTarjeta) => MENSAJE_DE_ACCION[tipo](caso),
   anuncio: (casos: readonly string[]) => `Confirmación requerida para ${casos.join(SEPARADOR_LISTA_CASOS)}`,

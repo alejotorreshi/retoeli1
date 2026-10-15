@@ -176,6 +176,7 @@ export function App() {
   const casos = estado.config?.casos ?? [];
   const conHistorial = estado.turnos.length > 0;
   const enPausa = envioEnPausa(salud?.llm ?? null);
+  const envioDeshabilitado = estado.enCurso || enPausa;
 
   return (
     <div className={CLASE_GLOBAL.APP} data-diseno={diseno}>
@@ -203,13 +204,14 @@ export function App() {
               cargando={estado.hidratando}
               aviso={estado.avisoSesion}
               enCurso={estado.enCurso}
+              pausada={enPausa}
               tarjetasConfirmacion={estado.tarjetasConfirmacion}
               alResponderConfirmacion={responderConfirmacion}
               alAccionDeAviso={alAccionDeAviso}
               acciones={
                 <AccionesRapidas
                   casos={casos}
-                  enCurso={estado.enCurso}
+                  deshabilitadas={envioDeshabilitado}
                   compactas={false}
                   alEnviar={enviarTexto}
                 />
@@ -222,7 +224,7 @@ export function App() {
             {conHistorial ? (
               <AccionesRapidas
                 casos={casos}
-                enCurso={estado.enCurso}
+                deshabilitadas={envioDeshabilitado}
                 compactas={true}
                 alEnviar={enviarTexto}
               />
@@ -247,7 +249,7 @@ export function App() {
           <PanelCasos
             progresos={progresos}
             marcas={marcasDeArchivos(estado)}
-            enCurso={estado.enCurso}
+            envioDeshabilitado={envioDeshabilitado}
             alEnviar={enviarTexto}
             alVencerAcceso={vencerAcceso}
           />

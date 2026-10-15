@@ -2,13 +2,13 @@ import estilos from "@web/components/acciones-rapidas.module.css";
 import { TEXTO_ACCIONES } from "@web/config/strings.ts";
 import type { PropsAccionesRapidas } from "@web/types/ui.type.ts";
 
-export function AccionesRapidas({ casos, enCurso, compactas, alEnviar }: PropsAccionesRapidas) {
+export function AccionesRapidas({ casos, deshabilitadas, compactas, alEnviar }: PropsAccionesRapidas) {
   const grupo = (
     <fieldset aria-label={TEXTO_ACCIONES.grupo} className={estilos.grupo}>
       <button
         type="button"
         className={estilos.chip}
-        disabled={enCurso}
+        disabled={deshabilitadas}
         onClick={() => alEnviar(TEXTO_ACCIONES.mensajeDemo)}
       >
         {TEXTO_ACCIONES.demo}
@@ -16,7 +16,7 @@ export function AccionesRapidas({ casos, enCurso, compactas, alEnviar }: PropsAc
       <button
         type="button"
         className={estilos.chip}
-        disabled={enCurso || casos.length === 0}
+        disabled={deshabilitadas || casos.length === 0}
         onClick={() => alEnviar(TEXTO_ACCIONES.mensajeTodos(casos))}
       >
         {TEXTO_ACCIONES.todos(casos.length)}
@@ -24,7 +24,7 @@ export function AccionesRapidas({ casos, enCurso, compactas, alEnviar }: PropsAc
       <button
         type="button"
         className={estilos.chip}
-        disabled={enCurso}
+        disabled={deshabilitadas}
         onClick={() => alEnviar(TEXTO_ACCIONES.mensajeListar)}
       >
         {TEXTO_ACCIONES.listar}

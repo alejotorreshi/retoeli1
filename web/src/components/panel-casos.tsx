@@ -11,7 +11,14 @@ import type { ArchivoUi } from "@web/types/chat.type.ts";
 import type { PropsBloqueCaso, PropsPanelCasos, VistaPreviaAbierta } from "@web/types/ui.type.ts";
 import { type SyntheticEvent, useEffect, useId, useState } from "react";
 
-function BloqueCaso({ progreso, reciente, marca, enCurso, alEnviar, alVencerAcceso }: PropsBloqueCaso) {
+function BloqueCaso({
+  progreso,
+  reciente,
+  marca,
+  envioDeshabilitado,
+  alEnviar,
+  alVencerAcceso,
+}: PropsBloqueCaso) {
   const [abierto, setAbierto] = useState(reciente);
   const [vistaPrevia, setVistaPrevia] = useState<VistaPreviaAbierta | null>(null);
   const archivos = useArchivos({ caso: progreso.caso, activo: abierto, marca, alVencerAcceso });
@@ -46,7 +53,11 @@ function BloqueCaso({ progreso, reciente, marca, enCurso, alEnviar, alVencerAcce
         <div className={estilos.detalle}>
           <ProgresoCaso progreso={progreso} />
           {discoBorrado(progreso, archivos.estado, archivos.borrados) ? (
-            <AvisoDiscoEfimero caso={progreso.caso} deshabilitado={enCurso} alProcesar={alEnviar} />
+            <AvisoDiscoEfimero
+              caso={progreso.caso}
+              deshabilitado={envioDeshabilitado}
+              alProcesar={alEnviar}
+            />
           ) : null}
           <ListaArchivos caso={progreso.caso} control={archivos} alVer={alVer} />
         </div>
@@ -63,7 +74,13 @@ function BloqueCaso({ progreso, reciente, marca, enCurso, alEnviar, alVencerAcce
   );
 }
 
-export function PanelCasos({ progresos, marcas, enCurso, alEnviar, alVencerAcceso }: PropsPanelCasos) {
+export function PanelCasos({
+  progresos,
+  marcas,
+  envioDeshabilitado,
+  alEnviar,
+  alVencerAcceso,
+}: PropsPanelCasos) {
   const idTitulo = useId();
   return (
     <aside className={estilos.panel} aria-labelledby={idTitulo}>
@@ -81,7 +98,7 @@ export function PanelCasos({ progresos, marcas, enCurso, alEnviar, alVencerAcces
                 progreso={progreso}
                 reciente={indice === 0}
                 marca={marcas.get(progreso.caso) ?? 0}
-                enCurso={enCurso}
+                envioDeshabilitado={envioDeshabilitado}
                 alEnviar={alEnviar}
                 alVencerAcceso={alVencerAcceso}
               />

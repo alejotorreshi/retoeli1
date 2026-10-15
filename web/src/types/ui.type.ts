@@ -45,6 +45,7 @@ export type PropsLineaDeTiempo = {
   readonly cargando: boolean;
   readonly aviso: AvisoDeSesion | null;
   readonly enCurso: boolean;
+  readonly pausada: boolean;
   readonly tarjetasConfirmacion: readonly TarjetaDeConfirmacion[];
   readonly alResponderConfirmacion: (accion: AccionDeTarjeta) => void;
   readonly alAccionDeAviso: (accion: AccionDeAviso) => void;
@@ -60,6 +61,7 @@ export type PropsCuerpoLinea = {
   readonly turnos: readonly TurnoConversacion[];
   readonly cargando: boolean;
   readonly enCurso: boolean;
+  readonly pausada: boolean;
   readonly tarjetasConfirmacion: readonly TarjetaDeConfirmacion[];
   readonly alResponderConfirmacion: (accion: AccionDeTarjeta) => void;
   readonly alAccionDeAviso: (accion: AccionDeAviso) => void;
@@ -72,7 +74,7 @@ export type PropsEstadoVacio = {
 
 export type PropsAccionesRapidas = {
   readonly casos: readonly string[];
-  readonly enCurso: boolean;
+  readonly deshabilitadas: boolean;
   readonly compactas: boolean;
   readonly alEnviar: (mensaje: string) => void;
 };
@@ -94,6 +96,7 @@ export type PropsPilaConfirmaciones = {
   readonly tarjetas: readonly TarjetaDeConfirmacion[];
   readonly turnos: readonly TurnoConversacion[];
   readonly ocupada: boolean;
+  readonly pausada: boolean;
   readonly alResponder: (accion: AccionDeTarjeta) => void;
 };
 
@@ -101,6 +104,7 @@ export type PropsTarjetaConfirmacion = {
   readonly tarjeta: TarjetaDeConfirmacion;
   readonly listoParaFirma: boolean | null;
   readonly ocupada: boolean;
+  readonly pausada: boolean;
   readonly alResponder: (accion: AccionDeTarjeta) => void;
 };
 
@@ -202,7 +206,7 @@ export type PropsIconoDeEtapa = {
 export type PropsPanelCasos = {
   readonly progresos: readonly ProgresoDeCaso[];
   readonly marcas: ReadonlyMap<string, number>;
-  readonly enCurso: boolean;
+  readonly envioDeshabilitado: boolean;
   readonly alEnviar: (mensaje: string) => void;
   readonly alVencerAcceso: (aviso: string) => void;
 };
@@ -211,7 +215,7 @@ export type PropsBloqueCaso = {
   readonly progreso: ProgresoDeCaso;
   readonly reciente: boolean;
   readonly marca: number;
-  readonly enCurso: boolean;
+  readonly envioDeshabilitado: boolean;
   readonly alEnviar: (mensaje: string) => void;
   readonly alVencerAcceso: (aviso: string) => void;
 };

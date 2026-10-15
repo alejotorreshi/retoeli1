@@ -2,7 +2,7 @@ import { describe, expect, test } from "bun:test";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { TONO, TONO_DEL_MODELO } from "@web/config/constants/ui.constants.ts";
-import { TEXTO_CHAT, TEXTO_MODELO } from "@web/config/strings.ts";
+import { TEXTO_CHAT, TEXTO_CONFIRMACION, TEXTO_MODELO } from "@web/config/strings.ts";
 import { envioEnPausa } from "@web/state/modelo.ts";
 import { CODIGO_AGENTE } from "@/config/constants/agent.constants.ts";
 import { ESTADO_LLM } from "@/config/constants/llm.constants.ts";
@@ -149,6 +149,12 @@ describe("envío en pausa según el estado del modelo", () => {
   test("la ayuda del compositor explica la pausa y remite al aviso", () => {
     expect(TEXTO_CHAT.enPausa).toBe(
       "El envío está en pausa mientras el modelo no esté disponible; el aviso de arriba explica qué hacer.",
+    );
+  });
+
+  test("la tarjeta de confirmación en pausa dice cuándo se podrá responder", () => {
+    expect(TEXTO_CONFIRMACION.enPausa).toBe(
+      "Podrás confirmar o cancelar cuando el modelo vuelva a estar disponible.",
     );
   });
 });

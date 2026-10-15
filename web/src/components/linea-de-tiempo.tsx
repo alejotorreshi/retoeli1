@@ -79,6 +79,7 @@ function CuerpoLinea({
   turnos,
   cargando,
   enCurso,
+  pausada,
   tarjetasConfirmacion,
   alResponderConfirmacion,
   alAccionDeAviso,
@@ -100,6 +101,7 @@ function CuerpoLinea({
               tarjetas={tarjetasDelTurno(tarjetasConfirmacion, turno.clave)}
               turnos={turnos}
               ocupada={enCurso}
+              pausada={pausada}
               alResponder={alResponderConfirmacion}
             />
           }
@@ -122,6 +124,7 @@ export function LineaDeTiempo({
   cargando,
   aviso,
   enCurso,
+  pausada,
   tarjetasConfirmacion,
   alResponderConfirmacion,
   alAccionDeAviso,
@@ -172,6 +175,7 @@ export function LineaDeTiempo({
             turnos={turnos}
             cargando={cargando}
             enCurso={enCurso}
+            pausada={pausada}
             tarjetasConfirmacion={tarjetasConfirmacion}
             alResponderConfirmacion={alResponderConfirmacion}
             alAccionDeAviso={alAccionDeAviso}

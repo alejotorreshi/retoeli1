@@ -25,6 +25,10 @@ const CLASE_DE_DESENLACE = {
   [ESTADO_TARJETA_CONFIRMACION.REEMPLAZADA]: estilos.info,
 } as const satisfies Record<EstadoTarjetaConfirmacion, string | undefined>;
 
+function ayudaDeBloqueo(ocupada: boolean, enviando: TipoAccion | null): string {
+  return ocupada || enviando !== null ? TEXTO_CONFIRMACION.ocupada : TEXTO_CONFIRMACION.enPausa;
+}
+
 function textoDelBoton(tipo: TipoAccion, enviando: TipoAccion | null, texto: string): string {
   return enviando === tipo ? TEXTO_CONFIRMACION.enviando : texto;
 }
@@ -33,13 +37,14 @@ export function TarjetaConfirmacion({
   tarjeta,
   listoParaFirma,
   ocupada,
+  pausada,
   alResponder,
 }: PropsTarjetaConfirmacion) {
   const idTitulo = useId();
   const idAyuda = useId();
   const firma = estadoDeFirma(listoParaFirma);
   const abierta = tarjeta.estado === ESTADO_TARJETA_CONFIRMACION.ABIERTA;
-  const bloqueada = ocupada || tarjeta.enviando !== null;
+  const bloqueada = ocupada || pausada || tarjeta.enviando !== null;
   const cantidadBloqueos = tarjeta.bloqueosLegibles.length;
 
   function responder(tipo: TipoAccion): void {
@@ -104,7 +109,7 @@ export function TarjetaConfirmacion({
           </div>
           {bloqueada ? (
             <p id={idAyuda} className={estilos.ayuda}>
-              {TEXTO_CONFIRMACION.ocupada}
+              {ayudaDeBloqueo(ocupada, tarjeta.enviando)}
             </p>
           ) : null}
         </div>
@@ -119,7 +124,13 @@ export function TarjetaConfirmacion({
   );
 }
 
-export function PilaConfirmaciones({ tarjetas, turnos, ocupada, alResponder }: PropsPilaConfirmaciones) {
+export function PilaConfirmaciones({
+  tarjetas,
+  turnos,
+  ocupada,
+  pausada,
+  alResponder,
+}: PropsPilaConfirmaciones) {
   if (tarjetas.length === 0) return null;
   return (
     <li className={estilos.pila}>
@@ -129,6 +140,7 @@ export function PilaConfirmaciones({ tarjetas, turnos, ocupada, alResponder }: P
           tarjeta={tarjeta}
           listoParaFirma={listoParaFirmaHasta(turnos, tarjeta.caso, tarjeta.resueltaEnTurno)}
           ocupada={ocupada}
+          pausada={pausada}
           alResponder={alResponder}
         />
       ))}
