@@ -21,6 +21,12 @@ const CRECIMIENTO_DURANTE_INERCIA = 20;
 const POSICION_ANTES_DEL_PLIEGUE = 1_600;
 const POSICION_TRAS_EL_PLIEGUE = 1_300;
 const SUBIDA_DENTRO_DEL_UMBRAL = 50;
+const POSICION_INICIO_WR_04 = 2_000;
+const PULSACIONES_WR_04 = 10;
+const CRECIMIENTO_ENTRE_PULSACIONES = 50;
+const PASO_DE_TRACKPAD_LENTO = 4;
+const POSICION_FRACCIONARIA_AL_FONDO = 1_000.5;
+const DISTANCIA_FRACCIONARIA_AL_FONDO = 0.5;
 const DISTANCIAS_DEMO_375 = [
   310, 326, 340, 300, 355, 372, 388, 401, 415, 430, 424, 333, 347, 362, 391, 408,
 ] as const;
@@ -57,6 +63,18 @@ function posicionesDeInercia(): number[] {
     posiciones.push(posicion);
   }
   return posiciones;
+}
+
+function secuenciaWr04(): SenalSeguimiento[] {
+  const pulsaciones = Array.from({ length: PULSACIONES_WR_04 }, (_, indice) => {
+    const posicion = POSICION_INICIO_WR_04 + indice * CRECIMIENTO_ENTRE_PULSACIONES;
+    return [
+      desplazamiento(posicion - PASO_DE_FLECHA, PASO_DE_FLECHA),
+      CRECIMIENTO,
+      ajustePropio(posicion + CRECIMIENTO_ENTRE_PULSACIONES),
+    ];
+  });
+  return [ajustePropio(POSICION_INICIO_WR_04), ...pulsaciones.flat()];
 }
 
 function despegado(): EstadoSeguimiento {
@@ -132,10 +150,13 @@ describe("reducirSeguimiento", () => {
 });
 
 describe("D-78: el seguimiento se despega con cualquier subida de la usuaria", () => {
-  test("barra: arrastrarla hacia arriba despega sin ventana de tiempo y el crecimiento marca contenido nuevo", () => {
+  test("barra (D-78.1): el primer tramo de 40 px ya despega sin ventana de tiempo y el crecimiento marca contenido nuevo", () => {
     const anotado = reducirSeguimiento(seguimientoInicial, ajustePropio(POSICION_DE_LECTURA));
-    const primerTramo = reducirSeguimiento(anotado, desplazamiento(960, 40));
-    expect(primerTramo.pegado).toBe(true);
+    const primerTramo = reducirSeguimiento(
+      anotado,
+      desplazamiento(POSICION_DE_LECTURA - PASO_DE_FLECHA, PASO_DE_FLECHA),
+    );
+    expect(primerTramo.pegado).toBe(false);
     const segundoTramo = reducirSeguimiento(primerTramo, desplazamiento(900, 100));
     expect(segundoTramo.pegado).toBe(false);
     const conNuevo = reducirSeguimiento(segundoTramo, CRECIMIENTO);
@@ -151,14 +172,14 @@ describe("D-78: el seguimiento se despega con cualquier subida de la usuaria", (
     expect(estado.pegado).toBe(false);
   });
 
-  test("flechas: con 40 px por pulsación, la primera y la segunda siguen pegadas y la tercera despega", () => {
+  test("flechas (D-78.1): con 40 px por pulsación, la primera ya despega y las siguientes siguen despegadas", () => {
     const pulsaciones = [1, 2, 3].map((pulsacion) =>
       desplazamiento(POSICION_ANTES_DE_PAGE_UP - pulsacion * PASO_DE_FLECHA, pulsacion * PASO_DE_FLECHA),
     );
     const anotado = reducirSeguimiento(seguimientoInicial, ajustePropio(POSICION_ANTES_DE_PAGE_UP));
     const [primera, segunda, tercera] = recorrer(anotado, pulsaciones);
-    expect(primera?.pegado).toBe(true);
-    expect(segunda?.pegado).toBe(true);
+    expect(primera?.pegado).toBe(false);
+    expect(segunda?.pegado).toBe(false);
     expect(tercera?.pegado).toBe(false);
   });
 
@@ -213,12 +234,12 @@ describe("D-78: el seguimiento se despega con cualquier subida de la usuaria", (
     expect(estado.posicion).toBe(POSICION_DE_LECTURA);
   });
 
-  test("una subida que deja la vista dentro del umbral sigue pegada", () => {
+  test("una subida que deja la vista dentro del umbral despega (D-78.1)", () => {
     const estado = aplicar(seguimientoInicial, [
       ajustePropio(POSICION_DE_LECTURA),
       desplazamiento(POSICION_DE_LECTURA - SUBIDA_DENTRO_DEL_UMBRAL, SUBIDA_DENTRO_DEL_UMBRAL),
     ]);
-    expect(estado.pegado).toBe(true);
+    expect(estado.pegado).toBe(false);
   });
 
   test("regresión de 2 o más casos a 375×667: 16 crecimientos con sus scrolls propios dejan la vista pegada", () => {
@@ -234,5 +255,64 @@ describe("D-78: el seguimiento se despega con cualquier subida de la usuaria", (
     const estado = aplicar(seguimientoInicial, [...senales, ...cierreTipoB]);
     expect(estado.pegado).toBe(true);
     expect(estado.contenidoNuevo).toBe(false);
+  });
+});
+
+describe("D-78.1: gana la dirección", () => {
+  test("WR-04: 10 flechas de 40 px con crecimiento y ajuste propio intercalados despegan en la primera y no vuelven a pegar", () => {
+    const estados = recorrer(seguimientoInicial, secuenciaWr04());
+    const trasLaPrimeraFlecha = estados.slice(1);
+    expect(trasLaPrimeraFlecha.length).toBe(PULSACIONES_WR_04 * 3);
+    expect(trasLaPrimeraFlecha.every((estado) => !estado.pegado)).toBe(true);
+    expect(estados.at(-1)?.contenidoNuevo).toBe(true);
+  });
+
+  test("trackpad lento: una subida de 4 px con crecimiento intercalado despega", () => {
+    const estado = aplicar(seguimientoInicial, [
+      ajustePropio(POSICION_INICIO_WR_04),
+      CRECIMIENTO,
+      desplazamiento(POSICION_INICIO_WR_04 - PASO_DE_TRACKPAD_LENTO, PASO_DE_TRACKPAD_LENTO),
+    ]);
+    expect(estado.pegado).toBe(false);
+  });
+
+  test("tolerancia del fondo: una posición fraccionaria a 1 px o menos del fondo no despega", () => {
+    const estado = aplicar(seguimientoInicial, [
+      ajustePropio(POSICION_FRACCIONARIA_AL_FONDO),
+      desplazamiento(POSICION_DE_LECTURA, DISTANCIA_FRACCIONARIA_AL_FONDO),
+    ]);
+    expect(estado.pegado).toBe(true);
+    expect(estado.contenidoNuevo).toBe(false);
+  });
+
+  test("el umbral solo vuelve a pegar al bajar: a 97 px sigue despegada y a 96 px pega y apaga el contenido nuevo", () => {
+    const lejos = reducirSeguimiento(conContenidoNuevo(), desplazamiento(903, DISTANCIA_PEGADO_AL_FINAL + 1));
+    expect(lejos.pegado).toBe(false);
+    expect(lejos.contenidoNuevo).toBe(true);
+    const cerca = reducirSeguimiento(lejos, desplazamiento(904, DISTANCIA_PEGADO_AL_FINAL));
+    expect(cerca.pegado).toBe(true);
+    expect(cerca.contenidoNuevo).toBe(false);
+  });
+
+  test("una subida estando despegada sigue despegada aunque quede a 50 px del fondo", () => {
+    const anterior = conContenidoNuevo();
+    const posicion = (anterior.posicion ?? POSICION_DE_LECTURA) - SUBIDA_DENTRO_DEL_UMBRAL;
+    const estado = reducirSeguimiento(anterior, desplazamiento(posicion, SUBIDA_DENTRO_DEL_UMBRAL));
+    expect(estado.pegado).toBe(false);
+    expect(estado.contenidoNuevo).toBe(true);
+  });
+
+  test("UI-08: con crecimientos intercalados, ni el ajuste propio ni el crecimiento vuelven a pegar; ENVIO sí", () => {
+    const anterior = despegado();
+    const estados = recorrer(anterior, [
+      CRECIMIENTO,
+      ajustePropio(POSICION_DE_LECTURA),
+      CRECIMIENTO,
+      ajustePropio(POSICION_INICIO_WR_04),
+    ]);
+    expect(estados.every((estado) => !estado.pegado)).toBe(true);
+    const enviado = reducirSeguimiento(estados.at(-1) ?? anterior, { tipo: SENAL_SEGUIMIENTO.ENVIO });
+    expect(enviado.pegado).toBe(true);
+    expect(enviado.contenidoNuevo).toBe(false);
   });
 });

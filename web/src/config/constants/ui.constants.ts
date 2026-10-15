@@ -67,6 +67,8 @@ export const TECLA_ENVIAR = "Enter";
 
 export const DISTANCIA_PEGADO_AL_FINAL = 96;
 
+export const TOLERANCIA_FONDO = 1;
+
 export const SENAL_SEGUIMIENTO = {
   AJUSTE_PROPIO: "ajuste_propio",
   DESPLAZAMIENTO: "desplazamiento",

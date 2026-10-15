@@ -1,4 +1,8 @@
-import { DISTANCIA_PEGADO_AL_FINAL, SENAL_SEGUIMIENTO } from "@web/config/constants/ui.constants.ts";
+import {
+  DISTANCIA_PEGADO_AL_FINAL,
+  SENAL_SEGUIMIENTO,
+  TOLERANCIA_FONDO,
+} from "@web/config/constants/ui.constants.ts";
 import type { EstadoSeguimiento, SenalSeguimiento } from "@web/types/ui.type.ts";
 
 export const seguimientoInicial: EstadoSeguimiento = {
@@ -27,12 +31,23 @@ function subio(estado: EstadoSeguimiento, posicion: number): boolean {
   return estado.posicion !== null && posicion < estado.posicion;
 }
 
+function enElFondo(distancia: number): boolean {
+  return distancia <= TOLERANCIA_FONDO;
+}
+
+function cercaDelFinal(distancia: number): boolean {
+  return distancia <= DISTANCIA_PEGADO_AL_FINAL;
+}
+
+function pegarEn(estado: EstadoSeguimiento, posicion: number): EstadoSeguimiento {
+  return conCambios(estado, { pegado: true, contenidoNuevo: false, posicion });
+}
+
 function desplazar(estado: EstadoSeguimiento, posicion: number, distancia: number): EstadoSeguimiento {
-  if (distancia <= DISTANCIA_PEGADO_AL_FINAL) {
-    return conCambios(estado, { pegado: true, contenidoNuevo: false, posicion });
-  }
-  const pegado = subio(estado, posicion) ? false : estado.pegado;
-  return conCambios(estado, { ...estado, pegado, posicion });
+  if (enElFondo(distancia)) return pegarEn(estado, posicion);
+  if (subio(estado, posicion)) return conCambios(estado, { ...estado, pegado: false, posicion });
+  if (cercaDelFinal(distancia)) return pegarEn(estado, posicion);
+  return anotarPosicion(estado, posicion);
 }
 
 function crecer(estado: EstadoSeguimiento): EstadoSeguimiento {
