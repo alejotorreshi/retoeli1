@@ -3,18 +3,34 @@ phase: 03
 review: 03-REVIEW.md
 titles: json
 findings:
+  - id: WR-01
+    severity: warning
+    disposition: open
+    title: "La reserva de D-77.2 responde 429 a credenciales válidas cuando llegan juntas, y el texto anuncia un bloqueo de 15 minutos que no existe"
+  - id: WR-02
+    severity: warning
+    disposition: open
+    title: "`eventoDeTruncado` marca como \"confirmado\" un truncado cuya autorización ya se gastó, y el aviso miente sobre la causa"
+  - id: IN-01
+    severity: info
+    disposition: open
+    title: "Una reserva cuya clave se desaloja durante el `await` queda como golpe fantasma en otra IP"
+  - id: IN-02
+    severity: info
+    disposition: open
+    title: "El documento acota los 50 000 intentos \"contra `/api/acceso`\", pero el Bearer comparte el mismo limitador"
+  - id: IN-03
+    severity: info
+    disposition: open
+    title: "Las filas de concurrencia de D-77.2 con códigos correctos afirman \"al menos una vez\" en vez del valor determinista"
+  - id: IN-04
+    severity: info
+    disposition: open
+    title: "La comprobación exhaustiva con `never` está solo en `aplicarEvento`"
   - id: CR-01
     severity: critical
     disposition: open
     title: "El cupo de desalojos permite saturar cualquier limitador con K + L peticiones de un golpe y no con K × L, y la documentación subestima ese costo cinco veces"
-  - id: WR-01
-    severity: warning
-    disposition: open
-    title: "La cota documentada de intentos evaluados no se cumple con concurrencia, porque `isLocked` y `hit` están separados por `await`"
-  - id: WR-02
-    severity: warning
-    disposition: open
-    title: "SIN_CASO afirma \"No se registró ningún envío simulado\" en un turno que sí registró uno"
   - id: WR-03
     severity: warning
     disposition: open
@@ -23,45 +39,29 @@ findings:
     severity: warning
     disposition: open
     title: "Con crecimiento entre pulsaciones, una subida de menos de 96 px se deshace y la usuaria no logra despegarse con flechas, la rueda de Firefox o el trackpad lento"
-  - id: IN-01
-    severity: info
-    disposition: open
-    title: "El cupo de desalojos solo prueba la clave libre más antigua"
-  - id: IN-02
-    severity: info
-    disposition: open
-    title: "\"Por ventana\" es por ventana fija: en un intervalo móvil de la misma longitud caben unas dos veces K × L"
-  - id: IN-03
-    severity: info
-    disposition: open
-    title: "Una IP sin ningún intento ve \"demasiados intentos\" cuando el limitador está saturado"
-  - id: IN-04
-    severity: info
-    disposition: open
-    title: "La guarda de \"turno en curso\" de nueva sesión y volver está repetida en tres lugares"
   - id: IN-05
     severity: info
     disposition: open
     title: "`aplicarEvento` no tiene comprobación de exhaustividad"
 open: 10
 total: 10
-recorded: 2026-10-15T20:36:48.144Z
+recorded: 2026-10-15T23:24:56.156Z
 ---
 
 # Phase 03: Code Review Disposition
 
 | Finding | Severity | Disposition | Source |
 |---------|----------|-------------|--------|
-| CR-01 | critical | open | - |
 | WR-01 | warning | open | - |
 | WR-02 | warning | open | - |
-| WR-03 | warning | open | - |
-| WR-04 | warning | open | - |
 | IN-01 | info | open | - |
 | IN-02 | info | open | - |
 | IN-03 | info | open | - |
 | IN-04 | info | open | - |
-| IN-05 | info | open | - |
+| CR-01 | critical | open | - (not in the current review) |
+| WR-03 | warning | open | - (not in the current review) |
+| WR-04 | warning | open | - (not in the current review) |
+| IN-05 | info | open | - (not in the current review) |
 
 Dispositions: `open` (recorded, not yet triaged), `fixed`, `skipped`, `deferred`.
 Set `deferred` by hand and put the reason in the Source cell; both are preserved. A `|` in the reason is kept as prose and escaped on the next run.
