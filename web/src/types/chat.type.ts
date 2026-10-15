@@ -351,6 +351,8 @@ export type VistaPreviaTablaUi = Extract<VistaPreviaUi, { readonly tipo: typeof 
 
 export type FilaVistaPreviaUi = VistaPreviaTablaUi["filas"][number];
 
+export type EstadoFilaVistaPrevia = FilaVistaPreviaUi["estado"];
+
 export type EstadoVistaPrevia =
   | { readonly tipo: typeof ESTADO_VISTA_PREVIA.CARGANDO }
   | { readonly tipo: typeof ESTADO_VISTA_PREVIA.ERROR }

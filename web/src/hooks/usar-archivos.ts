@@ -57,16 +57,17 @@ export function useArchivos({ caso, activo, marca, alVencerAcceso }: OpcionesArc
     refrescar(marcaDeLaLista.current);
   }
 
-  function marcarBorrados(): void {
-    setBorrados(true);
-  }
+  const marcarBorrados = useCallback(() => setBorrados(true), []);
 
-  function descargar(archivo: ArchivoUi): void {
-    void descargarArchivo(caso, archivo.nombre, guardarEnElEquipo).then((resultado) => {
-      if (resultado.tipo === RESULTADO_API.ACCESO_VENCIDO) alVencerAcceso(resultado.mensaje);
-      if (esArchivoNoEncontrado(resultado)) marcarBorrados();
-    });
-  }
+  const descargar = useCallback(
+    (archivo: ArchivoUi) => {
+      void descargarArchivo(caso, archivo.nombre, guardarEnElEquipo).then((resultado) => {
+        if (resultado.tipo === RESULTADO_API.ACCESO_VENCIDO) alVencerAcceso(resultado.mensaje);
+        if (esArchivoNoEncontrado(resultado)) marcarBorrados();
+      });
+    },
+    [caso, alVencerAcceso, marcarBorrados],
+  );
 
   return { estado, borrados, reintentar, descargar, marcarBorrados };
 }

@@ -14,6 +14,7 @@ import type {
   AccionDeTarjeta,
   EstadoCampoUi,
   EstadoEtapa,
+  EstadoFilaVistaPrevia,
   EstadoFirma,
   EstadoHerramienta,
   EstadoModelo,
@@ -303,23 +304,28 @@ export const TEXTO_ARCHIVOS = {
   descargarArchivo: (nombre: string) => `${DESCARGAR} ${nombre}`,
 } as const;
 
-const SIN_TEXTO: string = SIN_DATO.slice(SIN_DATO.length);
-
 export const TEXTO_DISCO = {
-  aviso: SIN_TEXTO,
-  chip: (_caso: string) => SIN_TEXTO,
-  mensaje: (_caso: string) => SIN_TEXTO,
+  aviso: "El servidor se reinició y los archivos se borraron; vuelve a procesar el caso.",
+  chip: (caso: string) => `Procesar ${caso} de nuevo`,
+  mensaje: (caso: string) => `procesa el caso ${caso}`,
 } as const;
 
+const ESTADO_DE_FILA = {
+  [ESTADO_CAMPO.LLENO]: "Lleno",
+  [ESTADO_CAMPO.FALTANTE]: "Faltante",
+  [ESTADO_CAMPO.REQUIERE_CONFIRMACION]: "Por confirmar",
+} as const satisfies Record<EstadoFilaVistaPrevia, string>;
+
 export const TEXTO_VISTA_PREVIA = {
-  columnas: [] as readonly string[],
-  estado: (_estado: EstadoCampoUi) => SIN_TEXTO,
-  valor: (_valor: string | null) => SIN_TEXTO,
-  nota: SIN_TEXTO,
-  cargando: SIN_TEXTO,
-  error: SIN_TEXTO,
-  descargar: SIN_TEXTO,
-  cerrar: SIN_TEXTO,
+  columnas: ["Etiqueta", "Valor (enmascarado)", "Estado", "Nota"],
+  estado: (estado: EstadoFilaVistaPrevia) => ESTADO_DE_FILA[estado],
+  valor: (valor: string | null) => valor ?? SIN_DATO,
+  nota: "Los valores se muestran enmascarados. La descarga trae el archivo completo.",
+  cargando: "Cargando la vista previa…",
+  error:
+    "No se pudo cargar la vista previa. Si el servidor se reinició, vuelve a procesar el caso; si no, inténtalo de nuevo.",
+  descargar: "Descargar archivo",
+  cerrar: "Cerrar vista previa",
 } as const;
 
 const ETIQUETA_DE_PESTANA = {

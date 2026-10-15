@@ -7,6 +7,7 @@ import type {
   ControlArchivos,
   ErrorVisible,
   EstadoEtapa,
+  EstadoFilaVistaPrevia,
   EstadoHerramienta,
   EstadoModelo,
   LlamadaDelTurno,
@@ -16,6 +17,7 @@ import type {
   TarjetaDeConfirmacion,
   TurnoConversacion,
   UsoDeSesion,
+  VistaPreviaUi,
 } from "@web/types/chat.type.ts";
 import type { ReactNode } from "react";
 import type { ESTADO_LLM } from "@/config/constants/llm.constants.ts";
@@ -243,4 +245,32 @@ export type IdsDePestanas = {
 export type PropsBarraDePestanas = {
   readonly control: ControlPestanas;
   readonly ids: IdsDePestanas;
+};
+
+export type VistaPreviaAbierta = {
+  readonly archivo: ArchivoUi;
+  readonly disparador: HTMLElement;
+};
+
+export type PropsDialogoVistaPrevia = {
+  readonly caso: string;
+  readonly abierta: VistaPreviaAbierta | null;
+  readonly alCerrar: () => void;
+  readonly alDescargar: (archivo: ArchivoUi) => void;
+  readonly alNoEncontrado: () => void;
+  readonly alVencerAcceso: (aviso: string) => void;
+};
+
+export type PropsCuerpoVistaPrevia = {
+  readonly vista: VistaPreviaUi;
+};
+
+export type PropsBadgeDeFila = {
+  readonly estado: EstadoFilaVistaPrevia;
+};
+
+export type PropsAvisoDiscoEfimero = {
+  readonly caso: string;
+  readonly deshabilitado: boolean;
+  readonly alProcesar: (mensaje: string) => void;
 };

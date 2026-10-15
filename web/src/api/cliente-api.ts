@@ -16,7 +16,7 @@ import type {
   VistaPreviaUi,
   VistaSesionUi,
 } from "@web/types/chat.type.ts";
-import { PREFIJO_PAQUETE, TIPO_ARCHIVO_CASO } from "@/config/constants/files.constants.ts";
+import { PREFIJO_PAQUETE, TIPO_ARCHIVO_CASO, TIPO_VISTA_PREVIA } from "@/config/constants/files.constants.ts";
 import {
   PARAMETRO_ARCHIVO,
   PARAMETRO_CASO,
@@ -25,6 +25,7 @@ import {
   RUTA_API,
 } from "@/config/constants/http.constants.ts";
 import { ESTADO_LLM } from "@/config/constants/llm.constants.ts";
+import { ESTADO_CAMPO } from "@/config/constants/mapping.constants.ts";
 import type {
   AccessBody,
   ConfigResponse,
@@ -38,6 +39,8 @@ const SIN_RED: ResultadoFallido = { tipo: RESULTADO_API.SIN_RED };
 const ESTADOS_DEL_MODELO: ReadonlySet<string> = new Set(Object.values(ESTADO_LLM));
 
 const TIPOS_DE_ARCHIVO: ReadonlySet<string> = new Set(Object.values(TIPO_ARCHIVO_CASO));
+
+const ESTADOS_DE_CAMPO: ReadonlySet<string> = new Set(Object.values(ESTADO_CAMPO));
 
 function esObjeto(valor: unknown): valor is object {
   return typeof valor === "object" && valor !== null;
@@ -344,10 +347,40 @@ export function rutaDeVistaPrevia(caso: string, nombre: string): string {
   return rutaConParametros(patron, caso, nombre);
 }
 
+function esFilaVistaPrevia(valor: unknown): boolean {
+  return (
+    esObjeto(valor) &&
+    "etiqueta" in valor &&
+    typeof valor.etiqueta === "string" &&
+    "valor_enmascarado" in valor &&
+    esTextoONulo(valor.valor_enmascarado) &&
+    "estado" in valor &&
+    typeof valor.estado === "string" &&
+    ESTADOS_DE_CAMPO.has(valor.estado) &&
+    "nota" in valor &&
+    esTextoONulo(valor.nota)
+  );
+}
+
+function esVistaPrevia(valor: unknown): valor is VistaPreviaUi {
+  if (!esObjeto(valor) || !("tipo" in valor)) return false;
+  if (valor.tipo === TIPO_VISTA_PREVIA.TEXTO) return "texto" in valor && typeof valor.texto === "string";
+  return (
+    valor.tipo === TIPO_VISTA_PREVIA.TABLA &&
+    "filas" in valor &&
+    Array.isArray(valor.filas) &&
+    valor.filas.every(esFilaVistaPrevia)
+  );
+}
+
 export async function obtenerVistaPrevia(
-  _caso: string,
-  _nombre: string,
-  _signal: AbortSignal | null = null,
+  caso: string,
+  nombre: string,
+  signal: AbortSignal | null = null,
 ): Promise<ResultadoApi<VistaPreviaUi>> {
-  return SIN_RED;
+  const respuesta = await pedir(rutaDeVistaPrevia(caso, nombre), { signal });
+  if (respuesta === null) return SIN_RED;
+  if (!respuesta.ok) return resultadoDelRechazo(respuesta);
+  const valor = await leerJson(respuesta);
+  return esVistaPrevia(valor) ? { tipo: RESULTADO_API.OK, valor } : SIN_RED;
 }

@@ -1,3 +1,4 @@
+import { TIPO_ARCHIVO_CASO } from "@/config/constants/files.constants.ts";
 import {
   CABECERA_HTTP,
   ESTADO_LLM,
@@ -237,3 +238,12 @@ export const ESTADO_VISTA_PREVIA = {
   ERROR: "error",
   LISTA: "lista",
 } as const;
+
+export const ARCHIVOS_ESPERADOS_POR_ETAPA = [
+  [ETAPA.GENERADO, [TIPO_ARCHIVO_CASO.FORMULARIO, TIPO_ARCHIVO_CASO.VALORES_PORTAL]],
+  [ETAPA.PAQUETE, [TIPO_ARCHIVO_CASO.CHECKLIST]],
+  [ETAPA.ENVIO, [TIPO_ARCHIVO_CASO.ENVIO_SIMULADO]],
+] as const satisfies readonly (readonly [
+  ValorDe<typeof ETAPA>,
+  readonly ValorDe<typeof TIPO_ARCHIVO_CASO>[],
+])[];

@@ -1,7 +1,9 @@
 import {
+  ARCHIVOS_ESPERADOS_POR_ETAPA,
   ESTADO_ETAPA,
   ESTADO_FIRMA,
   ESTADO_HERRAMIENTA,
+  ESTADO_LISTA_ARCHIVOS,
   ESTADO_TARJETA_CONFIRMACION,
   ETAPA,
   ETAPA_DE_HERRAMIENTA,
@@ -25,6 +27,7 @@ import type {
   ResultadoDeCaso,
   ResultadoVisibleUi,
   TarjetaDeConfirmacion,
+  TipoArchivoUi,
   TurnoConversacion,
   VistaConConfirmaciones,
   VistaTurnos,
@@ -277,16 +280,23 @@ export function esArchivoNoEncontrado(resultado: ResultadoApi<unknown>): boolean
 }
 
 export function archivosFaltantes(
-  _progreso: ProgresoDeCaso,
-  _archivos: readonly ArchivoUi[],
+  progreso: ProgresoDeCaso,
+  archivos: readonly ArchivoUi[],
 ): readonly Etapa[] {
-  return [];
+  const presentes = new Set<TipoArchivoUi>(archivos.map((archivo) => archivo.tipo));
+  const hechas = new Set(
+    progreso.etapas.filter(({ estado }) => estado === ESTADO_ETAPA.HECHA).map(({ etapa }) => etapa),
+  );
+  return ARCHIVOS_ESPERADOS_POR_ETAPA.filter(
+    ([etapa, tipos]) => hechas.has(etapa) && !tipos.some((tipo) => presentes.has(tipo)),
+  ).map(([etapa]) => etapa);
 }
 
 export function discoBorrado(
-  _progreso: ProgresoDeCaso,
-  _lista: EstadoListaArchivos,
-  _borrados: boolean,
+  progreso: ProgresoDeCaso,
+  lista: EstadoListaArchivos,
+  borrados: boolean,
 ): boolean {
-  return false;
+  if (borrados) return true;
+  return lista.tipo === ESTADO_LISTA_ARCHIVOS.LISTA && archivosFaltantes(progreso, lista.archivos).length > 0;
 }

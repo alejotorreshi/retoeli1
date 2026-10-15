@@ -1,15 +1,30 @@
+import { AvisoDiscoEfimero } from "@web/components/aviso-disco-efimero.tsx";
+import { DialogoVistaPrevia } from "@web/components/dialogo-vista-previa.tsx";
 import { IconoChevron } from "@web/components/icons/iconos.tsx";
 import { ListaArchivos } from "@web/components/lista-archivos.tsx";
 import estilos from "@web/components/panel-casos.module.css";
 import { ProgresoCaso } from "@web/components/progreso-caso.tsx";
 import { TEXTO_PANEL } from "@web/config/strings.ts";
 import { useArchivos } from "@web/hooks/usar-archivos.ts";
-import type { PropsBloqueCaso, PropsPanelCasos } from "@web/types/ui.type.ts";
+import { discoBorrado } from "@web/state/casos.ts";
+import type { ArchivoUi } from "@web/types/chat.type.ts";
+import type { PropsBloqueCaso, PropsPanelCasos, VistaPreviaAbierta } from "@web/types/ui.type.ts";
 import { type SyntheticEvent, useEffect, useId, useState } from "react";
 
-function BloqueCaso({ progreso, reciente, marca, alVencerAcceso }: PropsBloqueCaso) {
+function BloqueCaso({ progreso, reciente, marca, enCurso, alEnviar, alVencerAcceso }: PropsBloqueCaso) {
   const [abierto, setAbierto] = useState(reciente);
+  const [vistaPrevia, setVistaPrevia] = useState<VistaPreviaAbierta | null>(null);
   const archivos = useArchivos({ caso: progreso.caso, activo: abierto, marca, alVencerAcceso });
+
+  function alVer(archivo: ArchivoUi, disparador: HTMLElement): void {
+    setVistaPrevia({ archivo, disparador });
+  }
+
+  function alCerrarVistaPrevia(): void {
+    const disparador = vistaPrevia?.disparador ?? null;
+    setVistaPrevia(null);
+    if (disparador?.isConnected) disparador.focus();
+  }
 
   useEffect(() => {
     setAbierto(reciente);
@@ -30,8 +45,19 @@ function BloqueCaso({ progreso, reciente, marca, alVencerAcceso }: PropsBloqueCa
         </summary>
         <div className={estilos.detalle}>
           <ProgresoCaso progreso={progreso} />
-          <ListaArchivos caso={progreso.caso} control={archivos} alVer={() => undefined} />
+          {discoBorrado(progreso, archivos.estado, archivos.borrados) ? (
+            <AvisoDiscoEfimero caso={progreso.caso} deshabilitado={enCurso} alProcesar={alEnviar} />
+          ) : null}
+          <ListaArchivos caso={progreso.caso} control={archivos} alVer={alVer} />
         </div>
+        <DialogoVistaPrevia
+          caso={progreso.caso}
+          abierta={vistaPrevia}
+          alCerrar={alCerrarVistaPrevia}
+          alDescargar={archivos.descargar}
+          alNoEncontrado={archivos.marcarBorrados}
+          alVencerAcceso={alVencerAcceso}
+        />
       </details>
     </li>
   );
