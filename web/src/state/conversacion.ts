@@ -224,3 +224,11 @@ export function anuncioDeEstado(vista: VistaTurnos): string {
   const ultimo = vista.turnos.at(-1);
   return ultimo !== undefined && ultimo.error === null ? TEXTO_CHAT.respuestaLista : "";
 }
+
+export function etiquetaPensando(_vista: VistaTurnos): string {
+  return TEXTO_CHAT.pensando;
+}
+
+export function eventosDelTurno(_vista: VistaTurnos): number {
+  return 0;
+}

@@ -9,6 +9,8 @@ import {
   anuncioDeEstado,
   argumentosLegibles,
   estadoInicialConversacion,
+  etiquetaPensando,
+  eventosDelTurno,
   grupoSeCierraAlTerminar,
   llamadaEnCurso,
   reducirConversacion,
@@ -262,5 +264,59 @@ describe("región viva del turno", () => {
     expect(llamadaEnCurso(enCurso)).toBeNull();
     expect(anuncioDeEstado(enCurso)).toBe("");
     expect(anuncioDeEstado(reducirConversacion(enCurso, finDeTurno))).toBe(TEXTO_CHAT.respuestaLista);
+  });
+});
+
+describe("indicador pensando", () => {
+  test("sin herramienta en curso dice Pensando…", () => {
+    expect(etiquetaPensando(aplicar(inicioDeTurno))).toBe("Pensando…");
+  });
+
+  test("con mapear_campos en curso sobre ec-corp-andina dice Mapeando campos · ec-corp-andina…", () => {
+    expect(etiquetaPensando(aplicar([...inicioDeTurno, inicio("call_1", MAPEAR)]))).toBe(
+      "Mapeando campos · ec-corp-andina…",
+    );
+  });
+
+  test("al cerrar la herramienta vuelve a Pensando…", () => {
+    const estado = aplicar([
+      ...inicioDeTurno,
+      inicio("call_1", MAPEAR),
+      fin("call_1", MAPEAR, true, RESUMEN_MAPEAR),
+    ]);
+    expect(etiquetaPensando(estado)).toBe("Pensando…");
+  });
+
+  test("cada herramienta conocida usa su gerundio y sin caso solo el gerundio", () => {
+    const gerundios = Object.values(HERRAMIENTA).map((herramienta) =>
+      etiquetaPensando(aplicar([...inicioDeTurno, inicio("call_1", NOMBRE_VISIBLE[herramienta], null)])),
+    );
+    expect(gerundios).toEqual([
+      "Leyendo la solicitud…",
+      "Mapeando campos…",
+      "Generando el formulario…",
+      "Armando el paquete…",
+      "Registrando el envío simulado…",
+    ]);
+  });
+
+  test("una herramienta desconocida dice Ejecutando {nombre}", () => {
+    expect(etiquetaPensando(aplicar([...inicioDeTurno, inicio("call_1", DESCONOCIDA, null)]))).toBe(
+      `Ejecutando ${DESCONOCIDA}…`,
+    );
+    expect(etiquetaPensando(aplicar([...inicioDeTurno, inicio("call_1", DESCONOCIDA)]))).toBe(
+      `Ejecutando ${DESCONOCIDA} · ${CASO}…`,
+    );
+  });
+
+  test("cada evento del turno mueve la marca que reinicia la espera del servidor despertando", () => {
+    expect(eventosDelTurno(aplicar([{ tipo: ACCION_UI.ENVIAR, mensaje: CASO }]))).toBe(0);
+    const estado = aplicar([
+      ...inicioDeTurno,
+      inicio("call_1", LEER),
+      fin("call_1", LEER, true, RESUMEN_LEER),
+    ]);
+    expect(eventosDelTurno(estado)).toBe(3);
+    expect(eventosDelTurno(aplicar([...inicioDeTurno, finDeTurno, ...inicioDeTurno]))).toBe(1);
   });
 });
