@@ -1,5 +1,5 @@
 import { enviarMensaje } from "@web/api/flujo-chat.ts";
-import { guardarSesionId, leerSesionGuardada } from "@web/api/sesion-local.ts";
+import { guardarSesionId, leerSesionGuardada, olvidarSesion } from "@web/api/sesion-local.ts";
 import { ACCION_UI } from "@web/config/constants/ui.constants.ts";
 import { TEXTO_CONFIRMACION } from "@web/config/strings.ts";
 import { hayTarjetaAbierta } from "@web/state/confirmaciones.ts";
@@ -10,7 +10,7 @@ import {
   reducirConversacion,
   sesionDelEvento,
 } from "@web/state/conversacion.ts";
-import { accionDeSesion } from "@web/state/hidratacion.ts";
+import { accionDeSesion, olvidaLaSesion } from "@web/state/hidratacion.ts";
 import type {
   AccionDeTarjeta,
   ControlChat,
@@ -33,10 +33,11 @@ export function useChat(alFallarTurno: () => void): ControlChat {
     (resultado: ResultadoApi<ConfigResponse>) => despachar(accionDeConfig(resultado)),
     [],
   );
-  const recibirSesion = useCallback(
-    (resultado: ResultadoApi<VistaSesionUi>) => despachar(accionDeSesion(resultado)),
-    [],
-  );
+  const recibirSesion = useCallback((resultado: ResultadoApi<VistaSesionUi>) => {
+    const accion = accionDeSesion(resultado);
+    if (olvidaLaSesion(accion)) olvidarSesion();
+    despachar(accion);
+  }, []);
 
   function cambiarBorrador(borrador: string): void {
     despachar({ tipo: ACCION_UI.CAMBIAR_BORRADOR, borrador });

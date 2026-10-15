@@ -18,7 +18,7 @@ import {
   reducirConversacion,
   sesionDelEvento,
 } from "@web/state/conversacion.ts";
-import { accionDeSesion, estadoDesdeVista } from "@web/state/hidratacion.ts";
+import { accionDeSesion, estadoDesdeVista, olvidaLaSesion } from "@web/state/hidratacion.ts";
 import type {
   AccionUi,
   EstadoConversacion,
@@ -461,5 +461,16 @@ describe("tarjetas resueltas y sesión vencida al recargar", () => {
     );
     expect(despues.avisoSesion).toEqual({ tipo: AVISO_SESION.NO_CARGADA, mensaje: "Falló." });
     expect(despues.sesionId).toBe(SESION);
+  });
+
+  test("solo el 404 pide olvidar el id guardado en el navegador", () => {
+    const vencida = accionDeSesion({
+      tipo: RESULTADO_API.RECHAZO,
+      status: RESPUESTA_HTTP.NO_ENCONTRADO,
+      mensaje: EXPIRADA,
+    });
+    const caida = accionDeSesion({ tipo: RESULTADO_API.SIN_RED });
+    const cargada = accionDeSesion({ tipo: RESULTADO_API.OK, valor: vistaDe(DEMO) });
+    expect([vencida, caida, cargada].map(olvidaLaSesion)).toEqual([true, false, false]);
   });
 });

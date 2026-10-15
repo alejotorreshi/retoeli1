@@ -201,6 +201,15 @@ function hidratar(estado: EstadoConversacion, hidratado: EstadoHidratado): Estad
   return { ...estado, ...hidratado, enCurso: false, hidratando: false, avisoSesion: null };
 }
 
+function sesionExpirada(estado: EstadoConversacion, mensaje: string): EstadoConversacion {
+  return {
+    ...estado,
+    sesionId: null,
+    hidratando: false,
+    avisoSesion: { tipo: AVISO_SESION.EXPIRADA, mensaje },
+  };
+}
+
 function sesionNoCargada(estado: EstadoConversacion, mensaje: string): EstadoConversacion {
   return { ...estado, hidratando: false, avisoSesion: { tipo: AVISO_SESION.NO_CARGADA, mensaje } };
 }
@@ -267,6 +276,8 @@ export function reducirConversacion(estado: EstadoConversacion, accion: AccionUi
       return vaciarBorradorEnviado(estado, accion.mensaje);
     case ACCION_UI.HIDRATAR:
       return hidratar(estado, accion.hidratado);
+    case ACCION_UI.SESION_EXPIRADA:
+      return sesionExpirada(estado, accion.mensaje);
     case ACCION_UI.SESION_NO_CARGADA:
       return sesionNoCargada(estado, accion.mensaje);
     default:

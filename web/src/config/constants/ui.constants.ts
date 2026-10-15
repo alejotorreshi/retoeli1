@@ -18,6 +18,7 @@ export const ACCION_UI = {
   CAMBIAR_BORRADOR: "cambiar_borrador",
   ACEPTADO: "aceptado",
   HIDRATAR: "hidratar",
+  SESION_EXPIRADA: "sesion_expirada",
   SESION_NO_CARGADA: "sesion_no_cargada",
 } as const;
 

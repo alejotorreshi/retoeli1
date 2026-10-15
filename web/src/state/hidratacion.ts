@@ -14,6 +14,7 @@ import type {
   VistaSesionUi,
 } from "@web/types/chat.type.ts";
 import { TIPO_ACCION } from "@/config/constants/confirmation.constants.ts";
+import { RESPUESTA_HTTP } from "@/config/constants/http.constants.ts";
 import { HERRAMIENTA, NOMBRE_VISIBLE } from "@/config/constants/tools.constants.ts";
 
 type Pendientes = ReadonlyMap<string, readonly string[]>;
@@ -100,8 +101,14 @@ export function accionDeSesion(resultado: ResultadoApi<VistaSesionUi>): AccionUi
     case RESULTADO_API.ACCESO_VENCIDO:
       return { tipo: ACCION_UI.ACCESO_PEDIDO, aviso: resultado.mensaje };
     case RESULTADO_API.RECHAZO:
-      return { tipo: ACCION_UI.SESION_NO_CARGADA, mensaje: resultado.mensaje };
+      return resultado.status === RESPUESTA_HTTP.NO_ENCONTRADO
+        ? { tipo: ACCION_UI.SESION_EXPIRADA, mensaje: resultado.mensaje }
+        : { tipo: ACCION_UI.SESION_NO_CARGADA, mensaje: resultado.mensaje };
     default:
       return { tipo: ACCION_UI.SESION_NO_CARGADA, mensaje: TEXTO_ERROR.sinConexion };
   }
+}
+
+export function olvidaLaSesion(accion: AccionUi): boolean {
+  return accion.tipo === ACCION_UI.SESION_EXPIRADA;
 }

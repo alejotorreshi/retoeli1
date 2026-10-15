@@ -238,6 +238,11 @@ export type AccionHidratar = {
   readonly hidratado: EstadoHidratado;
 };
 
+export type AccionSesionExpirada = {
+  readonly tipo: typeof ACCION_UI.SESION_EXPIRADA;
+  readonly mensaje: string;
+};
+
 export type AccionSesionNoCargada = {
   readonly tipo: typeof ACCION_UI.SESION_NO_CARGADA;
   readonly mensaje: string;
@@ -254,6 +259,7 @@ export type AccionUi =
   | AccionCambiarBorrador
   | AccionAceptado
   | AccionHidratar
+  | AccionSesionExpirada
   | AccionSesionNoCargada;
 
 export type Despachar = (accion: AccionUi) => void;
