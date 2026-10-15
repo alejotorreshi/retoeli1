@@ -3,16 +3,16 @@ gsd_state_version: "1.0"
 current_phase: 03
 current_phase_name: Chat web, API SSE y despliegue
 status: executing
-stopped_at: Completed 03-32-PLAN.md
-last_updated: "2026-10-15T17:21:24.380Z"
+stopped_at: Completed 03-33-PLAN.md
+last_updated: "2026-10-15T17:27:04.402Z"
 last_activity: 2026-10-15
 last_activity_desc: Phase 03 execution started
-state_head: b51880110dbaab50ec638877be7f6c9514b081e3
+state_head: 5c9b500d6c1f1257b367cdd288ba9dbf73ad9c10
 progress:
   total_phases: 4
   completed_phases: 2
   total_plans: 78
-  completed_plans: 71
+  completed_plans: 72
   percent: 50
 ---
 
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-10-14)
 ## Current Position
 
 Phase: 03 (Chat web, API SSE y despliegue) — EXECUTING
-Plan: 6 of 39
+Plan: 7 of 39
 Status: Ready to execute
 Last activity: 2026-10-15 — Phase 03 execution started
 
@@ -128,6 +128,7 @@ Progress: [█████░░░░░] 50%
 | Phase 03 P31 | 3 min | 2 tasks | 6 files |
 | Phase 03 P30 | 5 min | 2 tasks | 9 files |
 | Phase 03 P32 | 2 min | 2 tasks | 5 files |
+| Phase 03 P33 | 4min | 3 tasks | 11 files |
 
 ## Accumulated Context
 
@@ -309,6 +310,8 @@ Recent decisions affecting current work:
 - [Phase 03]: 03-30 G-03-26: un simular_envio sin caso legible agrega el aviso SIN_CASO una vez por turno (tras los avisos legibles, antes de la pregunta; no en turnos abortados), contado en turno.llamadas como enviosSinCaso
 - [Phase 03]: 03-30 T-03-49: gate_permit y gate_blocked registran casoDeLlamada (caso normalizado por PATRON_CASO o null), no solo casos con paquete conocido
 - [Phase 03]: G-03-14: la UI pide /api/health al cerrar cada pedido de chat (enviarTurno avisa en un finally); esFalloDeTurno se borra y no hay sondeo por intervalo
+- [Phase 03]: 03-33: un 401/403 del proveedor (AUTENTICACION) se publica en /api/health como sin_clave; riesgo aceptado: un 401 transitorio deja la UI en sin_clave hasta un reinicio o una llamada correcta
+- [Phase 03]: 03-33: el banner del modelo usa { titulo, detalle } con la copia C+ por estado y un botón 'Comprobar de nuevo' que solo relee /api/health; el aviso de saldo del turno ya no dice 'puedes volver a intentarlo'
 
 ### Pending Todos
 
@@ -344,6 +347,6 @@ Items acknowledged and deferred at milestone close, most recent first:
 
 ## Session Continuity
 
-Last session: 2026-10-15T17:21:24.263Z
-Stopped at: Completed 03-32-PLAN.md
+Last session: 2026-10-15T17:27:04.283Z
+Stopped at: Completed 03-33-PLAN.md
 Resume file: None

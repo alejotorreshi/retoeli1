@@ -166,7 +166,7 @@ Plans:
   4. Desde el panel de artefactos, la analista descarga o previsualiza los archivos generados del caso; solo se sirven nombres en lista blanca y detrás del código de acceso. Si no hay clave, se agotó el saldo, el proveedor cayó o se alcanzó el tope diario, `/api/health` lo reporta y la UI muestra un aviso claro; el flujo sin modelo sigue disponible con `demo.ts`.
   5. Sin código de acceso, la API rechaza toda petición salvo `/api/health`. El rate limit por IP y el límite de tamaño de mensaje responden con un mensaje claro. Un test verifica que la clave del LLM no aparece en `web/dist`, en las respuestas de la API ni en el stream SSE.
 
-**Plans:** 32/39 plans executed
+**Plans:** 33/39 plans executed
 
 Plans:
 **Wave 1**
@@ -246,7 +246,7 @@ Plans:
 **Cierre de brechas de la UAT, Wave 2** *(03-30 blocked on 03-28 and 03-29; 03-32 on 03-28; 03-33 on 03-29 and 03-31)*
 - [x] 03-30-PLAN.md — El envío simulado sin caso legible también deja su aviso, gate_blocked registra el caso y el aviso llega por SSE y por el respaldo JSON (G-03-26)
 - [x] 03-32-PLAN.md — El estado del modelo se refresca al terminar cada pedido de chat, sin sondeo (G-03-14)
-- [ ] 03-33-PLAN.md — Banner por estado sin comandos (qué pasa, qué sigue funcionando, qué hacer, cuándo vuelve), "Comprobar de nuevo", saldo coherente y AUTENTICACION como sin_clave (G-03-15)
+- [x] 03-33-PLAN.md — Banner por estado sin comandos (qué pasa, qué sigue funcionando, qué hacer, cuándo vuelve), "Comprobar de nuevo", saldo coherente y AUTENTICACION como sin_clave (G-03-15)
 
 **Cierre de brechas de la UAT, Wave 3** *(blocked on 03-33; 03-34 also on 03-28)*
 - [ ] 03-34-PLAN.md — El envío queda en pausa solo en sin_clave y tope_diario: compositor, chips y tarjetas de confirmación (G-03-15)
@@ -291,5 +291,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 |-------|----------------|--------|-----------|
 | 1. Núcleo determinista | 15/15 | Complete    | 2026-10-13 |
 | 2. Agente y compuerta de confirmación | 24/24 | Complete    | 2026-10-14 |
-| 3. Chat web, API SSE y despliegue | 32/39 | In Progress | - |
+| 3. Chat web, API SSE y despliegue | 33/39 | In Progress | - |
 | 4. Módulo, documentación y defensa | 0/TBD | Not started | - |
