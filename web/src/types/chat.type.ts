@@ -51,3 +51,10 @@ export type AccionFinStream = {
 export type AccionUi = AccionEnviar | AccionEvento | AccionErrorHttp | AccionErrorRed | AccionFinStream;
 
 export type Despachar = (accion: AccionUi) => void;
+
+export type ControlChat = {
+  readonly estado: EstadoConversacion;
+  readonly borrador: string;
+  readonly cambiarBorrador: (borrador: string) => void;
+  readonly enviar: () => void;
+};

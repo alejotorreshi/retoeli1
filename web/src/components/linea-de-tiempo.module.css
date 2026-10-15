@@ -1,0 +1,62 @@
+.marco {
+  position: relative;
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+
+.zona {
+  flex: 1;
+  min-width: 0;
+  overflow-y: auto;
+  padding: var(--espacio-lg) var(--espacio-md);
+}
+
+.contenido {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-md);
+  max-width: var(--ancho-chat);
+  margin-inline: auto;
+}
+
+.lista {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-md);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.vacio {
+  margin-block-start: var(--espacio-2xl);
+  text-align: center;
+}
+
+.vacioTitulo {
+  margin: 0 0 var(--espacio-sm);
+  font-size: var(--titulo-tamano);
+  font-weight: var(--titulo-peso);
+  line-height: var(--titulo-interlinea);
+}
+
+.vacioCuerpo {
+  margin: 0;
+  color: var(--texto-tenue);
+}
+
+.irAlFinal {
+  position: absolute;
+  inset-block-end: var(--espacio-md);
+  inset-inline-end: var(--espacio-md);
+  min-height: var(--alto-control);
+  padding-inline: var(--espacio-md);
+  font-size: var(--etiqueta-tamano);
+  line-height: var(--etiqueta-interlinea);
+  color: var(--texto);
+  background: var(--dominante);
+  border: var(--borde-ancho) solid var(--borde);
+  border-radius: var(--radio-chico);
+  cursor: pointer;
+}

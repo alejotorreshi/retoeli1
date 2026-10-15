@@ -1,0 +1,32 @@
+.encabezado {
+  display: flex;
+  flex: none;
+  align-items: center;
+  height: var(--alto-encabezado);
+  padding-inline: var(--espacio-md);
+  background: var(--secundario);
+  border-block-end: var(--borde-ancho) solid var(--borde);
+}
+
+.marca {
+  display: flex;
+  align-items: baseline;
+  gap: var(--espacio-sm);
+  min-width: 0;
+}
+
+.titulo {
+  margin: 0;
+  font-size: var(--titulo-tamano);
+  font-weight: var(--titulo-peso);
+  line-height: var(--titulo-interlinea);
+  color: var(--texto);
+}
+
+.separador,
+.subtitulo {
+  margin: 0;
+  font-size: var(--etiqueta-tamano);
+  line-height: var(--etiqueta-interlinea);
+  color: var(--texto-tenue);
+}

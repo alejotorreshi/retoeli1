@@ -82,8 +82,8 @@ El chat del navegador vive en `web/` (Vite + React) y tiene su propio guardián,
 |---|---|---|
 | `web/src/api/` | `.ts` | Cliente del servidor: el `POST /api/chat` leído como SSE (`flujo-chat`) y, desde el plan 03-25, el `sessionId` en `localStorage` (`sesion-local`, el único módulo que puede tocarlo). |
 | `web/src/state/` | `.ts` | Reductores puros alimentados por los eventos SSE y las acciones de la UI (`conversacion`). No importan React ni tocan `document`, `window`, `localStorage` ni `fetch`. |
-| `web/src/hooks/` | `.ts` | Hooks de React que conectan el estado con el navegador. |
-| `web/src/components/` | `.tsx` y `.module.css` | Componentes de la UI-SPEC con su módulo CSS: los avisos `AvisoError` (`role="alert"`) y `AvisoSistema` (`role="status"`) en `aviso`. |
+| `web/src/hooks/` | `.ts` | Hooks de React que conectan el estado con el navegador (`usar-chat`: el reductor de la conversación y el envío, que solo sale de una acción de la usuaria y nunca de un efecto). El nombre exportado empieza con `use` (`useChat`) aunque el archivo esté en español, porque React y la regla `useHookAtTopLevel` de Biome reconocen los hooks solo por ese prefijo. |
+| `web/src/components/` | `.tsx` y `.module.css` | Componentes de la UI-SPEC con su módulo CSS: los avisos `AvisoError` (`role="alert"`) y `AvisoSistema` (`role="status"`) en `aviso`, más `Encabezado`, `LineaDeTiempo`, `MensajeUsuaria`/`MensajeAgente` (`mensaje`) e `IndicadorPensando`. |
 | `web/src/components/icons/` | `.tsx` | El set cerrado de íconos SVG en línea (`iconos`): `check`, `x`, `alerta`, `chevron`, `descargar`, `ojo`, `reloj`, `girando` e `info`, a 16 y 20 px, con `stroke: currentColor` y `aria-hidden`. |
 | `web/src/config/` | `strings.ts` | Única fuente de los textos propios del front. Los mensajes del servidor no se duplican: se muestran tal como llegan. |
 | `web/src/config/constants/` | `.constants.ts` | Constantes del front (`ui`: acciones de la UI, tecla de envío, tamaño de los íconos). Las regex irían solo en `patterns.constants.ts`. |

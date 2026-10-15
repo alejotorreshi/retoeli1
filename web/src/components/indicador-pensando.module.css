@@ -1,0 +1,28 @@
+.indicador {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-xs);
+  font-size: var(--cuerpo-tamano);
+  line-height: var(--cuerpo-interlinea);
+  color: var(--texto-tenue);
+}
+
+.giro,
+.quieto {
+  display: inline-flex;
+  flex: none;
+}
+
+.quieto {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .giro {
+    display: none;
+  }
+
+  .quieto {
+    display: inline-flex;
+  }
+}

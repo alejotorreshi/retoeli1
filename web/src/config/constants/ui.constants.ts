@@ -17,16 +17,11 @@ export const ID_RAIZ = "root";
 
 export const TECLA_ENVIAR = "Enter";
 
-export const FILAS_COMPOSITOR = 3;
+export const DISTANCIA_PEGADO_AL_FINAL = 96;
 
 export const PEDIDO_CHAT = {
   method: METODO_POST,
   headers: { [CABECERA_HTTP.TIPO_CONTENIDO]: TIPO_CONTENIDO_JSON },
-} as const;
-
-export const ESTILO_TEXTO_PLANO = {
-  whiteSpace: "pre-wrap",
-  overflowWrap: "anywhere",
 } as const;
 
 export const TAMANO_ICONO = {

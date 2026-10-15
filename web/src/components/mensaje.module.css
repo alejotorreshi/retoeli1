@@ -1,0 +1,24 @@
+.burbuja {
+  padding: var(--espacio-md);
+  border-radius: var(--radio);
+  font-size: var(--cuerpo-tamano);
+  line-height: var(--cuerpo-interlinea);
+  color: var(--texto);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.usuaria {
+  align-self: flex-end;
+  max-width: 100%;
+  background: var(--acento-suave);
+}
+
+.usuaria:not(:first-child) {
+  margin-block-start: calc(var(--espacio-xl) - var(--espacio-md));
+}
+
+.agente {
+  background: var(--dominante);
+  border: var(--borde-ancho) solid var(--borde);
+}
