@@ -54,15 +54,18 @@ async function grantAccess(c: Context<HttpEnv>, access: AccessSettings): Promise
 export function registerAccessRoute(app: Hono<HttpEnv>, access: AccessSettings): void {
   app.post(RUTA_API.ACCESO, async (c) => {
     const clientIp = c.get("clientIp");
-    if (access.failedAttempts.isLocked(clientIp)) {
+    if (!access.failedAttempts.hit(clientIp)) {
       return reject(c, access.lockedMessage, RESPUESTA_HTTP.DEMASIADOS_PEDIDOS);
     }
     const codigo = await readCode(c);
-    if (codigo === null) return reject(c, MENSAJE_HTTP.cuerpoAccesoInvalido, RESPUESTA_HTTP.PEDIDO_INVALIDO);
+    if (codigo === null) {
+      access.failedAttempts.release(clientIp);
+      return reject(c, MENSAJE_HTTP.cuerpoAccesoInvalido, RESPUESTA_HTTP.PEDIDO_INVALIDO);
+    }
     if (!(await timingSafeEqual(codigo, access.code))) {
-      access.failedAttempts.hit(clientIp);
       return reject(c, MENSAJE_HTTP.codigoInvalido, RESPUESTA_HTTP.NO_AUTORIZADO);
     }
+    access.failedAttempts.release(clientIp);
     return grantAccess(c, access);
   });
 }

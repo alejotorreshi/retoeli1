@@ -58,9 +58,7 @@ function clavesRotadas(cantidad: number): string[] {
 function contarEvaluados(limitador: ObservableRateLimiter, orden: readonly string[]): number {
   let evaluados = 0;
   for (const clave of orden) {
-    if (limitador.isLocked(clave)) continue;
-    limitador.hit(clave);
-    evaluados += 1;
+    if (limitador.hit(clave)) evaluados += 1;
   }
   return evaluados;
 }
@@ -299,6 +297,62 @@ describe("D-77.1: la clave nueva hereda los golpes de la libre desalojada", () =
     expect(limitador.isLocked(nueva)).toBe(false);
     expect(limitador.hit(nueva)).toBe(true);
     expect(limitador.trackedKeys()).toBe(1);
+  });
+});
+
+describe("D-77.2: reserva y devolución del intento", () => {
+  test("un golpe rechazado no cuenta: tres rechazos y una sola devolución dejan pasar el siguiente", () => {
+    const { limitador } = crearBanco();
+    golpear(limitador, CLAVE, LIMITE);
+    expect(golpear(limitador, CLAVE, 3)).toEqual([false, false, false]);
+    limitador.release(CLAVE);
+    expect(limitador.isLocked(CLAVE)).toBe(false);
+    expect(limitador.hit(CLAVE)).toBe(true);
+    expect(limitador.isLocked(CLAVE)).toBe(true);
+  });
+
+  test("con L − 1 fallos, la reserva bloquea la clave mientras dura la comparación y la devolución la libera", () => {
+    const { limitador } = crearBanco();
+    golpear(limitador, CLAVE, LIMITE - 1);
+    expect(limitador.hit(CLAVE)).toBe(true);
+    expect(limitador.isLocked(CLAVE)).toBe(true);
+    expect(limitador.hit(CLAVE)).toBe(false);
+    limitador.release(CLAVE);
+    expect(limitador.isLocked(CLAVE)).toBe(false);
+    expect(limitador.retryAfterMs(CLAVE)).toBe(0);
+  });
+
+  test("release resta un golpe, saca la clave en cero y nunca baja de cero", () => {
+    const { limitador } = crearBanco();
+    limitador.hit(CLAVE);
+    expect(limitador.trackedKeys()).toBe(1);
+    limitador.release(CLAVE);
+    expect(limitador.trackedKeys()).toBe(0);
+    limitador.release(CLAVE);
+    expect(limitador.trackedKeys()).toBe(0);
+    expect(golpear(limitador, CLAVE, LIMITE)).toEqual(Array(LIMITE).fill(true));
+    expect(limitador.hit(CLAVE)).toBe(false);
+  });
+
+  test("release de una clave no rastreada no cambia la tabla ni los golpes de otra", () => {
+    const { limitador } = crearBanco();
+    golpear(limitador, CLAVE, LIMITE - 1);
+    limitador.release(OTRA_CLAVE);
+    expect(limitador.trackedKeys()).toBe(1);
+    expect(limitador.hit(CLAVE)).toBe(true);
+    expect(limitador.hit(CLAVE)).toBe(false);
+  });
+
+  test("devolver la reserva de una clave que heredó golpes conserva los heredados", () => {
+    const { limitador, avanzar } = crearBanco(2);
+    golpear(limitador, CLAVE, LIMITE - 2);
+    avanzar(1);
+    limitador.hit(OTRA_CLAVE);
+    avanzar(1);
+    expect(limitador.hit(TERCERA_CLAVE)).toBe(true);
+    limitador.release(TERCERA_CLAVE);
+    expect(golpear(limitador, TERCERA_CLAVE, 2)).toEqual([true, true]);
+    expect(limitador.hit(TERCERA_CLAVE)).toBe(false);
   });
 });
 

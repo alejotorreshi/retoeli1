@@ -61,10 +61,17 @@ export function createRateLimiter(options: RateLimiterOptions): ObservableRateLi
       const now = options.now();
       sweep(now);
       const window = windows.get(key) ?? admit(now);
-      if (window === null) return false;
+      if (window === null || window.count >= options.limit) return false;
       window.count += 1;
       windows.set(key, window);
-      return window.count <= options.limit;
+      return true;
+    },
+    release(key) {
+      sweep(options.now());
+      const window = windows.get(key);
+      if (window === undefined) return;
+      window.count = Math.max(0, window.count - 1);
+      if (window.count === 0) windows.delete(key);
     },
     isLocked(key) {
       sweep(options.now());

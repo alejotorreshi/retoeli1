@@ -567,6 +567,93 @@ describe("X-Forwarded-For falsificado, Bearer errados y vencimiento de la ventan
   });
 });
 
+const PEDIDOS_SIMULTANEOS = 50;
+const PEDIDOS_CORRECTOS_SIMULTANEOS = 10;
+
+function lanzarJuntos(
+  app: Hono<HttpEnv>,
+  ip: string,
+  ruta: string,
+  armar: () => RequestInit,
+  cantidad: number,
+): Promise<Response[]> {
+  return Promise.all(Array.from({ length: cantidad }, () => pedirDesde(app, ip, ruta, armar())));
+}
+
+function conEstado(respuestas: readonly Response[], estado: number): Response[] {
+  return respuestas.filter((respuesta) => respuesta.status === estado);
+}
+
+function pedidoAccesoConCamposDeMas(): RequestInit {
+  return {
+    method: "POST",
+    headers: { "Content-Type": TIPO_CONTENIDO.JSON },
+    body: JSON.stringify({ codigo: CODIGO_PRUEBA, extra: true }),
+  };
+}
+
+async function esperarBloqueos(respuestas: readonly Response[]): Promise<void> {
+  const cuerpos = await Promise.all(respuestas.map((respuesta) => respuesta.json()));
+  for (const cuerpo of cuerpos) {
+    expect(cuerpo).toEqual({
+      mensaje: TEXTO_HTTP.demasiadosIntentos(VENTANA_FALLOS_ACCESO_MINUTOS_POR_DEFECTO),
+    });
+  }
+}
+
+describe("D-77.2: el intento se reserva antes del primer await", () => {
+  test("50 códigos errados simultáneos desde un cliente evalúan exactamente cinco y el resto responde 429; después el correcto da 429 y otro cliente entra", async () => {
+    const app = appCon();
+    const respuestas = await lanzarJuntos(
+      app,
+      IP_CLIENTE,
+      RUTA_API.ACCESO,
+      () => pedidoAcceso(CODIGO_ERRADO),
+      PEDIDOS_SIMULTANEOS,
+    );
+    expect(conEstado(respuestas, RESPUESTA_HTTP.NO_AUTORIZADO).length).toBe(FALLOS_PERMITIDOS);
+    const bloqueadas = conEstado(respuestas, RESPUESTA_HTTP.DEMASIADOS_PEDIDOS);
+    expect(bloqueadas.length).toBe(PEDIDOS_SIMULTANEOS - FALLOS_PERMITIDOS);
+    await esperarBloqueos(bloqueadas);
+    const correcto = await pedirDesde(app, IP_CLIENTE, RUTA_API.ACCESO, pedidoAcceso(CODIGO_PRUEBA));
+    expect(correcto.status).toBe(RESPUESTA_HTTP.DEMASIADOS_PEDIDOS);
+    const otro = await pedirDesde(app, IP_OTRO_CLIENTE, RUTA_API.ACCESO, pedidoAcceso(CODIGO_PRUEBA));
+    expect(otro.status).toBe(RESPUESTA_HTTP.SIN_CONTENIDO);
+  });
+
+  test("tras cuatro fallos, diez códigos correctos simultáneos entran al menos una vez y el cliente conserva su último intento", async () => {
+    const app = appCon();
+    expect(await fallar(app, IP_CLIENTE, FALLOS_PERMITIDOS - 1)).toEqual(
+      Array(FALLOS_PERMITIDOS - 1).fill(RESPUESTA_HTTP.NO_AUTORIZADO),
+    );
+    const respuestas = await lanzarJuntos(
+      app,
+      IP_CLIENTE,
+      RUTA_API.ACCESO,
+      () => pedidoAcceso(CODIGO_PRUEBA),
+      PEDIDOS_CORRECTOS_SIMULTANEOS,
+    );
+    const entradas = conEstado(respuestas, RESPUESTA_HTTP.SIN_CONTENIDO).length;
+    const bloqueadas = conEstado(respuestas, RESPUESTA_HTTP.DEMASIADOS_PEDIDOS).length;
+    expect(entradas).toBeGreaterThanOrEqual(1);
+    expect(entradas + bloqueadas).toBe(PEDIDOS_CORRECTOS_SIMULTANEOS);
+    expect(await fallar(app, IP_CLIENTE, 1)).toEqual([RESPUESTA_HTTP.NO_AUTORIZADO]);
+    expect(await fallar(app, IP_CLIENTE, 1)).toEqual([RESPUESTA_HTTP.DEMASIADOS_PEDIDOS]);
+  });
+
+  test("un cuerpo inválido devuelve su reserva: seis responden 400 y después quedan los cinco intentos", async () => {
+    const app = appCon();
+    for (let intento = 0; intento <= FALLOS_PERMITIDOS; intento += 1) {
+      const respuesta = await pedirDesde(app, IP_CLIENTE, RUTA_API.ACCESO, pedidoAccesoConCamposDeMas());
+      expect(respuesta.status).toBe(RESPUESTA_HTTP.PEDIDO_INVALIDO);
+    }
+    expect(await fallar(app, IP_CLIENTE, FALLOS_PERMITIDOS)).toEqual(
+      Array(FALLOS_PERMITIDOS).fill(RESPUESTA_HTTP.NO_AUTORIZADO),
+    );
+    expect(await fallar(app, IP_CLIENTE, 1)).toEqual([RESPUESTA_HTTP.DEMASIADOS_PEDIDOS]);
+  });
+});
+
 async function conVariables<T>(
   variables: Readonly<Record<string, string>>,
   accion: () => Promise<T>,

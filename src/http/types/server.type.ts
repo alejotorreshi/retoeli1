@@ -26,6 +26,7 @@ export type RateLimiterOptions = {
 
 export type RateLimiter = {
   hit(key: string): boolean;
+  release(key: string): void;
   isLocked(key: string): boolean;
   retryAfterMs(key: string): number;
 };
