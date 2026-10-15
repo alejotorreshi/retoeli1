@@ -166,7 +166,7 @@ Plans:
   4. Desde el panel de artefactos, la analista descarga o previsualiza los archivos generados del caso; solo se sirven nombres en lista blanca y detrás del código de acceso. Si no hay clave, se agotó el saldo, el proveedor cayó o se alcanzó el tope diario, `/api/health` lo reporta y la UI muestra un aviso claro; el flujo sin modelo sigue disponible con `demo.ts`.
   5. Sin código de acceso, la API rechaza toda petición salvo `/api/health`. El rate limit por IP y el límite de tamaño de mensaje responden con un mensaje claro. Un test verifica que la clave del LLM no aparece en `web/dist`, en las respuestas de la API ni en el stream SSE.
 
-**Plans:** 18/27 plans executed
+**Plans:** 19/27 plans executed
 
 Plans:
 **Wave 1**
@@ -216,7 +216,7 @@ Plans:
 - [x] 03-18-PLAN.md — `accion` estructurada en `POST /api/chat`: Confirmar autoriza ese caso y Cancelar quita solo ese caso (D-68, D-69)
 
 **Wave 15** *(blocked on Wave 14 completion)*
-- [ ] 03-19-PLAN.md — Tarjetas de tool call en vivo e indicador con la herramienta y el caso en curso
+- [x] 03-19-PLAN.md — Tarjetas de tool call en vivo e indicador con la herramienta y el caso en curso
 - [ ] 03-20-PLAN.md — `GET /api/sessions/:id` con el historial redactado y los pendientes vigentes
 
 **Wave 16** *(blocked on Wave 15 completion)*
@@ -265,5 +265,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 |-------|----------------|--------|-----------|
 | 1. Núcleo determinista | 15/15 | Complete    | 2026-10-13 |
 | 2. Agente y compuerta de confirmación | 24/24 | Complete    | 2026-10-14 |
-| 3. Chat web, API SSE y despliegue | 18/27 | In Progress | - |
+| 3. Chat web, API SSE y despliegue | 19/27 | In Progress | - |
 | 4. Módulo, documentación y defensa | 0/TBD | Not started | - |

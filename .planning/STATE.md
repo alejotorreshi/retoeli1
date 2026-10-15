@@ -3,16 +3,16 @@ gsd_state_version: "1.0"
 current_phase: 03
 current_phase_name: Chat web, API SSE y despliegue
 status: executing
-stopped_at: Completed 03-18-PLAN.md
-last_updated: "2026-10-15T02:47:13.449Z"
+stopped_at: Completed 03-19-PLAN.md
+last_updated: "2026-10-15T02:58:21.529Z"
 last_activity: 2026-10-14
 last_activity_desc: Phase 03 execution started
-state_head: bf198d0e5121007d99700d8c36a07ff63c1b37a9
+state_head: 9e3457d20eb774e3eadcba092711b84a59c574c3
 progress:
   total_phases: 4
   completed_phases: 2
   total_plans: 66
-  completed_plans: 57
+  completed_plans: 58
   percent: 50
 ---
 
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-10-14)
 ## Current Position
 
 Phase: 03 (Chat web, API SSE y despliegue) — EXECUTING
-Plan: 19 of 27
+Plan: 20 of 27
 Status: Ready to execute
 Last activity: 2026-10-14 — Phase 03 execution started
 
@@ -114,6 +114,7 @@ Progress: [█████░░░░░] 50%
 | Phase 03 P16 | 6 min | 2 tasks | 12 files |
 | Phase 03 P17 | 6 min | 3 tasks | 18 files |
 | Phase 03 P18 | 4min | 2 tasks | 12 files |
+| Phase 03 P19 | 7 min | 2 tasks | 15 files |
 
 ## Accumulated Context
 
@@ -264,6 +265,9 @@ Recent decisions affecting current work:
 - [Phase 03]: 03-17: health se refresca tras evento error, rechazo HTTP salvo 401, red caída o stream cortado; nunca por intervalo
 - [Phase 03]: 03-18: D-68 — POST /api/chat acepta accion { tipo: TIPO_ACCION, caso }; la compuerta la usa sin el clasificador solo si su caso está pendiente (confirmar → CONFIRMA de ese caso, cancelar → CANCELA_CASO); si no, la accion se ignora y el texto visible pasa por clasificarConfirmacion; EntradaTurno.accion reemplaza ConfirmacionEstructurada
 - [Phase 03]: 03-18: D-69 — CANCELA_CASO (abrirTurno con estadoSin) quita solo ese caso y los demás siguen pendientes con la pregunta del servidor; el rechazo por texto sigue cancelando todos (D-63.11). WR-17 y el aviso de cancelación silenciosa de D-63.11 quedan cerrados por la vía estructurada
+- [Phase 03]: 03-19: La herramienta en curso se deriva de la última tarjeta En curso del turno (llamadaEnCurso), no se guarda aparte
+- [Phase 03]: 03-19: Cada turno cuenta sus eventos SSE; AvisoDespertar se remonta con esa marca y muestra la línea de servidor despertando a los 10 s sin eventos
+- [Phase 03]: 03-19: El resumen del grupo concuerda en número ('1 correcta'); una herramienta desconocida muestra su nombre técnico en la tarjeta y 'Ejecutando {nombre}…' en el indicador
 
 ### Pending Todos
 
@@ -299,6 +303,6 @@ Items acknowledged and deferred at milestone close, most recent first:
 
 ## Session Continuity
 
-Last session: 2026-10-15T02:47:08.089Z
-Stopped at: Completed 03-18-PLAN.md
+Last session: 2026-10-15T02:58:21.442Z
+Stopped at: Completed 03-19-PLAN.md
 Resume file: None

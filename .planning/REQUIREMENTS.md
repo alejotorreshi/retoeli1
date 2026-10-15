@@ -80,7 +80,7 @@ Fuente vinculante: `reto-01/PRD.md`, sin modificar. Fixtures: `reto-01/fixtures/
 ### Front de chat (§6.1)
 
 - [x] **UI-01**: El chat muestra el historial, el campo de entrada y un indicador de "pensando" con la herramienta en curso.
-- [ ] **UI-02**: Cada tool call queda visible en el chat como tarjeta colapsable, con nombre, args redactados, resultado resumido y estado (en curso, ok o error).
+- [x] **UI-02**: Cada tool call queda visible en el chat como tarjeta colapsable, con nombre, args redactados, resultado resumido y estado (en curso, ok o error).
 - [ ] **UI-03**: Cuando el agente pide confirmación, la UI lo resalta con una tarjeta que muestra caso, acción y bloqueos, y ofrece los botones Confirmar y Cancelar. Esos botones envían un mensaje explícito del usuario.
 - [x] **UI-04**: Los errores de herramienta o de proveedor aparecen en el chat en lenguaje claro y la sesión sigue usable.
 - [ ] **UI-05**: Una tarjeta de resultado por caso, construida con los datos de las herramientas, muestra contadores de lleno, faltante y por confirmar, el badge `listo_para_firma`, los bloqueos y la ruta de salida.
@@ -219,7 +219,7 @@ Cada requisito v1 está asignado a exactamente una fase del roadmap (`.planning/
 | API-04 | Phase 3 | Complete |
 | API-05 | Phase 3 | Pending |
 | UI-01 | Phase 3 | Complete |
-| UI-02 | Phase 3 | Pending |
+| UI-02 | Phase 3 | Complete |
 | UI-03 | Phase 3 | Pending |
 | UI-04 | Phase 3 | Complete |
 | UI-05 | Phase 3 | Pending |
