@@ -1,0 +1,650 @@
+{
+  "phase": "03",
+  "generated_at": "2026-10-15T13:18:32Z",
+  "group": "03-chat-web-api-sse-y-despliegue",
+  "setup": {
+    "QA_SCRATCH": "session scratchpad dir /qa03 (orchestrator creates it)",
+    "local_stack": {
+      "desc": "Orchestrator-owned. Scratch copy of the repo (src, agent, reto-01, web, tsconfig.json, package.json, bunfig if any; node_modules symlinked), web/dist built with `bun run build:web` in the repo then copied. Fake LLM + production-mode server serving web/dist. 0 tokens.",
+      "fake_llm": "FAKE_LLM_PORT=4023 bun .qa/evidence/03-chat-web-api-sse-y-despliegue/seeds/03-fake-llm.ts  (routing: 'casos hay' -> listar; 'QA-TEXTO' -> multiline text; 'QA-LENTO' -> 4 s per call; 'QA-402|500|503' -> provider status; 'Sí, envía X' -> simular_envio confirmado; 'Cancela el envío de X' -> text; else leer/mapear/generar/armar per case id)",
+      "server": "cd $QA_SCRATCH/repo && PORT=3023 NODE_ENV=production LLM_PROVIDER=falso LLM_BASE_URL=http://127.0.0.1:4023 LLM_MODEL=modelo-falso LLM_API_KEY=clave-falsa-qa-centinela LLM_FALLBACK_ENABLED=false ACCESS_CODE=codigo-local-de-prueba ACCESS_TOKEN_SECRET=<synthetic 40 chars> FECHA_EJECUCION=2026-09-03 TZ_NEGOCIO=America/Bogota LOG_LEVEL=info bun --env-file=/dev/null src/server.ts",
+      "base_url": "http://127.0.0.1:3023",
+      "access_code": "codigo-local-de-prueba (synthetic)"
+    },
+    "remote": {
+      "base_url": "https://registro-proveedor-bfnt.onrender.com",
+      "access_code": "read from .qa/render.token (gitignored); never echo, never write to evidence"
+    }
+  },
+  "tests": [
+    {
+      "id": "T01",
+      "uat_ref": [
+        6
+      ],
+      "name": "Arranque en frío: bun run dev desde un clon limpio en < 120 s",
+      "kind": "cli",
+      "surface": "api,web",
+      "env": "local",
+      "source": [
+        "VERIFICATION hv6",
+        "behavior_unverified DEP-01",
+        "03-11 D6",
+        "cold-start smoke"
+      ],
+      "recipe": "git clone --no-hardlinks <repo> $QA_SCRATCH/clone; cp .env.example .env; set ACCESS_CODE=<synthetic 16+> and LLM_API_KEY=<dummy> by editing the CLONE's .env with sed (never the repo's); start timer; bun install --frozen-lockfile; bun run dev > log &; poll http://localhost:5173/api/health every 1 s; stop timer; teardown only the clone's processes",
+      "asserts": [
+        "bun install exit 0",
+        "proxy /api/health 200 in < 120 s from bun install start",
+        "no second terminal or manual step",
+        "GET http://localhost:5173/ 200"
+      ],
+      "human_checks": [],
+      "isolation": "scratch-copy",
+      "recipe_replay": "git clone -q --no-hardlinks <repo> $R/clone; cd $R/clone; [hook blocks writing .env -> inline vars]; T0=now; bun install --frozen-lockfile; ACCESS_CODE=<synthetic 16+> LLM_API_KEY=<dummy> nohup bun run dev > dev.log 2>&1 & echo $! > dev.pid; until curl -s -o /dev/null -w '%{http_code}' http://localhost:5173/api/health | grep -q 200; do sleep 1; done; T2=now; curl -o /dev/null -w '%{http_code}' http://localhost:5173/; teardown: kill_tree(){ for c in $(pgrep -P $1); do kill_tree $c; done; kill $1; }; kill_tree $(cat dev.pid); lsof -iTCP:3000,5173 -sTCP:LISTEN must be empty. Cold variant: rm -rf node_modules; BUN_INSTALL_CACHE_DIR=<empty dir> bun install --frozen-lockfile"
+    },
+    {
+      "id": "T02",
+      "uat_ref": [
+        7
+      ],
+      "name": "Contrato HTTP en socket real: health, acceso, 401, bordes y topes",
+      "kind": "http",
+      "surface": "api (local_stack)",
+      "env": "local",
+      "source": [
+        "03-04",
+        "03-06",
+        "03-09",
+        "03-13",
+        "03-14",
+        "03-15",
+        "SC5"
+      ],
+      "recipe": "curl against local_stack: GET /api/health; POST /api/chat, GET /api/config, GET /api/sessions/x, GET /api/casos/ec-corp-andina/archivos without access; POST /api/acceso wrong code x1 then right code (cookie jar); oversized message (2001 chars) and body > MAX_BODY_BYTES; wrong content-type; burst of chat messages > RATE_LIMIT_CHAT_PER_MINUTE (use fake LLM quick text 'QA-TEXTO'); inspect response headers",
+      "asserts": [
+        "health 200 {ok,provider,model,llm} with no key/secret fields",
+        "each protected route 401 without access, JSON Spanish message",
+        "acceso right code 204 + Set-Cookie HttpOnly; SameSite; Path=/api",
+        "413 for 2001 chars and oversize body; 415 for non-JSON",
+        "429 with clear Spanish message after the per-minute limit",
+        "security headers present (nosniff, frame deny/CSP if implemented)"
+      ],
+      "human_checks": [],
+      "isolation": "scratch-copy",
+      "recipe_replay": "B=http://127.0.0.1:3033; curl -sS -D - $B/api/health; bash -c 'for r in \"POST /api/chat\" \"GET /api/config\" \"GET /api/sessions/x\" \"GET /api/casos/ec-corp-andina/archivos\" \"GET /api/casos/ec-corp-andina/vista-previa/formulario.xlsx\"; do set -- $r; curl -sS -i -X $1 $B$2 ...; done' (use bash, zsh does not word-split); curl -X POST $B/api/acceso -H 'Content-Type: application/json' -d '{\"codigo\":\"<wrong>\"}' ; curl -c jar -X POST $B/api/acceso -H 'Content-Type: application/json' -d '{\"codigo\":\"codigo-local-de-prueba\"}' -i; curl -b jar -X POST $B/api/chat -H 'Content-Type: application/json' -H 'Accept: application/json' -d '{\"sessionId\":null,\"message\":\"<2001 x a>\"}'; python3 -c \"import json;print(json.dumps({'sessionId':None,'message':'x'*17000}))\" > big.json; curl -b jar ... --data-binary @big.json (also -H 'Transfer-Encoding: chunked'); curl -b jar -H 'Content-Type: text/plain' ...; for i in $(seq 1 12); do curl -b jar -X POST $B/api/chat -H 'Content-Type: application/json' -H 'Accept: application/json' -d '{\"sessionId\":\"<existing>\",\"message\":\"QA-TEXTO '$i'\"}' -w '[%{http_code}]'; done; curl ... -H 'X-Forwarded-For: 10.9.9.9' (spoof check)"
+    },
+    {
+      "id": "T03",
+      "uat_ref": [
+        8
+      ],
+      "name": "SSE local: llega por trozos, latido, fallback JSON y aborto",
+      "kind": "sse",
+      "surface": "api (local_stack)",
+      "env": "local",
+      "source": [
+        "03-02",
+        "03-18",
+        "API-01"
+      ],
+      "recipe": "curl -N -b jar -H 'Accept: text/event-stream' POST /api/chat {sessionId:new,message:'procesa el caso ec-corp-andina QA-LENTO'} with timestamps per line (ts); same with Accept: application/json; one curl killed mid-turn then GET /api/sessions/:id",
+      "asserts": [
+        "Content-Type text/event-stream; Cache-Control no-cache, no-transform",
+        "turn_start arrives seconds before turn_end; >= 4 tool_start/tool_end pairs arrive progressively",
+        "': ping' heartbeat during the 4 s waits (if heartbeat < wait)",
+        "JSON variant returns {reply, toolCalls[], needsConfirmation}",
+        "after abort the session is reusable (next message not 409 forever)"
+      ],
+      "human_checks": [],
+      "isolation": "scratch-copy",
+      "recipe_replay": "SID=$(uuidgen|tr A-Z a-z); curl -sS -N -D hdr.txt -b jar -X POST $B/api/chat -H 'Content-Type: application/json' -H 'Accept: text/event-stream' -d '{\"sessionId\":\"'$SID'\",\"message\":\"procesa el caso ec-corp-andina QA-LENTO\"}' | perl -MTime::HiRes=time -ne 'BEGIN{$|=1;$t0=shift @ARGV} printf \"%7.3f %s\", time-$t0, $_' $(perl -MTime::HiRes=time -e 'printf \"%.3f\", time') > sse.ts.txt; grep -E '^ *[0-9.]+ (event:|:)' sse.ts.txt; curl -b jar -H 'Accept: application/json' ... '{\"sessionId\":\"<server id>\",\"message\":\"procesa el caso pa-logistica-istmo\"}'; curl -N ... 'procesa el caso hn-agroexport-sula QA-LENTO' & P=$!; sleep 6; kill $P; curl -b jar $B/api/sessions/<id>; curl ... 'QA-TEXTO tras aborto'"
+    },
+    {
+      "id": "T04",
+      "uat_ref": [
+        9
+      ],
+      "name": "La clave y los valores del maestro no salen por web/dist, API, SSE ni vistas previas",
+      "kind": "pii",
+      "surface": "api (local_stack)",
+      "env": "local",
+      "source": [
+        "SEG-01",
+        "03-24",
+        "03-11"
+      ],
+      "recipe": "grep the sentinel key 'clave-falsa-qa-centinela' and ACCESS_TOKEN_SECRET in web/dist, all HTTP/SSE bodies captured in T02/T03/T16-like run, GET /api/sessions/:id, previews of the 4 cases; scan for sensitive maestro values (fields marked sensible in maestro.json: cuenta bancaria, identificaciones) loaded at runtime, reporting only field paths and masked forms; positive control: the scanner finds the value in maestro.json itself",
+      "asserts": [
+        "0 sentinel hits outside the server process env",
+        "0 full sensitive maestro values in any browser-facing surface (signer in borrador allowed, D-74)",
+        "positive control hits > 0"
+      ],
+      "human_checks": [],
+      "isolation": "scratch-copy",
+      "recipe_replay": "process the 4 cases; for each case: curl -b jar $B/api/casos/<c>/archivos then curl $B/api/casos/<c>/vista-previa/<nombre> into cap/; curl $B/api/sessions/<id> into cap/; python3 runnerA/t04/scan.py reto-01/fixtures/reto-01/repositorio/maestro.json $QS/token-secret <cap dir> $QS/repoA/web/dist web/dist .qa/logs/api-local-3033.log (positive control: same scanner over maestro.json and over an unzipped downloaded formulario.xlsx); allowlist: banco.titular (== razon_social, public) and contacto_financiero.nombre/cargo in borrador-correo.md (D-74); probes: archivos/log.jsonl, archivos/mapeo.json, archivos/..%2F..%2Fpackage.json -> 404"
+    },
+    {
+      "id": "T05",
+      "uat_ref": [
+        10
+      ],
+      "name": "WR-06: vista previa 404 (no existe) vs 422 (sin vista previa) y el aviso de disco solo con 404",
+      "kind": "http",
+      "surface": "api (local_stack)",
+      "env": "local",
+      "source": [
+        "REVIEW-FIX WR-06"
+      ],
+      "recipe": "after processing ec-corp-andina in local_stack: GET /api/casos/ec-corp-andina/vista-previa/<existing form>; vista-previa of a soporte in paquete; vista-previa of a nonexistent name; rename out/ec-corp-andina/mapeo.json in the SCRATCH copy and re-request the form preview",
+      "asserts": [
+        "existing preview 200 with masked values",
+        "soporte -> 422 with message without restart hint",
+        "nonexistent -> 404 archivoNoEncontrado",
+        "form without mapeo.json -> 422 (not 404)"
+      ],
+      "human_checks": [],
+      "isolation": "scratch-copy",
+      "recipe_replay": "C=$B/api/casos/ec-corp-andina; curl -b jar $C/vista-previa/formulario.pdf; $C/vista-previa/paquete/rut-2026.txt (422); $C/vista-previa/no-existe.pdf (404); mv $QS/repoA/out/ec-corp-andina/mapeo.json{,.qa-bak}; curl $C/vista-previa/formulario.pdf (422); mv back"
+    },
+    {
+      "id": "T06",
+      "uat_ref": [
+        11
+      ],
+      "name": "IN-03: la fecha de /api/config es la misma que usan las herramientas",
+      "kind": "http",
+      "surface": "api (local_stack)",
+      "env": "local",
+      "source": [
+        "REVIEW-FIX IN-03"
+      ],
+      "recipe": "local_stack with FECHA_EJECUCION=2026-09-03: GET /api/config; process a case; read fecha in out/<caso>/formulario.* / checklist; restart server with FECHA_EJECUCION=2026-10-01 TZ_NEGOCIO=America/Guayaquil and compare",
+      "asserts": [
+        "/api/config fecha == FECHA_EJECUCION in both runs",
+        "artifact dates == /api/config fecha",
+        "no divergence between header date and tool date"
+      ],
+      "human_checks": [
+        "the fix deviates from the review suggestion: accept the documented reasoning?"
+      ],
+      "isolation": "scratch-copy",
+      "recipe_replay": "curl -c jar35 -X POST http://127.0.0.1:3035/api/acceso ...; for p in 3033 3035: curl -b <jar> http://127.0.0.1:$p/api/config; curl -b jar35 -X POST :3035/api/chat -H 'Accept: application/json' -d '{\"sessionId\":null,\"message\":\"procesa los casos ec-corp-andina y pa-logistica-istmo\"}'; grep -o '20..-..-..' $QS/repo{A,D}/out/ec-corp-andina/paquete/checklist.md $QS/repo{A,D}/out/pa-logistica-istmo/valores-portal.md; diff the two checklists"
+    },
+    {
+      "id": "T07",
+      "uat_ref": [
+        12
+      ],
+      "name": "Imagen Docker local: build, usuario bun, solo out/ escribible, health",
+      "kind": "cli",
+      "surface": "deploy (local docker)",
+      "env": "local",
+      "source": [
+        "REVIEW-FIX WR-07",
+        "IN-06",
+        "03-09"
+      ],
+      "recipe": "docker build -t qa03-registro . ; docker run -d -p 3024:10000 -e PORT=10000 -e ACCESS_CODE=<synthetic> -e ACCESS_TOKEN_SECRET=<synthetic 40> -e LLM_API_KEY=<dummy> qa03-registro; GET :3024/api/health; docker exec: id -un; touch src/x, node_modules/x, out/x; GET :3024/ contains index-*.js equal to local build hash; teardown: docker rm -f + docker rmi",
+      "asserts": [
+        "build exit 0 (IN-06 build stage OK)",
+        "runs as bun",
+        "src and node_modules not writable, out writable (WR-07)",
+        "health 200",
+        "served bundle hash == local build:web hash"
+      ],
+      "human_checks": [],
+      "isolation": "repo",
+      "recipe_replay": "docker build -t qa03-registro .; docker run -d --name qa03-registro-run -p 3024:10000 -e PORT=10000 -e ACCESS_CODE=<synthetic> -e ACCESS_TOKEN_SECRET=$(openssl rand -hex 20) -e LLM_API_KEY=<dummy> qa03-registro; curl :3024/api/health; docker exec qa03-registro-run sh -c 'id -un; for p in src/x node_modules/x out/x web/dist/x agent/x reto-01/fixtures/x /app/x; do touch $p 2>/dev/null && echo \"$p WRITABLE\" && rm -f $p || echo \"$p not-writable\"; done'; curl -sS :3024/ | grep -o 'index-[A-Za-z0-9_-]*\\.js'; ls web/dist/assets; docker rm -f qa03-registro-run; docker rmi qa03-registro"
+    },
+    {
+      "id": "T08",
+      "uat_ref": [
+        13
+      ],
+      "name": "Pantalla de acceso, chip de fecha y contador del compositor",
+      "kind": "browser",
+      "surface": "web (local_stack)",
+      "env": "local",
+      "source": [
+        "03-10 D4",
+        "03-10 D5",
+        "UI-09"
+      ],
+      "recipe": "Playwright on http://127.0.0.1:3023 at 1280x720: empty field -> button disabled; wrong code -> 'Verificando…' then red error, focus back; Mostrar/Ocultar; right code -> chat; reload -> straight to chat; clear cookie with expired token (or delete cookie) -> back to access with 'Tu acceso venció…' if applicable; header chip 'Fecha de ejecución 2026-09-03'; type up to MAX_MESSAGE_CHARS -> counter n/max in error color. Screenshots per state.",
+      "asserts": [
+        "states reachable as described",
+        "chip shows 2026-09-03",
+        "counter turns error color at max"
+      ],
+      "human_checks": [
+        "card 400 px, visual polish acceptable"
+      ],
+      "isolation": "scratch-copy",
+      "recipe_replay": "1280x720 goto :3023 (fresh ctx) -> assert 'Entrar al agente' disabled, form 400px -> install MutationObserver on buttons -> fill 'codigo-equivocado' + Enter -> assert seen 'Verificando…'(disabled), red error rgb(180,35,24), focus on input aria-invalid -> click 'Mostrar código' (type=text, label 'Ocultar código') -> fill synthetic code + Enter -> header 'Fecha de ejecución 2026-09-03' -> reload -> chat -> textarea fill 1990/2000/2005 chars, read counter p /^\\d+\\/\\d+$/ color -> context.clearCookies(); send message -> access screen 'Tu acceso venció…' -> re-enter code, draft kept"
+    },
+    {
+      "id": "T09",
+      "uat_ref": [
+        14
+      ],
+      "name": "Chat básico, aviso de error del proveedor y layout base",
+      "kind": "browser",
+      "surface": "web (local_stack)",
+      "env": "local",
+      "source": [
+        "03-03 D3",
+        "03-05 D4",
+        "03-07 D5",
+        "UI-01",
+        "UI-04"
+      ],
+      "recipe": "send 'QA-TEXTO' -> bubble immediately, 'Pensando…', plain text with line breaks and literal <b>; second message continues same sessionId (GET /api/sessions/:id shows both); send 'QA-500' -> red AvisoError with icon and server text; textarea accepts next message; Enter sends, Shift+Enter newline; check 56 px header, 768 px column, focus rings. Screenshots.",
+      "asserts": [
+        "no HTML rendered from model text",
+        "same session across messages",
+        "error aviso visible and session usable"
+      ],
+      "human_checks": [
+        "layout matches UI-SPEC base"
+      ],
+      "isolation": "scratch-copy",
+      "recipe_replay": "send 'QA-TEXTO' (observer on body text for bubble+'Pensando…') -> agent li innerHTML has &lt;b&gt;, 0 <b>, white-space pre-wrap -> send 'QA-TEXTO segunda' -> page fetch /api/sessions/<localStorage registro-proveedor.sesion-id> has both turns -> send 'QA-500' -> role=alert red + svg, textarea enabled -> type 'linea uno' Shift+Enter 'linea dos QA-TEXTO' Enter -> measure header/list widths, focus outline -> dispatch visibilitychange to clear stale model banner"
+    },
+    {
+      "id": "T10",
+      "uat_ref": [
+        15
+      ],
+      "name": "Estado del modelo en el encabezado y banner por estado",
+      "kind": "browser",
+      "surface": "web (local_stack)",
+      "env": "local",
+      "source": [
+        "03-17 D5",
+        "LLM-06"
+      ],
+      "recipe": "restart local server per state: no LLM key (sin_clave); FAKE_FORCE_STATUS=402 then send a message (saldo_agotado); 503 (no_disponible); AGENT_DAILY_TOKEN_BUDGET=1 then a turn (tope_diario). For each: header dot + banner text/location; refresh on tab focus (blur/focus) and after a failed turn. Screenshots per state.",
+      "asserts": [
+        "each of the 4 states shows its banner text from strings",
+        "health llm field matches",
+        "banner refreshes after failed turn"
+      ],
+      "human_checks": [
+        "looks right and in the UI-SPEC place"
+      ],
+      "isolation": "scratch-copy",
+      "recipe_replay": "cookie carries over 127.0.0.1 ports: goto :3041 -> header 'Sin clave', banner under header -> send 'hola' -> alert; goto :3043 send 'procesa el caso ec-corp-andina' -> 'Sin saldo' + banner, health saldo_agotado; :3044 same -> 'No disponible' amber; :3042 send 'QA-TEXTO' twice -> 2nd turn 'Tope diario' banner; fetch /api/health before/after each"
+    },
+    {
+      "id": "T11",
+      "uat_ref": [
+        16
+      ],
+      "name": "Tarjetas de herramienta en vivo, teclado y movimiento reducido",
+      "kind": "browser",
+      "surface": "web (local_stack)",
+      "env": "local",
+      "source": [
+        "03-19 D5",
+        "UI-02"
+      ],
+      "recipe": "send 'procesa el caso ec-corp-andina QA-LENTO': observe cards appear one by one with spinner and 'Pensando… <herramienta>'; Tab to a card and expand with Enter/Space with visible focus; collapsed summary ellipsis; emulate prefers-reduced-motion: spinner -> clock icon. Screenshots mid-turn and end.",
+      "asserts": [
+        "cards appear progressively (snapshot mid-turn has < 4 ended)",
+        "keyboard expand works, aria-expanded toggles",
+        "reduced motion swaps icon"
+      ],
+      "human_checks": [
+        "visual quality of cards"
+      ],
+      "isolation": "scratch-copy",
+      "recipe_replay": "Nueva sesión -> Empezar sesión nueva -> send 'procesa el caso ec-corp-andina QA-LENTO' -> sample every 1.5s (summary count, role=status) + screenshot at ~7.5s -> after end: focus first summary, Tab, Enter (details.open), Space toggle on another -> emulateMedia reducedMotion=reduce -> send another QA-LENTO turn -> at 1.5s read [class*=_giro_]/[class*=_quieto_] display; switch to no-preference and re-read"
+    },
+    {
+      "id": "T12",
+      "uat_ref": [
+        17
+      ],
+      "name": "Tarjeta de resultado, chips de acciones rápidas y progreso por etapas",
+      "kind": "browser",
+      "surface": "web (local_stack)",
+      "env": "local",
+      "source": [
+        "03-21 D1",
+        "03-21 D2",
+        "03-16",
+        "UI-05",
+        "UI-07",
+        "UI-08"
+      ],
+      "recipe": "use chip 'Demo §11: ec-corp-andina': result card with counters from tools (13/1/1, 'No listo para firma' for the fixture), Paquete row, dashes for what the turn did not produce; chips disabled during a turn; chip 'Procesar los 4 casos' sends the 4 ids from /api/config; '¿Qué casos hay?' chip sends the question; ProgresoCaso stages update. Screenshots.",
+      "asserts": [
+        "result numbers equal tool_end data (compare with SSE capture)",
+        "chips disabled mid-turn",
+        "progress stages follow tool events only"
+      ],
+      "human_checks": [
+        "card readable"
+      ],
+      "isolation": "scratch-copy",
+      "recipe_replay": "Nueva sesión -> observer on role=status texts -> waitForResponse /api/chat + click chip 'Demo §11: ec-corp-andina' -> parse SSE tool_end vs result article text -> send 'QA-LENTO …' and read chip disabled mid-turn -> fetch /api/config -> click 'Procesar los 4 casos' (check message ids) -> click '¿Qué casos hay?' -> read aside [aria-label^='Avance de'] li aria-labels (found ghost empty case)"
+    },
+    {
+      "id": "T13",
+      "uat_ref": [
+        5,
+        18
+      ],
+      "name": "Tarjeta de confirmación y envío simulado sin parecer correo real",
+      "kind": "browser",
+      "surface": "web (local_stack)",
+      "env": "local",
+      "source": [
+        "VERIFICATION hv5",
+        "03-23 D6",
+        "UI-03"
+      ],
+      "recipe": "after §11 on ec-corp-andina and a second case (hn-agroexport-sula): confirmation cards after TarjetaResultado, stacked 8 px; Confirmar on ec -> 'Enviando…' both buttons aria-disabled -> 'Envío registrado' and out/ec-corp-andina/ENVIO-SIMULADO.md exists in scratch; Cancelar on hn -> 'Envío cancelado' and no ENVIO-SIMULADO.md; capture card + result texts verbatim",
+      "asserts": [
+        "Confirmar flow ends 'Envío registrado' and file exists",
+        "Cancelar leaves no file",
+        "card text contains 'Envío simulado' and 'Confirmar registra solo ENVIO-SIMULADO.md. No se envía ningún correo real.'"
+      ],
+      "human_checks": [
+        "nothing suggests a real email (judgment, VERIFICATION hv5)"
+      ],
+      "isolation": "scratch-copy",
+      "recipe_replay": "Nueva sesión -> chip Demo §11 -> send 'procesa el caso hn-agroexport-sula' -> wait 2 articles 'Confirmación requerida' -> observer on ec card buttons -> click 'Confirmar envío simulado' in ec card -> 'Envío registrado'; find out/ -name ENVIO-SIMULADO.md -> click 'Cancelar envío' in hn card -> 'Envío cancelado'; GET session pendientes/casosEnviados; find again"
+    },
+    {
+      "id": "T14",
+      "uat_ref": [
+        19
+      ],
+      "name": "Recarga a mitad de camino, Detener y Nueva sesión",
+      "kind": "browser",
+      "surface": "web (local_stack)",
+      "env": "local",
+      "source": [
+        "03-25 D5",
+        "03-26 D6"
+      ],
+      "recipe": "process two cases, confirm one, reload -> same timeline, panel and cards; during load 'Cargando la conversación…' with composer disabled; start 'QA-LENTO' turn and press Detener -> reconciles and removes open card; Nueva sesión -> dialog focus on Seguir, Esc closes and focus returns; header at 1280/800/375 without horizontal scroll. Screenshots.",
+      "asserts": [
+        "post-reload DOM text equals pre-reload",
+        "Detener ends turn and composer usable",
+        "dialog focus management correct",
+        "scrollWidth == clientWidth at 3 widths"
+      ],
+      "human_checks": [],
+      "isolation": "scratch-copy",
+      "recipe_replay": "same session -> grab timeline+aside innerText -> addInitScript observer + page.route('**/api/sessions/*') delay 1.5s -> reload -> 'Cargando la conversación…' with textarea disabled -> compare innerText -> unroute -> send 'procesa el caso co-industrias-delta QA-LENTO' -> at 6s click 'Detener respuesta' -> check no 'En curso', composer enabled, GET session ocupada=false -> focus 'Nueva sesión' Enter -> dialog :modal focus 'Seguir en esta sesión' -> Tab x4 -> Escape -> focus back -> viewports 1280x720/800x720/375x667 scrollWidth==clientWidth"
+    },
+    {
+      "id": "T15",
+      "uat_ref": [
+        3
+      ],
+      "name": "Misma sesión en dos pestañas",
+      "kind": "browser",
+      "surface": "web (local_stack)",
+      "env": "local",
+      "source": [
+        "VERIFICATION hv3",
+        "03-26"
+      ],
+      "recipe": "tab A: send 'procesa el caso pa-logistica-istmo QA-LENTO'; tab B (same origin, same localStorage sessionId): send a message while A runs; after A ends reload both",
+      "asserts": [
+        "tab B shows SESION_OCUPADA text in AvisoError and stays usable",
+        "after reload both tabs show the same history"
+      ],
+      "human_checks": [],
+      "isolation": "scratch-copy",
+      "recipe_replay": "ctx.newPage() tab B on :3023 (same localStorage) -> tab A send 'procesa el caso pa-logistica-istmo QA-LENTO' -> 3s later B send 'QA-TEXTO desde la pestaña B' -> B alert SESION_OCUPADA text -> wait A end -> reload both -> compare timeline innerText -> B sends again OK"
+    },
+    {
+      "id": "T16",
+      "uat_ref": [
+        4,
+        20
+      ],
+      "name": "Layout 1280/800/375 y demo de 4 casos a 1280×720 y 375×667",
+      "kind": "browser",
+      "surface": "web (local_stack)",
+      "env": "local",
+      "source": [
+        "VERIFICATION hv4",
+        "03-22 D4",
+        "03-27 backstops"
+      ],
+      "recipe": "at 1280x720 and 375x667: chip 'Procesar los 4 casos'; measure scrollWidth vs viewport, header/composer fixed (position), timeline/panel own scroll; expand long arguments block and open a .md preview: max-height 240 px (60vh in dialog) with overflow auto; at 800 check two-column/tab layout; watch auto-scroll after > 6 calls (known deferred issue). Screenshots each.",
+      "asserts": [
+        "no horizontal overflow at any width",
+        "long blocks capped with scroll",
+        "header and composer stay fixed"
+      ],
+      "human_checks": [
+        "auto-scroll behaviour after >6 calls (deferred-items known issue): acceptable for the demo?"
+      ],
+      "isolation": "scratch-copy",
+      "recipe_replay": "NOTE: 6th new session in the hour -> 429 'Abriste demasiadas sesiones nuevas…'; workaround localStorage.setItem('registro-proveedor.sesion-id', <previous id>) + reload. 1280x720 chip 'Procesar los 4 casos' -> measure doc sw/cw, header top, textarea bottom, timeline/panel scrollers (scroll them), 'Ir al final' presence -> open last 16 details, largest <pre> max-height 240 -> aside 'Ver …checklist.md' dialog pre max-height 60vh -> Escape focus -> viewport 800 (tabs) and 375 (tabs) -> at 375 chip 4 casos again, tab 'Casos y archivos', 'Ver …borrador-correo.md'"
+    },
+    {
+      "id": "T17",
+      "uat_ref": [
+        21
+      ],
+      "name": "Panel de archivos: lista, descarga, borrado y vista previa",
+      "kind": "browser",
+      "surface": "web (local_stack)",
+      "env": "local",
+      "source": [
+        "03-27 D1",
+        "03-27 D2",
+        "03-27 D5",
+        "UI-06",
+        "API-05"
+      ],
+      "recipe": "after processing ec-corp-andina: case block lists files with name, type, Ver (not for soportes) and Descargar with aria-label; download a file and compare bytes with scratch out/; delete out/ec-corp-andina in SCRATCH and click Descargar -> nothing saved, marked deleted + disk notice; reprocess chip 'Procesar ec-corp-andina de nuevo'; preview dialog: modal, Esc returns focus to Ver, sticky header, badges, '—' for null, .md monospace pre-wrap. Screenshots.",
+      "asserts": [
+        "downloaded bytes == file on disk",
+        "404 shows deleted state, no file saved",
+        "preview dialog behaviours"
+      ],
+      "human_checks": [
+        "visual quality"
+      ],
+      "isolation": "scratch-copy",
+      "recipe_replay": "1280x720 -> evaluate aside [aria-label='Archivos de ec-corp-andina'] rows (Ver only for previsualizable) -> waitForEvent('download') on block-scoped 'Descargar formulario.pdf' link (scope to the case li! labels repeat across cases) -> saveAs scratch, cmp with out/ -> mv out/ec-corp-andina aside -> click Descargar -> 404, no download, notice + chip -> click 'Procesar ec-corp-andina de nuevo' -> 'Ver formulario.pdf' -> dialog :modal, thead sticky, badges, '—', masked -> Escape focus to Ver -> pa 'Ver valores-portal.md' masked table"
+    },
+    {
+      "id": "T18",
+      "uat_ref": [
+        22
+      ],
+      "name": "Link público: bundle == HEAD, health y acceso cerrado",
+      "kind": "http",
+      "surface": "deploy",
+      "env": "remote",
+      "source": [
+        "VERIFICATION hv1 (part)",
+        "DEP-02"
+      ],
+      "recipe": "GET /api/health; GET / -> asset name; compare with local build:web asset name; protected routes without access -> 401; response headers",
+      "asserts": [
+        "health 200 no secrets",
+        "bundle name == local build hash",
+        "401 on chat/config/sessions/archivos"
+      ],
+      "human_checks": [],
+      "isolation": "repo",
+      "recipe_replay": "RB=https://registro-proveedor-bfnt.onrender.com; curl -sS -D - $RB/api/health; curl -sS $RB/ | grep -o 'index-[A-Za-z0-9_-]*\\.\\(js\\|css\\)'; ls web/dist/assets; bash -c 'for r in \"POST /api/chat\" \"GET /api/config\" \"GET /api/sessions/x\" \"GET /api/casos/ec-corp-andina/archivos\" \"GET /api/casos/ec-corp-andina/vista-previa/formulario.pdf\"; do ...; done' (no wrong codes, to avoid IP lockout)"
+    },
+    {
+      "id": "T19",
+      "uat_ref": [
+        23
+      ],
+      "name": "SSE por Render con el modelo real: '¿Qué casos hay?'",
+      "kind": "sse",
+      "surface": "deploy",
+      "env": "remote",
+      "source": [
+        "VERIFICATION hv1 (SSE)",
+        "03-21 D3",
+        "API-01"
+      ],
+      "recipe": "POST /api/acceso with code from .qa/render.token (cookie jar in scratch); curl -N with timestamps POST /api/chat {message:'¿Qué casos hay?'}; then JSON fallback with Accept: application/json and a new session",
+      "asserts": [
+        "turn_start much earlier than turn_end, >1 chunk (no buffering)",
+        "Cache-Control no-transform intact",
+        "the reply lists the 4 cases, no error event"
+      ],
+      "human_checks": [],
+      "isolation": "repo",
+      "recipe_replay": "curl -sS -c jar-remote -X POST $RB/api/acceso -H 'Content-Type: application/json' --data \"{\\\"codigo\\\":\\\"$(cat .qa/render.token | tr -d '\\n')\\\"}\" -o /dev/null -w '%{http_code}'; curl -sS -N -D h-sse.txt -b jar-remote -X POST $RB/api/chat -H 'Content-Type: application/json' -H 'Accept: text/event-stream' -d '{\"sessionId\":null,\"message\":\"¿Qué casos hay?\"}' | perl -MTime::HiRes=time -ne 'BEGIN{$|=1;$t0=shift @ARGV} printf \"%7.3f %s\", time-$t0, $_' $(perl -MTime::HiRes=time -e 'printf \"%.3f\", time') > sse.ts.txt; curl -sS -b jar-remote -X POST $RB/api/chat -H 'Content-Type: application/json' -H 'Accept: application/json' -d '{\"sessionId\":null,\"message\":\"¿Qué casos hay?\"}'"
+    },
+    {
+      "id": "T20",
+      "uat_ref": [
+        1
+      ],
+      "name": "Recorrido de la UI en el link público con el modelo real",
+      "kind": "browser",
+      "surface": "deploy",
+      "env": "remote",
+      "source": [
+        "VERIFICATION hv1"
+      ],
+      "recipe": "Playwright on the public URL at 1280x720: access with code (typed from token file, never logged); 'Fecha de ejecución 2026-09-03'; chip 'Demo §11: ec-corp-andina'; live tool cards and 'Pensando… <herramienta>'; result card; progress; confirmation card; Cancelar or Confirmar; reload mid-way; download a file; open masked preview; header model status. Screenshots per step.",
+      "asserts": [
+        "every step works with the real model",
+        "result card values come from tools",
+        "no error card"
+      ],
+      "human_checks": [
+        "looks like the local captures; real-model wording acceptable"
+      ],
+      "isolation": "repo",
+      "recipe_replay": "curl /api/health warm -> write T20 START -> goto remote 1280x720 -> serve token via one-shot 127.0.0.1:47811 python server and read it with page.context().request (never printed) -> fill + Enter -> chat header -> observer on role=status + waitForResponse /api/chat + click 'Demo §11: ec-corp-andina' -> screenshots at 3s/8s -> wait end -> parse SSE tool_end vs result card -> progress -> confirmation card screenshot -> click 'Cancelar envío' -> reload compare -> download formulario.pdf (sha vs direct fetch) -> 'Ver formulario.pdf' masked preview -> Escape -> header + /api/health -> write T20 END"
+    },
+    {
+      "id": "T21",
+      "uat_ref": [
+        2
+      ],
+      "name": "Health checks de Render durante un turno SSE largo",
+      "kind": "human",
+      "surface": "deploy",
+      "env": "remote",
+      "source": [
+        "VERIFICATION hv2",
+        "03-11 backstop"
+      ],
+      "recipe": "during T20 (§11 run), the human watches Render -> Events/Logs",
+      "asserts": [],
+      "human_checks": [
+        "no restart, health checks keep passing during the stream"
+      ],
+      "isolation": "repo"
+    },
+    {
+      "id": "T22",
+      "uat_ref": [
+        24
+      ],
+      "name": "WR-05: la IP del cliente detrás de Cloudflare+Render no se falsifica",
+      "kind": "http",
+      "surface": "deploy",
+      "env": "remote",
+      "source": [
+        "REVIEW-FIX WR-05",
+        "03-06 D6",
+        "03-11 D5"
+      ],
+      "recipe": "LAST remote test (locks this IP out of /api/acceso for 15 min): 5 POST /api/acceso with wrong codes -> 6th 401/429; then same with header X-Forwarded-For: 1.2.3.4 -> still 429",
+      "asserts": [
+        "lockout reached after 5 failures",
+        "spoofed XFF does not reset the counter"
+      ],
+      "human_checks": [
+        "only one ingress hostname measured: accept the documented limitation?"
+      ],
+      "isolation": "repo",
+      "recipe_replay": "B=https://registro-proveedor-bfnt.onrender.com; T=.qa/render.token; curl -s -w '%{http_code}' $B/api/health; for i in 01 02 03 04 05 06; do curl -s -w ' %{http_code}\\n' -X POST -H 'Content-Type: application/json' --data \"{\\\"codigo\\\":\\\"codigo-equivocado-qa-$i\\\"}\" $B/api/acceso; done  # expect 401x5 then 429; then while locked: same POST with -H 'X-Forwarded-For: 1.2.3.4' / -H 'X-Forwarded-For: 1.2.3.4, 5.6.7.8' / -H 'X-Real-IP: 9.9.9.9' -> 429 each; finally --data \"{\\\"codigo\\\":\\\"$(cat $T)\\\"}\" -> 429 (lock precedes code check). Locks the caller IP for 15 min: run LAST."
+    },
+    {
+      "id": "T23",
+      "uat_ref": [
+        25
+      ],
+      "name": "Regresión fase 1: demo, determinismo y PII en out/ y logs",
+      "kind": "determinism",
+      "surface": "demo-cli",
+      "env": "local",
+      "source": [
+        "regression: redaccion.policy, logger.adapter, package-copy.adapter"
+      ],
+      "recipe": "in a scratch copy: bun run demo.ts twice into two roots; diff out/ ignoring documented volatile fields; replay .qa PII scanner seed (02-X-scan-logs-pii.ts) over out/**/log.jsonl; check logs keep stack only in logs (IN-01) and no raw args",
+      "asserts": [
+        "exit 0 both runs",
+        "diff empty except volatile",
+        "0 PII hits, positive control > 0"
+      ],
+      "human_checks": [],
+      "isolation": "scratch-copy",
+      "recipe_replay": "for d in f1a f1b: mkdir $R/$d; cp -R src agent reto-01 tests tsconfig.json package.json demo.ts $R/$d/; ln -s <repo>/node_modules $R/$d/node_modules; (cd $R/$d && bun --env-file=/dev/null run demo.ts); diff -rq f1a/out f1b/out; (cd f1a && bun --env-file=/dev/null .qa-seeds/03-T23-comparar.ts $R/f1a $R/f1b)  # uses tomarInstantanea (ignores jsonl ts, compares xlsx by cells); bun --env-file=/dev/null .qa-seeds/03-T23-scan-logs-pii.ts <root> (recursive log.jsonl + positive control + raw args/stack count); original: copy log.jsonl files flat into .qa-flatlogs and bun --env-file=/dev/null .qa-seeds/02-X-scan-logs-pii.ts .qa-flatlogs; bun --env-file=/dev/null test tests/unit/redaccion.policy.test.ts tests/unit/logger.adapter.test.ts (IN-01)"
+    },
+    {
+      "id": "T24",
+      "uat_ref": [
+        26
+      ],
+      "name": "Regresión fase 2: compuerta de confirmación por agente y por HTTP",
+      "kind": "tool",
+      "surface": "agent, api (local_stack)",
+      "env": "local",
+      "source": [
+        "regression: compuerta.policy, loop services"
+      ],
+      "recipe": "replay seeds 02-T03-compuerta-guion-prd11.ts and 02-T10-logs-correlacion-sin-pii.ts in a scratch copy (bun --env-file=/dev/null); via HTTP local_stack: send 'Sí, envía ec-corp-andina' without a pending confirmation -> no ENVIO-SIMULADO.md",
+      "asserts": [
+        "seed asserts green",
+        "no send without human confirmation through HTTP"
+      ],
+      "human_checks": [],
+      "isolation": "scratch-copy",
+      "recipe_replay": "for T in T03 T10: D=$R/t24/$T; rsync -a --exclude node_modules --exclude .git --exclude out --exclude .qa --exclude .planning --exclude '.env*' --exclude web <repo>/ $D/; ln -s <repo>/node_modules $D/node_modules; cp seeds/02-B-common-qa-comun.ts $D/qa-comun.ts; cp seeds/02-$T-*.ts $D/qa-run.ts; (cd $D && bun --env-file=/dev/null qa-run.ts) -> JSON {pasados,total}; HTTP: curl -N -b jar -X POST $B/api/chat -H 'Content-Type: application/json' -d '{\"sessionId\":null,\"message\":\"Sí, envía co-industrias-delta\"}'; find $QS/repoA/out -name ENVIO-SIMULADO.md (expect empty)"
+    },
+    {
+      "id": "T25",
+      "uat_ref": [
+        27
+      ],
+      "name": "Regresión en vivo: prueba opcional del agente con el modelo real",
+      "kind": "cli",
+      "surface": "agent-live",
+      "env": "local",
+      "source": [
+        "regression: llm adapter + loop with real provider"
+      ],
+      "recipe": "bun run test:vivo (real DeepSeek via the repo env file; ~12 calls)",
+      "asserts": [
+        "exit 0, 0 fail"
+      ],
+      "human_checks": [],
+      "isolation": "repo",
+      "recipe_replay": "cd <repo> && bun run test:vivo  (exit code + 'N pass / N fail' only)"
+    }
+  ],
+  "last_run": {
+    "evidence": ".qa/evidence/03-chat-web-api-sse-y-despliegue/03-QA-EVIDENCE-2026-10-15T13-18-49Z.md",
+    "at": "2026-10-15T14:01:40Z",
+    "pass": 19,
+    "issues": 7,
+    "pending": [
+      "T21"
+    ]
+  }
+}
