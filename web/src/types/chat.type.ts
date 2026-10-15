@@ -47,6 +47,7 @@ export type TurnoConversacion = {
   readonly clave: number;
   readonly mensaje: string;
   readonly llamadas: readonly LlamadaDelTurno[];
+  readonly eventos: number;
   readonly textos: readonly TextoAgente[];
   readonly error: ErrorVisible | null;
 };

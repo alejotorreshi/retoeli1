@@ -1,9 +1,26 @@
 .indicador {
   display: flex;
-  align-items: center;
+  flex-direction: column;
   gap: var(--espacio-xs);
   font-size: var(--cuerpo-tamano);
   line-height: var(--cuerpo-interlinea);
+  color: var(--texto-tenue);
+}
+
+.linea {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-xs);
+}
+
+.etiqueta {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.despertando {
+  font-size: var(--etiqueta-tamano);
+  line-height: var(--etiqueta-interlinea);
   color: var(--texto-tenue);
 }
 

@@ -57,6 +57,7 @@ function agregarTurno(estado: EstadoConversacion, mensaje: string): EstadoConver
     clave: estado.turnos.length,
     mensaje,
     llamadas: [],
+    eventos: 0,
     textos: [],
     error: null,
   };
@@ -129,6 +130,10 @@ function cerrarLlamada(turno: TurnoConversacion, evento: EventoFinHerramientaUi)
   };
 }
 
+function contarEvento(estado: EstadoConversacion): EstadoConversacion {
+  return conUltimoTurno(estado, (turno) => ({ ...turno, eventos: turno.eventos + 1 }));
+}
+
 function aplicarEvento(estado: EstadoConversacion, evento: SseEvent): EstadoConversacion {
   switch (evento.tipo) {
     case TIPO_EVENTO.INICIO_TURNO:
@@ -170,7 +175,7 @@ export function reducirConversacion(estado: EstadoConversacion, accion: AccionUi
     case ACCION_UI.ENVIAR:
       return agregarTurno(estado, accion.mensaje);
     case ACCION_UI.EVENTO:
-      return aplicarEvento(estado, accion.evento);
+      return aplicarEvento(contarEvento(estado), accion.evento);
     case ACCION_UI.ERROR_HTTP:
       return accion.status === RESPUESTA_HTTP.NO_AUTORIZADO
         ? pedirAcceso(estado, accion.mensaje)
@@ -225,10 +230,13 @@ export function anuncioDeEstado(vista: VistaTurnos): string {
   return ultimo !== undefined && ultimo.error === null ? TEXTO_CHAT.respuestaLista : "";
 }
 
-export function etiquetaPensando(_vista: VistaTurnos): string {
-  return TEXTO_CHAT.pensando;
+export function etiquetaPensando(vista: VistaTurnos): string {
+  const llamada = llamadaEnCurso(vista);
+  return llamada === null
+    ? TEXTO_CHAT.pensando
+    : TEXTO_CHAT.pensandoEn(TEXTO_HERRAMIENTA.gerundio(llamada.herramienta), llamada.caso);
 }
 
-export function eventosDelTurno(_vista: VistaTurnos): number {
-  return 0;
+export function eventosDelTurno({ turnos }: VistaTurnos): number {
+  return turnos.at(-1)?.eventos ?? 0;
 }

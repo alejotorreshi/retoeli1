@@ -38,6 +38,9 @@ export const TEXTO_CHAT = {
   vacioCuerpo:
     'Pide un caso por su nombre, por ejemplo "procesa el caso co-industrias-delta", o usa una acción rápida. El agente lee la solicitud, mapea cada campo contra el maestro, genera el formulario y arma el paquete para firma. No registra ningún envío sin tu confirmación.',
   pensando: "Pensando…",
+  pensandoEn: (gerundio: string, caso: string | null) =>
+    caso === null ? `${gerundio}…` : `${gerundio} ${SEPARADOR} ${caso}…`,
+  despertando: "El servidor puede estar despertando; la primera respuesta tarda hasta un minuto.",
   respuestaLista: "Respuesta lista",
   irAlFinal: "Ir al final",
   autorUsuaria: "Tú: ",
@@ -102,6 +105,14 @@ const ETIQUETA_DE_HERRAMIENTA = {
   [HERRAMIENTA.SIMULAR_ENVIO]: "Simular envío",
 } as const satisfies Record<ValorDe<typeof HERRAMIENTA>, string>;
 
+const GERUNDIO_DE_HERRAMIENTA = {
+  [HERRAMIENTA.LEER_SOLICITUD]: "Leyendo la solicitud",
+  [HERRAMIENTA.MAPEAR_CAMPOS]: "Mapeando campos",
+  [HERRAMIENTA.GENERAR_FORMULARIO]: "Generando el formulario",
+  [HERRAMIENTA.ARMAR_PAQUETE]: "Armando el paquete",
+  [HERRAMIENTA.SIMULAR_ENVIO]: "Registrando el envío simulado",
+} as const satisfies Record<ValorDe<typeof HERRAMIENTA>, string>;
+
 const ESTADO_DE_HERRAMIENTA = {
   [ESTADO_HERRAMIENTA.EN_CURSO]: "En curso",
   [ESTADO_HERRAMIENTA.CORRECTA]: "Correcta",
@@ -111,6 +122,11 @@ const ESTADO_DE_HERRAMIENTA = {
 function etiquetaDeHerramienta(nombre: string): string {
   const herramienta = HERRAMIENTA_POR_NOMBRE_VISIBLE.get(nombre);
   return herramienta === undefined ? nombre : ETIQUETA_DE_HERRAMIENTA[herramienta];
+}
+
+function gerundioDeHerramienta(nombre: string): string {
+  const herramienta = HERRAMIENTA_POR_NOMBRE_VISIBLE.get(nombre);
+  return herramienta === undefined ? `Ejecutando ${nombre}` : GERUNDIO_DE_HERRAMIENTA[herramienta];
 }
 
 function llamadas(total: number): string {
@@ -123,6 +139,7 @@ function correctas(cantidad: number): string {
 
 export const TEXTO_HERRAMIENTA = {
   etiqueta: etiquetaDeHerramienta,
+  gerundio: gerundioDeHerramienta,
   estado: (estado: EstadoHerramienta) => ESTADO_DE_HERRAMIENTA[estado],
   grupo: ({ total, correctas: buenas, conError }: ResumenLlamadas) =>
     total === 1

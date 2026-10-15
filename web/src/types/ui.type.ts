@@ -47,6 +47,11 @@ export type PropsTarjetaHerramienta = {
   readonly llamada: LlamadaDelTurno;
 };
 
+export type PropsIndicadorPensando = {
+  readonly etiqueta: string;
+  readonly marca: number;
+};
+
 export type PropsIconoDeEstado = {
   readonly estado: EstadoHerramienta;
 };

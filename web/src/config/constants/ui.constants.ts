@@ -86,3 +86,5 @@ export const ESTADO_HERRAMIENTA = {
 export const MAXIMO_TARJETAS_ABIERTAS = 6;
 
 export const SANGRIA_JSON = 2;
+
+export const ESPERA_DESPERTAR_MS = 10_000;

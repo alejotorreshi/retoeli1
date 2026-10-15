@@ -9,6 +9,7 @@ import { CLASE_GLOBAL, ESTADO_ACCESO } from "@web/config/constants/ui.constants.
 import { TEXTO_APP } from "@web/config/strings.ts";
 import { useChat } from "@web/hooks/usar-chat.ts";
 import { useSalud } from "@web/hooks/usar-salud.ts";
+import { etiquetaPensando, eventosDelTurno } from "@web/state/conversacion.ts";
 import { useEffect } from "react";
 
 export function App() {
@@ -47,7 +48,9 @@ export function App() {
       <AvisoModelo estado={salud?.llm ?? null} zona={estado.config?.zona ?? null} />
       <main>
         <LineaDeTiempo turnos={estado.turnos} enCurso={estado.enCurso}>
-          {estado.enCurso ? <IndicadorPensando /> : null}
+          {estado.enCurso ? (
+            <IndicadorPensando etiqueta={etiquetaPensando(estado)} marca={eventosDelTurno(estado)} />
+          ) : null}
         </LineaDeTiempo>
         <Compositor
           valor={borrador}

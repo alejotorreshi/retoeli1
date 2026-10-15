@@ -165,7 +165,7 @@ describe("reducirConversacion", () => {
     expect(reducirConversacion(cerrado, { tipo: ACCION_UI.FIN_STREAM })).toBe(cerrado);
   });
 
-  test("los eventos que la pantalla todavía no pinta no cambian el estado", () => {
+  test("los eventos que la pantalla todavía no pinta solo mueven la marca de eventos del turno", () => {
     const enCurso = reducirConversacion(estadoInicialConversacion, {
       tipo: ACCION_UI.ENVIAR,
       mensaje: MENSAJE,
@@ -183,7 +183,10 @@ describe("reducirConversacion", () => {
         modelo: "modelo-falso",
       }),
     );
-    expect(estado).toBe(enCurso);
+    expect(estado).toEqual({
+      ...enCurso,
+      turnos: enCurso.turnos.map((turno) => ({ ...turno, eventos: turno.eventos + 1 })),
+    });
   });
 
   test("ERROR_HTTP 401 pide el acceso con el mensaje del servidor y conserva el sessionId", () => {
