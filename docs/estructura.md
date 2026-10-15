@@ -74,6 +74,33 @@ Direcciones permitidas:
 - hono solo se importa desde `http` y su wiring. Ninguna capa interior importa `http`.
 - `src/server.ts` es la cuarta excepción permitida fuera de una carpeta de rol, porque el PRD (6.5) sugiere ese nombre.
 
+## Front web (`web/`)
+
+El chat del navegador vive en `web/` (Vite + React) y tiene su propio guardián, `tests/arquitectura-web.test.ts` (W1–W13), con una prueba de violación por regla. `tests/sin-comentarios.test.ts` también recorre `web/**/*.{ts,tsx,css}` y `web/index.html`, sin contar `web/dist`.
+
+| Carpeta | Sufijo | Rol |
+|---|---|---|
+| `web/src/api/` | `.ts` | Cliente del servidor: el `POST /api/chat` leído como SSE (`flujo-chat`) y, desde el plan 03-25, el `sessionId` en `localStorage` (`sesion-local`, el único módulo que puede tocarlo). |
+| `web/src/state/` | `.ts` | Reductores puros alimentados por los eventos SSE y las acciones de la UI (`conversacion`). No importan React ni tocan `document`, `window`, `localStorage` ni `fetch`. |
+| `web/src/hooks/` | `.ts` | Hooks de React que conectan el estado con el navegador. |
+| `web/src/components/` | `.tsx` y `.module.css` | Componentes de la UI-SPEC con su módulo CSS: los avisos `AvisoError` (`role="alert"`) y `AvisoSistema` (`role="status"`) en `aviso`. |
+| `web/src/components/icons/` | `.tsx` | El set cerrado de íconos SVG en línea (`iconos`): `check`, `x`, `alerta`, `chevron`, `descargar`, `ojo`, `reloj`, `girando` e `info`, a 16 y 20 px, con `stroke: currentColor` y `aria-hidden`. |
+| `web/src/config/` | `strings.ts` | Única fuente de los textos propios del front. Los mensajes del servidor no se duplican: se muestran tal como llegan. |
+| `web/src/config/constants/` | `.constants.ts` | Constantes del front (`ui`: acciones de la UI, tecla de envío, tamaño de los íconos). Las regex irían solo en `patterns.constants.ts`. |
+| `web/src/types/` | `.type.ts` | Solo tipos, con `import type` (`chat`, `ui`). |
+| `web/src/styles/` | `.css` | `tokens.css`, con todas las variables de la UI-SPEC (espaciado, tipografía, colores, radios, bordes, tamaños fijos, foco y fuentes), y `global.css` (layout de `100dvh` sin scroll del `body`, `.sr-only`, transiciones de 150 ms y `prefers-reduced-motion`). |
+| `web/src/main.tsx`, `web/src/app.tsx` | (sin sufijo) | Los dos únicos archivos sueltos: la entrada que monta React e importa los estilos, y la pantalla. |
+
+Direcciones permitidas:
+
+- Solo los alias `@web/` (`web/src/`) y `@/` (`src/`), nunca `./` ni `../`. Paquetes: `react`, `react-dom` y `eventsource-parser`.
+- `@/` llega a `src/config/constants/**` y `src/config/types/**`, y con `import type` a `src/http/types/**`. Nada más de `src/`: el bundle es público y no puede arrastrar `src/config/strings.ts`, el entorno ni secretos. Por la misma razón `import.meta.env` está prohibido.
+- El texto del modelo y del servidor se pinta como nodo de texto de React con `white-space: pre-wrap`. Nunca `dangerouslySetInnerHTML`, `innerHTML` ni markdown.
+- `sessionStorage` está prohibido y `localStorage` solo vive en `web/src/api/sesion-local.ts`.
+- Los `*.module.css` no llevan colores hex, `rgb()` ni `px` sueltos: todo valor sale de un `var(--…)` de `tokens.css`.
+
+Idioma: los identificadores del front van en español, con los nombres de componente de la UI-SPEC.
+
 ## Esquemas
 
 Cada `export const …Schema` de `schemas/*.schema.ts` se comprueba con `satisfies z.ZodType<T>` contra un tipo escrito a mano en `types/`, que es la fuente de verdad (G16). Los `args*` de `tools/schemas/argumentos.schema.ts` son formas crudas (`ZodRawShape`) del contrato de herramientas y no entran. Los `z.enum` se construyen desde su constante (`z.enum(X)` o `Object.values(X)`), nunca enumerando sus miembros (G15).
@@ -90,3 +117,5 @@ Hay dos LLM falsos porque prueban capas distintas:
 - `crearLlmFalso` (`tests/helpers/llm-falso.helper.ts`) prueba el bucle. Cada paso es una `RespuestaLlm` (o un `ErrorLlm`) que puede construirse con los mensajes previos, para encadenar herramientas reales con sus resultados. Guarda una copia de los mensajes de cada pedido y falla si el guion se agota.
 
 Las utilidades comunes de eventos (`recoger`, `inicioDe`, `sesionDe`, `SIMULAR`) viven en `tests/helpers/eventos.helper.ts`.
+
+Los escáneres que comparten los guardianes viven en `tests/helpers/escaner-fuentes.helper.ts` (importaciones con su `import type`, literales de texto, regex, enums y tipos exportados) y `tests/helpers/comentarios.helper.ts` (comentarios de TS y TSX, de CSS y de HTML). Así `tests/architecture.test.ts`, `tests/arquitectura-web.test.ts` y `tests/sin-comentarios.test.ts` aplican la misma lectura del código.

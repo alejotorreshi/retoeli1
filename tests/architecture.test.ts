@@ -1,6 +1,18 @@
 import { describe, expect, test } from "bun:test";
 import { existsSync, readFileSync } from "node:fs";
 import { join, posix } from "node:path";
+import {
+  ENUM_DE_TS,
+  EXPORTA_TIPO,
+  extraerImportaciones,
+  IMPORTA_VALOR,
+  LITERAL_DE_REGEX,
+  lineasQueCumplen,
+  literalesDeTexto,
+  nombreDePaquete,
+  TEXTO_LEGIBLE,
+  VALOR_EN_ARCHIVO_DE_TIPOS,
+} from "@tests/helpers/escaner-fuentes.helper.ts";
 import { ACCION, CODIGO_AGENTE, MOTIVO_FIN, TIPO_EVENTO } from "@/config/constants/agent.constants.ts";
 import {
   DECISION_CONFIRMACION,
@@ -37,9 +49,6 @@ import { HERRAMIENTA } from "@/config/constants/tools.constants.ts";
 import * as STRINGS from "@/config/strings.ts";
 
 const RAIZ = join(import.meta.dir, "..");
-
-const IMPORTACION =
-  /(?:^|\n)\s*(?:import|export)\s+(?:type\s+)?(?:[^"';]*?\sfrom\s+)?["']([^"']+)["']|import\(\s*["']([^"']+)["']\s*\)/g;
 
 const API_SHELL = /child_process|\bBun\s*\.\s*(?:spawn|\$)|\bBun\s*\[\s*["'`](?:spawn|\$)/;
 
@@ -164,32 +173,16 @@ const LITERAL_DE_FAMILIA = new RegExp(
   ].join("|"),
 );
 
-const ENUM_DE_TS = /\benum\s+[A-Z]/;
-
-const LITERAL_DE_REGEX =
-  /(?:^|[=(,:[!&|?{;]|\breturn|\btypeof)\s*\/(?![/*])(?:\\.|\[(?:\\.|[^\]\\\n])*\]|[^/\\\n[])+\/[dgimsuyv]*|\bnew\s+RegExp\s*\(/;
-
 const DUENOS_DE_REGEX: ReadonlySet<string> = new Set([
   "src/config/constants/patterns.constants.ts",
   "src/domain/engines/motor-plantillas.engine.ts",
 ]);
 
-const TEXTO_LEGIBLE = /[A-Za-zÁÉÍÓÚÑáéíóúñ]{2,}\s+[A-Za-zÁÉÍÓÚÑáéíóúñ]{2,}/;
-
 const DUENOS_DE_TEXTO = /^src\/(?:config\/strings\.ts|knowledge\/)/;
-
-const ANTES_DE_REGEX = new Set(["", "(", ",", "=", ":", "[", "!", "&", "|", "?", "{", "}", ";"]);
 
 const ARCHIVO_DE_TIPOS = /(?:^|\/)types\/[a-z0-9-]+\.type\.ts$/;
 
-const EXPORTA_TIPO = /^export\s+(?:type|interface)\s|^export\s+(?:type\s+)?\{[^}]*\btype\b/;
-
 const TIPOS_JUNTO_A_SU_ESQUEMA: ReadonlySet<string> = new Set(["src/config/env.ts"]);
-
-const VALOR_EN_ARCHIVO_DE_TIPOS =
-  /^export\s+(?:declare\s+)?(?:async\s+)?(?:const|let|var|function|class|default|enum)\b/;
-
-const IMPORTA_VALOR = /^import\s+(?!type\b)/;
 
 const KEBAB = "[a-z0-9]+(?:-[a-z0-9]+)*";
 
@@ -297,11 +290,6 @@ function capaDeRuta(ruta: string): string {
   return capa ?? "desconocida";
 }
 
-function nombreDePaquete(especificador: string): string {
-  const partes = especificador.split("/");
-  return especificador.startsWith("@") ? partes.slice(0, 2).join("/") : (partes[0] ?? especificador);
-}
-
 const ALIAS: readonly (readonly [string, string])[] = [
   ["@/", "src/"],
   ["@tests/", "tests/"],
@@ -325,15 +313,6 @@ function capaDeDestino(origen: string, especificador: string): string {
   return PAQUETES_CON_CAPA.has(paquete) ? paquete : `paquete:${paquete}`;
 }
 
-function extraerImportaciones(codigo: string): string[] {
-  const especificadores: string[] = [];
-  for (const coincidencia of codigo.matchAll(IMPORTACION)) {
-    const especificador = coincidencia[1] ?? coincidencia[2];
-    if (especificador !== undefined) especificadores.push(especificador);
-  }
-  return especificadores;
-}
-
 function violacionesDeCapas(ruta: string, codigo: string): string[] {
   const origen = capaDeRuta(ruta);
   if (origen === "tests") return [];
@@ -342,12 +321,6 @@ function violacionesDeCapas(ruta: string, codigo: string): string[] {
   return extraerImportaciones(codigo)
     .filter((especificador) => !permitidos.includes(capaDeDestino(ruta, especificador)))
     .map((especificador) => `${ruta}: la capa ${origen} no puede importar ${especificador}`);
-}
-
-function lineasQueCumplen(ruta: string, codigo: string, patron: RegExp, motivo: string): string[] {
-  return codigo
-    .split("\n")
-    .flatMap((linea, indice) => (patron.test(linea) ? [`${ruta}:${indice + 1}: ${motivo}`] : []));
 }
 
 function violacionesDePureza(ruta: string, codigo: string): string[] {
@@ -372,111 +345,6 @@ function violacionesDeEnum(ruta: string, codigo: string): string[] {
 function violacionesDeRegex(ruta: string, codigo: string): string[] {
   if (DUENOS_DE_REGEX.has(ruta)) return [];
   return lineasQueCumplen(ruta, codigo, LITERAL_DE_REGEX, "declara una expresión regular fuera de patterns");
-}
-
-function finDeComillas(codigo: string, inicio: number): number {
-  const comilla = codigo.charAt(inicio);
-  let indice = inicio + 1;
-  while (indice < codigo.length && codigo.charAt(indice) !== comilla && codigo.charAt(indice) !== "\n") {
-    indice += codigo.charAt(indice) === "\\" ? 2 : 1;
-  }
-  return indice + 1;
-}
-
-function finDeExpresion(codigo: string, inicio: number): number {
-  let profundidad = 1;
-  let indice = inicio;
-  while (indice < codigo.length && profundidad > 0) {
-    const caracter = codigo.charAt(indice);
-    if (caracter === '"' || caracter === "'" || caracter === "`") {
-      indice = caracter === "`" ? finDePlantilla(codigo, indice) : finDeComillas(codigo, indice);
-      continue;
-    }
-    if (caracter === "{") profundidad += 1;
-    if (caracter === "}") profundidad -= 1;
-    indice += 1;
-  }
-  return indice;
-}
-
-function finDePlantilla(codigo: string, inicio: number): number {
-  let indice = inicio + 1;
-  while (indice < codigo.length && codigo.charAt(indice) !== "`") {
-    if (codigo.charAt(indice) === "\\") indice += 2;
-    else if (codigo.startsWith("${", indice)) indice = finDeExpresion(codigo, indice + 2);
-    else indice += 1;
-  }
-  return indice + 1;
-}
-
-function textoDePlantilla(cuerpo: string): string {
-  let texto = "";
-  let indice = 0;
-  while (indice < cuerpo.length) {
-    if (cuerpo.startsWith("${", indice)) {
-      indice = finDeExpresion(cuerpo, indice + 2);
-      texto += " ";
-    } else {
-      texto += cuerpo.charAt(indice);
-      indice += 1;
-    }
-  }
-  return texto;
-}
-
-function expresionesDePlantilla(cuerpo: string): string[] {
-  const expresiones: string[] = [];
-  let indice = 0;
-  while (indice < cuerpo.length) {
-    if (cuerpo.startsWith("${", indice)) {
-      const fin = finDeExpresion(cuerpo, indice + 2);
-      expresiones.push(cuerpo.slice(indice + 2, fin - 1));
-      indice = fin;
-    } else indice += 1;
-  }
-  return expresiones;
-}
-
-function empiezaRegex(codigo: string, posicion: number): boolean {
-  let indice = posicion - 1;
-  while (indice >= 0 && /\s/.test(codigo.charAt(indice))) indice -= 1;
-  if (ANTES_DE_REGEX.has(indice < 0 ? "" : codigo.charAt(indice))) return true;
-  return /\breturn$/.test(codigo.slice(Math.max(0, indice - 6), indice + 1));
-}
-
-function finDeRegex(codigo: string, inicio: number): number {
-  let indice = inicio + 1;
-  let enClase = false;
-  while (indice < codigo.length && codigo.charAt(indice) !== "\n") {
-    const caracter = codigo.charAt(indice);
-    if (caracter === "\\") indice += 1;
-    else if (caracter === "[") enClase = true;
-    else if (caracter === "]") enClase = false;
-    else if (caracter === "/" && !enClase) return indice + 1;
-    indice += 1;
-  }
-  return indice;
-}
-
-function literalesDeTexto(codigo: string): string[] {
-  const literales: string[] = [];
-  let indice = 0;
-  while (indice < codigo.length) {
-    const caracter = codigo.charAt(indice);
-    if (caracter === '"' || caracter === "'") {
-      const fin = finDeComillas(codigo, indice);
-      literales.push(codigo.slice(indice + 1, fin - 1));
-      indice = fin;
-    } else if (caracter === "`") {
-      const fin = finDePlantilla(codigo, indice);
-      const cuerpo = codigo.slice(indice + 1, fin - 1);
-      literales.push(textoDePlantilla(cuerpo), ...expresionesDePlantilla(cuerpo).flatMap(literalesDeTexto));
-      indice = fin;
-    } else if (caracter === "/" && codigo.charAt(indice + 1) !== "/" && empiezaRegex(codigo, indice)) {
-      indice = finDeRegex(codigo, indice);
-    } else indice += 1;
-  }
-  return literales;
 }
 
 function violacionesDeTexto(ruta: string, codigo: string): string[] {

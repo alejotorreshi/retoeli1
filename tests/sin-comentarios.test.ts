@@ -1,144 +1,49 @@
 import { describe, expect, test } from "bun:test";
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
+import {
+  encontrarComentarios,
+  encontrarComentariosCss,
+  encontrarComentariosHtml,
+} from "@tests/helpers/comentarios.helper.ts";
+import type { Comentario } from "@tests/helpers/types/comentarios.type.ts";
 
 const RAIZ = join(import.meta.dir, "..");
 
-const PRECEDE_EXPRESION = new Set([
-  "",
-  "(",
-  ",",
-  "=",
-  ":",
-  "[",
-  "!",
-  "&",
-  "|",
-  "?",
-  "{",
-  "}",
-  ";",
-  "+",
-  "-",
-  "*",
-  "%",
-  "<",
-  ">",
-  "~",
-  "^",
-]);
+const CARPETAS_FUERA_DE_WEB = ["web/dist/", "node_modules/"];
 
-const PALABRAS_ANTES_DE_EXPRESION =
-  /(?:^|[^\w$])(?:return|typeof|case|in|of|delete|void|throw|new|await|yield)$/;
-
-type Comentario = { linea: number; tipo: "linea" | "bloque" };
-
-type Marco = { tipo: "codigo"; llaves: number } | { tipo: "plantilla" };
-
-function ultimoSignificativo(codigo: string, hasta: number): string {
-  let indice = hasta - 1;
-  while (indice >= 0 && /\s/.test(codigo.charAt(indice))) indice -= 1;
-  return indice < 0 ? "" : codigo.charAt(indice);
+function normalizar(rutas: readonly string[]): string[] {
+  return rutas.map((ruta) => ruta.split("\\").join("/"));
 }
 
-function abreExpresionRegular(codigo: string, posicion: number): boolean {
-  const previo = ultimoSignificativo(codigo, posicion);
-  if (PRECEDE_EXPRESION.has(previo)) return true;
-  return PALABRAS_ANTES_DE_EXPRESION.test(codigo.slice(Math.max(0, posicion - 12), posicion).trimEnd());
+function escanear(patron: string): string[] {
+  return normalizar([...new Bun.Glob(patron).scanSync({ cwd: RAIZ })]);
 }
 
-function finDeCadena(codigo: string, inicio: number, comilla: string): number {
-  let indice = inicio + 1;
-  while (indice < codigo.length && codigo.charAt(indice) !== comilla && codigo.charAt(indice) !== "\n") {
-    indice += codigo.charAt(indice) === "\\" ? 2 : 1;
-  }
-  return indice + 1;
-}
-
-function finDeExpresionRegular(codigo: string, inicio: number): number {
-  let indice = inicio + 1;
-  let enClase = false;
-  while (indice < codigo.length && codigo.charAt(indice) !== "\n") {
-    const caracter = codigo.charAt(indice);
-    if (caracter === "\\") {
-      indice += 2;
-      continue;
-    }
-    if (caracter === "[") enClase = true;
-    if (caracter === "]") enClase = false;
-    if (caracter === "/" && !enClase) return indice + 1;
-    indice += 1;
-  }
-  return indice;
-}
-
-function encontrarComentarios(codigo: string): Comentario[] {
-  const comentarios: Comentario[] = [];
-  const pila: Marco[] = [{ tipo: "codigo", llaves: 0 }];
-  let linea = 1;
-  let indice = 0;
-  const avanzarHasta = (destino: number): void => {
-    for (let paso = indice; paso < destino && paso < codigo.length; paso += 1) {
-      if (codigo.charAt(paso) === "\n") linea += 1;
-    }
-    indice = destino;
-  };
-  while (indice < codigo.length) {
-    const marco = pila[pila.length - 1] ?? { tipo: "codigo", llaves: 0 };
-    const caracter = codigo.charAt(indice);
-    const siguiente = codigo.charAt(indice + 1);
-    if (marco.tipo === "plantilla") {
-      if (caracter === "\\") avanzarHasta(indice + 2);
-      else if (caracter === "`") {
-        pila.pop();
-        avanzarHasta(indice + 1);
-      } else if (caracter === "$" && siguiente === "{") {
-        pila.push({ tipo: "codigo", llaves: 0 });
-        avanzarHasta(indice + 2);
-      } else avanzarHasta(indice + 1);
-      continue;
-    }
-    if (caracter === "/" && siguiente === "/") {
-      comentarios.push({ linea, tipo: "linea" });
-      const salto = codigo.indexOf("\n", indice);
-      avanzarHasta(salto === -1 ? codigo.length : salto);
-    } else if (caracter === "/" && siguiente === "*") {
-      comentarios.push({ linea, tipo: "bloque" });
-      const cierre = codigo.indexOf("*/", indice + 2);
-      avanzarHasta(cierre === -1 ? codigo.length : cierre + 2);
-    } else if (caracter === "/" && abreExpresionRegular(codigo, indice)) {
-      avanzarHasta(finDeExpresionRegular(codigo, indice));
-    } else if (caracter === '"' || caracter === "'") {
-      avanzarHasta(finDeCadena(codigo, indice, caracter));
-    } else if (caracter === "`") {
-      pila.push({ tipo: "plantilla" });
-      avanzarHasta(indice + 1);
-    } else if (caracter === "{") {
-      marco.llaves += 1;
-      avanzarHasta(indice + 1);
-    } else if (caracter === "}" && marco.llaves === 0 && pila.length > 1) {
-      pila.pop();
-      avanzarHasta(indice + 1);
-    } else {
-      if (caracter === "}") marco.llaves -= 1;
-      avanzarHasta(indice + 1);
-    }
-  }
-  return comentarios;
+function listarFuentesWeb(): string[] {
+  if (!existsSync(join(RAIZ, "web"))) return [];
+  const rutas = ["web/**/*.ts", "web/**/*.tsx", "web/**/*.css", "web/index.html"].flatMap(escanear);
+  return rutas.filter((ruta) => !CARPETAS_FUERA_DE_WEB.some((carpeta) => ruta.includes(carpeta)));
 }
 
 function listarFuentes(): string[] {
   const rutas = ["src", "tests"]
     .filter((carpeta) => existsSync(join(RAIZ, carpeta)))
-    .flatMap((carpeta) => [...new Bun.Glob(`${carpeta}/**/*.ts`).scanSync({ cwd: RAIZ })]);
+    .flatMap((carpeta) => escanear(`${carpeta}/**/*.ts`));
   if (existsSync(join(RAIZ, "demo.ts"))) rutas.push("demo.ts");
-  return rutas.map((ruta) => ruta.split("\\").join("/")).sort();
+  return [...rutas, ...listarFuentesWeb()].sort();
+}
+
+function comentariosDe(ruta: string, codigo: string): Comentario[] {
+  if (ruta.endsWith(".css")) return encontrarComentariosCss(codigo);
+  if (ruta.endsWith(".html")) return encontrarComentariosHtml(codigo);
+  return encontrarComentarios(codigo);
 }
 
 describe("sin comentarios en el código real", () => {
-  test("src/, tests/ y demo.ts no tienen comentarios", () => {
+  test("src/, tests/, demo.ts y web/ no tienen comentarios", () => {
     const hallazgos = listarFuentes().flatMap((ruta) =>
-      encontrarComentarios(readFileSync(join(RAIZ, ruta), "utf8")).map(
+      comentariosDe(ruta, readFileSync(join(RAIZ, ruta), "utf8")).map(
         (comentario) => `${ruta}:${comentario.linea}: comentario de ${comentario.tipo}`,
       ),
     );
@@ -147,6 +52,14 @@ describe("sin comentarios en el código real", () => {
 
   test("el escáner encuentra archivos que revisar", () => {
     expect(listarFuentes()).toContain("tests/sin-comentarios.test.ts");
+  });
+
+  test("el escáner recorre web/ con TS, TSX, CSS e index.html y salta web/dist", () => {
+    const web = listarFuentesWeb();
+    expect(web).toContain("web/src/app.tsx");
+    expect(web).toContain("web/vite.config.ts");
+    expect(web).toContain("web/index.html");
+    expect(web.filter((ruta) => ruta.startsWith("web/dist/"))).toEqual([]);
   });
 });
 
@@ -173,5 +86,30 @@ describe("el escáner muerde sobre fuentes de muestra", () => {
   test("sigue el código dentro de una interpolación de plantilla", () => {
     const codigo = ["const t = `", "{valor ? `x", "{'//'}` : { a: 1 }.a}`; // tras plantilla\n"].join("$");
     expect(encontrarComentarios(codigo)).toEqual([{ linea: 1, tipo: "linea" }]);
+  });
+});
+
+describe("el escáner de web/ muerde sobre fuentes de muestra", () => {
+  test("reporta un comentario dentro de JSX", () => {
+    const codigo = "export function A() {\n  return <p>{/* nota */}{texto}</p>;\n}\n";
+    expect(encontrarComentarios(codigo)).toEqual([{ linea: 2, tipo: "bloque" }]);
+  });
+
+  test("reporta un comentario de CSS y no una barra doble dentro de url ni de una cadena", () => {
+    const codigo = [
+      ".a { color: var(--texto); }",
+      "/* bloque */",
+      '.b { background: url("https://x/*y"); content: "//"; }',
+      ".c { margin: 0; } /* al final */",
+    ].join("\n");
+    expect(encontrarComentariosCss(codigo)).toEqual([
+      { linea: 2, tipo: "bloque" },
+      { linea: 4, tipo: "bloque" },
+    ]);
+  });
+
+  test("reporta un comentario de HTML", () => {
+    const codigo = '<!doctype html>\n<html lang="es">\n  <!-- nota -->\n</html>\n';
+    expect(encontrarComentariosHtml(codigo)).toEqual([{ linea: 3, tipo: "bloque" }]);
   });
 });
