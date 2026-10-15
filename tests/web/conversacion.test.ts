@@ -18,6 +18,8 @@ const MENSAJE = "procesa el caso co-industrias-delta";
 const RESPUESTA = "Listo: el caso co-industrias-delta quedó mapeado.\nRevisa los faltantes.";
 const MENSAJE_ERROR_AGENTE = "El proveedor tardó demasiado en responder. La sesión sigue abierta.";
 const MENSAJE_MUY_LARGO = "El mensaje supera los 2000 caracteres. Acórtalo y vuelve a enviarlo.";
+const TOPE_DIARIO =
+  "Se alcanzó el tope diario de uso del modelo. Vuelve a intentarlo después de la medianoche (America/Bogota).";
 const ACCESO_VENCIDO = "Tu acceso venció. Escribe el código de nuevo para seguir.";
 const CONFIG: ConfigResponse = {
   fechaEjecucion: "2026-09-03",
@@ -293,6 +295,19 @@ describe("el borrador del compositor", () => {
     expect(sinRed.borrador).toBe(MENSAJE);
   });
 
+  test("un 429 o un 503 muestran el mensaje del servidor tal cual bajo la burbuja y dejan el texto", () => {
+    for (const status of [RESPUESTA_HTTP.DEMASIADOS_PEDIDOS, RESPUESTA_HTTP.NO_DISPONIBLE]) {
+      const estado = aplicar(estadoInicialConversacion, [
+        ...escrito,
+        { tipo: ACCION_UI.ERROR_HTTP, status, mensaje: TOPE_DIARIO },
+      ]);
+      expect(estado.borrador).toBe(MENSAJE);
+      expect(estado.enCurso).toBe(false);
+      expect(estado.turnos.at(-1)?.mensaje).toBe(MENSAJE);
+      expect(estado.turnos.at(-1)?.error).toEqual({ codigo: null, mensaje: TOPE_DIARIO });
+    }
+  });
+
   test("un 401 deja el texto en el compositor para cuando vuelva el acceso", () => {
     const estado = aplicar(estadoInicialConversacion, [
       ...escrito,
@@ -345,5 +360,29 @@ describe("esFalloDeTurno", () => {
   test("un turno sin error no pide refrescar health", () => {
     expect(turnoCompleto.some(esFalloDeTurno)).toBe(false);
     expect(esFalloDeTurno({ tipo: ACCION_UI.ACEPTADO, mensaje: MENSAJE })).toBe(false);
+  });
+
+  test("los rechazos HTTP 413, 429 y 503 marcan el turno como fallido", () => {
+    const rechazos = [
+      RESPUESTA_HTTP.CUERPO_DEMASIADO_GRANDE,
+      RESPUESTA_HTTP.DEMASIADOS_PEDIDOS,
+      RESPUESTA_HTTP.NO_DISPONIBLE,
+    ].map((status): AccionUi => ({ tipo: ACCION_UI.ERROR_HTTP, status, mensaje: TOPE_DIARIO }));
+    expect(rechazos.map(esFalloDeTurno)).toEqual([true, true, true]);
+  });
+
+  test("la red caída y el stream cortado marcan el turno como fallido", () => {
+    expect(esFalloDeTurno({ tipo: ACCION_UI.ERROR_RED })).toBe(true);
+    expect(esFalloDeTurno({ tipo: ACCION_UI.FIN_STREAM })).toBe(true);
+  });
+
+  test("un 401 pide el acceso y no cuenta como falla del modelo", () => {
+    expect(
+      esFalloDeTurno({
+        tipo: ACCION_UI.ERROR_HTTP,
+        status: RESPUESTA_HTTP.NO_AUTORIZADO,
+        mensaje: ACCESO_VENCIDO,
+      }),
+    ).toBe(false);
   });
 });
