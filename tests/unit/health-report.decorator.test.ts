@@ -68,6 +68,20 @@ describe("withHealthReport", () => {
     ]);
   });
 
+  test("una clave rechazada publica sin clave y una llamada correcta posterior vuelve a disponible", async () => {
+    const monitor = createHealthMonitor(ESTADO_LLM.DISPONIBLE);
+    const adaptador = withHealthReport(
+      crearAdaptadorGuion([falla(TIPO_ERROR_LLM.AUTENTICACION), exito()]),
+      monitor,
+    );
+    const vistos: LlmHealthState[] = [];
+    for (let paso = 0; paso < 2; paso += 1) {
+      await adaptador.enviar([], [], opcionesCon());
+      vistos.push(monitor.current());
+    }
+    expect(vistos).toEqual([ESTADO_LLM.SIN_CLAVE, ESTADO_LLM.DISPONIBLE]);
+  });
+
   test("devuelve el resultado de la base sin tocarlo", async () => {
     const error = falla(TIPO_ERROR_LLM.SALDO);
     const monitor = createHealthMonitor(ESTADO_LLM.DISPONIBLE);
@@ -80,7 +94,7 @@ describe("withHealthReport", () => {
   });
 
   test.each([
-    [TIPO_ERROR_LLM.AUTENTICACION, ESTADO_LLM.NO_DISPONIBLE],
+    [TIPO_ERROR_LLM.AUTENTICACION, ESTADO_LLM.SIN_CLAVE],
     [TIPO_ERROR_LLM.LIMITE_TASA, ESTADO_LLM.NO_DISPONIBLE],
     [TIPO_ERROR_LLM.RED, ESTADO_LLM.NO_DISPONIBLE],
     [TIPO_ERROR_LLM.TIMEOUT, ESTADO_LLM.NO_DISPONIBLE],

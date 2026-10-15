@@ -1,7 +1,9 @@
 import { describe, expect, test } from "bun:test";
 import { TONO, TONO_DEL_MODELO } from "@web/config/constants/ui.constants.ts";
 import { TEXTO_MODELO } from "@web/config/strings.ts";
+import { CODIGO_AGENTE } from "@/config/constants/agent.constants.ts";
 import { ESTADO_LLM } from "@/config/constants/llm.constants.ts";
+import { MENSAJE_AGENTE } from "@/config/strings.ts";
 
 const MODELO = "deepseek-flash";
 const ZONA = "America/Bogota";
@@ -86,5 +88,31 @@ describe("banner del modelo", () => {
   test("el botón del banner solo comprueba la salud", () => {
     expect(TEXTO_MODELO.comprobar).toBe("Comprobar de nuevo");
     expect(TEXTO_MODELO.comprobando).toBe("Comprobando…");
+  });
+});
+
+describe("coherencia entre el banner y el aviso del turno", () => {
+  test("el aviso de saldo del turno pide recargar la cuenta y volver a enviar el mensaje", () => {
+    expect(MENSAJE_AGENTE[CODIGO_AGENTE.PROVEEDOR_SALDO_AGOTADO]).toBe(
+      "Saldo agotado en el proveedor del modelo: hay que recargar la cuenta antes de seguir. La sesión sigue abierta; cuando se recargue la cuenta, vuelve a enviar tu mensaje.",
+    );
+  });
+
+  test("el aviso de clave rechazada pide corregirla en el servidor", () => {
+    expect(MENSAJE_AGENTE[CODIGO_AGENTE.PROVEEDOR_AUTENTICACION]).toBe(
+      "La clave del proveedor del modelo no es válida o no tiene permiso: hay que corregirla en el servidor antes de seguir. La sesión sigue abierta.",
+    );
+  });
+
+  test("el banner de saldo y el aviso de saldo del turno no se contradicen", () => {
+    const banner = TEXTO_MODELO.aviso(ESTADO_LLM.SALDO_AGOTADO, ZONA);
+    for (const texto of [
+      `${banner.titulo} ${banner.detalle}`,
+      MENSAJE_AGENTE[CODIGO_AGENTE.PROVEEDOR_SALDO_AGOTADO],
+    ]) {
+      expect(texto).toContain("vuelve a enviar tu mensaje");
+      expect(texto).toContain("recargue la cuenta");
+      expect(texto).not.toContain("puedes volver a intentarlo");
+    }
   });
 });
