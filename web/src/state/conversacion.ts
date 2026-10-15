@@ -30,6 +30,7 @@ import type {
   ResultadoApi,
   ResumenLlamadas,
   TurnoConversacion,
+  UsoDeSesion,
   VistaConConfirmaciones,
   VistaTurnos,
 } from "@web/types/chat.type.ts";
@@ -360,4 +361,8 @@ export function etiquetaPensando(vista: VistaTurnos): string {
 
 export function eventosDelTurno({ turnos }: VistaTurnos): number {
   return turnos.at(-1)?.eventos ?? 0;
+}
+
+export function usoDeSesion(_estado: EstadoConversacion): UsoDeSesion | null {
+  return null;
 }

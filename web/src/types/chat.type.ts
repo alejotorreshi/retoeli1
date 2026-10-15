@@ -178,6 +178,11 @@ export type EstadoConversacion = {
   readonly avisoSesion: AvisoDeSesion | null;
 };
 
+export type UsoDeSesion = {
+  readonly usados: number;
+  readonly tope: number;
+};
+
 export type VistaSesionUi = SessionViewResponse;
 
 export type TurnoVistaUi = VistaSesionUi["turnos"][number];

@@ -476,6 +476,10 @@ describe("tarjetas resueltas y sesión vencida al recargar", () => {
 });
 
 describe("la vista después de Detener (UI-08)", () => {
+  test("la vista trae el uso de tokens de la sesión", () => {
+    expect(estadoDesdeVista(vistaDe(DEMO)).tokensUsados).toBe(4_200);
+  });
+
   test("una vista con el turno todavía ocupado pide un reintento; una libre o un rechazo, no", () => {
     expect(sigueOcupada({ tipo: RESULTADO_API.OK, valor: { ...vistaDe(DEMO), ocupada: true } })).toBe(true);
     expect(sigueOcupada({ tipo: RESULTADO_API.OK, valor: vistaDe(DEMO) })).toBe(false);

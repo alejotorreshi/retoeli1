@@ -2,6 +2,7 @@ import { describe, expect, test } from "bun:test";
 import {
   ACCION_AVISO,
   ACCION_UI,
+  AVISO_SESION,
   ESTADO_ACCESO,
   ESTADO_TARJETA_CONFIRMACION,
   RESULTADO_API,
@@ -12,6 +13,7 @@ import {
   esFalloDeTurno,
   estadoInicialConversacion,
   reducirConversacion,
+  usoDeSesion,
 } from "@web/state/conversacion.ts";
 import type { AccionUi, EstadoConversacion, EstadoHidratado } from "@web/types/chat.type.ts";
 import { ACCION, CODIGO_AGENTE, MOTIVO_FIN, TIPO_EVENTO } from "@/config/constants/agent.constants.ts";
@@ -69,6 +71,8 @@ describe("reducirConversacion", () => {
       borrador: "",
       hidratando: false,
       avisoSesion: null,
+      tokensSesion: 0,
+      esperandoAvisoExpirada: false,
     });
   });
 
@@ -192,7 +196,7 @@ describe("reducirConversacion", () => {
     expect(reducirConversacion(cerrado, { tipo: ACCION_UI.FIN_STREAM })).toBe(cerrado);
   });
 
-  test("los eventos que la pantalla todavía no pinta solo mueven la marca de eventos del turno", () => {
+  test("usage deja el uso de la sesión en su totalSesion y mueve la marca de eventos del turno", () => {
     const enCurso = reducirConversacion(estadoInicialConversacion, {
       tipo: ACCION_UI.ENVIAR,
       mensaje: MENSAJE,
@@ -212,6 +216,7 @@ describe("reducirConversacion", () => {
     );
     expect(estado).toEqual({
       ...enCurso,
+      tokensSesion: 15,
       turnos: enCurso.turnos.map((turno) => ({ ...turno, eventos: turno.eventos + 1 })),
     });
   });
@@ -420,6 +425,7 @@ const vistaDelServidor: EstadoHidratado = {
     },
   ],
   tarjetasConfirmacion: [],
+  tokensUsados: 0,
 };
 
 describe("Detener respuesta y Recargar conversación", () => {
@@ -496,6 +502,96 @@ describe("Detener respuesta y Recargar conversación", () => {
 
   test("detener no cuenta como falla del turno", () => {
     expect(esFalloDeTurno({ tipo: ACCION_UI.DETENER })).toBe(false);
+  });
+});
+
+const EXPIRADA = "La sesión anterior expiró; empezamos de cero.";
+const SESION_NUEVA = "sesion-nueva";
+const PRESUPUESTO_AGOTADO =
+  "Esta sesión agotó su presupuesto de tokens. Abre una sesión nueva para continuar.";
+
+describe("sesión expirada, presupuesto agotado, uso y Nueva sesión (UI-08)", () => {
+  const conTarjetaAbierta = aplicar(estadoInicialConversacion, [
+    { tipo: ACCION_UI.CONFIG_RECIBIDA, config: CONFIG },
+    ...turnoConConfirmacion,
+  ]);
+  const expirado = aplicar(conTarjetaAbierta, [
+    { tipo: ACCION_UI.ENVIAR, mensaje: "¿y el siguiente?" },
+    evento({
+      tipo: TIPO_EVENTO.INICIO_TURNO,
+      sesionId: SESION_NUEVA,
+      turnoId: "turno-2",
+      sesionNueva: true,
+      sesionExpirada: true,
+    }),
+    evento({ tipo: TIPO_EVENTO.TEXTO, turnoId: "turno-2", texto: EXPIRADA }),
+    evento({ tipo: TIPO_EVENTO.TEXTO, turnoId: "turno-2", texto: RESPUESTA }),
+    evento({
+      tipo: TIPO_EVENTO.FIN_TURNO,
+      turnoId: "turno-2",
+      motivo: MOTIVO_FIN.FINAL,
+      needsConfirmation: false,
+    }),
+  ]);
+
+  test("turn_start con sesionExpirada vuelve AvisoSistema el texto siguiente del servidor, no una burbuja del agente", () => {
+    expect(expirado.avisoSesion).toEqual({ tipo: AVISO_SESION.EXPIRADA, mensaje: EXPIRADA });
+    expect(expirado.turnos.flatMap((turno) => turno.textos.map((texto) => texto.texto))).toEqual([RESPUESTA]);
+    expect(expirado.esperandoAvisoExpirada).toBe(false);
+  });
+
+  test("la sesión nueva empieza con el turno actual: la conversación vencida y sus tarjetas salen de la pantalla", () => {
+    expect(expirado.sesionId).toBe(SESION_NUEVA);
+    expect(expirado.turnos.map((turno) => [turno.clave, turno.mensaje])).toEqual([[0, "¿y el siguiente?"]]);
+    expect(expirado.tarjetasConfirmacion).toEqual([]);
+  });
+
+  test("un texto después de un turn_start sin sesionExpirada sigue siendo burbuja del agente", () => {
+    const estado = aplicar(estadoInicialConversacion, turnoCompleto);
+    expect(estado.avisoSesion).toBeNull();
+    expect(estado.turnos[0]?.textos.map((texto) => texto.texto)).toEqual([RESPUESTA]);
+  });
+
+  test("el error PRESUPUESTO_AGOTADO marca su aviso con la acción de empezar una sesión nueva", () => {
+    const estado = aplicar(estadoInicialConversacion, [
+      ...turnoCompleto.slice(0, 2),
+      evento({
+        tipo: TIPO_EVENTO.ERROR,
+        turnoId: TURNO,
+        codigo: CODIGO_AGENTE.PRESUPUESTO_AGOTADO,
+        mensaje: PRESUPUESTO_AGOTADO,
+      }),
+    ]);
+    expect(estado.turnos[0]?.error).toEqual({
+      codigo: CODIGO_AGENTE.PRESUPUESTO_AGOTADO,
+      mensaje: PRESUPUESTO_AGOTADO,
+      accion: ACCION_AVISO.NUEVA_SESION,
+    });
+  });
+
+  test("HIDRATAR deja el uso de la sesión que guardó el servidor", () => {
+    const estado = reducirConversacion(conTarjetaAbierta, {
+      tipo: ACCION_UI.HIDRATAR,
+      hidratado: { ...vistaDelServidor, tokensUsados: 42_000 },
+    });
+    expect(estado.tokensSesion).toBe(42_000);
+  });
+
+  test("NUEVA_SESION vacía conversación, tarjetas, avisos y uso, y conserva acceso, config y borrador", () => {
+    const conBorrador = reducirConversacion(expirado, { tipo: ACCION_UI.CAMBIAR_BORRADOR, borrador: "hola" });
+    const estado = reducirConversacion(conBorrador, { tipo: ACCION_UI.NUEVA_SESION });
+    expect(estado).toEqual({
+      ...estadoInicialConversacion,
+      acceso: { tipo: ESTADO_ACCESO.CONCEDIDO },
+      config: CONFIG,
+      borrador: "hola",
+    });
+  });
+
+  test("el uso de la sesión se lee en miles hacia abajo, con el tope de la config del servidor", () => {
+    const estado = { ...conTarjetaAbierta, tokensSesion: 12_999 };
+    expect(usoDeSesion(estado)).toEqual({ usados: 12, tope: CONFIG.presupuestoSesion / 1000 });
+    expect(usoDeSesion({ ...estado, config: null })).toBeNull();
   });
 });
 
