@@ -22,3 +22,7 @@
   background: var(--dominante);
   border: var(--borde-ancho) solid var(--borde);
 }
+
+:global([data-diseno="angosto"]) .usuaria {
+  align-self: stretch;
+}

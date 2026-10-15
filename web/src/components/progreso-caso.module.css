@@ -69,3 +69,7 @@
     display: inline-flex;
   }
 }
+
+:global([data-diseno="angosto"]) .etapas {
+  flex-direction: column;
+}

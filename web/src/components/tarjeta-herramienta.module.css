@@ -58,13 +58,18 @@
 }
 
 .etiqueta {
-  flex: none;
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   font-weight: var(--etiqueta-peso-fuerte);
   color: var(--texto);
 }
 
 .caso {
-  flex: none;
+  flex: 0 1 auto;
+  min-width: 0;
   max-width: 40%;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -100,7 +105,7 @@
 }
 
 .resumen {
-  flex: 1;
+  flex: 1 1 0;
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -168,6 +173,25 @@
   font-size: var(--etiqueta-tamano);
   line-height: var(--etiqueta-interlinea);
   color: var(--error-texto);
+}
+
+:global([data-diseno="angosto"]) .fila {
+  flex-wrap: wrap;
+  row-gap: var(--espacio-xs);
+  padding-block: var(--espacio-sm);
+}
+
+:global([data-diseno="angosto"]) .caso {
+  flex: 1 1 0;
+  max-width: none;
+}
+
+:global([data-diseno="angosto"]) .resumen {
+  flex-basis: 100%;
+}
+
+.resumen:empty {
+  display: none;
 }
 
 @media (prefers-reduced-motion: reduce) {

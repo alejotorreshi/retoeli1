@@ -1,4 +1,4 @@
-import type { TAMANO_ICONO, TONO } from "@web/config/constants/ui.constants.ts";
+import type { DISENO, PESTANA, TAMANO_ICONO, TONO } from "@web/config/constants/ui.constants.ts";
 import type {
   EstadoEtapa,
   EstadoHerramienta,
@@ -141,4 +141,24 @@ export type PropsPanelCasos = {
 export type PropsBloqueCaso = {
   readonly progreso: ProgresoDeCaso;
   readonly reciente: boolean;
+};
+
+export type Diseno = ValorDe<typeof DISENO>;
+
+export type Pestana = ValorDe<typeof PESTANA>;
+
+export type ControlPestanas = {
+  readonly pestana: Pestana;
+  readonly elegir: (pestana: Pestana) => void;
+  readonly cambiosSinVer: boolean;
+};
+
+export type IdsDePestanas = {
+  readonly pestana: (pestana: Pestana) => string;
+  readonly vista: (pestana: Pestana) => string;
+};
+
+export type PropsBarraDePestanas = {
+  readonly control: ControlPestanas;
+  readonly ids: IdsDePestanas;
 };

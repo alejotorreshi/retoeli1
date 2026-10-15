@@ -22,8 +22,10 @@ export function Encabezado({ fechaEjecucion, salud }: PropsEncabezado) {
         </span>
         <p className={estilos.subtitulo}>{TEXTO_APP.subtitulo}</p>
       </div>
-      <p className={estilos.fecha}>{TEXTO_APP.fechaEjecucion(fechaEjecucion)}</p>
-      {salud === null ? null : <EstadoDelModelo salud={salud} />}
+      <div className={estilos.meta}>
+        <p className={estilos.fecha}>{TEXTO_APP.fechaEjecucion(fechaEjecucion)}</p>
+        {salud === null ? null : <EstadoDelModelo salud={salud} />}
+      </div>
     </header>
   );
 }

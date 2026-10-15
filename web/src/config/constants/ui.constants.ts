@@ -64,6 +64,9 @@ export const CLASE_GLOBAL = {
   VISTA_CHAT: "vista-chat",
   CHAT: "chat",
   VISTA_CASOS: "vista-casos",
+  PESTANAS: "pestanas",
+  PESTANA: "pestana",
+  PUNTO_CAMBIOS: "punto-cambios",
   GIRAR: "girar",
   OCULTO: "sr-only",
   TRANSICION: "transicion",
@@ -148,3 +151,42 @@ export const ESTADO_ETAPA = {
 } as const;
 
 export const SEPARADOR_FIRMA = "|";
+
+export const PUNTO_DE_QUIEBRE_PX = {
+  MEDIO: 640,
+  ANCHO: 1024,
+} as const;
+
+export const CONSULTA_DE_ANCHO = {
+  MEDIO: `(min-width: ${PUNTO_DE_QUIEBRE_PX.MEDIO}px)`,
+  ANCHO: `(min-width: ${PUNTO_DE_QUIEBRE_PX.ANCHO}px)`,
+} as const;
+
+export const DISENO = {
+  ANCHO: "ancho",
+  MEDIO: "medio",
+  ANGOSTO: "angosto",
+} as const;
+
+export const PESTANA = {
+  CHAT: "chat",
+  CASOS: "casos",
+} as const;
+
+export const ORDEN_PESTANAS = [PESTANA.CHAT, PESTANA.CASOS] as const satisfies readonly ValorDe<
+  typeof PESTANA
+>[];
+
+export const TECLA_PESTANA = {
+  ANTERIOR: "ArrowLeft",
+  SIGUIENTE: "ArrowRight",
+  PRIMERA: "Home",
+  ULTIMA: "End",
+} as const;
+
+export const EVENTO_CAMBIO_DE_MEDIOS = "change";
+
+export const SUFIJO_ID = {
+  PESTANA: "-pestana-",
+  VISTA: "-vista-",
+} as const;

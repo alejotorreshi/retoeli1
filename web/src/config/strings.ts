@@ -4,6 +4,7 @@ import {
   ESTADO_FIRMA,
   ESTADO_HERRAMIENTA,
   ETAPA,
+  PESTANA,
   SEPARADOR_LISTA_CASOS,
 } from "@web/config/constants/ui.constants.ts";
 import type {
@@ -16,7 +17,7 @@ import type {
   FormatoVisible,
   ResumenLlamadas,
 } from "@web/types/chat.type.ts";
-import type { EstadoModeloConAviso, PartesAvisoModelo } from "@web/types/ui.type.ts";
+import type { EstadoModeloConAviso, PartesAvisoModelo, Pestana } from "@web/types/ui.type.ts";
 import { FORMATO } from "@/config/constants/forms.constants.ts";
 import { VIGENCIA_ACCESO_HORAS_POR_DEFECTO } from "@/config/constants/http.constants.ts";
 import { ESTADO_LLM } from "@/config/constants/llm.constants.ts";
@@ -245,4 +246,15 @@ export const TEXTO_PANEL = {
   titulo: "Casos de esta sesión",
   vacio: "Todavía no se procesó ningún caso. Aquí verás el avance de cada caso y sus archivos.",
   pie: "Los archivos viven en el disco temporal del servidor y se borran si se reinicia.",
+} as const;
+
+const ETIQUETA_DE_PESTANA = {
+  [PESTANA.CHAT]: "Chat",
+  [PESTANA.CASOS]: "Casos y archivos",
+} as const satisfies Record<Pestana, string>;
+
+export const TEXTO_PESTANAS = {
+  grupo: "Vistas del agente",
+  etiqueta: (pestana: Pestana) => ETIQUETA_DE_PESTANA[pestana],
+  cambiosSinVer: ", hay cambios sin ver",
 } as const;
