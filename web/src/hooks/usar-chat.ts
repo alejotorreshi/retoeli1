@@ -112,8 +112,12 @@ export function useChat(alTerminarTurno: () => void): ControlChat {
 
   function nuevaSesion(): void {
     if (estado.enCurso || turnoActivo.current !== null) return;
-    olvidarSesion();
     despachar({ tipo: ACCION_UI.NUEVA_SESION });
+  }
+
+  function volverASesionAnterior(): void {
+    if (estado.enCurso || turnoActivo.current !== null) return;
+    despachar({ tipo: ACCION_UI.VOLVER_SESION_ANTERIOR });
   }
 
   return {
@@ -127,6 +131,7 @@ export function useChat(alTerminarTurno: () => void): ControlChat {
     detener,
     recargar,
     nuevaSesion,
+    volverASesionAnterior,
     vencerAcceso,
   };
 }

@@ -127,6 +127,7 @@ export function App() {
     detener,
     recargar,
     nuevaSesion,
+    volverASesionAnterior,
     vencerAcceso,
   } = useChat(refrescar);
   const [nuevaSesionAbierta, setNuevaSesionAbierta] = useState(false);
@@ -153,6 +154,7 @@ export function App() {
   function alAccionDeAviso(accion: AccionDeAviso): void {
     if (accion === ACCION_AVISO.RECARGAR) recargar();
     if (accion === ACCION_AVISO.NUEVA_SESION) setNuevaSesionAbierta(true);
+    if (accion === ACCION_AVISO.VOLVER_SESION_ANTERIOR) volverASesionAnterior();
   }
 
   async function alEntrar(): Promise<void> {

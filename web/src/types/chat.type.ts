@@ -313,6 +313,7 @@ export type ControlChat = {
   readonly detener: () => void;
   readonly recargar: () => void;
   readonly nuevaSesion: () => void;
+  readonly volverASesionAnterior: () => void;
   readonly vencerAcceso: (aviso: string) => void;
 };
 
