@@ -3,16 +3,16 @@ gsd_state_version: "1.0"
 current_phase: 03
 current_phase_name: Chat web, API SSE y despliegue
 status: executing
-stopped_at: Completed 03-45-PLAN.md
-last_updated: "2026-10-15T23:12:31.483Z"
+stopped_at: Completed 03-47-PLAN.md
+last_updated: "2026-10-15T23:15:50.506Z"
 last_activity: 2026-10-15
 last_activity_desc: Phase 03 execution started
-state_head: 747213de7786c4e75afb8af1c4aab135a869de57
+state_head: 611023a647ab775cb728898757dfcf8cbcc7c926
 progress:
   total_phases: 4
   completed_phases: 2
   total_plans: 86
-  completed_plans: 85
+  completed_plans: 86
   percent: 50
 ---
 
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-10-14)
 ## Current Position
 
 Phase: 03 (Chat web, API SSE y despliegue) — EXECUTING
-Plan: 4 of 47
+Plan: 5 of 47
 Status: Ready to execute
 Last activity: 2026-10-15 — Phase 03 execution started
 
@@ -142,6 +142,7 @@ Progress: [█████░░░░░] 50%
 | Phase 03 P44 | 4 min | 2 tasks | 3 files |
 | Phase 03 P46 | 4min | 2 tasks | 8 files |
 | Phase 03 P45 | 3 min | 2 tasks | 7 files |
+| Phase 03 P47 | 2min | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -346,6 +347,7 @@ Recent decisions affecting current work:
 - [Phase 03]: 03-46: el truncado de un caso confirmado se decide en el bucle (casoDeLlamada === turno.autorizacion.caso) y emite TRUNCADO_CONFIRMADO con texto propio; YA_ENVIADO y SIN_PAQUETE mantienen precedencia (D-76.2)
 - [Phase 03]: 03-46: la exhaustividad de aplicarEvento usa default con const _sinCubrir: never sin return, porque Biome prohíbe devolver valor en funciones void (IN-05)
 - [Phase 03]: 03-45 / D-77.2: /api/acceso y el Bearer reservan el intento con hit síncrono antes del primer await y lo devuelven con release ante código o Bearer correctos o cuerpo inválido; hit no cuenta un golpe rechazado
+- [Phase 03]: D-78.1 (03-47): desplazar decide fondo (TOLERANCIA_FONDO 1 px) → subida → umbral de 96 px; cualquier subida despega y el umbral solo vuelve a pegar (WR-04)
 
 ### Pending Todos
 
@@ -381,6 +383,6 @@ Items acknowledged and deferred at milestone close, most recent first:
 
 ## Session Continuity
 
-Last session: 2026-10-15T23:12:31.390Z
-Stopped at: Completed 03-45-PLAN.md
+Last session: 2026-10-15T23:15:50.410Z
+Stopped at: Completed 03-47-PLAN.md
 Resume file: None
