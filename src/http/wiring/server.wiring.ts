@@ -3,6 +3,7 @@ import { type Context, Hono } from "hono";
 import { bodyLimit } from "hono/body-limit";
 import { secureHeaders } from "hono/secure-headers";
 import type { BitacoraEstructurada } from "@/application/types/puertos-agente.type.ts";
+import { CODIGO_AGENTE } from "@/config/constants/agent.constants.ts";
 import {
   BYTES_SECRETO_TOKEN,
   CODIFICACION_SECRETO_TOKEN,
@@ -181,7 +182,10 @@ export function createServer(options: ServerOptions): ServerCreation {
   if (!env.success) return { ok: false, mensaje: formatearIssues(env.error.issues, MAX_ISSUES_ARGS) };
   const access = accessSettings(env.data, options);
   const creation = crearAgente(agentOptions(options, [access.code, access.tokenSecret]));
-  if (!creation.ok) return { ok: false, mensaje: creation.mensaje };
+  if (!creation.ok && creation.codigo !== CODIGO_AGENTE.PROVEEDOR_SIN_CLAVE) {
+    return { ok: false, mensaje: creation.mensaje };
+  }
+  const agente = creation.ok ? creation.agente : null;
   const config = readAgentConfig(options);
   if (!config.success) return { ok: false, mensaje: formatearIssues(config.error.issues, MAX_ISSUES_ARGS) };
   const agentSecrets = secretosDelAgente(config.data);
@@ -198,15 +202,15 @@ export function createServer(options: ServerOptions): ServerCreation {
     bodyLimit({ maxSize: env.data.MAX_BODY_BYTES, onError: bodyTooLarge }),
   );
   registerHealthRoute(app, {
-    provider: creation.agente.proveedor,
-    model: creation.agente.modelo,
-    agente: creation.agente,
+    provider: config.data.primary.provider,
+    model: config.data.primary.model,
+    agente,
   });
   registerAccessRoute(app, access);
   app.use(RUTA_API_PROTEGIDA, requireAccess(access));
   registerConfigRoute(app, configSource(options.rootDirectory, config.data, env.data));
   registerChatRoute(app, {
-    agente: creation.agente,
+    agente,
     secrets,
     logger,
     heartbeatMs: options.heartbeatMs ?? LATIDO_SSE_MS,

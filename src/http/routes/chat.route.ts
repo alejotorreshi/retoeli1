@@ -1,7 +1,7 @@
 import type { Context, Hono } from "hono";
 import { streamSSE } from "hono/streaming";
 import type { BitacoraEstructurada } from "@/application/types/puertos-agente.type.ts";
-import { TIPO_EVENTO } from "@/config/constants/agent.constants.ts";
+import { CODIGO_AGENTE, TIPO_EVENTO } from "@/config/constants/agent.constants.ts";
 import {
   CABECERA,
   EVENTO_HTTP,
@@ -10,7 +10,7 @@ import {
   TIPO_CONTENIDO,
   VALOR_CABECERA,
 } from "@/config/constants/http.constants.ts";
-import { MENSAJE_HTTP } from "@/config/strings.ts";
+import { MENSAJE_AGENTE, MENSAJE_HTTP } from "@/config/strings.ts";
 import { redactar } from "@/domain/policies/redaccion.policy.ts";
 import { chatBodySchema } from "@/http/schemas/chat-body.schema.ts";
 import { startHeartbeat, toSseFrame } from "@/http/services/sse.service.ts";
@@ -21,12 +21,14 @@ import type { Agente } from "@/loop/types/agente.type.ts";
 import type { EventoAgente } from "@/loop/types/evento.type.ts";
 
 type ChatDeps = {
-  readonly agente: Agente;
+  readonly agente: Agente | null;
   readonly secrets: readonly string[];
   readonly logger: BitacoraEstructurada;
   readonly heartbeatMs: number;
   readonly maxMessageChars: number;
 };
+
+type TurnDeps = ChatDeps & { readonly agente: Agente };
 
 async function readBody(c: Context<HttpEnv>): Promise<ChatBody | null> {
   try {
@@ -47,12 +49,17 @@ function messageTooLong(c: Context<HttpEnv>, maxMessageChars: number): Response 
   return c.json(body, RESPUESTA_HTTP.CUERPO_DEMASIADO_GRANDE);
 }
 
+function missingProviderKey(c: Context<HttpEnv>): Response {
+  const body: ErrorResponse = { mensaje: MENSAJE_AGENTE[CODIGO_AGENTE.PROVEEDOR_SIN_CLAVE] };
+  return c.json(body, RESPUESTA_HTTP.NO_DISPONIBLE);
+}
+
 function internalErrorData(): string {
   const body: ErrorResponse = { mensaje: MENSAJE_HTTP.errorInterno };
   return JSON.stringify(body);
 }
 
-function streamTurn(c: Context<HttpEnv>, body: ChatBody, deps: ChatDeps): Response {
+function streamTurn(c: Context<HttpEnv>, body: ChatBody, deps: TurnDeps): Response {
   const response = streamSSE(c, async (stream) => {
     const cut = new AbortController();
     stream.onAbort(() => cut.abort());
@@ -82,7 +89,7 @@ function sessionIdOf(eventos: readonly EventoAgente[]): string | null {
   return inicio?.tipo === TIPO_EVENTO.INICIO_TURNO ? inicio.sesionId : null;
 }
 
-async function jsonTurn(c: Context<HttpEnv>, body: ChatBody, deps: ChatDeps): Promise<Response> {
+async function jsonTurn(c: Context<HttpEnv>, body: ChatBody, deps: TurnDeps): Promise<Response> {
   const eventos: EventoAgente[] = [];
   const turn = deps.agente.turno({
     sesionId: body.sessionId,
@@ -100,6 +107,9 @@ export function registerChatRoute(app: Hono<HttpEnv>, deps: ChatDeps): void {
     const body = await readBody(c);
     if (body === null) return invalidBody(c);
     if (body.message.length > deps.maxMessageChars) return messageTooLong(c, deps.maxMessageChars);
-    return wantsJson(c) ? jsonTurn(c, body, deps) : streamTurn(c, body, deps);
+    const { agente } = deps;
+    if (agente === null) return missingProviderKey(c);
+    const turnDeps: TurnDeps = { ...deps, agente };
+    return wantsJson(c) ? jsonTurn(c, body, turnDeps) : streamTurn(c, body, turnDeps);
   });
 }

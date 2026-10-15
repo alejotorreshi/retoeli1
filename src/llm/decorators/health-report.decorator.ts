@@ -22,7 +22,7 @@ export function withHealthReport(base: AdaptadorLlm, monitor: LlmHealthMonitor):
     modelo: base.modelo,
     enviar: async (messages, tools, options) => {
       const result = await base.enviar(messages, tools, options);
-      const next = stateAfter(result);
+      const next = options.signal.aborted ? null : stateAfter(result);
       if (next !== null) monitor.publish(next);
       return result;
     },
