@@ -47,7 +47,7 @@ import {
   DIRECTORIO_PAQUETE,
   OUT_DIR,
 } from "@/config/constants/files.constants.ts";
-import { TIPO_ERROR_LLM } from "@/config/constants/llm.constants.ts";
+import { FIN_LLM, TIPO_ERROR_LLM } from "@/config/constants/llm.constants.ts";
 import { NIVELES_LOG } from "@/config/constants/logging.constants.ts";
 import { ESTADO_SOPORTE } from "@/config/constants/supports.constants.ts";
 import { SALTO_DE_LINEA, SEPARADOR_PARRAFOS } from "@/config/constants/text.constants.ts";
@@ -66,7 +66,7 @@ import type { CasoPendiente } from "@/domain/types/compuerta.type.ts";
 import { cuerpoDeFallo } from "@/domain/utils/respuesta-herramienta.util.ts";
 import { createInstructionsLoader } from "@/infra/knowledge/instructions-loader.adapter.ts";
 import { createLogger } from "@/infra/logging/logger.adapter.ts";
-import type { ErrorLlm, RespuestaLlm } from "@/llm/types/llm.type.ts";
+import type { ErrorLlm, LlamadaHerramienta, RespuestaLlm } from "@/llm/types/llm.type.ts";
 import {
   crearRegistroHerramientas,
   resultadoDeFallo,
@@ -1296,5 +1296,76 @@ describe("G-03-26: cada envío de un caso legible que no ocurrió deja su aviso 
     const turno2 = await prueba.turno("envía");
     expect(finesDeHerramienta(turno2)).toEqual([exitosa()]);
     expect(textoFinal(turno2)).toBe("Hecho.");
+  });
+});
+
+function simularCrudo(id: string, argumentos: string): LlamadaHerramienta {
+  return { id, nombre: NOMBRE_VISIBLE[HERRAMIENTA.SIMULAR_ENVIO], argumentos };
+}
+
+function pasoCortado(...llamadas: readonly LlamadaHerramienta[]): RespuestaLlm {
+  return { ...respuestaHerramientas(...llamadas), fin: FIN_LLM.LIMITE };
+}
+
+const JSON_CORTADO_CO = `{"caso":"${CO}","confi`;
+const JSON_CORTADO_EC = `{"caso":"${EC}","confi`;
+
+describe("D-76.1: un simular_envio truncado también deja su aviso", () => {
+  test("regresión del verificador: 'Sí, envía co' con el JSON cortado a mitad deja la afirmación seguida del aviso SIN_CASO", async () => {
+    const afirmacion = `Registré el envío simulado de ${CO}.`;
+    const prueba = agente([
+      pasoCortado(simularCrudo("simular-1", JSON_CORTADO_CO)),
+      respuestaTexto(afirmacion),
+    ]);
+    const eventos = await prueba.turno(`Sí, envía ${CO}`);
+    const aviso = TEXTO_ENVIO_NO_REGISTRADO[DESENLACE_ENVIO.SIN_CASO]();
+    const esperado = `${afirmacion}${SEPARADOR_PARRAFOS}${aviso}`;
+    expect(textoFinal(eventos)).toBe(esperado);
+    expect(ultimoParrafo(textoFinal(eventos))).toBe(aviso);
+    expect(finDeTurno(eventos).needsConfirmation).toBe(false);
+    expect(confirmaciones(eventos)).toEqual([]);
+    expect(await casosConEnvioSimulado(proyecto.raiz)).toEqual([]);
+    const respuesta = respuestaDeTurno(eventos);
+    expect(respuesta.reply).toBe(esperado);
+    expect(respuesta.needsConfirmation).toBe(false);
+    historialSano(prueba);
+  });
+
+  test("un simular_envio truncado con caso legible y sin paquete en la sesión deja el aviso SIN_PAQUETE de ese caso", async () => {
+    const afirmacion = `Registré el envío simulado de ${CO}.`;
+    const prueba = agente([
+      pasoCortado(simularCrudo("simular-1", JSON.stringify({ caso: CO, confirmado: true }))),
+      respuestaTexto(afirmacion),
+    ]);
+    const eventos = await prueba.turno(`Sí, envía ${CO}`);
+    expect(textoFinal(eventos)).toBe(
+      `${afirmacion}${SEPARADOR_PARRAFOS}${avisoDe(DESENLACE_ENVIO.SIN_PAQUETE, CO)}`,
+    );
+    expect(confirmaciones(eventos)).toEqual([]);
+    expect(finDeTurno(eventos).needsConfirmation).toBe(false);
+    expect(await casosConEnvioSimulado(proyecto.raiz)).toEqual([]);
+    historialSano(prueba);
+  });
+
+  test("un paso truncado con generar_formulario y un simular_envio sin caso legible deja un solo aviso SIN_CASO", async () => {
+    const afirmacion = "Generé el formulario y registré el envío.";
+    const prueba = agente([
+      pasoCortado(
+        {
+          id: "generar-1",
+          nombre: NOMBRE_VISIBLE[HERRAMIENTA.GENERAR_FORMULARIO],
+          argumentos: JSON_CORTADO_CO,
+        },
+        simularCrudo("simular-1", JSON_CORTADO_CO),
+      ),
+      respuestaTexto(afirmacion),
+    ]);
+    const eventos = await prueba.turno(`procesa ${CO}`);
+    expect(textoFinal(eventos)).toBe(
+      `${afirmacion}${SEPARADOR_PARRAFOS}${TEXTO_ENVIO_NO_REGISTRADO[DESENLACE_ENVIO.SIN_CASO]()}`,
+    );
+    expect(finDeTurno(eventos).needsConfirmation).toBe(false);
+    expect(await casosConEnvioSimulado(proyecto.raiz)).toEqual([]);
+    historialSano(prueba);
   });
 });
