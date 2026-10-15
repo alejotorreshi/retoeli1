@@ -96,6 +96,24 @@ export const SEPARADOR_X_FORWARDED_FOR = ",";
 
 export const IP_DESCONOCIDA = "unknown";
 
+export const GRUPOS_IPV6 = 8;
+
+export const GRUPOS_PREFIJO_IPV6 = 4;
+
+export const SEPARADOR_IPV6 = ":";
+
+export const COMPRESION_IPV6 = "::";
+
+export const SUFIJO_PREFIJO_IPV6 = "::/64";
+
+export const PREFIJO_IPV4_MAPEADA = "::ffff:";
+
+export const GRUPO_IPV6_CERO = "0";
+
+export const BASE_HEXADECIMAL = 16;
+
+export const MAX_CLAVES_LIMITADOR = 10_000;
+
 export const INTENTOS_FALLIDOS_ACCESO_POR_DEFECTO = 5;
 
 export const VENTANA_FALLOS_ACCESO_MINUTOS_POR_DEFECTO = 15;

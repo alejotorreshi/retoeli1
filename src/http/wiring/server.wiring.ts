@@ -13,6 +13,7 @@ import {
   FUENTE_CSP,
   HOST_SERVIDOR,
   LATIDO_SSE_MS,
+  MAX_CLAVES_LIMITADOR,
   RESPUESTA_HTTP,
   RUTA_API,
   RUTA_API_PROTEGIDA,
@@ -112,6 +113,7 @@ function accessSettings(env: ServerEnv, options: ServerOptions): AccessSettings 
     failedAttempts: createRateLimiter({
       limit: env.ACCESS_MAX_FAILED_ATTEMPTS,
       windowMs: env.ACCESS_FAILED_WINDOW_MINUTES * MS_POR_MINUTO,
+      maxKeys: MAX_CLAVES_LIMITADOR,
       now,
     }),
     lockedMessage: TEXTO_HTTP.demasiadosIntentos(env.ACCESS_FAILED_WINDOW_MINUTES),
@@ -122,6 +124,7 @@ function chatMessagesLimiter(env: ServerEnv, options: ServerOptions): RateLimite
   return createRateLimiter({
     limit: env.RATE_LIMIT_CHAT_PER_MINUTE,
     windowMs: VENTANA_MENSAJES_CHAT_MINUTOS * MS_POR_MINUTO,
+    maxKeys: MAX_CLAVES_LIMITADOR,
     now: clockOf(options),
   });
 }
@@ -130,6 +133,7 @@ function newSessionsLimiter(env: ServerEnv, options: ServerOptions): RateLimiter
   return createRateLimiter({
     limit: env.NEW_SESSIONS_PER_HOUR,
     windowMs: VENTANA_SESIONES_NUEVAS_HORAS * MS_POR_HORA,
+    maxKeys: MAX_CLAVES_LIMITADOR,
     now: clockOf(options),
   });
 }

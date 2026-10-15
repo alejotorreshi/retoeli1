@@ -7,8 +7,14 @@ export function createRateLimiter(options: RateLimiterOptions): RateLimiter {
 
   function sweep(now: number): void {
     for (const [key, window] of windows) {
-      if (now - window.start >= options.windowMs) windows.delete(key);
+      if (now - window.start < options.windowMs) return;
+      windows.delete(key);
     }
+  }
+
+  function evictOldest(): void {
+    const oldest = windows.keys().next();
+    if (!oldest.done) windows.delete(oldest.value);
   }
 
   function countOf(key: string): number {
@@ -19,7 +25,9 @@ export function createRateLimiter(options: RateLimiterOptions): RateLimiter {
     hit(key) {
       const now = options.now();
       sweep(now);
-      const window = windows.get(key) ?? { count: 0, start: now };
+      const existing = windows.get(key);
+      if (existing === undefined && windows.size >= options.maxKeys) evictOldest();
+      const window = existing ?? { count: 0, start: now };
       window.count += 1;
       windows.set(key, window);
       return window.count <= options.limit;

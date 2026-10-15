@@ -1,4 +1,5 @@
 import { describe, expect, test } from "bun:test";
+import { MAX_CLAVES_LIMITADOR } from "@/config/constants/http.constants.ts";
 import { createRateLimiter } from "@/http/services/rate-limiter.service.ts";
 import type { RateLimiter } from "@/http/types/server.type.ts";
 
@@ -13,9 +14,14 @@ type Banco = {
   avanzar(ms: number): void;
 };
 
-function crearBanco(): Banco {
+function crearBanco(maxClaves: number = MAX_CLAVES_LIMITADOR): Banco {
   let ahora = 1_790_000_000_000;
-  const limitador = createRateLimiter({ limit: LIMITE, windowMs: VENTANA_MS, now: () => ahora });
+  const limitador = createRateLimiter({
+    limit: LIMITE,
+    windowMs: VENTANA_MS,
+    maxKeys: maxClaves,
+    now: () => ahora,
+  });
   return {
     limitador,
     avanzar: (ms) => {
@@ -83,5 +89,28 @@ describe("createRateLimiter", () => {
     avanzar(VENTANA_MS);
     limitador.isLocked(TERCERA_CLAVE);
     expect(limitador.trackedKeys()).toBe(0);
+  });
+
+  test("el barrido corta en la primera ventana vigente y sigue borrando las vencidas más antiguas", () => {
+    const { limitador, avanzar } = crearBanco();
+    limitador.hit(CLAVE);
+    avanzar(VENTANA_MS / 2);
+    limitador.hit(OTRA_CLAVE);
+    avanzar(VENTANA_MS / 2);
+    limitador.isLocked(TERCERA_CLAVE);
+    expect(limitador.trackedKeys()).toBe(1);
+    expect(limitador.isLocked(OTRA_CLAVE)).toBe(false);
+  });
+
+  test("con el tope de claves lleno, una clave nueva desaloja la más antigua y no crece la memoria", () => {
+    const { limitador, avanzar } = crearBanco(2);
+    golpear(limitador, CLAVE, LIMITE);
+    avanzar(1);
+    limitador.hit(OTRA_CLAVE);
+    avanzar(1);
+    limitador.hit(TERCERA_CLAVE);
+    expect(limitador.trackedKeys()).toBe(2);
+    expect(limitador.isLocked(CLAVE)).toBe(false);
+    expect(limitador.hit(OTRA_CLAVE)).toBe(true);
   });
 });

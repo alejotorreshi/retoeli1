@@ -29,6 +29,7 @@ import {
   CABECERA,
   COMENTARIO_LATIDO,
   EVENTO_HTTP,
+  MAX_CLAVES_LIMITADOR,
   MENSAJE_MAXIMO_CARACTERES_POR_DEFECTO,
   RESPUESTA_HTTP,
   RUTA_API,
@@ -288,6 +289,7 @@ describe("POST /api/chat: cuerpos inválidos y errores contenidos", () => {
       newSessions: createRateLimiter({
         limit: SESIONES_NUEVAS_POR_HORA_POR_DEFECTO,
         windowMs: MS_POR_HORA,
+        maxKeys: MAX_CLAVES_LIMITADOR,
         now: Date.now,
       }),
       businessZone: () => ZONA_HORARIA_POR_DEFECTO,

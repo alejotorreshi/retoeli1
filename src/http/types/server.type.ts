@@ -20,6 +20,7 @@ export type BearerCheck = ValorDe<typeof RESULTADO_BEARER>;
 export type RateLimiterOptions = {
   readonly limit: number;
   readonly windowMs: number;
+  readonly maxKeys: number;
   readonly now: () => number;
 };
 

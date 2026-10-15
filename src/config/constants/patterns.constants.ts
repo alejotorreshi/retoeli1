@@ -31,6 +31,9 @@ export const PATRON_PALABRA_O_CASO: RegExp = new RegExp(
 export const PATRON_NO_PALABRA: RegExp = /[^a-z0-9ñ]+/;
 export const PATRON_NO_PALABRA_UNICODE: RegExp = /[^\p{L}\p{M}\p{N}]+/u;
 export const PATRON_ENTERO_NO_NEGATIVO: RegExp = /^\d+$/;
+export const PATRON_IPV4: RegExp =
+  /^(?:(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)\.){3}(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)$/;
+export const PATRON_GRUPO_IPV6: RegExp = /^[0-9a-f]{1,4}$/;
 export const PATRON_NEGRITA: RegExp = /\*\*|__/g;
 export const PATRON_ENCABEZADO_MD: RegExp = /^[ \t]*#{1,6}[ \t]+/gm;
 export const PATRON_SEPARADOR_TABLA_MD: RegExp = /^(?=[^\n]*\|)(?=[^\n]*-)[ \t|:-]+$(?:\r?\n)?/gm;
