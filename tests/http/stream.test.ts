@@ -34,6 +34,7 @@ import {
   RUTA_API,
   TIPO_CONTENIDO,
 } from "@/config/constants/http.constants.ts";
+import { ESTADO_LLM } from "@/config/constants/llm.constants.ts";
 import { NIVELES_LOG } from "@/config/constants/logging.constants.ts";
 import { HERRAMIENTA, NOMBRE_VISIBLE } from "@/config/constants/tools.constants.ts";
 import { pinExecutionDate } from "@/config/env.ts";
@@ -256,6 +257,7 @@ describe("POST /api/chat: cuerpos inválidos y errores contenidos", () => {
     const agente: Agente = {
       proveedor: "falso",
       modelo: "falso",
+      estadoLlm: () => ESTADO_LLM.DISPONIBLE,
       async *turno() {
         yield {
           tipo: TIPO_EVENTO.INICIO_TURNO,

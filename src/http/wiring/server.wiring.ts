@@ -197,7 +197,11 @@ export function createServer(options: ServerOptions): ServerCreation {
     requireJson(),
     bodyLimit({ maxSize: env.data.MAX_BODY_BYTES, onError: bodyTooLarge }),
   );
-  registerHealthRoute(app, { provider: creation.agente.proveedor, model: creation.agente.modelo });
+  registerHealthRoute(app, {
+    provider: creation.agente.proveedor,
+    model: creation.agente.modelo,
+    agente: creation.agente,
+  });
   registerAccessRoute(app, access);
   app.use(RUTA_API_PROTEGIDA, requireAccess(access));
   registerConfigRoute(app, configSource(options.rootDirectory, config.data, env.data));

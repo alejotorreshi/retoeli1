@@ -1,4 +1,6 @@
 import type { DestinoBitacora } from "@/application/types/puertos-agente.type.ts";
+import type { ESTADO_LLM } from "@/config/constants/llm.constants.ts";
+import type { ValorDe } from "@/config/types/valor-de.type.ts";
 import type { FetchLike } from "@/llm/types/provider.type.ts";
 import type { RetryOptions } from "@/llm/types/resilience.type.ts";
 import type { CodigoAgente, EventoAgente } from "@/loop/types/evento.type.ts";
@@ -18,6 +20,7 @@ export type OpcionesAgente = {
 export type Agente = {
   readonly proveedor: string;
   readonly modelo: string;
+  estadoLlm(): ValorDe<typeof ESTADO_LLM>;
   turno(entrada: EntradaTurno): AsyncGenerator<EventoAgente, void, undefined>;
 };
 

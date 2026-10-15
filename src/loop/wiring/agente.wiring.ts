@@ -1,7 +1,7 @@
 import type { Reloj } from "@/application/types/puertos.type.ts";
 import { CODIGO_AGENTE } from "@/config/constants/agent.constants.ts";
 import { MAX_ISSUES_ARGS } from "@/config/constants/limits.constants.ts";
-import { BACKOFF_BASE_MS, BACKOFF_TOPE_MS } from "@/config/constants/llm.constants.ts";
+import { BACKOFF_BASE_MS, BACKOFF_TOPE_MS, ESTADO_LLM } from "@/config/constants/llm.constants.ts";
 import { MS_POR_MINUTO, ZONA_HORARIA_POR_DEFECTO } from "@/config/constants/runtime.constants.ts";
 import {
   type AgentEnv,
@@ -25,10 +25,12 @@ import { createLogger } from "@/infra/logging/logger.adapter.ts";
 import { createMemorySessionStore } from "@/infra/sessions/memory-session-store.adapter.ts";
 import { createOpenAICompatibleAdapter } from "@/llm/adapters/openai-compatible.adapter.ts";
 import { withFallback } from "@/llm/decorators/fallback.decorator.ts";
+import { createHealthMonitor, withHealthReport } from "@/llm/decorators/health-report.decorator.ts";
 import { withObservation } from "@/llm/decorators/observation.decorator.ts";
 import { withRetry } from "@/llm/decorators/retry.decorator.ts";
 import { withTimeout } from "@/llm/decorators/timeout.decorator.ts";
 import type { AdaptadorLlm, ErrorLlm, OpcionesEnvio } from "@/llm/types/llm.type.ts";
+import type { LlmHealthMonitor } from "@/llm/types/resilience.type.ts";
 import { ejecutarTurno, sesionVacia } from "@/loop/services/ejecutar-turno.service.ts";
 import { crearRegistroHerramientas } from "@/loop/services/registro-herramientas.service.ts";
 import type { CreacionAgente, OpcionesAgente } from "@/loop/types/agente.type.ts";
@@ -81,9 +83,14 @@ function avisarCambio(error: ErrorLlm, envio: OpcionesEnvio): void {
   envio.observador?.cambio(error);
 }
 
-function modeloDelAgente(opciones: OpcionesAgente, config: AgentEnv, apiKey: string): AdaptadorLlm {
+function modeloDelAgente(
+  opciones: OpcionesAgente,
+  config: AgentEnv,
+  apiKey: string,
+  monitor: LlmHealthMonitor,
+): AdaptadorLlm {
   const primario = resiliente(config.primary, apiKey, config, opciones);
-  return withFallback(primario, respaldoDe(config, opciones), avisarCambio);
+  return withHealthReport(withFallback(primario, respaldoDe(config, opciones), avisarCambio), monitor);
 }
 
 export function secretosDelAgente(config: AgentEnv): readonly string[] {
@@ -96,11 +103,16 @@ function bitacoraDe(opciones: OpcionesAgente, config: AgentEnv, secretos: readon
   return createLogger({ level: config.logLevel, secrets: secretos, ...destino });
 }
 
-function dependencias(opciones: OpcionesAgente, config: AgentEnv, apiKey: string): DependenciasTurno {
+function dependencias(
+  opciones: OpcionesAgente,
+  config: AgentEnv,
+  apiKey: string,
+  monitor: LlmHealthMonitor,
+): DependenciasTurno {
   const reloj = relojCompartidoConHerramientas();
   const secretos = [...secretosDelAgente(config), ...(opciones.secretosAdicionales ?? [])];
   return {
-    llm: modeloDelAgente(opciones, config, apiKey),
+    llm: modeloDelAgente(opciones, config, apiKey, monitor),
     herramientas: crearRegistroHerramientas(proveedor),
     instrucciones: createInstructionsLoader({
       agentDirectory: opciones.directorioAgente ?? DEFAULT_AGENT_DIRECTORY,
@@ -137,12 +149,14 @@ export function crearAgente(opciones: OpcionesAgente): CreacionAgente {
     const codigo = CODIGO_AGENTE.PROVEEDOR_SIN_CLAVE;
     return { ok: false, codigo, mensaje: MENSAJE_AGENTE[codigo] };
   }
-  const deps = dependencias(opciones, config.data, primary.apiKey);
+  const monitor = createHealthMonitor(ESTADO_LLM.DISPONIBLE);
+  const deps = dependencias(opciones, config.data, primary.apiKey, monitor);
   return {
     ok: true,
     agente: {
       proveedor: primary.provider,
       modelo: primary.model,
+      estadoLlm: () => monitor.current(),
       turno: (entrada) => ejecutarTurno(entrada, deps),
     },
   };

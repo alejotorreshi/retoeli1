@@ -27,6 +27,7 @@ import { ESTADO_LECTURA, ORIGEN_COPIA } from "@/config/constants/io.constants.ts
 import { CLAVE_PLANTILLA } from "@/config/constants/knowledge.constants.ts";
 import {
   BOOLEANO_ENV,
+  ESTADO_LLM,
   FIN_LLM,
   FINISH_REASON,
   MODO_THINKING,
@@ -142,6 +143,7 @@ const FAMILIAS_DE_CODIGOS: readonly Readonly<Record<string, string>>[] = [
   FIN_LLM,
   FINISH_REASON,
   TIPO_ERROR_LLM,
+  ESTADO_LLM,
   MODO_THINKING,
   PARAMETRO_MAX_TOKENS,
   TOOL_CHOICE,

@@ -1,9 +1,11 @@
+import type { LlmHealthState } from "@/llm/types/resilience.type.ts";
 import type { EventoAgente } from "@/loop/types/evento.type.ts";
 
 export type HealthResponse = {
   readonly ok: true;
   readonly provider: string;
   readonly model: string;
+  readonly llm: LlmHealthState;
 };
 
 export type ChatBody = {
