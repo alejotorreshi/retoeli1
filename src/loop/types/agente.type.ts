@@ -21,6 +21,7 @@ export type Agente = {
   readonly proveedor: string;
   readonly modelo: string;
   estadoLlm(): ValorDe<typeof ESTADO_LLM>;
+  existeSesion(id: string): boolean;
   turno(entrada: EntradaTurno): AsyncGenerator<EventoAgente, void, undefined>;
 };
 

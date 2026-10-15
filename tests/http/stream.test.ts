@@ -32,15 +32,17 @@ import {
   MENSAJE_MAXIMO_CARACTERES_POR_DEFECTO,
   RESPUESTA_HTTP,
   RUTA_API,
+  SESIONES_NUEVAS_POR_HORA_POR_DEFECTO,
   TIPO_CONTENIDO,
 } from "@/config/constants/http.constants.ts";
 import { ESTADO_LLM } from "@/config/constants/llm.constants.ts";
 import { NIVELES_LOG } from "@/config/constants/logging.constants.ts";
-import { ZONA_HORARIA_POR_DEFECTO } from "@/config/constants/runtime.constants.ts";
+import { MS_POR_HORA, ZONA_HORARIA_POR_DEFECTO } from "@/config/constants/runtime.constants.ts";
 import { HERRAMIENTA, NOMBRE_VISIBLE } from "@/config/constants/tools.constants.ts";
 import { pinExecutionDate } from "@/config/env.ts";
 import { MENSAJE_HTTP } from "@/config/strings.ts";
 import { registerChatRoute } from "@/http/routes/chat.route.ts";
+import { createRateLimiter } from "@/http/services/rate-limiter.service.ts";
 import { createTurnSlots } from "@/http/services/turn-slots.service.ts";
 import type { ChatJsonResponse } from "@/http/types/api.type.ts";
 import type { HttpEnv } from "@/http/types/server.type.ts";
@@ -260,6 +262,7 @@ describe("POST /api/chat: cuerpos inválidos y errores contenidos", () => {
       proveedor: "falso",
       modelo: "falso",
       estadoLlm: () => ESTADO_LLM.DISPONIBLE,
+      existeSesion: () => false,
       async *turno() {
         yield {
           tipo: TIPO_EVENTO.INICIO_TURNO,
@@ -281,6 +284,11 @@ describe("POST /api/chat: cuerpos inválidos y errores contenidos", () => {
       heartbeatMs: LATIDO_CORTO_MS,
       maxMessageChars: MENSAJE_MAXIMO_CARACTERES_POR_DEFECTO,
       turnSlots: cupos,
+      newSessions: createRateLimiter({
+        limit: SESIONES_NUEVAS_POR_HORA_POR_DEFECTO,
+        windowMs: MS_POR_HORA,
+        now: Date.now,
+      }),
       businessZone: () => ZONA_HORARIA_POR_DEFECTO,
     });
     const respuesta = await app.request(RUTA_API.CHAT, pedidoChat(null, "hola"), BINDINGS_PRUEBA);

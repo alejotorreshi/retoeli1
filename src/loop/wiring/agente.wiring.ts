@@ -185,6 +185,7 @@ export function crearAgente(opciones: OpcionesAgente): CreacionAgente {
       proveedor: primary.provider,
       modelo: primary.model,
       estadoLlm: () => estadoDelModelo(control),
+      existeSesion: (id) => deps.sesiones.leer(id) !== null,
       turno: (entrada) => ejecutarTurno(entrada, deps),
     },
   };

@@ -54,6 +54,13 @@ export function createMemorySessionStore<S extends { readonly id: string }>(
       store(entry.session, now, entry.lock);
       return { sesion: entry.session, nueva: false, expirada: false };
     },
+    leer(id) {
+      const now = options.now();
+      sweep(now);
+      const entry = PATRON_SESION.test(id) ? entries.get(id) : undefined;
+      if (entry === undefined) return null;
+      return { sesion: entry.session, ocupada: isHeld(entry, now) };
+    },
     ocupar(id, plazoMs) {
       const now = options.now();
       const entry = entries.get(id);

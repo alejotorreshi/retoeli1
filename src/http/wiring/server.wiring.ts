@@ -19,6 +19,7 @@ import {
   RUTA_COMODIN,
   VARIABLE_SECRETO_TOKEN,
   VENTANA_MENSAJES_CHAT_MINUTOS,
+  VENTANA_SESIONES_NUEVAS_HORAS,
 } from "@/config/constants/http.constants.ts";
 import { MAX_ISSUES_ARGS } from "@/config/constants/limits.constants.ts";
 import {
@@ -114,6 +115,14 @@ function chatMessagesLimiter(env: ServerEnv, options: ServerOptions): RateLimite
   return createRateLimiter({
     limit: env.RATE_LIMIT_CHAT_PER_MINUTE,
     windowMs: VENTANA_MENSAJES_CHAT_MINUTOS * MS_POR_MINUTO,
+    now: clockOf(options),
+  });
+}
+
+function newSessionsLimiter(env: ServerEnv, options: ServerOptions): RateLimiter {
+  return createRateLimiter({
+    limit: env.NEW_SESSIONS_PER_HOUR,
+    windowMs: VENTANA_SESIONES_NUEVAS_HORAS * MS_POR_HORA,
     now: clockOf(options),
   });
 }
@@ -237,6 +246,7 @@ export function createServer(options: ServerOptions): ServerCreation {
     heartbeatMs: options.heartbeatMs ?? LATIDO_SSE_MS,
     maxMessageChars: env.data.MAX_MESSAGE_CHARS,
     turnSlots: createTurnSlots(env.data.MAX_CONCURRENT_TURNS),
+    newSessions: newSessionsLimiter(env.data, options),
     businessZone: () => businessCalendar().zone,
   });
   registerStaticRoutes(app, { webDirectory: webDirectory(options) });

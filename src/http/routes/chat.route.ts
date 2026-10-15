@@ -16,7 +16,7 @@ import { redactar } from "@/domain/policies/redaccion.policy.ts";
 import { chatBodySchema } from "@/http/schemas/chat-body.schema.ts";
 import { startHeartbeat, toSseFrame } from "@/http/services/sse.service.ts";
 import type { ChatBody, ChatJsonResponse, ErrorResponse } from "@/http/types/api.type.ts";
-import type { HttpEnv, TurnSlots } from "@/http/types/server.type.ts";
+import type { HttpEnv, RateLimiter, TurnSlots } from "@/http/types/server.type.ts";
 import { respuestaDeTurno } from "@/loop/services/respuesta-turno.service.ts";
 import type { Agente } from "@/loop/types/agente.type.ts";
 import type { EventoAgente } from "@/loop/types/evento.type.ts";
@@ -28,6 +28,7 @@ type ChatDeps = {
   readonly heartbeatMs: number;
   readonly maxMessageChars: number;
   readonly turnSlots: TurnSlots;
+  readonly newSessions: RateLimiter;
   businessZone(): string;
 };
 
@@ -65,6 +66,15 @@ function dailyCapReached(c: Context<HttpEnv>, zone: string): Response {
 function serverBusy(c: Context<HttpEnv>): Response {
   const body: ErrorResponse = { mensaje: MENSAJE_HTTP.servidorOcupado };
   return c.json(body, RESPUESTA_HTTP.NO_DISPONIBLE);
+}
+
+function tooManyNewSessions(c: Context<HttpEnv>): Response {
+  const body: ErrorResponse = { mensaje: MENSAJE_HTTP.demasiadasSesiones };
+  return c.json(body, RESPUESTA_HTTP.DEMASIADOS_PEDIDOS);
+}
+
+function opensSession(agente: Agente, sessionId: string | null): boolean {
+  return sessionId === null || !agente.existeSesion(sessionId);
 }
 
 function internalErrorData(): string {
@@ -133,7 +143,11 @@ export function registerChatRoute(app: Hono<HttpEnv>, deps: ChatDeps): void {
     const { agente } = deps;
     if (agente === null) return missingProviderKey(c);
     if (agente.estadoLlm() === ESTADO_LLM.TOPE_DIARIO) return dailyCapReached(c, deps.businessZone());
+    const clientIp = c.get("clientIp");
+    const isNewSession = opensSession(agente, body.sessionId);
+    if (isNewSession && deps.newSessions.isLocked(clientIp)) return tooManyNewSessions(c);
     if (!deps.turnSlots.tryAcquire()) return serverBusy(c);
+    if (isNewSession) deps.newSessions.hit(clientIp);
     const turnDeps: TurnDeps = { ...deps, agente };
     return wantsJson(c) ? jsonTurn(c, body, turnDeps) : streamTurn(c, body, turnDeps);
   });

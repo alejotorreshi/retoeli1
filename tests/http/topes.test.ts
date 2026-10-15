@@ -38,6 +38,11 @@ const UN_SOLO_CUPO = { ...SIN_TOPE_DE_MENSAJES, MAX_CONCURRENT_TURNS: "1" };
 const SIN_RESPALDO = { LLM_FALLBACK_ENABLED: "false", LLM_MAX_RETRIES: "0" };
 const ESPERAS_DE_CUPO = 200;
 const PAUSA_CUPO_MS = 5;
+const SESIONES_POR_HORA = 5;
+const UNA_HORA_MS = 3_600_000;
+const SESION_INVENTADA = "sesion-inventada-1";
+const OTRA_SESION_INVENTADA = "sesion-inventada-2";
+const UNA_SESION_NUEVA = { NEW_SESSIONS_PER_HOUR: "1" };
 const COLGADO: RespuestaGuion = { cuerpo: null, colgar: true };
 const NO_DISPONIBLE: RespuestaGuion = {
   estado: RESPUESTA_HTTP.NO_DISPONIBLE,
@@ -84,6 +89,32 @@ async function turno(
     headers: { [CABECERA.ACCEPT]: acepta },
     body: JSON.stringify({ sessionId, message: mensaje }),
   });
+}
+
+function textos(cantidad: number): RespuestaGuion[] {
+  return Array.from({ length: cantidad }, (_, indice) => ({
+    cuerpo: cuerpoConTexto(`Respuesta ${indice}.`),
+  }));
+}
+
+function pedidoDeTurno(mensaje: string, acepta: string = TIPO_CONTENIDO.JSON): RequestInit {
+  return {
+    method: "POST",
+    headers: { [CABECERA.ACCEPT]: acepta },
+    body: JSON.stringify({ sessionId: null, message: mensaje }),
+  };
+}
+
+async function esRechazoDeSesiones(respuesta: Response): Promise<void> {
+  expect(respuesta.status).toBe(RESPUESTA_HTTP.DEMASIADOS_PEDIDOS);
+  expect(await respuesta.json()).toEqual({ mensaje: MENSAJE_HTTP.demasiadasSesiones });
+}
+
+async function sesionDe(respuesta: Response): Promise<string> {
+  expect(respuesta.status).toBe(RESPUESTA_HTTP.OK);
+  const cuerpo: ChatJsonResponse = JSON.parse(await respuesta.text());
+  if (cuerpo.sessionId === null) throw new Error("la respuesta no trae sessionId");
+  return cuerpo.sessionId;
 }
 
 async function salud(servidor: ServidorPrueba): Promise<unknown> {
@@ -369,5 +400,85 @@ describe("misma sesión", () => {
       texto: "Primero listo.",
     });
     expect(resto.at(-1)).toMatchObject({ tipo: TIPO_EVENTO.FIN_TURNO, motivo: MOTIVO_FIN.FINAL });
+  });
+});
+
+describe("sesiones nuevas", () => {
+  test("cinco sesiones nuevas de un cliente en una hora pasan, la sexta recibe 429, otro cliente sigue y al vencer la hora vuelve a pasar", async () => {
+    let ahora = AHORA;
+    const proyecto = await crearProyectoTemporal();
+    limpiezas.push(proyecto.limpiar);
+    const falso = crearFetchFalso(textos(SESIONES_POR_HORA + 2));
+    const servidor = crearServidorPrueba({
+      raiz: proyecto.raiz,
+      fetch: falso.fetch,
+      entorno: SIN_TOPE_DE_MENSAJES,
+      ahora: () => ahora,
+    });
+
+    const sesiones = new Set<string>();
+    for (let nueva = 0; nueva < SESIONES_POR_HORA; nueva += 1) {
+      sesiones.add(
+        await sesionDe(await servidor.pedirDesde(IP_CLIENTE, RUTA_API.CHAT, pedidoDeTurno("hola"))),
+      );
+    }
+    expect(sesiones.size).toBe(SESIONES_POR_HORA);
+
+    for (const acepta of [TIPO_CONTENIDO.JSON, TIPO_CONTENIDO.SSE]) {
+      const sexta = await servidor.pedirDesde(IP_CLIENTE, RUTA_API.CHAT, pedidoDeTurno("otra", acepta));
+      await esRechazoDeSesiones(sexta);
+    }
+    expect(falso.pedidos).toHaveLength(SESIONES_POR_HORA);
+
+    await sesionDe(await servidor.pedirDesde(IP_OTRO_CLIENTE, RUTA_API.CHAT, pedidoDeTurno("hola")));
+
+    ahora = AHORA + UNA_HORA_MS - 1;
+    await esRechazoDeSesiones(await servidor.pedirDesde(IP_CLIENTE, RUTA_API.CHAT, pedidoDeTurno("otra")));
+    ahora = AHORA + UNA_HORA_MS;
+    await sesionDe(await servidor.pedirDesde(IP_CLIENTE, RUTA_API.CHAT, pedidoDeTurno("otra")));
+    expect(falso.pedidos).toHaveLength(SESIONES_POR_HORA + 2);
+  });
+
+  test("seguir en una sesión existente nunca cuenta como sesión nueva", async () => {
+    const continuaciones = 4;
+    const { servidor, pedidos } = await servidorCon(
+      { ...SIN_TOPE_DE_MENSAJES, ...UNA_SESION_NUEVA },
+      textos(continuaciones + 1),
+    );
+    const sesion = await sesionDe(await turno(servidor, "procesa el caso", TIPO_CONTENIDO.JSON));
+    for (let seguida = 0; seguida < continuaciones; seguida += 1) {
+      expect(await sesionDe(await turno(servidor, "¿y ahora?", TIPO_CONTENIDO.JSON, sesion))).toBe(sesion);
+    }
+    await esRechazoDeSesiones(await turno(servidor, "otro caso", TIPO_CONTENIDO.JSON));
+    expect(pedidos).toHaveLength(continuaciones + 1);
+  });
+
+  test("un sessionId inventado cuenta como sesión nueva", async () => {
+    const { servidor, pedidos } = await servidorCon(
+      { ...SIN_TOPE_DE_MENSAJES, ...UNA_SESION_NUEVA },
+      textos(2),
+    );
+    const asignada = await sesionDe(await turno(servidor, "hola", TIPO_CONTENIDO.JSON, SESION_INVENTADA));
+    expect(asignada).not.toBe(SESION_INVENTADA);
+    await esRechazoDeSesiones(await turno(servidor, "hola", TIPO_CONTENIDO.JSON, OTRA_SESION_INVENTADA));
+    await esRechazoDeSesiones(await turno(servidor, "hola", TIPO_CONTENIDO.JSON, SESION_INVENTADA));
+    expect(await sesionDe(await turno(servidor, "sigo", TIPO_CONTENIDO.JSON, asignada))).toBe(asignada);
+    expect(pedidos).toHaveLength(2);
+  });
+
+  test("un pedido rechazado por falta de cupo no gasta una sesión nueva", async () => {
+    const { servidor, pedidos } = await servidorCon({ ...UN_SOLO_CUPO, NEW_SESSIONS_PER_HOUR: "2" }, [
+      COLGADO,
+      { cuerpo: cuerpoConTexto("Ya hay lugar.") },
+    ]);
+    const colgado = cortarAlFinal(await turno(servidor, "uno", TIPO_CONTENIDO.SSE));
+    await esperarPedidos(pedidos, 1);
+    for (let ocupado = 0; ocupado < SESIONES_POR_HORA; ocupado += 1) {
+      expect((await turno(servidor, "dos", TIPO_CONTENIDO.JSON)).status).toBe(RESPUESTA_HTTP.NO_DISPONIBLE);
+    }
+    await colgado.body?.cancel();
+    await sesionDe(await hastaQueHayaCupo(() => turno(servidor, "dos", TIPO_CONTENIDO.JSON)));
+    await esRechazoDeSesiones(await turno(servidor, "tres", TIPO_CONTENIDO.JSON));
+    expect(pedidos).toHaveLength(2);
   });
 });

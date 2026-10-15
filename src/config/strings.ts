@@ -362,6 +362,8 @@ export const MENSAJE_HTTP = {
   topeDiario: (zona: string): string => `${TOPE_DIARIO_ALCANZADO} (${zona}).`,
   demasiadosMensajes: "Enviaste muchos mensajes seguidos. Espera un minuto y vuelve a intentarlo.",
   servidorOcupado: "El servidor está atendiendo otras conversaciones. Vuelve a intentarlo en unos segundos.",
+  demasiadasSesiones:
+    "Abriste demasiadas sesiones nuevas en la última hora. Sigue en la sesión actual o vuelve a intentarlo más tarde.",
 } as const;
 
 export const TEXTO_SESION = {
