@@ -3,7 +3,11 @@ import { mkdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { crearFetchFalso, cuerpoConTexto } from "@tests/helpers/fetch-falso.helper.ts";
 import { crearProyectoTemporal } from "@tests/helpers/proyecto-temporal.helper.ts";
-import { BINDINGS_PRUEBA, cabecerasPrueba, crearServidorPrueba } from "@tests/helpers/servidor-prueba.helper.ts";
+import {
+  BINDINGS_PRUEBA,
+  cabecerasPrueba,
+  crearServidorPrueba,
+} from "@tests/helpers/servidor-prueba.helper.ts";
 import type { PedidoRegistrado } from "@tests/helpers/types/fetch-falso.type.ts";
 import type { ProyectoTemporal } from "@tests/helpers/types/proyecto-temporal.type.ts";
 import type { ServidorPrueba } from "@tests/helpers/types/servidor-prueba.type.ts";
@@ -72,14 +76,20 @@ function cuerpoDeBytes(bytes: number, message = "hola"): string {
   return `${base}${ESPACIO.repeat(bytes - CODIFICADOR.encode(base).length)}`;
 }
 
-function chatJson(body: BodyInit, cabeceras: Record<string, string> = {}): RequestInit {
+function chatJson(body: RequestInit["body"], cabeceras: Record<string, string> = {}): RequestInit {
   return { method: "POST", headers: { [CABECERA.ACCEPT]: TIPO_CONTENIDO.JSON, ...cabeceras }, body };
 }
 
 function chatSinTipo(body: string): Promise<Response> {
   const cabeceras = cabecerasPrueba();
   cabeceras.delete("Content-Type");
-  return Promise.resolve(armar().servidor.app.request(RUTA_API.CHAT, { method: "POST", headers: cabeceras, body }, BINDINGS_PRUEBA));
+  return Promise.resolve(
+    armar().servidor.app.request(
+      RUTA_API.CHAT,
+      { method: "POST", headers: cabeceras, body },
+      BINDINGS_PRUEBA,
+    ),
+  );
 }
 
 function flujoDe(texto: string): ReadableStream<Uint8Array> {
@@ -174,7 +184,11 @@ describe("límite del cuerpo antes de parsear (413)", () => {
     const { servidor } = armar();
     const respuesta = await servidor.app.request(
       RUTA_API.ACCESO,
-      { method: "POST", headers: { "Content-Type": TIPO_CONTENIDO.JSON }, body: ESPACIO.repeat(MAXIMO_BYTES + 1) },
+      {
+        method: "POST",
+        headers: { "Content-Type": TIPO_CONTENIDO.JSON },
+        body: ESPACIO.repeat(MAXIMO_BYTES + 1),
+      },
       BINDINGS_PRUEBA,
     );
     expect(respuesta.status).toBe(RESPUESTA_HTTP.CUERPO_DEMASIADO_GRANDE);

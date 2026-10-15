@@ -20,6 +20,7 @@ export type ConfigResponse = {
   readonly zona: string;
   readonly casos: readonly string[];
   readonly presupuestoSesion: number;
+  readonly mensajeMaximo: number;
 };
 
 export type ErrorResponse = {

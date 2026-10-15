@@ -1,5 +1,7 @@
 import { resolve } from "node:path";
 import { type Context, Hono } from "hono";
+import { bodyLimit } from "hono/body-limit";
+import { secureHeaders } from "hono/secure-headers";
 import type { BitacoraEstructurada } from "@/application/types/puertos-agente.type.ts";
 import {
   BYTES_SECRETO_TOKEN,
@@ -7,10 +9,12 @@ import {
   DIRECTORIO_WEB_DIST,
   ENTORNO_APP,
   EVENTO_HTTP,
+  FUENTE_CSP,
   HOST_SERVIDOR,
   LATIDO_SSE_MS,
   RESPUESTA_HTTP,
   RUTA_API_PROTEGIDA,
+  RUTA_COMODIN,
   VARIABLE_SECRETO_TOKEN,
 } from "@/config/constants/http.constants.ts";
 import { MAX_ISSUES_ARGS } from "@/config/constants/limits.constants.ts";
@@ -32,6 +36,7 @@ import { MENSAJE_HTTP, TEXTO_ENV, TEXTO_HTTP } from "@/config/strings.ts";
 import { formatearIssues } from "@/domain/utils/formatear-issues.util.ts";
 import { requireAccess } from "@/http/middlewares/access.middleware.ts";
 import { resolveClientIp } from "@/http/middlewares/client-ip.middleware.ts";
+import { requireJson } from "@/http/middlewares/json-only.middleware.ts";
 import { registerAccessRoute } from "@/http/routes/access.route.ts";
 import { registerChatRoute } from "@/http/routes/chat.route.ts";
 import { registerConfigRoute } from "@/http/routes/config.route.ts";
@@ -115,7 +120,7 @@ function businessCalendar() {
   return { clock: clockFromToolEnv(toolEnv.data), zone: toolEnv.data.TZ_NEGOCIO };
 }
 
-function configSource(rootDirectory: string, config: AgentEnv): ConfigSource {
+function configSource(rootDirectory: string, config: AgentEnv, env: ServerEnv): ConfigSource {
   const root = resolveRoot(rootDirectory);
   return async () => {
     const { clock, zone } = businessCalendar();
@@ -124,6 +129,7 @@ function configSource(rootDirectory: string, config: AgentEnv): ConfigSource {
       zona: zone,
       casos: await listCases(root),
       presupuestoSesion: config.sessionTokenBudget,
+      mensajeMaximo: env.MAX_MESSAGE_CHARS,
     };
   };
 }
@@ -135,6 +141,30 @@ function notFound(c: Context<HttpEnv>): Response {
 
 function webDirectory(options: ServerOptions): string {
   return resolve(options.webDirectory ?? resolve(options.rootDirectory, DIRECTORIO_WEB_DIST));
+}
+
+function securityHeaders() {
+  const own = () => [FUENTE_CSP.PROPIA];
+  const none = () => [FUENTE_CSP.NINGUNA];
+  return secureHeaders({
+    contentSecurityPolicy: {
+      defaultSrc: own(),
+      scriptSrc: own(),
+      styleSrc: own(),
+      connectSrc: own(),
+      imgSrc: [FUENTE_CSP.PROPIA, FUENTE_CSP.DATA],
+      fontSrc: own(),
+      objectSrc: none(),
+      frameAncestors: none(),
+      baseUri: own(),
+      formAction: own(),
+    },
+  });
+}
+
+function bodyTooLarge(c: Context<HttpEnv>): Response {
+  const body: ErrorResponse = { mensaje: MENSAJE_HTTP.cuerpoDemasiadoGrande };
+  return c.json(body, RESPUESTA_HTTP.CUERPO_DEMASIADO_GRANDE);
 }
 
 function registerFallbackHandlers(app: Hono<HttpEnv>, logger: BitacoraEstructurada): void {
@@ -160,16 +190,23 @@ export function createServer(options: ServerOptions): ServerCreation {
   const logger = httpLogger(options, config.data, secrets);
   const app = new Hono<HttpEnv>();
   registerFallbackHandlers(app, logger);
+  app.use(RUTA_COMODIN, securityHeaders());
   app.use(RUTA_API_PROTEGIDA, resolveClientIp({ trustedHops: env.data.TRUSTED_PROXY_HOPS, logger }));
+  app.use(
+    RUTA_API_PROTEGIDA,
+    requireJson(),
+    bodyLimit({ maxSize: env.data.MAX_BODY_BYTES, onError: bodyTooLarge }),
+  );
   registerHealthRoute(app, { provider: creation.agente.proveedor, model: creation.agente.modelo });
   registerAccessRoute(app, access);
   app.use(RUTA_API_PROTEGIDA, requireAccess(access));
-  registerConfigRoute(app, configSource(options.rootDirectory, config.data));
+  registerConfigRoute(app, configSource(options.rootDirectory, config.data, env.data));
   registerChatRoute(app, {
     agente: creation.agente,
     secrets,
     logger,
     heartbeatMs: options.heartbeatMs ?? LATIDO_SSE_MS,
+    maxMessageChars: env.data.MAX_MESSAGE_CHARS,
   });
   registerStaticRoutes(app, { webDirectory: webDirectory(options) });
   return { ok: true, app, port: env.data.PORT };

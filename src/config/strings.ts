@@ -5,6 +5,7 @@ import {
   ENTORNO_APP,
   LONGITUD_MINIMA_CODIGO_ACCESO,
   LONGITUD_MINIMA_SECRETO_TOKEN,
+  TIPO_CONTENIDO,
   VENTANA_FALLOS_ACCESO_MINUTOS_POR_DEFECTO,
 } from "@/config/constants/http.constants.ts";
 import { LONGITUD_MAXIMA_CASO } from "@/config/constants/limits.constants.ts";
@@ -350,6 +351,10 @@ export const MENSAJE_HTTP = {
   codigoInvalido: "El código no es válido. Revísalo y vuelve a intentarlo.",
   accesoVencido: "Tu acceso venció. Escribe el código de nuevo para seguir.",
   demasiadosIntentos: esperarIntentos(VENTANA_FALLOS_ACCESO_MINUTOS_POR_DEFECTO),
+  tipoNoSoportado: `El pedido no es válido: envíalo como JSON, con Content-Type ${TIPO_CONTENIDO.JSON}.`,
+  cuerpoDemasiadoGrande: "El pedido es demasiado grande. Acorta el mensaje y vuelve a enviarlo.",
+  mensajeDemasiadoLargo: (maximo: number): string =>
+    `El mensaje supera los ${maximo} caracteres. Acórtalo y vuelve a enviarlo.`,
 } as const;
 
 export const TEXTO_SESION = {

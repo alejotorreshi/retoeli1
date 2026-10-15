@@ -78,6 +78,16 @@ export const INTENTOS_FALLIDOS_ACCESO_POR_DEFECTO = 5;
 
 export const VENTANA_FALLOS_ACCESO_MINUTOS_POR_DEFECTO = 15;
 
+export const MENSAJE_MAXIMO_CARACTERES_POR_DEFECTO = 2_000;
+
+export const CUERPO_MAXIMO_BYTES_POR_DEFECTO = 16_384;
+
+export const FUENTE_CSP = {
+  PROPIA: "'self'",
+  NINGUNA: "'none'",
+  DATA: "data:",
+} as const;
+
 export const LATIDO_SSE_MS = 8_000;
 
 export const COMENTARIO_LATIDO = "ping";
@@ -86,6 +96,7 @@ export const CABECERA = {
   CACHE_CONTROL: "Cache-Control",
   X_ACCEL_BUFFERING: "X-Accel-Buffering",
   ACCEPT: "Accept",
+  TIPO_CONTENIDO: "Content-Type",
   AUTORIZACION: "Authorization",
   X_FORWARDED_FOR: "X-Forwarded-For",
 } as const;

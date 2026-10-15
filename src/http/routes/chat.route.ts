@@ -25,6 +25,7 @@ type ChatDeps = {
   readonly secrets: readonly string[];
   readonly logger: BitacoraEstructurada;
   readonly heartbeatMs: number;
+  readonly maxMessageChars: number;
 };
 
 async function readBody(c: Context<HttpEnv>): Promise<ChatBody | null> {
@@ -39,6 +40,11 @@ async function readBody(c: Context<HttpEnv>): Promise<ChatBody | null> {
 function invalidBody(c: Context<HttpEnv>): Response {
   const body: ErrorResponse = { mensaje: MENSAJE_HTTP.cuerpoInvalido };
   return c.json(body, RESPUESTA_HTTP.PEDIDO_INVALIDO);
+}
+
+function messageTooLong(c: Context<HttpEnv>, maxMessageChars: number): Response {
+  const body: ErrorResponse = { mensaje: MENSAJE_HTTP.mensajeDemasiadoLargo(maxMessageChars) };
+  return c.json(body, RESPUESTA_HTTP.CUERPO_DEMASIADO_GRANDE);
 }
 
 function internalErrorData(): string {
@@ -93,6 +99,7 @@ export function registerChatRoute(app: Hono<HttpEnv>, deps: ChatDeps): void {
     c.env.timeout(c.req.raw, 0);
     const body = await readBody(c);
     if (body === null) return invalidBody(c);
+    if (body.message.length > deps.maxMessageChars) return messageTooLong(c, deps.maxMessageChars);
     return wantsJson(c) ? jsonTurn(c, body, deps) : streamTurn(c, body, deps);
   });
 }

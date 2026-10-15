@@ -29,6 +29,7 @@ import {
   CABECERA,
   COMENTARIO_LATIDO,
   EVENTO_HTTP,
+  MENSAJE_MAXIMO_CARACTERES_POR_DEFECTO,
   RESPUESTA_HTTP,
   RUTA_API,
   TIPO_CONTENIDO,
@@ -267,7 +268,13 @@ describe("POST /api/chat: cuerpos inválidos y errores contenidos", () => {
       },
     };
     const app = new Hono<HttpEnv>();
-    registerChatRoute(app, { agente, secrets: [], logger, heartbeatMs: LATIDO_CORTO_MS });
+    registerChatRoute(app, {
+      agente,
+      secrets: [],
+      logger,
+      heartbeatMs: LATIDO_CORTO_MS,
+      maxMessageChars: MENSAJE_MAXIMO_CARACTERES_POR_DEFECTO,
+    });
     const respuesta = await app.request(RUTA_API.CHAT, pedidoChat(null, "hola"), BINDINGS_PRUEBA);
     const crudo = await respuesta.clone().text();
     const { eventos } = await leerSse(respuesta);

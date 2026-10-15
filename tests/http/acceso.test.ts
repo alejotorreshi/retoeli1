@@ -46,6 +46,7 @@ const IP_REAL_OTRA = "198.51.100.8";
 const FECHA_CONFIG = "2026-09-03";
 const ZONA_CONFIG = "America/Guayaquil";
 const PRESUPUESTO_CONFIG = 123_456;
+const MENSAJE_MAXIMO_CONFIG = 1_800;
 const CASOS_FIXTURE = ["co-industrias-delta", "ec-corp-andina", "hn-agroexport-sula", "pa-logistica-istmo"];
 
 type Armado = {
@@ -564,7 +565,14 @@ async function conVariables<T>(
 
 describe("GET /api/config con los datos que la SPA no inventa (UI-09)", () => {
   test("la cookie sola abre /api/config con la fecha efectiva, la zona, los casos y el presupuesto", async () => {
-    const app = appDe(crear({ entorno: { AGENT_SESSION_TOKEN_BUDGET: String(PRESUPUESTO_CONFIG) } }));
+    const app = appDe(
+      crear({
+        entorno: {
+          AGENT_SESSION_TOKEN_BUDGET: String(PRESUPUESTO_CONFIG),
+          MAX_MESSAGE_CHARS: String(MENSAJE_MAXIMO_CONFIG),
+        },
+      }),
+    );
     const cookie = await entrar(app);
     const respuesta = await conVariables({ FECHA_EJECUCION: FECHA_CONFIG, TZ_NEGOCIO: ZONA_CONFIG }, () =>
       pedir(app, RUTA_API.CONFIG, { headers: { Cookie: cookie } }),
@@ -575,6 +583,7 @@ describe("GET /api/config con los datos que la SPA no inventa (UI-09)", () => {
       zona: ZONA_CONFIG,
       casos: CASOS_FIXTURE,
       presupuestoSesion: PRESUPUESTO_CONFIG,
+      mensajeMaximo: MENSAJE_MAXIMO_CONFIG,
     });
   });
 
