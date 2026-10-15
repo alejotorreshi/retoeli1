@@ -163,12 +163,28 @@ function desenlaceDeEvento(
   }
 }
 
+function casoIntentado(evento: EventoCompuerta): string | null {
+  return evento.tipo === EVENTO_COMPUERTA.ARMADO ? null : evento.caso;
+}
+
+function reintentadoDespues(eventos: readonly EventoCompuerta[], indice: number, caso: string): boolean {
+  return eventos.slice(indice + 1).some((evento) => casoIntentado(evento) === caso);
+}
+
+function reemplazadoPorReintento(eventos: readonly EventoCompuerta[], indice: number): boolean {
+  const evento = eventos[indice];
+  if (evento?.tipo !== EVENTO_COMPUERTA.TRUNCADO || evento.caso === null) return false;
+  return reintentadoDespues(eventos, indice, evento.caso);
+}
+
 function desenlacesDeCasos(entrada: EntradaCierreCompuerta): readonly DesenlaceEnvio[] {
   const pendientes = new Map(entrada.arrastrados.map((pendiente) => [pendiente.caso, pendiente] as const));
   const enviados = new Set(entrada.enviados);
   const desenlaces: DesenlaceEnvio[] = [];
-  for (const evento of entrada.eventos) {
-    const desenlace = desenlaceDeEvento(pendientes, enviados, evento, entrada.conocidos);
+  for (const [indice, evento] of entrada.eventos.entries()) {
+    const desenlace = reemplazadoPorReintento(entrada.eventos, indice)
+      ? null
+      : desenlaceDeEvento(pendientes, enviados, evento, entrada.conocidos);
     if (desenlace !== null) desenlaces.push(desenlace);
     aplicarEvento(pendientes, enviados, evento, entrada.conocidos);
   }
