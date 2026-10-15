@@ -3,16 +3,16 @@ gsd_state_version: "1.0"
 current_phase: 03
 current_phase_name: Chat web, API SSE y despliegue
 status: executing
-stopped_at: Completed 03-14-PLAN.md
-last_updated: "2026-10-15T02:15:09.304Z"
+stopped_at: Completed 03-15-PLAN.md
+last_updated: "2026-10-15T02:21:39.369Z"
 last_activity: 2026-10-14
 last_activity_desc: Phase 03 execution started
-state_head: "0bcbdd38991d28e90af274fcd761623f5e02c05a"
+state_head: a588837e5e8310d724db383c1733f29cbd6c4b15
 progress:
   total_phases: 4
   completed_phases: 2
   total_plans: 66
-  completed_plans: 53
+  completed_plans: 54
   percent: 50
 ---
 
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-10-14)
 ## Current Position
 
 Phase: 03 (Chat web, API SSE y despliegue) — EXECUTING
-Plan: 15 of 27
+Plan: 16 of 27
 Status: Ready to execute
 Last activity: 2026-10-14 — Phase 03 execution started
 
@@ -110,6 +110,7 @@ Progress: [█████░░░░░] 50%
 | Phase 03 P12 | 5min | 2 tasks | 14 files |
 | Phase 03 P13 | 5 min | 2 tasks | 14 files |
 | Phase 03 P14 | 9 min | 2 tasks | 15 files |
+| Phase 03 P15 | 5 min | 2 tasks | 14 files |
 
 ## Accumulated Context
 
@@ -251,6 +252,8 @@ Recent decisions affecting current work:
 - [Phase 03]: 03-14: el tope de 10 mensajes por minuto por IP cuenta todo POST /api/chat autenticado, válido o no; los Bearer errados solo suman al tope de acceso
 - [Phase 03]: 03-14: el cupo de turno se adquiere después de los rechazos baratos (cuerpo, clave, tope diario) y se libera en el finally SSE y en el del pliegue JSON
 - [Phase 03]: 03-14: limitador de mensajes y cupos de turno viven en memoria por instancia y se pierden en reinicios (D-73.6), documentar en SOLUCION.md
+- [Phase 03]: 03-15: el tope de sesiones nuevas (5/h por IP) se comprueba antes del cupo y se cuenta solo al obtenerlo; sessionId null o desconocido cuenta como nueva
+- [Phase 03]: 03-15: AlmacenSesiones.leer no crea, no renueva el TTL ni cambia el orden de desalojo; Agente.existeSesion se apoya en él
 
 ### Pending Todos
 
@@ -286,6 +289,6 @@ Items acknowledged and deferred at milestone close, most recent first:
 
 ## Session Continuity
 
-Last session: 2026-10-15T02:15:09.221Z
-Stopped at: Completed 03-14-PLAN.md
+Last session: 2026-10-15T02:21:39.284Z
+Stopped at: Completed 03-15-PLAN.md
 Resume file: None
