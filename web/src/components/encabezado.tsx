@@ -1,7 +1,8 @@
 import estilos from "@web/components/encabezado.module.css";
 import { TEXTO_APP } from "@web/config/strings.ts";
+import type { PropsEncabezado } from "@web/types/ui.type.ts";
 
-export function Encabezado() {
+export function Encabezado({ fechaEjecucion }: PropsEncabezado) {
   return (
     <header className={estilos.encabezado}>
       <div className={estilos.marca}>
@@ -11,6 +12,7 @@ export function Encabezado() {
         </span>
         <p className={estilos.subtitulo}>{TEXTO_APP.subtitulo}</p>
       </div>
+      <p className={estilos.fecha}>{TEXTO_APP.fechaEjecucion(fechaEjecucion)}</p>
     </header>
   );
 }

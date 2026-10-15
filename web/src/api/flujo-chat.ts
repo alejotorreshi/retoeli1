@@ -1,9 +1,10 @@
-import { ACCION_UI, PEDIDO_CHAT } from "@web/config/constants/ui.constants.ts";
+import { pedir, resultadoDelRechazo } from "@web/api/cliente-api.ts";
+import { ACCION_UI, PEDIDO_JSON, RESULTADO_API } from "@web/config/constants/ui.constants.ts";
 import type { Despachar } from "@web/types/chat.type.ts";
 import { EventSourceParserStream } from "eventsource-parser/stream";
 import { TIPO_EVENTO } from "@/config/constants/agent.constants.ts";
 import { RUTA_API } from "@/config/constants/http.constants.ts";
-import type { ChatBody, ErrorResponse, SseEvent } from "@/http/types/api.type.ts";
+import type { ChatBody, SseEvent } from "@/http/types/api.type.ts";
 
 const TIPOS_DE_EVENTO: ReadonlySet<string> = new Set(Object.values(TIPO_EVENTO));
 
@@ -18,37 +19,10 @@ function esEventoDelServidor(valor: unknown, nombre: string | undefined): valor 
   );
 }
 
-function esErrorDelServidor(valor: unknown): valor is ErrorResponse {
-  return (
-    typeof valor === "object" &&
-    valor !== null &&
-    "mensaje" in valor &&
-    typeof valor.mensaje === "string" &&
-    valor.mensaje.trim().length > 0
-  );
-}
-
 function eventoDelServidor(nombre: string | undefined, datos: string): SseEvent | null {
   try {
     const valor: unknown = JSON.parse(datos);
     return esEventoDelServidor(valor, nombre) ? valor : null;
-  } catch {
-    return null;
-  }
-}
-
-async function mensajeDelRechazo(respuesta: Response): Promise<string | null> {
-  try {
-    const valor: unknown = await respuesta.json();
-    return esErrorDelServidor(valor) ? valor.mensaje : null;
-  } catch {
-    return null;
-  }
-}
-
-async function pedirChat(pedido: ChatBody, signal: AbortSignal): Promise<Response | null> {
-  try {
-    return await fetch(RUTA_API.CHAT, { ...PEDIDO_CHAT, body: JSON.stringify(pedido), signal });
   } catch {
     return null;
   }
@@ -81,12 +55,12 @@ async function leerEventos(cuerpo: NonNullable<Response["body"]>, despachar: Des
 }
 
 async function informarRechazo(respuesta: Response, despachar: Despachar): Promise<void> {
-  const mensaje = await mensajeDelRechazo(respuesta);
-  if (mensaje === null) {
+  const rechazo = await resultadoDelRechazo(respuesta);
+  if (rechazo.tipo === RESULTADO_API.SIN_RED) {
     despachar({ tipo: ACCION_UI.ERROR_RED });
     return;
   }
-  despachar({ tipo: ACCION_UI.ERROR_HTTP, status: respuesta.status, mensaje });
+  despachar({ tipo: ACCION_UI.ERROR_HTTP, status: respuesta.status, mensaje: rechazo.mensaje });
 }
 
 export async function enviarMensaje(
@@ -94,7 +68,7 @@ export async function enviarMensaje(
   despachar: Despachar,
   signal: AbortSignal,
 ): Promise<void> {
-  const respuesta = await pedirChat(pedido, signal);
+  const respuesta = await pedir(RUTA_API.CHAT, { ...PEDIDO_JSON, body: JSON.stringify(pedido), signal });
   if (signal.aborted) return;
   if (respuesta === null) {
     despachar({ tipo: ACCION_UI.ERROR_RED });

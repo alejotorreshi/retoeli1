@@ -1,12 +1,28 @@
+import { VIGENCIA_ACCESO_HORAS_POR_DEFECTO } from "@/config/constants/http.constants.ts";
+
 const TITULO_APP = "Registro como proveedor";
 const SUBTITULO_APP = "Periferia IT Group";
 const SEPARADOR = "·";
+const SIN_DATO = "—";
 
 export const TEXTO_APP = {
   titulo: TITULO_APP,
   subtitulo: SUBTITULO_APP,
   separador: SEPARADOR,
   tituloDocumento: `${TITULO_APP} ${SEPARADOR} ${SUBTITULO_APP}`,
+  fechaEjecucion: (fecha: string | null) => `Fecha de ejecución ${fecha ?? SIN_DATO}`,
+  cargando: "Cargando el agente…",
+} as const;
+
+export const TEXTO_ACCESO = {
+  titulo: "Acceso al agente",
+  ayuda: `Escribe el código de acceso que está en el README. Lo pedimos una vez; el acceso dura ${VIGENCIA_ACCESO_HORAS_POR_DEFECTO} horas en este navegador.`,
+  etiqueta: "Código de acceso",
+  mostrar: "Mostrar código",
+  ocultar: "Ocultar código",
+  entrar: "Entrar al agente",
+  verificando: "Verificando…",
+  vencido: "Tu acceso venció. Escribe el código de nuevo para seguir.",
 } as const;
 
 export const TEXTO_CHAT = {

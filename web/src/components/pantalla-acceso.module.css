@@ -1,0 +1,109 @@
+.pantalla {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--espacio-md);
+  background: var(--dominante);
+}
+
+.tarjeta {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-md);
+  width: 100%;
+  max-width: var(--ancho-acceso);
+  margin-inline: auto;
+  padding: var(--espacio-xl);
+  background: var(--dominante);
+  border: var(--borde-ancho) solid var(--borde);
+  border-radius: var(--radio);
+}
+
+.titulo {
+  margin: 0;
+  font-size: var(--display-tamano);
+  font-weight: var(--display-peso);
+  line-height: var(--display-interlinea);
+  color: var(--texto);
+}
+
+.ayuda {
+  margin: 0;
+  color: var(--texto-tenue);
+}
+
+.grupo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-xs);
+}
+
+.etiqueta {
+  font-size: var(--etiqueta-tamano);
+  font-weight: var(--etiqueta-peso-fuerte);
+  line-height: var(--etiqueta-interlinea);
+}
+
+.fila {
+  display: flex;
+  gap: var(--espacio-sm);
+}
+
+.campo {
+  flex: 1;
+  min-width: 0;
+  min-height: var(--alto-control);
+  padding-inline: var(--espacio-md);
+  background: var(--dominante);
+  border: var(--borde-ancho) solid var(--borde);
+  border-radius: var(--radio-chico);
+}
+
+.campo[aria-invalid="true"] {
+  border-color: var(--error-borde);
+}
+
+.alternar {
+  flex: none;
+  min-height: var(--alto-control);
+  padding-inline: var(--espacio-md);
+  font-size: var(--etiqueta-tamano);
+  line-height: var(--etiqueta-interlinea);
+  color: var(--texto);
+  background: var(--dominante);
+  border: var(--borde-ancho) solid var(--borde);
+  border-radius: var(--radio-chico);
+  cursor: pointer;
+}
+
+.error {
+  margin: 0;
+  font-size: var(--etiqueta-tamano);
+  line-height: var(--etiqueta-interlinea);
+  color: var(--error-texto);
+}
+
+.entrar {
+  width: 100%;
+  min-height: var(--alto-control);
+  padding-inline: var(--espacio-md);
+  font-size: var(--etiqueta-tamano);
+  font-weight: var(--etiqueta-peso-fuerte);
+  line-height: var(--etiqueta-interlinea);
+  color: var(--sobre-acento);
+  background: var(--acento);
+  border: var(--borde-ancho) solid var(--acento);
+  border-radius: var(--radio-chico);
+  cursor: pointer;
+}
+
+.entrar:disabled {
+  background: var(--texto-tenue);
+  border-color: var(--texto-tenue);
+  cursor: not-allowed;
+}
+
+@media (min-width: 40em) {
+  .pantalla {
+    padding-block-start: var(--espacio-3xl);
+  }
+}

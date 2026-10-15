@@ -40,3 +40,12 @@ export type PropsCompositor = {
   readonly alCambiar: (valor: string) => void;
   readonly alEnviar: () => void;
 };
+
+export type PropsEncabezado = {
+  readonly fechaEjecucion: string | null;
+};
+
+export type PropsPantallaAcceso = {
+  readonly aviso: string | null;
+  readonly alEntrar: () => Promise<void>;
+};

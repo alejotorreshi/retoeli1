@@ -1,5 +1,5 @@
-import type { ACCION_UI } from "@web/config/constants/ui.constants.ts";
-import type { ErrorResponse, SseEvent } from "@/http/types/api.type.ts";
+import type { ACCION_UI, ESTADO_ACCESO, RESULTADO_API } from "@web/config/constants/ui.constants.ts";
+import type { ConfigResponse, ErrorResponse, SseEvent } from "@/http/types/api.type.ts";
 
 export type ErrorVisible = {
   readonly codigo: string | null;
@@ -18,10 +18,25 @@ export type TurnoConversacion = {
   readonly error: ErrorVisible | null;
 };
 
+export type EstadoAcceso =
+  | { readonly tipo: typeof ESTADO_ACCESO.VERIFICANDO }
+  | { readonly tipo: typeof ESTADO_ACCESO.PEDIDO; readonly aviso: string | null }
+  | { readonly tipo: typeof ESTADO_ACCESO.CONCEDIDO };
+
+export type ResultadoApi<T> =
+  | { readonly tipo: typeof RESULTADO_API.OK; readonly valor: T }
+  | { readonly tipo: typeof RESULTADO_API.ACCESO_VENCIDO; readonly mensaje: string }
+  | { readonly tipo: typeof RESULTADO_API.RECHAZO; readonly status: number; readonly mensaje: string }
+  | { readonly tipo: typeof RESULTADO_API.SIN_RED };
+
+export type ResultadoFallido = Exclude<ResultadoApi<never>, { readonly tipo: typeof RESULTADO_API.OK }>;
+
 export type EstadoConversacion = {
   readonly sesionId: string | null;
   readonly turnos: readonly TurnoConversacion[];
   readonly enCurso: boolean;
+  readonly acceso: EstadoAcceso;
+  readonly config: ConfigResponse | null;
 };
 
 export type AccionEnviar = {
@@ -48,7 +63,24 @@ export type AccionFinStream = {
   readonly tipo: typeof ACCION_UI.FIN_STREAM;
 };
 
-export type AccionUi = AccionEnviar | AccionEvento | AccionErrorHttp | AccionErrorRed | AccionFinStream;
+export type AccionConfigRecibida = {
+  readonly tipo: typeof ACCION_UI.CONFIG_RECIBIDA;
+  readonly config: ConfigResponse | null;
+};
+
+export type AccionAccesoPedido = {
+  readonly tipo: typeof ACCION_UI.ACCESO_PEDIDO;
+  readonly aviso: string | null;
+};
+
+export type AccionUi =
+  | AccionEnviar
+  | AccionEvento
+  | AccionErrorHttp
+  | AccionErrorRed
+  | AccionFinStream
+  | AccionConfigRecibida
+  | AccionAccesoPedido;
 
 export type Despachar = (accion: AccionUi) => void;
 
@@ -57,4 +89,5 @@ export type ControlChat = {
   readonly borrador: string;
   readonly cambiarBorrador: (borrador: string) => void;
   readonly enviar: () => void;
+  readonly recibirConfig: (resultado: ResultadoApi<ConfigResponse>) => void;
 };

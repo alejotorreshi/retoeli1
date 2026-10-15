@@ -1,13 +1,18 @@
 import { enviarMensaje } from "@web/api/flujo-chat.ts";
 import { ACCION_UI, ACCIONES_QUE_DEVUELVEN_EL_BORRADOR } from "@web/config/constants/ui.constants.ts";
-import { estadoInicialConversacion, reducirConversacion } from "@web/state/conversacion.ts";
-import type { ControlChat, Despachar } from "@web/types/chat.type.ts";
-import { useReducer, useRef, useState } from "react";
+import { accionDeConfig, estadoInicialConversacion, reducirConversacion } from "@web/state/conversacion.ts";
+import type { ControlChat, Despachar, ResultadoApi } from "@web/types/chat.type.ts";
+import { useCallback, useReducer, useRef, useState } from "react";
+import type { ConfigResponse } from "@/http/types/api.type.ts";
 
 export function useChat(): ControlChat {
   const [estado, despachar] = useReducer(reducirConversacion, estadoInicialConversacion);
   const [borrador, cambiarBorrador] = useState("");
   const turnoActivo = useRef<AbortController | null>(null);
+  const recibirConfig = useCallback(
+    (resultado: ResultadoApi<ConfigResponse>) => despachar(accionDeConfig(resultado)),
+    [],
+  );
 
   function enviar(): void {
     const mensaje = borrador.trim();
@@ -31,5 +36,5 @@ export function useChat(): ControlChat {
     });
   }
 
-  return { estado, borrador, cambiarBorrador, enviar };
+  return { estado, borrador, cambiarBorrador, enviar, recibirConfig };
 }

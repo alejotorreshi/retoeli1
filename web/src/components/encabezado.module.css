@@ -2,6 +2,7 @@
   display: flex;
   flex: none;
   align-items: center;
+  gap: var(--espacio-md);
   height: var(--alto-encabezado);
   padding-inline: var(--espacio-md);
   background: var(--secundario);
@@ -29,4 +30,21 @@
   font-size: var(--etiqueta-tamano);
   line-height: var(--etiqueta-interlinea);
   color: var(--texto-tenue);
+}
+
+.fecha {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  min-height: var(--alto-control);
+  margin: 0;
+  margin-inline-start: auto;
+  padding-inline: var(--espacio-md);
+  font-size: var(--etiqueta-tamano);
+  line-height: var(--etiqueta-interlinea);
+  font-variant-numeric: tabular-nums;
+  color: var(--texto);
+  background: var(--dominante);
+  border: var(--borde-ancho) solid var(--borde);
+  border-radius: var(--radio-chico);
 }

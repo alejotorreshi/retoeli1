@@ -1,9 +1,10 @@
 import { afterEach, describe, expect, spyOn, test } from "bun:test";
 import { enviarMensaje } from "@web/api/flujo-chat.ts";
 import { ACCION_UI } from "@web/config/constants/ui.constants.ts";
+import { TEXTO_ACCESO } from "@web/config/strings.ts";
 import type { AccionUi } from "@web/types/chat.type.ts";
 import { MOTIVO_FIN, TIPO_EVENTO } from "@/config/constants/agent.constants.ts";
-import { RUTA_API } from "@/config/constants/http.constants.ts";
+import { RESPUESTA_HTTP, RUTA_API } from "@/config/constants/http.constants.ts";
 import type { SseEvent } from "@/http/types/api.type.ts";
 
 const PEDIDO = { sessionId: null, message: "procesa el caso co-industrias-delta" } as const;
@@ -100,6 +101,14 @@ describe("enviarMensaje", () => {
     simularFetch(async () => Response.json({ mensaje: MENSAJE_MUY_LARGO }, { status: 413 }));
     const acciones = await despachosDe();
     expect(acciones).toEqual([{ tipo: ACCION_UI.ERROR_HTTP, status: 413, mensaje: MENSAJE_MUY_LARGO }]);
+  });
+
+  test("un 401 sin mensaje legible despacha ERROR_HTTP 401 con la copia de acceso vencido", async () => {
+    simularFetch(async () => new Response("", { status: RESPUESTA_HTTP.NO_AUTORIZADO }));
+    const acciones = await despachosDe();
+    expect(acciones).toEqual([
+      { tipo: ACCION_UI.ERROR_HTTP, status: RESPUESTA_HTTP.NO_AUTORIZADO, mensaje: TEXTO_ACCESO.vencido },
+    ]);
   });
 
   test("un rechazo HTTP sin mensaje legible despacha ERROR_RED", async () => {

@@ -6,6 +6,21 @@ export const ACCION_UI = {
   ERROR_HTTP: "error_http",
   ERROR_RED: "error_red",
   FIN_STREAM: "fin_stream",
+  CONFIG_RECIBIDA: "config_recibida",
+  ACCESO_PEDIDO: "acceso_pedido",
+} as const;
+
+export const ESTADO_ACCESO = {
+  VERIFICANDO: "verificando",
+  PEDIDO: "pedido",
+  CONCEDIDO: "concedido",
+} as const;
+
+export const RESULTADO_API = {
+  OK: "ok",
+  ACCESO_VENCIDO: "acceso_vencido",
+  RECHAZO: "rechazo",
+  SIN_RED: "sin_red",
 } as const;
 
 export const ACCIONES_QUE_DEVUELVEN_EL_BORRADOR: ReadonlySet<string> = new Set([
@@ -19,7 +34,7 @@ export const TECLA_ENVIAR = "Enter";
 
 export const DISTANCIA_PEGADO_AL_FINAL = 96;
 
-export const PEDIDO_CHAT = {
+export const PEDIDO_JSON = {
   method: METODO_POST,
   headers: { [CABECERA_HTTP.TIPO_CONTENIDO]: TIPO_CONTENIDO_JSON },
 } as const;

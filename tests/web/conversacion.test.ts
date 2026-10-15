@@ -1,10 +1,11 @@
 import { describe, expect, test } from "bun:test";
-import { ACCION_UI } from "@web/config/constants/ui.constants.ts";
+import { ACCION_UI, ESTADO_ACCESO, RESULTADO_API } from "@web/config/constants/ui.constants.ts";
 import { TEXTO_ERROR } from "@web/config/strings.ts";
-import { estadoInicialConversacion, reducirConversacion } from "@web/state/conversacion.ts";
+import { accionDeConfig, estadoInicialConversacion, reducirConversacion } from "@web/state/conversacion.ts";
 import type { AccionUi, EstadoConversacion } from "@web/types/chat.type.ts";
 import { CODIGO_AGENTE, MOTIVO_FIN, TIPO_EVENTO } from "@/config/constants/agent.constants.ts";
-import type { SseEvent } from "@/http/types/api.type.ts";
+import { RESPUESTA_HTTP } from "@/config/constants/http.constants.ts";
+import type { ConfigResponse, SseEvent } from "@/http/types/api.type.ts";
 
 const SESION = "sesion-de-prueba";
 const TURNO = "turno-1";
@@ -12,6 +13,14 @@ const MENSAJE = "procesa el caso co-industrias-delta";
 const RESPUESTA = "Listo: el caso co-industrias-delta quedó mapeado.\nRevisa los faltantes.";
 const MENSAJE_ERROR_AGENTE = "El proveedor tardó demasiado en responder. La sesión sigue abierta.";
 const MENSAJE_MUY_LARGO = "El mensaje supera los 2000 caracteres. Acórtalo y vuelve a enviarlo.";
+const ACCESO_VENCIDO = "Tu acceso venció. Escribe el código de nuevo para seguir.";
+const CONFIG: ConfigResponse = {
+  fechaEjecucion: "2026-09-03",
+  zona: "America/Bogota",
+  casos: ["co-industrias-delta", "ec-corp-andina"],
+  presupuestoSesion: 300_000,
+  mensajeMaximo: 2000,
+};
 
 function evento(eventoDelServidor: SseEvent): AccionUi {
   return { tipo: ACCION_UI.EVENTO, evento: eventoDelServidor };
@@ -35,8 +44,14 @@ const turnoCompleto: readonly AccionUi[] = [
 ];
 
 describe("reducirConversacion", () => {
-  test("el estado inicial no tiene sesión, turnos ni turno en curso", () => {
-    expect(estadoInicialConversacion).toEqual({ sesionId: null, turnos: [], enCurso: false });
+  test("el estado inicial no tiene sesión, turnos, turno en curso ni config, y verifica el acceso", () => {
+    expect(estadoInicialConversacion).toEqual({
+      sesionId: null,
+      turnos: [],
+      enCurso: false,
+      acceso: { tipo: ESTADO_ACCESO.VERIFICANDO },
+      config: null,
+    });
   });
 
   test("ENVIAR agrega la burbuja de la usuaria y deja el turno en curso", () => {
@@ -161,5 +176,77 @@ describe("reducirConversacion", () => {
       }),
     );
     expect(estado).toBe(enCurso);
+  });
+
+  test("ERROR_HTTP 401 pide el acceso con el mensaje del servidor y conserva el sessionId", () => {
+    const estado = aplicar(estadoInicialConversacion, [
+      { tipo: ACCION_UI.CONFIG_RECIBIDA, config: CONFIG },
+      ...turnoCompleto,
+      { tipo: ACCION_UI.ENVIAR, mensaje: "¿y el siguiente?" },
+      { tipo: ACCION_UI.ERROR_HTTP, status: RESPUESTA_HTTP.NO_AUTORIZADO, mensaje: ACCESO_VENCIDO },
+    ]);
+    expect(estado.acceso).toEqual({ tipo: ESTADO_ACCESO.PEDIDO, aviso: ACCESO_VENCIDO });
+    expect(estado.sesionId).toBe(SESION);
+    expect(estado.config).toEqual(CONFIG);
+    expect(estado.enCurso).toBe(false);
+  });
+
+  test("ERROR_HTTP 401 quita el turno que el servidor no recibió y deja intacta la conversación anterior", () => {
+    const estado = aplicar(estadoInicialConversacion, [
+      ...turnoCompleto,
+      { tipo: ACCION_UI.ENVIAR, mensaje: "¿y el siguiente?" },
+      { tipo: ACCION_UI.ERROR_HTTP, status: RESPUESTA_HTTP.NO_AUTORIZADO, mensaje: ACCESO_VENCIDO },
+    ]);
+    expect(estado.turnos.map((turno) => turno.mensaje)).toEqual([MENSAJE]);
+    expect(estado.turnos[0]?.textos.map((texto) => texto.texto)).toEqual([RESPUESTA]);
+    expect(estado.turnos[0]?.error).toBeNull();
+  });
+
+  test("volver a recibir la config después del 401 regresa al chat con la misma sesión", () => {
+    const estado = aplicar(estadoInicialConversacion, [
+      ...turnoCompleto,
+      { tipo: ACCION_UI.ENVIAR, mensaje: "¿y el siguiente?" },
+      { tipo: ACCION_UI.ERROR_HTTP, status: RESPUESTA_HTTP.NO_AUTORIZADO, mensaje: ACCESO_VENCIDO },
+      { tipo: ACCION_UI.CONFIG_RECIBIDA, config: CONFIG },
+    ]);
+    expect(estado.acceso).toEqual({ tipo: ESTADO_ACCESO.CONCEDIDO });
+    expect(estado.sesionId).toBe(SESION);
+    expect(estado.turnos).toHaveLength(1);
+  });
+
+  test("CONFIG_RECIBIDA sin config conserva la config que ya había", () => {
+    const estado = aplicar(estadoInicialConversacion, [
+      { tipo: ACCION_UI.CONFIG_RECIBIDA, config: CONFIG },
+      { tipo: ACCION_UI.CONFIG_RECIBIDA, config: null },
+    ]);
+    expect(estado.acceso).toEqual({ tipo: ESTADO_ACCESO.CONCEDIDO });
+    expect(estado.config).toEqual(CONFIG);
+  });
+});
+
+describe("accionDeConfig", () => {
+  test("una config válida abre el chat con ella", () => {
+    expect(accionDeConfig({ tipo: RESULTADO_API.OK, valor: CONFIG })).toEqual({
+      tipo: ACCION_UI.CONFIG_RECIBIDA,
+      config: CONFIG,
+    });
+  });
+
+  test("un 401 al cargar pide el acceso sin aviso de vencimiento", () => {
+    expect(accionDeConfig({ tipo: RESULTADO_API.ACCESO_VENCIDO, mensaje: ACCESO_VENCIDO })).toEqual({
+      tipo: ACCION_UI.ACCESO_PEDIDO,
+      aviso: null,
+    });
+  });
+
+  test("sin red o con otro rechazo abre el chat sin config; un 401 posterior pedirá el código", () => {
+    expect(accionDeConfig({ tipo: RESULTADO_API.SIN_RED })).toEqual({
+      tipo: ACCION_UI.CONFIG_RECIBIDA,
+      config: null,
+    });
+    expect(accionDeConfig({ tipo: RESULTADO_API.RECHAZO, status: 503, mensaje: "x" })).toEqual({
+      tipo: ACCION_UI.CONFIG_RECIBIDA,
+      config: null,
+    });
   });
 });
