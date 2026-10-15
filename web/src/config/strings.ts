@@ -1,4 +1,5 @@
 import {
+  ACCION_AVISO,
   CASO_DEMO_PRD,
   ESTADO_ETAPA,
   ESTADO_FIRMA,
@@ -9,6 +10,7 @@ import {
   SEPARADOR_LISTA_CASOS,
 } from "@web/config/constants/ui.constants.ts";
 import type {
+  AccionDeAviso,
   AccionDeTarjeta,
   EstadoCampoUi,
   EstadoEtapa,
@@ -74,6 +76,7 @@ export const TEXTO_CHAT = {
   placeholder: "Escribe una instrucción, por ejemplo: procesa el caso ec-corp-andina",
   ayuda: `Enter para enviar ${SEPARADOR} Shift+Enter para nueva línea`,
   enviar: "Enviar mensaje",
+  detener: "Detener respuesta",
   contador: (caracteres: number, maximo: number) => `${caracteres}/${maximo}`,
 } as const;
 
@@ -81,6 +84,15 @@ export const TEXTO_ERROR = {
   sinConexion: "No hay conexión con el servidor. Revisa tu red y vuelve a intentarlo.",
   streamCortado:
     "Se perdió la conexión con el servidor durante la respuesta. Recarga la conversación para ver lo que alcanzó a hacer, o vuelve a enviar el mensaje.",
+} as const;
+
+const ACCION_DEL_AVISO = {
+  [ACCION_AVISO.RECARGAR]: "Recargar conversación",
+  [ACCION_AVISO.NUEVA_SESION]: "Empezar sesión nueva",
+} as const satisfies Record<AccionDeAviso, string>;
+
+export const TEXTO_AVISO = {
+  accion: (accion: AccionDeAviso) => ACCION_DEL_AVISO[accion],
 } as const;
 
 function avisoSinComando(texto: string): PartesAvisoModelo {

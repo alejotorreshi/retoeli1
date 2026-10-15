@@ -64,3 +64,16 @@
   border-radius: var(--radio-chico);
   cursor: pointer;
 }
+
+.accionAviso {
+  min-height: var(--alto-control);
+  padding-inline: var(--espacio-md);
+  font-size: var(--etiqueta-tamano);
+  font-weight: var(--etiqueta-peso-fuerte);
+  line-height: var(--etiqueta-interlinea);
+  color: var(--texto);
+  background: var(--dominante);
+  border: var(--borde-ancho) solid var(--borde);
+  border-radius: var(--radio-chico);
+  cursor: pointer;
+}

@@ -12,7 +12,15 @@ function contadorVisible(caracteres: number, maximo: number | null): maximo is n
   return maximo !== null && caracteres >= maximo - MARGEN_AVISO_CONTADOR;
 }
 
-export function Compositor({ valor, maximo, enCurso, bloqueado, alCambiar, alEnviar }: PropsCompositor) {
+export function Compositor({
+  valor,
+  maximo,
+  enCurso,
+  bloqueado,
+  alCambiar,
+  alEnviar,
+  alDetener,
+}: PropsCompositor) {
   const idAyuda = useId();
   const idContador = useId();
   const caracteres = valor.length;
@@ -27,7 +35,7 @@ export function Compositor({ valor, maximo, enCurso, bloqueado, alCambiar, alEnv
   function alPresionarTecla(evento: KeyboardEvent<HTMLTextAreaElement>): void {
     if (!esEnvioPorTeclado(evento)) return;
     evento.preventDefault();
-    evento.currentTarget.form?.requestSubmit();
+    if (!enCurso) evento.currentTarget.form?.requestSubmit();
   }
 
   return (
@@ -56,9 +64,15 @@ export function Compositor({ valor, maximo, enCurso, bloqueado, alCambiar, alEnv
               {TEXTO_CHAT.contador(caracteres, maximo)}
             </p>
           ) : null}
-          <button type="submit" className={estilos.enviar} disabled={enCurso || bloqueado}>
-            {TEXTO_CHAT.enviar}
-          </button>
+          {enCurso ? (
+            <button type="button" className={estilos.detener} onClick={alDetener}>
+              {TEXTO_CHAT.detener}
+            </button>
+          ) : (
+            <button type="submit" className={estilos.enviar} disabled={bloqueado}>
+              {TEXTO_CHAT.enviar}
+            </button>
+          )}
         </div>
       </div>
     </form>

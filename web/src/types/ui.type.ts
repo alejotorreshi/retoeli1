@@ -1,7 +1,9 @@
 import type { DISENO, PESTANA, TAMANO_ICONO, TONO } from "@web/config/constants/ui.constants.ts";
 import type {
+  AccionDeAviso,
   AccionDeTarjeta,
   AvisoDeSesion,
+  ErrorVisible,
   EstadoEtapa,
   EstadoHerramienta,
   EstadoModelo,
@@ -40,6 +42,7 @@ export type PropsLineaDeTiempo = {
   readonly enCurso: boolean;
   readonly tarjetasConfirmacion: readonly TarjetaDeConfirmacion[];
   readonly alResponderConfirmacion: (accion: AccionDeTarjeta) => void;
+  readonly alAccionDeAviso: (accion: AccionDeAviso) => void;
   readonly acciones: ReactNode;
   readonly children?: ReactNode;
 };
@@ -54,6 +57,7 @@ export type PropsCuerpoLinea = {
   readonly enCurso: boolean;
   readonly tarjetasConfirmacion: readonly TarjetaDeConfirmacion[];
   readonly alResponderConfirmacion: (accion: AccionDeTarjeta) => void;
+  readonly alAccionDeAviso: (accion: AccionDeAviso) => void;
   readonly acciones: ReactNode;
 };
 
@@ -73,6 +77,12 @@ export type PropsTurno = {
   readonly enCurso: boolean;
   readonly resultados: readonly ResultadoDeCaso[];
   readonly confirmaciones: ReactNode;
+  readonly alAccionDeAviso: (accion: AccionDeAviso) => void;
+};
+
+export type PropsErrorDelTurno = {
+  readonly error: ErrorVisible;
+  readonly alAccionDeAviso: (accion: AccionDeAviso) => void;
 };
 
 export type PropsPilaConfirmaciones = {
@@ -126,6 +136,7 @@ export type PropsCompositor = {
   readonly bloqueado: boolean;
   readonly alCambiar: (valor: string) => void;
   readonly alEnviar: () => void;
+  readonly alDetener: () => void;
 };
 
 export type PropsEncabezado = {

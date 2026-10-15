@@ -1,6 +1,7 @@
+import { obtenerSesionAsentada } from "@web/api/cliente-api.ts";
 import { enviarMensaje } from "@web/api/flujo-chat.ts";
 import { guardarSesionId, leerSesionGuardada, olvidarSesion } from "@web/api/sesion-local.ts";
-import { ACCION_UI } from "@web/config/constants/ui.constants.ts";
+import { ACCION_UI, ESTADO_ACCESO } from "@web/config/constants/ui.constants.ts";
 import { TEXTO_CONFIRMACION } from "@web/config/strings.ts";
 import { hayTarjetaAbierta } from "@web/state/confirmaciones.ts";
 import {
@@ -19,7 +20,7 @@ import type {
   ResultadoApi,
   VistaSesionUi,
 } from "@web/types/chat.type.ts";
-import { useCallback, useReducer, useRef } from "react";
+import { useCallback, useEffect, useReducer, useRef } from "react";
 import type { ConfigResponse } from "@/http/types/api.type.ts";
 
 function estadoConSesionGuardada(): EstadoConversacion {
@@ -39,6 +40,18 @@ export function useChat(alFallarTurno: () => void): ControlChat {
     despachar(accion);
   }, []);
 
+  const accesoConcedido = estado.acceso.tipo === ESTADO_ACCESO.CONCEDIDO;
+  const sesionPorCargar = estado.hidratando ? estado.sesionId : null;
+
+  useEffect(() => {
+    if (!accesoConcedido || sesionPorCargar === null) return;
+    const controlador = new AbortController();
+    void obtenerSesionAsentada(sesionPorCargar, controlador.signal).then((resultado) => {
+      if (!controlador.signal.aborted) recibirSesion(resultado);
+    });
+    return () => controlador.abort();
+  }, [accesoConcedido, sesionPorCargar, recibirSesion]);
+
   function cambiarBorrador(borrador: string): void {
     despachar({ tipo: ACCION_UI.CAMBIAR_BORRADOR, borrador });
   }
@@ -50,6 +63,7 @@ export function useChat(alFallarTurno: () => void): ControlChat {
     turnoActivo.current = controlador;
     let turnoFallido = false;
     const despacharDelTurno: Despachar = (accionUi) => {
+      if (controlador.signal.aborted) return;
       if (esFalloDeTurno(accionUi)) turnoFallido = true;
       const sesionId = sesionDelEvento(accionUi);
       if (sesionId !== null) guardarSesionId(sesionId);
@@ -82,6 +96,18 @@ export function useChat(alFallarTurno: () => void): ControlChat {
     iniciarTurno(TEXTO_CONFIRMACION.mensaje(accion), accion);
   }
 
+  function detener(): void {
+    const controlador = turnoActivo.current;
+    if (controlador === null) return;
+    turnoActivo.current = null;
+    controlador.abort();
+    despachar({ tipo: ACCION_UI.DETENER });
+  }
+
+  function recargar(): void {
+    despachar({ tipo: ACCION_UI.RECARGAR });
+  }
+
   return {
     estado,
     borrador: estado.borrador,
@@ -90,6 +116,7 @@ export function useChat(alFallarTurno: () => void): ControlChat {
     enviarTexto,
     responderConfirmacion,
     recibirConfig,
-    recibirSesion,
+    detener,
+    recargar,
   };
 }

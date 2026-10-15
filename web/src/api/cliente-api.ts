@@ -1,5 +1,11 @@
-import { PEDIDO_JSON, RESULTADO_API } from "@web/config/constants/ui.constants.ts";
+import {
+  EVENTO_ABORTO,
+  PEDIDO_JSON,
+  REINTENTO_OCUPADA_MS,
+  RESULTADO_API,
+} from "@web/config/constants/ui.constants.ts";
 import { TEXTO_ACCESO } from "@web/config/strings.ts";
+import { sigueOcupada } from "@web/state/hidratacion.ts";
 import type { EstadoModelo, ResultadoApi, ResultadoFallido, VistaSesionUi } from "@web/types/chat.type.ts";
 import { PARAMETRO_SESION, RESPUESTA_HTTP, RUTA_API } from "@/config/constants/http.constants.ts";
 import { ESTADO_LLM } from "@/config/constants/llm.constants.ts";
@@ -105,7 +111,11 @@ function esVistaSesion(valor: unknown): valor is VistaSesionUi {
     Array.isArray(valor.pendientes) &&
     valor.pendientes.every(esPendienteVista) &&
     "casosEnviados" in valor &&
-    esListaDeTextos(valor.casosEnviados)
+    esListaDeTextos(valor.casosEnviados) &&
+    "tokensUsados" in valor &&
+    typeof valor.tokensUsados === "number" &&
+    "ocupada" in valor &&
+    typeof valor.ocupada === "boolean"
   );
 }
 
@@ -192,4 +202,32 @@ export async function obtenerSesion(
   if (!respuesta.ok) return resultadoDelRechazo(respuesta);
   const valor = await leerJson(respuesta);
   return esVistaSesion(valor) ? { tipo: RESULTADO_API.OK, valor } : SIN_RED;
+}
+
+function esperar(milisegundos: number, signal: AbortSignal | null): Promise<boolean> {
+  return new Promise((resolver) => {
+    if (signal?.aborted) {
+      resolver(false);
+      return;
+    }
+    const alAbortar = () => {
+      clearTimeout(temporizador);
+      resolver(false);
+    };
+    const temporizador = setTimeout(() => {
+      signal?.removeEventListener(EVENTO_ABORTO, alAbortar);
+      resolver(true);
+    }, milisegundos);
+    signal?.addEventListener(EVENTO_ABORTO, alAbortar, { once: true });
+  });
+}
+
+export async function obtenerSesionAsentada(
+  sesionId: string,
+  signal: AbortSignal | null = null,
+): Promise<ResultadoApi<VistaSesionUi>> {
+  const primera = await obtenerSesion(sesionId, signal);
+  if (!sigueOcupada(primera)) return primera;
+  const esperado = await esperar(REINTENTO_OCUPADA_MS, signal);
+  return esperado ? obtenerSesion(sesionId, signal) : primera;
 }

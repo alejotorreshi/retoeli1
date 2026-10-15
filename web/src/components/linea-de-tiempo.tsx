@@ -6,20 +6,37 @@ import { MensajeAgente, MensajeUsuaria } from "@web/components/mensaje.tsx";
 import { PilaConfirmaciones } from "@web/components/tarjeta-confirmacion.tsx";
 import { TarjetaResultado } from "@web/components/tarjeta-resultado.tsx";
 import { AVISO_SESION, CLASE_GLOBAL, DISTANCIA_PEGADO_AL_FINAL } from "@web/config/constants/ui.constants.ts";
-import { TEXTO_CHAT } from "@web/config/strings.ts";
+import { TEXTO_AVISO, TEXTO_CHAT } from "@web/config/strings.ts";
 import { resultadosDelTurno } from "@web/state/casos.ts";
 import { tarjetasDelTurno } from "@web/state/confirmaciones.ts";
 import { anuncioDeEstado } from "@web/state/conversacion.ts";
 import type {
   PropsAvisoInicial,
   PropsCuerpoLinea,
+  PropsErrorDelTurno,
   PropsEstadoVacio,
   PropsLineaDeTiempo,
   PropsTurno,
 } from "@web/types/ui.type.ts";
 import { useEffect, useRef, useState } from "react";
 
-function Turno({ turno, enCurso, resultados, confirmaciones }: PropsTurno) {
+function ErrorDelTurno({ error, alAccionDeAviso }: PropsErrorDelTurno) {
+  const { accion } = error;
+  return (
+    <AvisoError
+      mensaje={error.mensaje}
+      acciones={
+        accion === null ? undefined : (
+          <button type="button" className={estilos.accionAviso} onClick={() => alAccionDeAviso(accion)}>
+            {TEXTO_AVISO.accion(accion)}
+          </button>
+        )
+      }
+    />
+  );
+}
+
+function Turno({ turno, enCurso, resultados, confirmaciones, alAccionDeAviso }: PropsTurno) {
   return (
     <>
       <MensajeUsuaria texto={turno.mensaje} />
@@ -33,7 +50,7 @@ function Turno({ turno, enCurso, resultados, confirmaciones }: PropsTurno) {
       {confirmaciones}
       {turno.error === null ? null : (
         <li>
-          <AvisoError mensaje={turno.error.mensaje} />
+          <ErrorDelTurno error={turno.error} alAccionDeAviso={alAccionDeAviso} />
         </li>
       )}
     </>
@@ -64,6 +81,7 @@ function CuerpoLinea({
   enCurso,
   tarjetasConfirmacion,
   alResponderConfirmacion,
+  alAccionDeAviso,
   acciones,
 }: PropsCuerpoLinea) {
   if (cargando) return <IndicadorPensando etiqueta={TEXTO_CHAT.cargandoConversacion} marca={0} />;
@@ -76,6 +94,7 @@ function CuerpoLinea({
           turno={turno}
           enCurso={enCurso && indice === turnos.length - 1}
           resultados={resultadosDelTurno(turnos, indice)}
+          alAccionDeAviso={alAccionDeAviso}
           confirmaciones={
             <PilaConfirmaciones
               tarjetas={tarjetasDelTurno(tarjetasConfirmacion, turno.clave)}
@@ -105,6 +124,7 @@ export function LineaDeTiempo({
   enCurso,
   tarjetasConfirmacion,
   alResponderConfirmacion,
+  alAccionDeAviso,
   acciones,
   children,
 }: PropsLineaDeTiempo) {
@@ -154,6 +174,7 @@ export function LineaDeTiempo({
             enCurso={enCurso}
             tarjetasConfirmacion={tarjetasConfirmacion}
             alResponderConfirmacion={alResponderConfirmacion}
+            alAccionDeAviso={alAccionDeAviso}
             acciones={acciones}
           />
           {children}

@@ -112,3 +112,7 @@ export function accionDeSesion(resultado: ResultadoApi<VistaSesionUi>): AccionUi
 export function olvidaLaSesion(accion: AccionUi): boolean {
   return accion.tipo === ACCION_UI.SESION_EXPIRADA;
 }
+
+export function sigueOcupada(resultado: ResultadoApi<VistaSesionUi>): boolean {
+  return resultado.tipo === RESULTADO_API.OK && resultado.valor.ocupada;
+}

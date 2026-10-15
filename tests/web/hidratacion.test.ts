@@ -18,7 +18,7 @@ import {
   reducirConversacion,
   sesionDelEvento,
 } from "@web/state/conversacion.ts";
-import { accionDeSesion, estadoDesdeVista, olvidaLaSesion } from "@web/state/hidratacion.ts";
+import { accionDeSesion, estadoDesdeVista, olvidaLaSesion, sigueOcupada } from "@web/state/hidratacion.ts";
 import type {
   AccionUi,
   EstadoConversacion,
@@ -472,5 +472,13 @@ describe("tarjetas resueltas y sesión vencida al recargar", () => {
     const caida = accionDeSesion({ tipo: RESULTADO_API.SIN_RED });
     const cargada = accionDeSesion({ tipo: RESULTADO_API.OK, valor: vistaDe(DEMO) });
     expect([vencida, caida, cargada].map(olvidaLaSesion)).toEqual([true, false, false]);
+  });
+});
+
+describe("la vista después de Detener (UI-08)", () => {
+  test("una vista con el turno todavía ocupado pide un reintento; una libre o un rechazo, no", () => {
+    expect(sigueOcupada({ tipo: RESULTADO_API.OK, valor: { ...vistaDe(DEMO), ocupada: true } })).toBe(true);
+    expect(sigueOcupada({ tipo: RESULTADO_API.OK, valor: vistaDe(DEMO) })).toBe(false);
+    expect(sigueOcupada({ tipo: RESULTADO_API.SIN_RED })).toBe(false);
   });
 });

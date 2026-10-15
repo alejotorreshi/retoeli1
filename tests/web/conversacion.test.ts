@@ -1,5 +1,11 @@
 import { describe, expect, test } from "bun:test";
-import { ACCION_UI, ESTADO_ACCESO, RESULTADO_API } from "@web/config/constants/ui.constants.ts";
+import {
+  ACCION_AVISO,
+  ACCION_UI,
+  ESTADO_ACCESO,
+  ESTADO_TARJETA_CONFIRMACION,
+  RESULTADO_API,
+} from "@web/config/constants/ui.constants.ts";
 import { TEXTO_ERROR } from "@web/config/strings.ts";
 import {
   accionDeConfig,
@@ -7,8 +13,9 @@ import {
   estadoInicialConversacion,
   reducirConversacion,
 } from "@web/state/conversacion.ts";
-import type { AccionUi, EstadoConversacion } from "@web/types/chat.type.ts";
-import { CODIGO_AGENTE, MOTIVO_FIN, TIPO_EVENTO } from "@/config/constants/agent.constants.ts";
+import type { AccionUi, EstadoConversacion, EstadoHidratado } from "@web/types/chat.type.ts";
+import { ACCION, CODIGO_AGENTE, MOTIVO_FIN, TIPO_EVENTO } from "@/config/constants/agent.constants.ts";
+import { TIPO_ACCION } from "@/config/constants/confirmation.constants.ts";
 import { RESPUESTA_HTTP } from "@/config/constants/http.constants.ts";
 import type { ConfigResponse, SseEvent } from "@/http/types/api.type.ts";
 
@@ -109,6 +116,7 @@ describe("reducirConversacion", () => {
     expect(estado.turnos[0]?.error).toEqual({
       codigo: CODIGO_AGENTE.PROVEEDOR_TIMEOUT,
       mensaje: MENSAJE_ERROR_AGENTE,
+      accion: null,
     });
     expect(estado.enCurso).toBe(true);
   });
@@ -140,7 +148,7 @@ describe("reducirConversacion", () => {
     ]);
     expect(estado.enCurso).toBe(false);
     expect(estado.turnos).toHaveLength(1);
-    expect(estado.turnos[0]?.error).toEqual({ codigo: null, mensaje: MENSAJE_MUY_LARGO });
+    expect(estado.turnos[0]?.error).toEqual({ codigo: null, mensaje: MENSAJE_MUY_LARGO, accion: null });
   });
 
   test("ERROR_RED guarda la copia de red caída del front y cierra el turno", () => {
@@ -149,10 +157,10 @@ describe("reducirConversacion", () => {
       { tipo: ACCION_UI.ERROR_RED },
     ]);
     expect(estado.enCurso).toBe(false);
-    expect(estado.turnos[0]?.error).toEqual({ codigo: null, mensaje: TEXTO_ERROR.sinConexion });
+    expect(estado.turnos[0]?.error).toEqual({ codigo: null, mensaje: TEXTO_ERROR.sinConexion, accion: null });
   });
 
-  test("FIN_STREAM sin turn_end guarda la copia de stream cortado, conserva el texto y cierra el turno", () => {
+  test("FIN_STREAM sin turn_end guarda la copia de stream cortado con la acción de recargar, conserva el texto y cierra el turno", () => {
     const estado = aplicar(estadoInicialConversacion, [
       ...turnoCompleto.slice(0, 3),
       { tipo: ACCION_UI.FIN_STREAM },
@@ -160,7 +168,23 @@ describe("reducirConversacion", () => {
     expect(estado.enCurso).toBe(false);
     expect(estado.sesionId).toBe(SESION);
     expect(estado.turnos[0]?.textos.map((texto) => texto.texto)).toEqual([RESPUESTA]);
-    expect(estado.turnos[0]?.error).toEqual({ codigo: null, mensaje: TEXTO_ERROR.streamCortado });
+    expect(estado.turnos[0]?.error).toEqual({
+      codigo: null,
+      mensaje: TEXTO_ERROR.streamCortado,
+      accion: ACCION_AVISO.RECARGAR,
+    });
+  });
+
+  test("FIN_STREAM antes de turn_start no ofrece recargar, porque no hay sesión que pedir", () => {
+    const estado = aplicar(estadoInicialConversacion, [
+      { tipo: ACCION_UI.ENVIAR, mensaje: MENSAJE },
+      { tipo: ACCION_UI.FIN_STREAM },
+    ]);
+    expect(estado.turnos[0]?.error).toEqual({
+      codigo: null,
+      mensaje: TEXTO_ERROR.streamCortado,
+      accion: null,
+    });
   });
 
   test("FIN_STREAM después de turn_end no cambia el estado", () => {
@@ -284,7 +308,7 @@ describe("el borrador del compositor", () => {
     ]);
     expect(estado.borrador).toBe(MENSAJE);
     expect(estado.enCurso).toBe(false);
-    expect(estado.turnos.at(-1)?.error).toEqual({ codigo: null, mensaje: MENSAJE_MUY_LARGO });
+    expect(estado.turnos.at(-1)?.error).toEqual({ codigo: null, mensaje: MENSAJE_MUY_LARGO, accion: null });
   });
 
   test("ERROR_HTTP 429 y ERROR_RED dejan el texto en el compositor", () => {
@@ -310,7 +334,7 @@ describe("el borrador del compositor", () => {
       expect(estado.borrador).toBe(MENSAJE);
       expect(estado.enCurso).toBe(false);
       expect(estado.turnos.at(-1)?.mensaje).toBe(MENSAJE);
-      expect(estado.turnos.at(-1)?.error).toEqual({ codigo: null, mensaje: TOPE_DIARIO });
+      expect(estado.turnos.at(-1)?.error).toEqual({ codigo: null, mensaje: TOPE_DIARIO, accion: null });
     }
   });
 
@@ -348,6 +372,130 @@ describe("accionDeConfig", () => {
       tipo: ACCION_UI.CONFIG_RECIBIDA,
       config: null,
     });
+  });
+});
+
+const CASO = "ec-corp-andina";
+
+const turnoConConfirmacion: readonly AccionUi[] = [
+  { tipo: ACCION_UI.ENVIAR, mensaje: MENSAJE },
+  evento({
+    tipo: TIPO_EVENTO.INICIO_TURNO,
+    sesionId: SESION,
+    turnoId: TURNO,
+    sesionNueva: true,
+    sesionExpirada: false,
+  }),
+  evento({
+    tipo: TIPO_EVENTO.CONFIRMACION_REQUERIDA,
+    turnoId: TURNO,
+    caso: CASO,
+    accion: ACCION.ENVIO,
+    bloqueos: [],
+    bloqueosLegibles: [],
+  }),
+  evento({ tipo: TIPO_EVENTO.FIN_TURNO, turnoId: TURNO, motivo: MOTIVO_FIN.FINAL, needsConfirmation: true }),
+];
+
+const vistaDelServidor: EstadoHidratado = {
+  sesionId: SESION,
+  turnos: [
+    {
+      clave: 0,
+      mensaje: MENSAJE,
+      llamadas: [],
+      eventos: 0,
+      textos: [{ clave: 0, texto: RESPUESTA }],
+      confirmaciones: [],
+      error: null,
+    },
+    {
+      clave: 1,
+      mensaje: "Sí, envía ec-corp-andina",
+      llamadas: [],
+      eventos: 0,
+      textos: [],
+      confirmaciones: [],
+      error: null,
+    },
+  ],
+  tarjetasConfirmacion: [],
+};
+
+describe("Detener respuesta y Recargar conversación", () => {
+  test("DETENER cierra el turno sin error, suelta las tarjetas que estaban enviando y pide la vista del servidor", () => {
+    const estado = aplicar(estadoInicialConversacion, [
+      ...turnoConConfirmacion,
+      {
+        tipo: ACCION_UI.ENVIAR,
+        mensaje: "Sí, envía ec-corp-andina",
+        accion: { tipo: TIPO_ACCION.CONFIRMAR, caso: CASO },
+      },
+      { tipo: ACCION_UI.DETENER },
+    ]);
+    expect(estado.enCurso).toBe(false);
+    expect(estado.hidratando).toBe(true);
+    expect(estado.turnos.at(-1)?.error).toBeNull();
+    expect(estado.tarjetasConfirmacion.map((tarjeta) => [tarjeta.estado, tarjeta.enviando])).toEqual([
+      [ESTADO_TARJETA_CONFIRMACION.ABIERTA, null],
+    ]);
+  });
+
+  test("después de DETENER, HIDRATAR deja la línea de tiempo que guardó el servidor y la tarjeta abierta desaparece", () => {
+    const estado = aplicar(estadoInicialConversacion, [
+      ...turnoConConfirmacion,
+      {
+        tipo: ACCION_UI.ENVIAR,
+        mensaje: "Sí, envía ec-corp-andina",
+        accion: { tipo: TIPO_ACCION.CONFIRMAR, caso: CASO },
+      },
+      { tipo: ACCION_UI.DETENER },
+      { tipo: ACCION_UI.HIDRATAR, hidratado: vistaDelServidor },
+    ]);
+    expect(estado.hidratando).toBe(false);
+    expect(estado.enCurso).toBe(false);
+    expect(estado.turnos).toEqual(vistaDelServidor.turnos);
+    expect(estado.tarjetasConfirmacion).toEqual([]);
+  });
+
+  test("DETENER antes de turn_start cierra el turno sin pedir ninguna vista", () => {
+    const estado = aplicar(estadoInicialConversacion, [
+      { tipo: ACCION_UI.ENVIAR, mensaje: MENSAJE },
+      { tipo: ACCION_UI.DETENER },
+    ]);
+    expect(estado.enCurso).toBe(false);
+    expect(estado.hidratando).toBe(false);
+    expect(estado.turnos[0]?.error).toBeNull();
+  });
+
+  test("DETENER sin turno en curso no cambia el estado", () => {
+    const cerrado = aplicar(estadoInicialConversacion, turnoCompleto);
+    expect(reducirConversacion(cerrado, { tipo: ACCION_UI.DETENER })).toBe(cerrado);
+  });
+
+  test("FIN_STREAM seguido de RECARGAR y HIDRATAR reemplaza la línea de tiempo por la vista del servidor", () => {
+    const cortado = aplicar(estadoInicialConversacion, [
+      ...turnoCompleto.slice(0, 2),
+      { tipo: ACCION_UI.FIN_STREAM },
+    ]);
+    const recargando = reducirConversacion(cortado, { tipo: ACCION_UI.RECARGAR });
+    expect(recargando.hidratando).toBe(true);
+    const estado = reducirConversacion(recargando, { tipo: ACCION_UI.HIDRATAR, hidratado: vistaDelServidor });
+    expect(estado.hidratando).toBe(false);
+    expect(estado.turnos).toEqual(vistaDelServidor.turnos);
+    expect(estado.turnos.every((turno) => turno.error === null)).toBe(true);
+  });
+
+  test("RECARGAR sin sesión o con un turno en curso no pide nada", () => {
+    expect(reducirConversacion(estadoInicialConversacion, { tipo: ACCION_UI.RECARGAR })).toBe(
+      estadoInicialConversacion,
+    );
+    const enCurso = aplicar(estadoInicialConversacion, turnoCompleto.slice(0, 2));
+    expect(reducirConversacion(enCurso, { tipo: ACCION_UI.RECARGAR })).toBe(enCurso);
+  });
+
+  test("detener no cuenta como falla del turno", () => {
+    expect(esFalloDeTurno({ tipo: ACCION_UI.DETENER })).toBe(false);
   });
 });
 

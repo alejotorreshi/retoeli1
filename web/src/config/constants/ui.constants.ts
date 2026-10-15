@@ -20,7 +20,16 @@ export const ACCION_UI = {
   HIDRATAR: "hidratar",
   SESION_EXPIRADA: "sesion_expirada",
   SESION_NO_CARGADA: "sesion_no_cargada",
+  DETENER: "detener",
+  RECARGAR: "recargar",
 } as const;
+
+export const ACCION_AVISO = {
+  RECARGAR: "recargar",
+  NUEVA_SESION: "nueva_sesion",
+} as const;
+
+export const REINTENTO_OCUPADA_MS = 1_000;
 
 export const AVISO_SESION = {
   EXPIRADA: "expirada",
@@ -204,6 +213,8 @@ export const TECLA_PESTANA = {
 } as const;
 
 export const EVENTO_CAMBIO_DE_MEDIOS = "change";
+
+export const EVENTO_ABORTO = "abort";
 
 export const SUFIJO_ID = {
   PESTANA: "-pestana-",

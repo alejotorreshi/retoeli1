@@ -1,4 +1,5 @@
 import type {
+  ACCION_AVISO,
   ACCION_UI,
   AVISO_SESION,
   ESTADO_ACCESO,
@@ -20,9 +21,12 @@ import type {
   SseEvent,
 } from "@/http/types/api.type.ts";
 
+export type AccionDeAviso = ValorDe<typeof ACCION_AVISO>;
+
 export type ErrorVisible = {
   readonly codigo: string | null;
   readonly mensaje: string;
+  readonly accion: AccionDeAviso | null;
 };
 
 export type TextoAgente = {
@@ -248,6 +252,14 @@ export type AccionSesionNoCargada = {
   readonly mensaje: string;
 };
 
+export type AccionDetener = {
+  readonly tipo: typeof ACCION_UI.DETENER;
+};
+
+export type AccionRecargar = {
+  readonly tipo: typeof ACCION_UI.RECARGAR;
+};
+
 export type AccionUi =
   | AccionEnviar
   | AccionEvento
@@ -260,7 +272,9 @@ export type AccionUi =
   | AccionAceptado
   | AccionHidratar
   | AccionSesionExpirada
-  | AccionSesionNoCargada;
+  | AccionSesionNoCargada
+  | AccionDetener
+  | AccionRecargar;
 
 export type Despachar = (accion: AccionUi) => void;
 
@@ -272,7 +286,8 @@ export type ControlChat = {
   readonly enviarTexto: (mensaje: string) => void;
   readonly responderConfirmacion: (accion: AccionDeTarjeta) => void;
   readonly recibirConfig: (resultado: ResultadoApi<ConfigResponse>) => void;
-  readonly recibirSesion: (resultado: ResultadoApi<VistaSesionUi>) => void;
+  readonly detener: () => void;
+  readonly recargar: () => void;
 };
 
 export type EstadoModelo = HealthResponse["llm"];

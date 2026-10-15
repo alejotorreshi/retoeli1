@@ -1,4 +1,5 @@
 import {
+  ACCION_AVISO,
   ACCION_UI,
   AVISO_SESION,
   ESTADO_ACCESO,
@@ -114,7 +115,31 @@ function registrarError(estado: EstadoConversacion, error: ErrorVisible): Estado
 }
 
 function cerrarConError(estado: EstadoConversacion, mensaje: string): EstadoConversacion {
-  return terminarTurno(registrarError(estado, { codigo: null, mensaje }), false);
+  return terminarTurno(registrarError(estado, { codigo: null, mensaje, accion: null }), false);
+}
+
+function cortarStream(estado: EstadoConversacion): EstadoConversacion {
+  if (!estado.enCurso) return estado;
+  const accion = estado.sesionId === null ? null : ACCION_AVISO.RECARGAR;
+  return terminarTurno(
+    registrarError(estado, { codigo: null, mensaje: TEXTO_ERROR.streamCortado, accion }),
+    false,
+  );
+}
+
+function detenerTurno(estado: EstadoConversacion): EstadoConversacion {
+  if (!estado.enCurso) return estado;
+  return {
+    ...estado,
+    enCurso: false,
+    tarjetasConfirmacion: soltarEnvios(estado.tarjetasConfirmacion),
+    hidratando: estado.sesionId !== null,
+  };
+}
+
+function recargarSesion(estado: EstadoConversacion): EstadoConversacion {
+  if (estado.sesionId === null || estado.enCurso || estado.hidratando) return estado;
+  return { ...estado, hidratando: true };
 }
 
 function pedirAcceso(estado: EstadoConversacion, aviso: string | null): EstadoConversacion {
@@ -230,7 +255,7 @@ function aplicarEvento(estado: EstadoConversacion, evento: SseEvent): EstadoConv
     case TIPO_EVENTO.CONFIRMACION_REQUERIDA:
       return conUltimoTurno(estado, (turno) => registrarConfirmacion(turno, evento));
     case TIPO_EVENTO.ERROR:
-      return registrarError(estado, { codigo: evento.codigo, mensaje: evento.mensaje });
+      return registrarError(estado, { codigo: evento.codigo, mensaje: evento.mensaje, accion: null });
     case TIPO_EVENTO.FIN_TURNO:
       return terminarTurno(estado, !turnoRechazadoPorOcupada(estado));
     default:
@@ -265,7 +290,7 @@ export function reducirConversacion(estado: EstadoConversacion, accion: AccionUi
     case ACCION_UI.ERROR_RED:
       return cerrarConError(estado, TEXTO_ERROR.sinConexion);
     case ACCION_UI.FIN_STREAM:
-      return estado.enCurso ? cerrarConError(estado, TEXTO_ERROR.streamCortado) : estado;
+      return cortarStream(estado);
     case ACCION_UI.CONFIG_RECIBIDA:
       return recibirConfig(estado, accion.config);
     case ACCION_UI.ACCESO_PEDIDO:
@@ -280,6 +305,10 @@ export function reducirConversacion(estado: EstadoConversacion, accion: AccionUi
       return sesionExpirada(estado, accion.mensaje);
     case ACCION_UI.SESION_NO_CARGADA:
       return sesionNoCargada(estado, accion.mensaje);
+    case ACCION_UI.DETENER:
+      return detenerTurno(estado);
+    case ACCION_UI.RECARGAR:
+      return recargarSesion(estado);
     default:
       return estado;
   }

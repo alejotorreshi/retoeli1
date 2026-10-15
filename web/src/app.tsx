@@ -1,4 +1,4 @@
-import { obtenerConfig, obtenerSesion } from "@web/api/cliente-api.ts";
+import { obtenerConfig } from "@web/api/cliente-api.ts";
 import { AccionesRapidas } from "@web/components/acciones-rapidas.tsx";
 import { AvisoModelo } from "@web/components/aviso-modelo.tsx";
 import { Compositor } from "@web/components/compositor.tsx";
@@ -8,6 +8,7 @@ import { LineaDeTiempo } from "@web/components/linea-de-tiempo.tsx";
 import { PanelCasos } from "@web/components/panel-casos.tsx";
 import { PantallaAcceso } from "@web/components/pantalla-acceso.tsx";
 import {
+  ACCION_AVISO,
   CLASE_GLOBAL,
   DISENO,
   ESTADO_ACCESO,
@@ -23,6 +24,7 @@ import { usePestanas } from "@web/hooks/usar-pestanas.ts";
 import { useSalud } from "@web/hooks/usar-salud.ts";
 import { firmaDelProgreso, progresoPorCaso } from "@web/state/casos.ts";
 import { etiquetaPensando, eventosDelTurno } from "@web/state/conversacion.ts";
+import type { AccionDeAviso } from "@web/types/chat.type.ts";
 import type { ControlPestanas, IdsDePestanas, Pestana, PropsBarraDePestanas } from "@web/types/ui.type.ts";
 import { type HTMLAttributes, type KeyboardEvent, useEffect, useId, useRef } from "react";
 
@@ -119,7 +121,8 @@ export function App() {
     enviarTexto,
     responderConfirmacion,
     recibirConfig,
-    recibirSesion,
+    detener,
+    recargar,
   } = useChat(refrescar);
   const diseno = useDiseno();
   const conPestanas = diseno !== DISENO.ANCHO;
@@ -139,17 +142,9 @@ export function App() {
     return () => controlador.abort();
   }, [recibirConfig]);
 
-  const accesoConcedido = estado.acceso.tipo === ESTADO_ACCESO.CONCEDIDO;
-  const sesionPorCargar = estado.hidratando ? estado.sesionId : null;
-
-  useEffect(() => {
-    if (!accesoConcedido || sesionPorCargar === null) return;
-    const controlador = new AbortController();
-    void obtenerSesion(sesionPorCargar, controlador.signal).then((resultado) => {
-      if (!controlador.signal.aborted) recibirSesion(resultado);
-    });
-    return () => controlador.abort();
-  }, [accesoConcedido, sesionPorCargar, recibirSesion]);
+  function alAccionDeAviso(accion: AccionDeAviso): void {
+    if (accion === ACCION_AVISO.RECARGAR) recargar();
+  }
 
   async function alEntrar(): Promise<void> {
     recibirConfig(await obtenerConfig());
@@ -190,6 +185,7 @@ export function App() {
               enCurso={estado.enCurso}
               tarjetasConfirmacion={estado.tarjetasConfirmacion}
               alResponderConfirmacion={responderConfirmacion}
+              alAccionDeAviso={alAccionDeAviso}
               acciones={
                 <AccionesRapidas
                   casos={casos}
@@ -218,6 +214,7 @@ export function App() {
               bloqueado={estado.hidratando}
               alCambiar={cambiarBorrador}
               alEnviar={enviar}
+              alDetener={detener}
             />
           </main>
         </div>

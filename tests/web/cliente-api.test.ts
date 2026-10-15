@@ -1,10 +1,10 @@
 import { afterEach, describe, expect, spyOn, test } from "bun:test";
-import { entrar, obtenerConfig, obtenerSalud } from "@web/api/cliente-api.ts";
+import { entrar, obtenerConfig, obtenerSalud, obtenerSesionAsentada } from "@web/api/cliente-api.ts";
 import { RESULTADO_API } from "@web/config/constants/ui.constants.ts";
 import { TEXTO_ACCESO } from "@web/config/strings.ts";
 import { RESPUESTA_HTTP, RUTA_API } from "@/config/constants/http.constants.ts";
 import { ESTADO_LLM } from "@/config/constants/llm.constants.ts";
-import type { ConfigResponse, HealthResponse } from "@/http/types/api.type.ts";
+import type { ConfigResponse, HealthResponse, SessionViewResponse } from "@/http/types/api.type.ts";
 
 const CODIGO = "codigo-de-prueba-largo";
 const CODIGO_INVALIDO = "El código no es válido. Revísalo y vuelve a intentarlo.";
@@ -137,5 +137,57 @@ describe("obtenerSalud", () => {
       throw new TypeError("Failed to fetch");
     });
     expect(await obtenerSalud()).toEqual({ tipo: RESULTADO_API.SIN_RED });
+  });
+});
+
+describe("obtenerSesionAsentada (Detener y Recargar conversación)", () => {
+  const VISTA: SessionViewResponse = {
+    sesionId: "sesion-de-prueba",
+    turnos: [],
+    pendientes: [],
+    casosEnviados: [],
+    tokensUsados: 12_345,
+    ocupada: false,
+  };
+
+  test("una vista libre se usa tal cual, con un solo pedido", async () => {
+    const espia = simularFetch(async () => Response.json(VISTA));
+    expect(await obtenerSesionAsentada(VISTA.sesionId)).toEqual({ tipo: RESULTADO_API.OK, valor: VISTA });
+    expect(espia.mock.calls).toHaveLength(1);
+  });
+
+  test("una vista ocupada se pide una sola vez más, después de la espera", async () => {
+    let pedidos = 0;
+    const espia = simularFetch(async () => {
+      pedidos += 1;
+      return Response.json({ ...VISTA, ocupada: pedidos === 1 });
+    });
+    expect(await obtenerSesionAsentada(VISTA.sesionId)).toEqual({ tipo: RESULTADO_API.OK, valor: VISTA });
+    expect(espia.mock.calls).toHaveLength(2);
+  });
+
+  test("si sigue ocupada después del reintento, devuelve esa vista sin un tercer pedido", async () => {
+    const espia = simularFetch(async () => Response.json({ ...VISTA, ocupada: true }));
+    expect(await obtenerSesionAsentada(VISTA.sesionId)).toEqual({
+      tipo: RESULTADO_API.OK,
+      valor: { ...VISTA, ocupada: true },
+    });
+    expect(espia.mock.calls).toHaveLength(2);
+  });
+
+  test("abortar durante la espera no repite el pedido", async () => {
+    const controlador = new AbortController();
+    const espia = simularFetch(async () => {
+      controlador.abort();
+      return Response.json({ ...VISTA, ocupada: true });
+    });
+    await obtenerSesionAsentada(VISTA.sesionId, controlador.signal);
+    expect(espia.mock.calls).toHaveLength(1);
+  });
+
+  test("una vista sin el uso de tokens o sin la marca de ocupada no se acepta", async () => {
+    const { ocupada: _ocupada, ...sinOcupada } = VISTA;
+    simularFetch(async () => Response.json(sinOcupada));
+    expect(await obtenerSesionAsentada(VISTA.sesionId)).toEqual({ tipo: RESULTADO_API.SIN_RED });
   });
 });
