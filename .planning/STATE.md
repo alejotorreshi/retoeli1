@@ -3,16 +3,16 @@ gsd_state_version: "1.0"
 current_phase: 03
 current_phase_name: Chat web, API SSE y despliegue
 status: executing
-stopped_at: Completed 03-35-PLAN.md
-last_updated: "2026-10-15T17:36:44.057Z"
+stopped_at: Completed 03-36-PLAN.md
+last_updated: "2026-10-15T17:41:46.055Z"
 last_activity: 2026-10-15
 last_activity_desc: Phase 03 execution started
-state_head: c26df81f0769bb4e13013045be45be2d1df2d879
+state_head: 814fb43a85d6277416debccedfe82a23fd4f3496
 progress:
   total_phases: 4
   completed_phases: 2
   total_plans: 78
-  completed_plans: 74
+  completed_plans: 75
   percent: 50
 ---
 
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-10-14)
 ## Current Position
 
 Phase: 03 (Chat web, API SSE y despliegue) — EXECUTING
-Plan: 9 of 39
+Plan: 10 of 39
 Status: Ready to execute
 Last activity: 2026-10-15 — Phase 03 execution started
 
@@ -131,6 +131,7 @@ Progress: [█████░░░░░] 50%
 | Phase 03 P33 | 4min | 3 tasks | 11 files |
 | Phase 03 P34 | 3 min | 2 tasks | 11 files |
 | Phase 03 P35 | 3min | 2 tasks | 10 files |
+| Phase 03 P36 | 3 min | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -318,6 +319,8 @@ Recent decisions affecting current work:
 - [Phase 03]: 03-34: la pausa cubre compositor, chips, chip de reproceso y Confirmar/Cancelar de las tarjetas; ver, descargar, Reintentar, Nueva sesión y Detener no se pausan; el servidor sigue siendo la compuerta (503/429)
 - [Phase 03]: NEW_SESSIONS_PER_HOUR = 20 solo en Render (SESIONES_NUEVAS_POR_HORA_RENDER); default local sigue en 5 y el tope diario global de 2 M tokens sigue siendo el límite real de gasto
 - [Phase 03]: El 429 de sesiones nuevas informa los minutos de espera con techo y mínimo 1 desde RateLimiter.retryAfterMs, sin cabecera Retry-After
+- [Phase 03]: 03-36: el seguimiento del final se deriva de la intención de la usuaria (rueda, toque, puntero o teclas de navegación en los 600 ms previos); el estado vive en un ref síncrono que pasa por reducirSeguimiento y solo repinta cuando cambia pegado o contenidoNuevo
+- [Phase 03]: 03-36: un turno nuevo (enviar o hidratar) re-ancla la línea de tiempo al final con useLayoutEffect; .zona lleva overflow-anchor: none solo mientras sigue el final
 
 ### Pending Todos
 
@@ -353,6 +356,6 @@ Items acknowledged and deferred at milestone close, most recent first:
 
 ## Session Continuity
 
-Last session: 2026-10-15T17:36:39.233Z
-Stopped at: Completed 03-35-PLAN.md
+Last session: 2026-10-15T17:41:45.932Z
+Stopped at: Completed 03-36-PLAN.md
 Resume file: None
