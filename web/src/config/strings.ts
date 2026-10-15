@@ -303,6 +303,25 @@ export const TEXTO_ARCHIVOS = {
   descargarArchivo: (nombre: string) => `${DESCARGAR} ${nombre}`,
 } as const;
 
+const SIN_TEXTO: string = SIN_DATO.slice(SIN_DATO.length);
+
+export const TEXTO_DISCO = {
+  aviso: SIN_TEXTO,
+  chip: (_caso: string) => SIN_TEXTO,
+  mensaje: (_caso: string) => SIN_TEXTO,
+} as const;
+
+export const TEXTO_VISTA_PREVIA = {
+  columnas: [] as readonly string[],
+  estado: (_estado: EstadoCampoUi) => SIN_TEXTO,
+  valor: (_valor: string | null) => SIN_TEXTO,
+  nota: SIN_TEXTO,
+  cargando: SIN_TEXTO,
+  error: SIN_TEXTO,
+  descargar: SIN_TEXTO,
+  cerrar: SIN_TEXTO,
+} as const;
+
 const ETIQUETA_DE_PESTANA = {
   [PESTANA.CHAT]: "Chat",
   [PESTANA.CASOS]: "Casos y archivos",

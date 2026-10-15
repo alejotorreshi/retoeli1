@@ -12,10 +12,12 @@ import {
   SEPARADOR_RUTA,
 } from "@web/config/constants/ui.constants.ts";
 import type {
+  ArchivoUi,
   ConfirmacionDelTurno,
   ContadorDeCaso,
   EstadoEtapa,
   EstadoFirma,
+  EstadoListaArchivos,
   Etapa,
   LlamadaDelTurno,
   ProgresoDeCaso,
@@ -272,4 +274,19 @@ export function marcasDeArchivos({ turnos, enCurso }: VistaTurnos): ReadonlyMap<
 
 export function esArchivoNoEncontrado(resultado: ResultadoApi<unknown>): boolean {
   return resultado.tipo === RESULTADO_API.RECHAZO && resultado.status === RESPUESTA_HTTP.NO_ENCONTRADO;
+}
+
+export function archivosFaltantes(
+  _progreso: ProgresoDeCaso,
+  _archivos: readonly ArchivoUi[],
+): readonly Etapa[] {
+  return [];
+}
+
+export function discoBorrado(
+  _progreso: ProgresoDeCaso,
+  _lista: EstadoListaArchivos,
+  _borrados: boolean,
+): boolean {
+  return false;
 }

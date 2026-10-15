@@ -13,6 +13,7 @@ import type {
   GuardarDescarga,
   ResultadoApi,
   ResultadoFallido,
+  VistaPreviaUi,
   VistaSesionUi,
 } from "@web/types/chat.type.ts";
 import { PREFIJO_PAQUETE, TIPO_ARCHIVO_CASO } from "@/config/constants/files.constants.ts";
@@ -336,4 +337,17 @@ export async function descargarArchivo(
   if (cuerpo === null) return SIN_RED;
   guardar(cuerpo, nombreDeDescarga(nombre));
   return { tipo: RESULTADO_API.OK, valor: null };
+}
+
+export function rutaDeVistaPrevia(caso: string, nombre: string): string {
+  const patron = estaEnElPaquete(nombre) ? RUTA_API.VISTA_PREVIA_PAQUETE : RUTA_API.VISTA_PREVIA;
+  return rutaConParametros(patron, caso, nombre);
+}
+
+export async function obtenerVistaPrevia(
+  _caso: string,
+  _nombre: string,
+  _signal: AbortSignal | null = null,
+): Promise<ResultadoApi<VistaPreviaUi>> {
+  return SIN_RED;
 }

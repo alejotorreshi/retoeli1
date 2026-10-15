@@ -231,3 +231,9 @@ export const ESTADO_LISTA_ARCHIVOS = {
 } as const;
 
 export const ESPERA_LIBERAR_DESCARGA_MS = 1_000;
+
+export const ESTADO_VISTA_PREVIA = {
+  CARGANDO: "cargando",
+  ERROR: "error",
+  LISTA: "lista",
+} as const;

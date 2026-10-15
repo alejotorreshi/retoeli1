@@ -8,10 +8,12 @@ import type {
   ESTADO_HERRAMIENTA,
   ESTADO_LISTA_ARCHIVOS,
   ESTADO_TARJETA_CONFIRMACION,
+  ESTADO_VISTA_PREVIA,
   ETAPA,
   RESULTADO_API,
 } from "@web/config/constants/ui.constants.ts";
 import type { TIPO_EVENTO } from "@/config/constants/agent.constants.ts";
+import type { TIPO_VISTA_PREVIA } from "@/config/constants/files.constants.ts";
 import type { ValorDe } from "@/config/types/valor-de.type.ts";
 import type {
   ChatBody,
@@ -19,6 +21,7 @@ import type {
   ErrorResponse,
   FileListResponse,
   HealthResponse,
+  PreviewResponse,
   SessionViewResponse,
   SseEvent,
 } from "@/http/types/api.type.ts";
@@ -341,3 +344,14 @@ export type ControlArchivos = {
   readonly descargar: (archivo: ArchivoUi) => void;
   readonly marcarBorrados: () => void;
 };
+
+export type VistaPreviaUi = PreviewResponse;
+
+export type VistaPreviaTablaUi = Extract<VistaPreviaUi, { readonly tipo: typeof TIPO_VISTA_PREVIA.TABLA }>;
+
+export type FilaVistaPreviaUi = VistaPreviaTablaUi["filas"][number];
+
+export type EstadoVistaPrevia =
+  | { readonly tipo: typeof ESTADO_VISTA_PREVIA.CARGANDO }
+  | { readonly tipo: typeof ESTADO_VISTA_PREVIA.ERROR }
+  | { readonly tipo: typeof ESTADO_VISTA_PREVIA.LISTA; readonly vista: VistaPreviaUi };
