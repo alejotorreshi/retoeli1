@@ -1,10 +1,13 @@
 import { PEDIDO_JSON, RESULTADO_API } from "@web/config/constants/ui.constants.ts";
 import { TEXTO_ACCESO } from "@web/config/strings.ts";
-import type { ResultadoApi, ResultadoFallido } from "@web/types/chat.type.ts";
+import type { EstadoModelo, ResultadoApi, ResultadoFallido } from "@web/types/chat.type.ts";
 import { RESPUESTA_HTTP, RUTA_API } from "@/config/constants/http.constants.ts";
-import type { AccessBody, ConfigResponse, ErrorResponse } from "@/http/types/api.type.ts";
+import { ESTADO_LLM } from "@/config/constants/llm.constants.ts";
+import type { AccessBody, ConfigResponse, ErrorResponse, HealthResponse } from "@/http/types/api.type.ts";
 
 const SIN_RED: ResultadoFallido = { tipo: RESULTADO_API.SIN_RED };
+
+const ESTADOS_DEL_MODELO: ReadonlySet<string> = new Set(Object.values(ESTADO_LLM));
 
 function esObjeto(valor: unknown): valor is object {
   return typeof valor === "object" && valor !== null;
@@ -40,6 +43,24 @@ function esConfig(valor: unknown): valor is ConfigResponse {
     esEnteroPositivo(valor.presupuestoSesion) &&
     "mensajeMaximo" in valor &&
     esEnteroPositivo(valor.mensajeMaximo)
+  );
+}
+
+function esEstadoDelModelo(valor: unknown): valor is EstadoModelo {
+  return typeof valor === "string" && ESTADOS_DEL_MODELO.has(valor);
+}
+
+function esSalud(valor: unknown): valor is HealthResponse {
+  return (
+    esObjeto(valor) &&
+    "ok" in valor &&
+    valor.ok === true &&
+    "provider" in valor &&
+    typeof valor.provider === "string" &&
+    "model" in valor &&
+    typeof valor.model === "string" &&
+    "llm" in valor &&
+    esEstadoDelModelo(valor.llm)
   );
 }
 
@@ -85,4 +106,12 @@ export async function entrar(codigo: string): Promise<ResultadoApi<null>> {
   if (respuesta === null) return SIN_RED;
   if (!respuesta.ok) return resultadoDelRechazo(respuesta);
   return { tipo: RESULTADO_API.OK, valor: null };
+}
+
+export async function obtenerSalud(signal: AbortSignal | null = null): Promise<ResultadoApi<HealthResponse>> {
+  const respuesta = await pedir(RUTA_API.SALUD, { signal });
+  if (respuesta === null) return SIN_RED;
+  if (!respuesta.ok) return resultadoDelRechazo(respuesta);
+  const valor = await leerJson(respuesta);
+  return esSalud(valor) ? { tipo: RESULTADO_API.OK, valor } : SIN_RED;
 }

@@ -84,6 +84,10 @@ function aplicarEvento(estado: EstadoConversacion, evento: SseEvent): EstadoConv
   }
 }
 
+export function esFalloDeTurno(accion: AccionUi): boolean {
+  return accion.tipo === ACCION_UI.EVENTO && accion.evento.tipo === TIPO_EVENTO.ERROR;
+}
+
 export function reducirConversacion(estado: EstadoConversacion, accion: AccionUi): EstadoConversacion {
   switch (accion.tipo) {
     case ACCION_UI.ENVIAR:

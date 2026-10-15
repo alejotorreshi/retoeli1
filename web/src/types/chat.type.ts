@@ -1,5 +1,5 @@
 import type { ACCION_UI, ESTADO_ACCESO, RESULTADO_API } from "@web/config/constants/ui.constants.ts";
-import type { ConfigResponse, ErrorResponse, SseEvent } from "@/http/types/api.type.ts";
+import type { ConfigResponse, ErrorResponse, HealthResponse, SseEvent } from "@/http/types/api.type.ts";
 
 export type ErrorVisible = {
   readonly codigo: string | null;
@@ -103,4 +103,13 @@ export type ControlChat = {
   readonly cambiarBorrador: (borrador: string) => void;
   readonly enviar: () => void;
   readonly recibirConfig: (resultado: ResultadoApi<ConfigResponse>) => void;
+};
+
+export type EstadoModelo = HealthResponse["llm"];
+
+export type SaludModelo = Pick<HealthResponse, "model" | "llm">;
+
+export type ControlSalud = {
+  readonly salud: HealthResponse | null;
+  readonly refrescar: () => void;
 };

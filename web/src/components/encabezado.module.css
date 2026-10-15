@@ -48,3 +48,38 @@
   border: var(--borde-ancho) solid var(--borde);
   border-radius: var(--radio-chico);
 }
+
+.modelo {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: var(--espacio-sm);
+  min-height: var(--alto-control);
+  margin: 0;
+  padding-inline: var(--espacio-md);
+  font-size: var(--etiqueta-tamano);
+  line-height: var(--etiqueta-interlinea);
+  color: var(--texto);
+  background: var(--dominante);
+  border: var(--borde-ancho) solid var(--borde);
+  border-radius: var(--radio-chico);
+}
+
+.punto {
+  flex: none;
+  width: var(--punto-estado);
+  height: var(--punto-estado);
+  border-radius: 50%;
+}
+
+.exito {
+  background: var(--exito-texto);
+}
+
+.atencion {
+  background: var(--atencion-borde);
+}
+
+.error {
+  background: var(--error-texto);
+}

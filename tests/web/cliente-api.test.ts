@@ -1,9 +1,10 @@
 import { afterEach, describe, expect, spyOn, test } from "bun:test";
-import { entrar, obtenerConfig } from "@web/api/cliente-api.ts";
+import { entrar, obtenerConfig, obtenerSalud } from "@web/api/cliente-api.ts";
 import { RESULTADO_API } from "@web/config/constants/ui.constants.ts";
 import { TEXTO_ACCESO } from "@web/config/strings.ts";
 import { RESPUESTA_HTTP, RUTA_API } from "@/config/constants/http.constants.ts";
-import type { ConfigResponse } from "@/http/types/api.type.ts";
+import { ESTADO_LLM } from "@/config/constants/llm.constants.ts";
+import type { ConfigResponse, HealthResponse } from "@/http/types/api.type.ts";
 
 const CODIGO = "codigo-de-prueba-largo";
 const CODIGO_INVALIDO = "El código no es válido. Revísalo y vuelve a intentarlo.";
@@ -14,6 +15,13 @@ const CONFIG: ConfigResponse = {
   casos: ["co-industrias-delta"],
   presupuestoSesion: 300_000,
   mensajeMaximo: 2000,
+};
+
+const SALUD: HealthResponse = {
+  ok: true,
+  provider: "deepseek",
+  model: "deepseek-flash",
+  llm: ESTADO_LLM.TOPE_DIARIO,
 };
 
 let restaurarFetch: (() => void) | null = null;
@@ -95,5 +103,39 @@ describe("entrar", () => {
       status: RESPUESTA_HTTP.DEMASIADOS_PEDIDOS,
       mensaje: DEMASIADOS_INTENTOS,
     });
+  });
+});
+
+describe("obtenerSalud", () => {
+  test("pide la ruta pública de health sin cuerpo ni método POST y devuelve el estado del modelo", async () => {
+    const espia = simularFetch(async () => Response.json(SALUD));
+    expect(await obtenerSalud()).toEqual({ tipo: RESULTADO_API.OK, valor: SALUD });
+    const [url, init] = espia.mock.calls[0] ?? [];
+    expect(url).toBe(RUTA_API.SALUD);
+    expect(init?.method).toBeUndefined();
+    expect(init?.body).toBeUndefined();
+  });
+
+  test("acepta cada estado del modelo que el servidor puede reportar", async () => {
+    for (const llm of Object.values(ESTADO_LLM)) {
+      simularFetch(async () => Response.json({ ...SALUD, llm }));
+      expect(await obtenerSalud()).toEqual({ tipo: RESULTADO_API.OK, valor: { ...SALUD, llm } });
+      restaurarFetch?.();
+    }
+  });
+
+  test("un estado del modelo desconocido o una forma distinta no se aceptan", async () => {
+    simularFetch(async () => Response.json({ ...SALUD, llm: "caido" }));
+    expect(await obtenerSalud()).toEqual({ tipo: RESULTADO_API.SIN_RED });
+    restaurarFetch?.();
+    simularFetch(async () => Response.json({ ...SALUD, ok: false }));
+    expect(await obtenerSalud()).toEqual({ tipo: RESULTADO_API.SIN_RED });
+  });
+
+  test("una falla de red devuelve sin red", async () => {
+    simularFetch(async () => {
+      throw new TypeError("Failed to fetch");
+    });
+    expect(await obtenerSalud()).toEqual({ tipo: RESULTADO_API.SIN_RED });
   });
 });

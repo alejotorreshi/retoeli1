@@ -1,8 +1,18 @@
 import estilos from "@web/components/encabezado.module.css";
-import { TEXTO_APP } from "@web/config/strings.ts";
-import type { PropsEncabezado } from "@web/types/ui.type.ts";
+import { TONO_DEL_MODELO } from "@web/config/constants/ui.constants.ts";
+import { TEXTO_APP, TEXTO_MODELO } from "@web/config/strings.ts";
+import type { PropsEncabezado, PropsEstadoDelModelo } from "@web/types/ui.type.ts";
 
-export function Encabezado({ fechaEjecucion }: PropsEncabezado) {
+function EstadoDelModelo({ salud }: PropsEstadoDelModelo) {
+  return (
+    <p className={estilos.modelo}>
+      <span className={`${estilos.punto} ${estilos[TONO_DEL_MODELO[salud.llm]]}`} aria-hidden="true" />
+      {TEXTO_MODELO.estado(salud.model, salud.llm)}
+    </p>
+  );
+}
+
+export function Encabezado({ fechaEjecucion, salud }: PropsEncabezado) {
   return (
     <header className={estilos.encabezado}>
       <div className={estilos.marca}>
@@ -13,6 +23,7 @@ export function Encabezado({ fechaEjecucion }: PropsEncabezado) {
         <p className={estilos.subtitulo}>{TEXTO_APP.subtitulo}</p>
       </div>
       <p className={estilos.fecha}>{TEXTO_APP.fechaEjecucion(fechaEjecucion)}</p>
+      {salud === null ? null : <EstadoDelModelo salud={salud} />}
     </header>
   );
 }

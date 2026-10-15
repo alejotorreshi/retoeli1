@@ -1,7 +1,12 @@
 import { describe, expect, test } from "bun:test";
 import { ACCION_UI, ESTADO_ACCESO, RESULTADO_API } from "@web/config/constants/ui.constants.ts";
 import { TEXTO_ERROR } from "@web/config/strings.ts";
-import { accionDeConfig, estadoInicialConversacion, reducirConversacion } from "@web/state/conversacion.ts";
+import {
+  accionDeConfig,
+  esFalloDeTurno,
+  estadoInicialConversacion,
+  reducirConversacion,
+} from "@web/state/conversacion.ts";
 import type { AccionUi, EstadoConversacion } from "@web/types/chat.type.ts";
 import { CODIGO_AGENTE, MOTIVO_FIN, TIPO_EVENTO } from "@/config/constants/agent.constants.ts";
 import { RESPUESTA_HTTP } from "@/config/constants/http.constants.ts";
@@ -322,5 +327,23 @@ describe("accionDeConfig", () => {
       tipo: ACCION_UI.CONFIG_RECIBIDA,
       config: null,
     });
+  });
+});
+
+describe("esFalloDeTurno", () => {
+  const errorDelAgente = evento({
+    tipo: TIPO_EVENTO.ERROR,
+    turnoId: TURNO,
+    codigo: CODIGO_AGENTE.PROVEEDOR_TIMEOUT,
+    mensaje: MENSAJE_ERROR_AGENTE,
+  });
+
+  test("el evento error marca el turno como fallido para refrescar health al cerrarlo", () => {
+    expect(esFalloDeTurno(errorDelAgente)).toBe(true);
+  });
+
+  test("un turno sin error no pide refrescar health", () => {
+    expect(turnoCompleto.some(esFalloDeTurno)).toBe(false);
+    expect(esFalloDeTurno({ tipo: ACCION_UI.ACEPTADO, mensaje: MENSAJE })).toBe(false);
   });
 });

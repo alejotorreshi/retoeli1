@@ -1,6 +1,7 @@
-import type { TAMANO_ICONO } from "@web/config/constants/ui.constants.ts";
-import type { TurnoConversacion } from "@web/types/chat.type.ts";
+import type { TAMANO_ICONO, TONO } from "@web/config/constants/ui.constants.ts";
+import type { EstadoModelo, SaludModelo, TurnoConversacion } from "@web/types/chat.type.ts";
 import type { ReactNode } from "react";
+import type { ESTADO_LLM } from "@/config/constants/llm.constants.ts";
 import type { ValorDe } from "@/config/types/valor-de.type.ts";
 
 export type TamanoIcono = ValorDe<typeof TAMANO_ICONO>;
@@ -44,6 +45,31 @@ export type PropsCompositor = {
 
 export type PropsEncabezado = {
   readonly fechaEjecucion: string | null;
+  readonly salud: SaludModelo | null;
+};
+
+export type Tono = ValorDe<typeof TONO>;
+
+export type EstadoModeloConAviso = Exclude<EstadoModelo, typeof ESTADO_LLM.DISPONIBLE>;
+
+export type PartesAvisoModelo = {
+  readonly texto: string;
+  readonly comando: string | null;
+  readonly cierre: string;
+};
+
+export type PropsAvisoModelo = {
+  readonly estado: EstadoModelo | null;
+  readonly zona: string | null;
+};
+
+export type PropsCuerpoAvisoModelo = {
+  readonly estado: EstadoModeloConAviso;
+  readonly zona: string | null;
+};
+
+export type PropsEstadoDelModelo = {
+  readonly salud: SaludModelo;
 };
 
 export type PropsPantallaAcceso = {

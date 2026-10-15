@@ -1,4 +1,5 @@
 import { obtenerConfig } from "@web/api/cliente-api.ts";
+import { AvisoModelo } from "@web/components/aviso-modelo.tsx";
 import { Compositor } from "@web/components/compositor.tsx";
 import { Encabezado } from "@web/components/encabezado.tsx";
 import { IndicadorPensando } from "@web/components/indicador-pensando.tsx";
@@ -7,10 +8,12 @@ import { PantallaAcceso } from "@web/components/pantalla-acceso.tsx";
 import { CLASE_GLOBAL, ESTADO_ACCESO } from "@web/config/constants/ui.constants.ts";
 import { TEXTO_APP } from "@web/config/strings.ts";
 import { useChat } from "@web/hooks/usar-chat.ts";
+import { useSalud } from "@web/hooks/usar-salud.ts";
 import { useEffect } from "react";
 
 export function App() {
-  const { estado, borrador, cambiarBorrador, enviar, recibirConfig } = useChat();
+  const { salud, refrescar } = useSalud();
+  const { estado, borrador, cambiarBorrador, enviar, recibirConfig } = useChat(refrescar);
 
   useEffect(() => {
     const controlador = new AbortController();
@@ -40,7 +43,8 @@ export function App() {
 
   return (
     <>
-      <Encabezado fechaEjecucion={estado.config?.fechaEjecucion ?? null} />
+      <Encabezado fechaEjecucion={estado.config?.fechaEjecucion ?? null} salud={salud} />
+      <AvisoModelo estado={salud?.llm ?? null} zona={estado.config?.zona ?? null} />
       <main>
         <LineaDeTiempo turnos={estado.turnos} enCurso={estado.enCurso}>
           {estado.enCurso ? <IndicadorPensando /> : null}

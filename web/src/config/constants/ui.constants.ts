@@ -1,4 +1,10 @@
-import { CABECERA_HTTP, METODO_POST, TIPO_CONTENIDO_JSON } from "@/config/constants/llm.constants.ts";
+import {
+  CABECERA_HTTP,
+  ESTADO_LLM,
+  METODO_POST,
+  TIPO_CONTENIDO_JSON,
+} from "@/config/constants/llm.constants.ts";
+import type { ValorDe } from "@/config/types/valor-de.type.ts";
 
 export const ACCION_UI = {
   ENVIAR: "enviar",
@@ -56,3 +62,17 @@ export const CLASE_GLOBAL = {
   OCULTO: "sr-only",
   TRANSICION: "transicion",
 } as const;
+
+export const TONO = {
+  EXITO: "exito",
+  ATENCION: "atencion",
+  ERROR: "error",
+} as const;
+
+export const TONO_DEL_MODELO = {
+  [ESTADO_LLM.DISPONIBLE]: TONO.EXITO,
+  [ESTADO_LLM.SIN_CLAVE]: TONO.ERROR,
+  [ESTADO_LLM.SALDO_AGOTADO]: TONO.ERROR,
+  [ESTADO_LLM.NO_DISPONIBLE]: TONO.ATENCION,
+  [ESTADO_LLM.TOPE_DIARIO]: TONO.ATENCION,
+} as const satisfies Record<ValorDe<typeof ESTADO_LLM>, ValorDe<typeof TONO>>;
