@@ -74,7 +74,7 @@ Fuente vinculante: `reto-01/PRD.md`, sin modificar. Fixtures: `reto-01/fixtures/
 - [x] **API-01**: `POST /api/chat` recibe `{ sessionId, message }` y emite un stream SSE de eventos por paso (`turn_start`, `tool_start`, `tool_end`, `text`, `confirmation_required`, `usage`, `error`, `turn_end`) con heartbeat. También hay un fallback JSON `{ reply, toolCalls[], needsConfirmation }`.
 - [ ] **API-02**: `GET /api/sessions/:id` devuelve el historial completo de la sesión, con la PII redactada.
 - [ ] **API-03**: `GET /api/health` devuelve `{ ok: true, provider, model, llm }` sin exponer claves y sin pedir código de acceso.
-- [ ] **API-04**: El link público exige un código de acceso, comparado en tiempo constante. Hay rate limit por IP, límite de tamaño de mensaje y headers de seguridad.
+- [x] **API-04**: El link público exige un código de acceso, comparado en tiempo constante. Hay rate limit por IP, límite de tamaño de mensaje y headers de seguridad.
 - [ ] **API-05**: Una ruta de descarga de artefactos sirve `out/<caso>/` con lista blanca de nombres de archivo, detrás del código de acceso.
 
 ### Front de chat (§6.1)
@@ -87,7 +87,7 @@ Fuente vinculante: `reto-01/PRD.md`, sin modificar. Fixtures: `reto-01/fixtures/
 - [ ] **UI-06**: Un panel de artefactos permite descargar o previsualizar los archivos generados del caso.
 - [ ] **UI-07**: Hay chips de acción rápida: el prompt §11, procesar los 4 casos y listar los casos.
 - [ ] **UI-08**: Un indicador de progreso por caso muestra las etapas leído → mapeado → generado → paquete → confirmación → envío. El `sessionId` persiste en el navegador, el historial se recarga desde la API y hay un botón "Nueva sesión".
-- [ ] **UI-09**: La UI muestra la fecha de ejecución efectiva y pide el código de acceso una sola vez.
+- [x] **UI-09**: La UI muestra la fecha de ejecución efectiva y pide el código de acceso una sola vez.
 
 ### Seguridad, PII y observabilidad (§8, RN5, CA4)
 
@@ -216,7 +216,7 @@ Cada requisito v1 está asignado a exactamente una fase del roadmap (`.planning/
 | API-01 | Phase 3 | Complete |
 | API-02 | Phase 3 | Gaps Found |
 | API-03 | Phase 3 | Gaps Found |
-| API-04 | Phase 3 | Gaps Found |
+| API-04 | Phase 3 | Complete |
 | API-05 | Phase 3 | Gaps Found |
 | UI-01 | Phase 3 | Gaps Found |
 | UI-02 | Phase 3 | Gaps Found |
@@ -226,7 +226,7 @@ Cada requisito v1 está asignado a exactamente una fase del roadmap (`.planning/
 | UI-06 | Phase 3 | Gaps Found |
 | UI-07 | Phase 3 | Gaps Found |
 | UI-08 | Phase 3 | Gaps Found |
-| UI-09 | Phase 3 | Gaps Found |
+| UI-09 | Phase 3 | Complete |
 | SEG-01 | Phase 3 | Gaps Found |
 | SEG-02 | Phase 1 | Partial — política de rutas PII, test grep y redactar() única para logs y resúmenes de tool calls (Fase 2) listos; falta aplicarla a API/SSE (Fase 3) |
 | SEG-03 | Phase 2 | Complete |

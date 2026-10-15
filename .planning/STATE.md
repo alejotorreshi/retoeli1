@@ -3,16 +3,16 @@ gsd_state_version: "1.0"
 current_phase: 03
 current_phase_name: Chat web, API SSE y despliegue
 status: executing
-stopped_at: Completed 03-46-PLAN.md
-last_updated: "2026-10-15T23:06:08.171Z"
+stopped_at: Completed 03-45-PLAN.md
+last_updated: "2026-10-15T23:12:31.483Z"
 last_activity: 2026-10-15
 last_activity_desc: Phase 03 execution started
-state_head: 3003ecbe717baaef271d4de91e6c7a937bdd882f
+state_head: 747213de7786c4e75afb8af1c4aab135a869de57
 progress:
   total_phases: 4
   completed_phases: 2
   total_plans: 86
-  completed_plans: 84
+  completed_plans: 85
   percent: 50
 ---
 
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-10-14)
 ## Current Position
 
 Phase: 03 (Chat web, API SSE y despliegue) — EXECUTING
-Plan: 3 of 47
+Plan: 4 of 47
 Status: Ready to execute
 Last activity: 2026-10-15 — Phase 03 execution started
 
@@ -141,6 +141,7 @@ Progress: [█████░░░░░] 50%
 | Phase 03 P43 | 4min | 2 tasks | 6 files |
 | Phase 03 P44 | 4 min | 2 tasks | 3 files |
 | Phase 03 P46 | 4min | 2 tasks | 8 files |
+| Phase 03 P45 | 3 min | 2 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -344,6 +345,7 @@ Recent decisions affecting current work:
 - [Phase 03]: 03-44 (D-77.1): se quita el cupo de desalojos; la clave nueva hereda los golpes de la libre más antigua desalojada con start en now, la cota vuelve a K × L con cualquier rotación y el limitador solo falla cerrado con todas las claves bloqueadas
 - [Phase 03]: 03-46: el truncado de un caso confirmado se decide en el bucle (casoDeLlamada === turno.autorizacion.caso) y emite TRUNCADO_CONFIRMADO con texto propio; YA_ENVIADO y SIN_PAQUETE mantienen precedencia (D-76.2)
 - [Phase 03]: 03-46: la exhaustividad de aplicarEvento usa default con const _sinCubrir: never sin return, porque Biome prohíbe devolver valor en funciones void (IN-05)
+- [Phase 03]: 03-45 / D-77.2: /api/acceso y el Bearer reservan el intento con hit síncrono antes del primer await y lo devuelven con release ante código o Bearer correctos o cuerpo inválido; hit no cuenta un golpe rechazado
 
 ### Pending Todos
 
@@ -379,6 +381,6 @@ Items acknowledged and deferred at milestone close, most recent first:
 
 ## Session Continuity
 
-Last session: 2026-10-15T23:06:08.077Z
-Stopped at: Completed 03-46-PLAN.md
+Last session: 2026-10-15T23:12:31.390Z
+Stopped at: Completed 03-45-PLAN.md
 Resume file: None
