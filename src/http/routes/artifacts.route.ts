@@ -1,6 +1,6 @@
 import type { Context, Hono } from "hono";
 import type { LectorArtefactos } from "@/application/types/artefactos.type.ts";
-import { PREFIJO_PAQUETE } from "@/config/constants/files.constants.ts";
+import { PREFIJO_PAQUETE, RESULTADO_VISTA_PREVIA } from "@/config/constants/files.constants.ts";
 import {
   CABECERA,
   DISPOSICION_ADJUNTO,
@@ -48,9 +48,15 @@ async function preview(
   caso: string,
   nombre: string,
 ): Promise<Response> {
-  const vista = await deps.lector.vistaPrevia(caso, nombre);
-  if (vista === null) return notFound(c, MENSAJE_HTTP.vistaPreviaNoDisponible);
-  const body: PreviewResponse = vista;
+  const resultado = await deps.lector.vistaPrevia(caso, nombre);
+  if (resultado.estado === RESULTADO_VISTA_PREVIA.NO_ENCONTRADO) {
+    return notFound(c, MENSAJE_HTTP.archivoNoEncontrado);
+  }
+  if (resultado.estado === RESULTADO_VISTA_PREVIA.NO_DISPONIBLE) {
+    const body: ErrorResponse = { mensaje: MENSAJE_HTTP.vistaPreviaNoDisponible };
+    return c.json(body, RESPUESTA_HTTP.NO_PROCESABLE);
+  }
+  const body: PreviewResponse = resultado.vista;
   return c.json(body, RESPUESTA_HTTP.OK);
 }
 

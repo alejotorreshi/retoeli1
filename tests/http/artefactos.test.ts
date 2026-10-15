@@ -206,11 +206,16 @@ describe("GET /api/casos/:caso/vista-previa/:nombre (D-64, D-65, D-74)", () => {
   test.each([
     rutaVistaPrevia(CO, "mapeo.json"),
     rutaVistaPrevia(CO, "log.jsonl"),
-    rutaVistaPrevia(CO, "paquete/rut-2026.txt"),
     rutaVistaPrevia(CO, "formulario.pdf"),
     rutaVistaPrevia(CO, "..%2Fmapeo.json"),
     rutaVistaPrevia("zz-no-existe", "formulario.xlsx"),
   ])("%s responde 404 { mensaje }", async (ruta) => {
-    await esperar404(await servidor.pedir(ruta), MENSAJE_HTTP.vistaPreviaNoDisponible);
+    await esperar404(await servidor.pedir(ruta), MENSAJE_HTTP.archivoNoEncontrado);
+  });
+
+  test("un archivo que existe sin vista previa responde 422, no 404, para no simular un disco borrado", async () => {
+    const respuesta = await servidor.pedir(rutaVistaPrevia(CO, "paquete/rut-2026.txt"));
+    expect(respuesta.status).toBe(RESPUESTA_HTTP.NO_PROCESABLE);
+    expect(await respuesta.json()).toEqual({ mensaje: MENSAJE_HTTP.vistaPreviaNoDisponible });
   });
 });

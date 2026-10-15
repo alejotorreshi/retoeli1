@@ -184,6 +184,13 @@ describe("esArchivoNoEncontrado", () => {
         mensaje: "x",
       }),
     ).toBe(false);
+    expect(
+      esArchivoNoEncontrado({
+        tipo: RESULTADO_API.RECHAZO,
+        status: RESPUESTA_HTTP.NO_PROCESABLE,
+        mensaje: "x",
+      }),
+    ).toBe(false);
     expect(esArchivoNoEncontrado({ tipo: RESULTADO_API.SIN_RED })).toBe(false);
     expect(esArchivoNoEncontrado({ tipo: RESULTADO_API.OK, valor: null })).toBe(false);
   });

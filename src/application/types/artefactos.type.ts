@@ -1,4 +1,8 @@
-import type { TIPO_ARCHIVO_CASO, TIPO_VISTA_PREVIA } from "@/config/constants/files.constants.ts";
+import type {
+  RESULTADO_VISTA_PREVIA,
+  TIPO_ARCHIVO_CASO,
+  TIPO_VISTA_PREVIA,
+} from "@/config/constants/files.constants.ts";
 import type { ValorDe } from "@/config/types/valor-de.type.ts";
 import type { EstadoCampo } from "@/domain/types/reglas.type.ts";
 
@@ -35,8 +39,13 @@ export type VistaPreviaTexto = {
 
 export type VistaPrevia = VistaPreviaTabla | VistaPreviaTexto;
 
+export type ResultadoVistaPrevia =
+  | { readonly estado: typeof RESULTADO_VISTA_PREVIA.LISTA; readonly vista: VistaPrevia }
+  | { readonly estado: typeof RESULTADO_VISTA_PREVIA.NO_ENCONTRADO }
+  | { readonly estado: typeof RESULTADO_VISTA_PREVIA.NO_DISPONIBLE };
+
 export type LectorArtefactos = {
   listar(caso: string): Promise<readonly ArchivoCaso[] | null>;
   abrir(caso: string, nombre: string): Promise<ArchivoServible | null>;
-  vistaPrevia(caso: string, nombre: string): Promise<VistaPrevia | null>;
+  vistaPrevia(caso: string, nombre: string): Promise<ResultadoVistaPrevia>;
 };

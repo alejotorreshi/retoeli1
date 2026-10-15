@@ -11,6 +11,7 @@ import {
   ARCHIVOS_SALIDA,
   DIRECTORIO_PAQUETE,
   OUT_DIR,
+  RESULTADO_VISTA_PREVIA,
   TIPO_ARCHIVO_CASO,
   TIPO_VISTA_PREVIA,
 } from "@/config/constants/files.constants.ts";
@@ -178,8 +179,11 @@ describe("vistaPrevia del formulario y del portal: tabla desde mapeo.json (D-65,
   ])("%s %s da las filas de mapeo.json, en orden", async (caso, nombre) => {
     const filas = await filasDelMapeo(caso);
     expect(filas.length).toBeGreaterThan(0);
-    const vista: unknown = await lector.vistaPrevia(caso, nombre);
-    expect(vista).toEqual({ tipo: TIPO_VISTA_PREVIA.TABLA, filas });
+    const resultado: unknown = await lector.vistaPrevia(caso, nombre);
+    expect(resultado).toEqual({
+      estado: RESULTADO_VISTA_PREVIA.LISTA,
+      vista: { tipo: TIPO_VISTA_PREVIA.TABLA, filas },
+    });
   });
 
   test("la vista previa de valores-portal.md no trae la cuenta, el SWIFT, los correos ni los teléfonos", async () => {
@@ -197,7 +201,7 @@ describe("vistaPrevia del formulario y del portal: tabla desde mapeo.json (D-65,
     expect(completos.filter((hoja) => texto.includes(hoja.valor))).toEqual([]);
   });
 
-  test("sin mapeo.json la vista previa del formulario es null", async () => {
+  test("sin mapeo.json el formulario existe pero no tiene vista previa, distinto de no encontrado", async () => {
     const solo = await crearProyectoTemporal();
     try {
       await mkdir(join(solo.raiz, OUT_DIR, CO), { recursive: true });
@@ -210,7 +214,9 @@ describe("vistaPrevia del formulario y del portal: tabla desde mapeo.json (D-65,
           previsualizable: true,
         },
       ]);
-      expect(await lectorSolo.vistaPrevia(CO, ARCHIVOS_SALIDA.FORMULARIO_XLSX)).toBeNull();
+      expect(await lectorSolo.vistaPrevia(CO, ARCHIVOS_SALIDA.FORMULARIO_XLSX)).toEqual({
+        estado: RESULTADO_VISTA_PREVIA.NO_DISPONIBLE,
+      });
     } finally {
       await solo.limpiar();
     }
@@ -224,18 +230,26 @@ describe("vistaPrevia de los textos del paquete: texto plano sin cambios (D-65, 
     [CASO_CONFIRMADO, "ENVIO-SIMULADO.md"],
   ])("%s %s devuelve el texto tal como está en disco", async (caso, nombre) => {
     const texto = await readFile(salida(caso, nombre), "utf8");
-    expect(await lector.vistaPrevia(caso, nombre)).toEqual({ tipo: TIPO_VISTA_PREVIA.TEXTO, texto });
+    expect(await lector.vistaPrevia(caso, nombre)).toEqual({
+      estado: RESULTADO_VISTA_PREVIA.LISTA,
+      vista: { tipo: TIPO_VISTA_PREVIA.TEXTO, texto },
+    });
+  });
+
+  test("un soporte que existe pero no es texto previsualizable no tiene vista previa", async () => {
+    expect(await lector.vistaPrevia(CO, "paquete/rut-2026.txt")).toEqual({
+      estado: RESULTADO_VISTA_PREVIA.NO_DISPONIBLE,
+    });
   });
 
   test.each([
-    [CO, "paquete/rut-2026.txt"],
     [CO, "mapeo.json"],
     [CO, "log.jsonl"],
     [CO, "paquete/formulario.xlsx"],
     [CO, "formulario.pdf"],
     [CO, `paquete/${ENLACE_FUERA}`],
     ["zz-no-existe", "formulario.xlsx"],
-  ])("%s %s no tiene vista previa", async (caso, nombre) => {
-    expect(await lector.vistaPrevia(caso, nombre)).toBeNull();
+  ])("%s %s no se encuentra", async (caso, nombre) => {
+    expect(await lector.vistaPrevia(caso, nombre)).toEqual({ estado: RESULTADO_VISTA_PREVIA.NO_ENCONTRADO });
   });
 });

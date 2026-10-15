@@ -84,6 +84,12 @@ export const TIPO_VISTA_PREVIA = {
   TEXTO: "texto",
 } as const;
 
+export const RESULTADO_VISTA_PREVIA = {
+  LISTA: "lista",
+  NO_ENCONTRADO: "no_encontrado",
+  NO_DISPONIBLE: "no_disponible",
+} as const;
+
 export const SEPARADOR_EXTENSION = ".";
 
 export const TIPO_CONTENIDO_POR_EXTENSION: Readonly<Record<string, string>> = {

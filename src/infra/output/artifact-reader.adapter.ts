@@ -4,6 +4,7 @@ import type {
   ArchivoCaso,
   ArchivoServible,
   LectorArtefactos,
+  ResultadoVistaPrevia,
   TipoArchivo,
   VistaPrevia,
 } from "@/application/types/artefactos.type.ts";
@@ -12,6 +13,7 @@ import {
   ARCHIVOS_SALIDA,
   ARCHIVOS_SISTEMA_IGNORADOS,
   PREFIJO_PAQUETE,
+  RESULTADO_VISTA_PREVIA,
   SEPARADOR_EXTENSION,
   TIPO_ARCHIVO_CASO,
   TIPO_CONTENIDO_BINARIO,
@@ -161,6 +163,10 @@ async function textPreview(realPath: string): Promise<VistaPrevia | null> {
   return texto === null ? null : { tipo: TIPO_VISTA_PREVIA.TEXTO, texto };
 }
 
+const PREVIEW_NOT_FOUND: ResultadoVistaPrevia = { estado: RESULTADO_VISTA_PREVIA.NO_ENCONTRADO };
+
+const PREVIEW_UNAVAILABLE: ResultadoVistaPrevia = { estado: RESULTADO_VISTA_PREVIA.NO_DISPONIBLE };
+
 async function previewOf(
   root: string,
   caso: string,
@@ -183,9 +189,11 @@ export function createArtifactReader(root: string): LectorArtefactos {
       const tipoContenido = contentTypeOf(artifact.entry.file);
       return { nombre: artifact.entry.file, tipoContenido, cuerpo: Bun.file(artifact.realPath) };
     },
-    async vistaPrevia(caso: string, nombre: string): Promise<VistaPrevia | null> {
+    async vistaPrevia(caso: string, nombre: string): Promise<ResultadoVistaPrevia> {
       const artifact = await findArtifact(root, caso, nombre);
-      return artifact === null ? null : previewOf(root, caso, artifact);
+      if (artifact === null) return PREVIEW_NOT_FOUND;
+      const vista = await previewOf(root, caso, artifact);
+      return vista === null ? PREVIEW_UNAVAILABLE : { estado: RESULTADO_VISTA_PREVIA.LISTA, vista };
     },
   };
 }
