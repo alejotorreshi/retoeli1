@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-13T23:44:45Z",
+  "generated_at": "2026-10-15T13:11:37Z",
   "project": "reto-eli-1",
   "runtime": {
     "bun_pinned": "1.4.3",
@@ -43,8 +43,8 @@
       "depends_on": [],
       "probe": {
         "result": "up",
-        "detail": "exit 0 in ~1 s",
-        "checked_at": "2026-10-13T23:44:45Z"
+        "detail": "exit 0 in <1 s",
+        "checked_at": "2026-10-15T13:11:37Z"
       },
       "fallback": "auto",
       "in_local_qa_scope": true,
@@ -89,8 +89,8 @@
       "depends_on": [],
       "probe": {
         "result": "up",
-        "detail": "imported by the demo runner and 5 test files (codegraph)",
-        "checked_at": "2026-10-13T23:44:45Z"
+        "detail": "imported by demo runner and tests (codegraph)",
+        "checked_at": "2026-10-15T13:11:37Z"
       },
       "fallback": "auto",
       "in_local_qa_scope": true,
@@ -129,34 +129,35 @@
       "env": {
         "required": [],
         "optional": [
-          "LLM_PROVIDER",
-          "LLM_BASE_URL",
-          "LLM_MODEL",
-          "LLM_MAX_OUTPUT_TOKENS",
-          "LLM_MAX_TOKENS_PARAM",
-          "LLM_TEMPERATURE",
-          "LLM_THINKING",
-          "LLM_REASONING_PASSBACK",
-          "LLM_TOOL_CHOICE_NONE",
-          "LLM_FALLBACK_ENABLED",
-          "LLM_FALLBACK_PROVIDER",
-          "LLM_FALLBACK_BASE_URL",
-          "LLM_FALLBACK_MODEL",
-          "LLM_FALLBACK_API_KEY",
-          "LLM_FALLBACK_MAX_TOKENS_PARAM",
-          "LLM_FALLBACK_TEMPERATURE",
-          "LLM_FALLBACK_THINKING",
-          "LLM_FALLBACK_REASONING_PASSBACK",
-          "LLM_FALLBACK_TOOL_CHOICE_NONE",
-          "LLM_TIMEOUT_MS",
-          "LLM_MAX_RETRIES",
-          "AGENT_TURN_DEADLINE_MS",
+          "AGENT_DAILY_TOKEN_BUDGET",
           "AGENT_MAX_ITERATIONS",
+          "AGENT_MAX_SESSIONS",
           "AGENT_SESSION_TOKEN_BUDGET",
           "AGENT_SESSION_TTL_MINUTES",
-          "AGENT_MAX_SESSIONS",
-          "LOG_LEVEL",
+          "AGENT_TURN_DEADLINE_MS",
           "FECHA_EJECUCION",
+          "LLM_BASE_URL",
+          "LLM_FALLBACK_API_KEY",
+          "LLM_FALLBACK_BASE_URL",
+          "LLM_FALLBACK_ENABLED",
+          "LLM_FALLBACK_MAX_TOKENS_PARAM",
+          "LLM_FALLBACK_MODEL",
+          "LLM_FALLBACK_PROVIDER",
+          "LLM_FALLBACK_REASONING_PASSBACK",
+          "LLM_FALLBACK_TEMPERATURE",
+          "LLM_FALLBACK_THINKING",
+          "LLM_FALLBACK_TOOL_CHOICE_NONE",
+          "LLM_MAX_OUTPUT_TOKENS",
+          "LLM_MAX_RETRIES",
+          "LLM_MAX_TOKENS_PARAM",
+          "LLM_MODEL",
+          "LLM_PROVIDER",
+          "LLM_REASONING_PASSBACK",
+          "LLM_TEMPERATURE",
+          "LLM_THINKING",
+          "LLM_TIMEOUT_MS",
+          "LLM_TOOL_CHOICE_NONE",
+          "LOG_LEVEL",
           "TZ_NEGOCIO"
         ],
         "missing": []
@@ -166,8 +167,8 @@
       ],
       "probe": {
         "result": "up",
-        "detail": "offline turn with scripted fetch: turn_start, usage, text, turn_end; 1 provider request, exit 0 in <1 s",
-        "checked_at": "2026-10-13T23:44:45Z"
+        "detail": "offline turn with scripted fetch (scratch copy, --no-env-file): turn_start,text,usage,text,turn_end; 1 provider request",
+        "checked_at": "2026-10-15T13:11:37Z"
       },
       "fallback": "auto",
       "in_local_qa_scope": true,
@@ -203,34 +204,35 @@
           "LLM_API_KEY | DEEPSEEK_API_KEY (one of; loaded by Bun from the gitignored repo-root env file)"
         ],
         "optional": [
-          "LLM_PROVIDER",
-          "LLM_BASE_URL",
-          "LLM_MODEL",
-          "LLM_MAX_OUTPUT_TOKENS",
-          "LLM_MAX_TOKENS_PARAM",
-          "LLM_TEMPERATURE",
-          "LLM_THINKING",
-          "LLM_REASONING_PASSBACK",
-          "LLM_TOOL_CHOICE_NONE",
-          "LLM_FALLBACK_ENABLED",
-          "LLM_FALLBACK_PROVIDER",
-          "LLM_FALLBACK_BASE_URL",
-          "LLM_FALLBACK_MODEL",
-          "LLM_FALLBACK_API_KEY",
-          "LLM_FALLBACK_MAX_TOKENS_PARAM",
-          "LLM_FALLBACK_TEMPERATURE",
-          "LLM_FALLBACK_THINKING",
-          "LLM_FALLBACK_REASONING_PASSBACK",
-          "LLM_FALLBACK_TOOL_CHOICE_NONE",
-          "LLM_TIMEOUT_MS",
-          "LLM_MAX_RETRIES",
-          "AGENT_TURN_DEADLINE_MS",
+          "AGENT_DAILY_TOKEN_BUDGET",
           "AGENT_MAX_ITERATIONS",
+          "AGENT_MAX_SESSIONS",
           "AGENT_SESSION_TOKEN_BUDGET",
           "AGENT_SESSION_TTL_MINUTES",
-          "AGENT_MAX_SESSIONS",
-          "LOG_LEVEL",
+          "AGENT_TURN_DEADLINE_MS",
           "FECHA_EJECUCION",
+          "LLM_BASE_URL",
+          "LLM_FALLBACK_API_KEY",
+          "LLM_FALLBACK_BASE_URL",
+          "LLM_FALLBACK_ENABLED",
+          "LLM_FALLBACK_MAX_TOKENS_PARAM",
+          "LLM_FALLBACK_MODEL",
+          "LLM_FALLBACK_PROVIDER",
+          "LLM_FALLBACK_REASONING_PASSBACK",
+          "LLM_FALLBACK_TEMPERATURE",
+          "LLM_FALLBACK_THINKING",
+          "LLM_FALLBACK_TOOL_CHOICE_NONE",
+          "LLM_MAX_OUTPUT_TOKENS",
+          "LLM_MAX_RETRIES",
+          "LLM_MAX_TOKENS_PARAM",
+          "LLM_MODEL",
+          "LLM_PROVIDER",
+          "LLM_REASONING_PASSBACK",
+          "LLM_TEMPERATURE",
+          "LLM_THINKING",
+          "LLM_TIMEOUT_MS",
+          "LLM_TOOL_CHOICE_NONE",
+          "LOG_LEVEL",
           "TZ_NEGOCIO"
         ],
         "missing": []
@@ -278,8 +280,8 @@
       "depends_on": [],
       "probe": {
         "result": "up",
-        "detail": "exit 0 in ~1 s (tsc, biome, bun audit)",
-        "checked_at": "2026-10-13T23:44:45Z"
+        "detail": "exit 0 in ~1 s (tsc api+web, biome, bun audit: no vulnerabilities, 269 packages)",
+        "checked_at": "2026-10-15T13:11:37Z"
       },
       "fallback": "auto",
       "in_local_qa_scope": true,
@@ -314,8 +316,8 @@
       "depends_on": [],
       "probe": {
         "result": "up",
-        "detail": "exit 0 in ~4 s (1097 pass, 1 skip: opt-in live test)",
-        "checked_at": "2026-10-13T23:44:45Z"
+        "detail": "exit 0 in ~14 s (2127 pass, 1 skip: opt-in live test, 0 fail, 105 files)",
+        "checked_at": "2026-10-15T13:11:37Z"
       },
       "fallback": "auto",
       "in_local_qa_scope": true,
@@ -324,68 +326,169 @@
     {
       "name": "api",
       "kind": "http",
-      "present": false,
+      "present": true,
       "available_from_phase": 3,
-      "detected_by": [],
+      "detected_by": [
+        "package.json scripts.dev (bun run --parallel dev:api dev:web)",
+        "src/server.ts",
+        "src/http/wiring/server.wiring.ts (createServer/startServer, codegraph)",
+        "src/config/constants/http.constants.ts RUTA_API (codegraph)"
+      ],
       "start": {
         "cmd": "bun run dev",
-        "cwd": "."
+        "cwd": ".",
+        "qa_override": "ACCESS_CODE=<synthetic, >=12 chars> bun run dev (inline, never written to a file)"
       },
       "port": 3000,
       "readiness": {
         "kind": "http",
         "url": "/api/health",
+        "expect": 200,
         "timeout_s": 120
       },
       "logs": {
         "path": ".qa/logs/api.log"
       },
       "artifacts": [
-        "out/**"
+        "out/**",
+        "out/log.jsonl",
+        "out/*/log.jsonl"
       ],
       "env": {
         "required": [
-          "LLM_API_KEY | DEEPSEEK_API_KEY (one of)"
+          "ACCESS_CODE (>=12 chars)"
         ],
         "optional": [
-          "LLM_PROVIDER",
-          "LLM_BASE_URL",
-          "LLM_MODEL",
-          "LLM_MAX_OUTPUT_TOKENS",
-          "LLM_MAX_TOKENS_PARAM",
-          "LLM_TEMPERATURE",
-          "LLM_THINKING",
-          "LLM_REASONING_PASSBACK",
-          "LLM_TOOL_CHOICE_NONE",
-          "LLM_FALLBACK_ENABLED",
-          "LLM_FALLBACK_PROVIDER",
-          "LLM_FALLBACK_BASE_URL",
-          "LLM_FALLBACK_MODEL",
-          "LLM_FALLBACK_API_KEY",
-          "LLM_FALLBACK_MAX_TOKENS_PARAM",
-          "LLM_FALLBACK_TEMPERATURE",
-          "LLM_FALLBACK_THINKING",
-          "LLM_FALLBACK_REASONING_PASSBACK",
-          "LLM_FALLBACK_TOOL_CHOICE_NONE",
-          "LLM_TIMEOUT_MS",
-          "LLM_MAX_RETRIES",
-          "AGENT_TURN_DEADLINE_MS",
+          "AGENT_DAILY_TOKEN_BUDGET",
           "AGENT_MAX_ITERATIONS",
+          "AGENT_MAX_SESSIONS",
           "AGENT_SESSION_TOKEN_BUDGET",
           "AGENT_SESSION_TTL_MINUTES",
-          "AGENT_MAX_SESSIONS",
-          "LOG_LEVEL",
+          "AGENT_TURN_DEADLINE_MS",
           "FECHA_EJECUCION",
+          "LLM_BASE_URL",
+          "LLM_FALLBACK_API_KEY",
+          "LLM_FALLBACK_BASE_URL",
+          "LLM_FALLBACK_ENABLED",
+          "LLM_FALLBACK_MAX_TOKENS_PARAM",
+          "LLM_FALLBACK_MODEL",
+          "LLM_FALLBACK_PROVIDER",
+          "LLM_FALLBACK_REASONING_PASSBACK",
+          "LLM_FALLBACK_TEMPERATURE",
+          "LLM_FALLBACK_THINKING",
+          "LLM_FALLBACK_TOOL_CHOICE_NONE",
+          "LLM_MAX_OUTPUT_TOKENS",
+          "LLM_MAX_RETRIES",
+          "LLM_MAX_TOKENS_PARAM",
+          "LLM_MODEL",
+          "LLM_PROVIDER",
+          "LLM_REASONING_PASSBACK",
+          "LLM_TEMPERATURE",
+          "LLM_THINKING",
+          "LLM_TIMEOUT_MS",
+          "LLM_TOOL_CHOICE_NONE",
+          "LOG_LEVEL",
           "TZ_NEGOCIO",
-          "PORT"
+          "ACCESS_TOKEN_SECRET (required when NODE_ENV=production)",
+          "ACCESS_TOKEN_TTL_HOURS",
+          "TRUSTED_PROXY_HOPS",
+          "ACCESS_MAX_FAILED_ATTEMPTS",
+          "ACCESS_FAILED_WINDOW_MINUTES",
+          "MAX_MESSAGE_CHARS",
+          "MAX_BODY_BYTES",
+          "RATE_LIMIT_CHAT_PER_MINUTE",
+          "MAX_CONCURRENT_TURNS",
+          "NEW_SESSIONS_PER_HOUR",
+          "NODE_ENV",
+          "PORT",
+          "LLM_API_KEY | DEEPSEEK_API_KEY (without a key the server starts and /api/health reports llm: sin_clave)"
+        ],
+        "missing": [
+          "ACCESS_CODE (absent from the local env file)"
+        ]
+      },
+      "depends_on": [
+        "agent"
+      ],
+      "probe": {
+        "result": "missing_env",
+        "detail": "with the local env file: dev:api exits with \"ACCESS_CODE: Falta el código de acceso\"; proxy /api/health 502. With a synthetic ACCESS_CODE inline: /api/health 200 {ok,provider:deepseek,model:deepseek-flash,llm:disponible} in ~1 s, POST /api/chat without token 401. Torn down.",
+        "checked_at": "2026-10-15T13:11:37Z"
+      },
+      "fallback": "auto",
+      "in_local_qa_scope": true,
+      "human_requirements": [
+        "Local env file lacks ACCESS_CODE: either add one (>=12 chars) or let QA inject a synthetic code inline per run.",
+        "The local env file holds a real provider key, so chat turns through this surface hit DeepSeek and spend the personal key; use api-offline for scripted HTTP/SSE checks and authorize real-model turns explicitly."
+      ],
+      "routes": [
+        "GET /api/health",
+        "POST /api/acceso",
+        "GET /api/config",
+        "POST /api/chat (SSE, or JSON with Accept: application/json)",
+        "GET /api/sessions/:id",
+        "GET /api/casos/:caso/archivos",
+        "GET /api/casos/:caso/archivos/:nombre",
+        "GET /api/casos/:caso/archivos/paquete/:nombre",
+        "GET /api/casos/:caso/vista-previa/:nombre",
+        "GET /api/casos/:caso/vista-previa/paquete/:nombre",
+        "GET * (static web/dist, SPA fallback)"
+      ],
+      "auth": "POST /api/acceso with the access code -> cookie/Bearer token; /api/* except health/acceso return 401 without it",
+      "notes": "Vite proxies /api -> http://localhost:3000 in dev; in production the same server serves web/dist."
+    },
+    {
+      "name": "api-offline",
+      "kind": "http",
+      "present": true,
+      "available_from_phase": 3,
+      "detected_by": [
+        "src/http/wiring/server.wiring.ts createServer(options) (codegraph)",
+        "tests/http/*.test.ts (app.request with crearFetchFalso)"
+      ],
+      "entry": "src/http/wiring/server.wiring.ts",
+      "exports": [
+        "createServer"
+      ],
+      "invoke": "bun --no-env-file from a scratch copy of the repo (node_modules symlinked): createServer({ rootDirectory: <scratch root>, fetch: crearFetchFalso(<guion>).fetch, envSource: { ...ENTORNO_SERVIDOR_PRUEBA, ...overrides } (@tests/helpers/servidor-prueba.helper.ts, synthetic code/secret/key), wait: async () => undefined }) -> app.request(...) without a port, or Bun.serve({ port: 0, fetch: app.fetch }) for curl -N. Scripted LLM = no network, no key, no cost.",
+      "port": null,
+      "readiness": {
+        "kind": "exit-code",
+        "expect": 0,
+        "timeout_s": 60
+      },
+      "logs": {
+        "path": ".qa/logs/api-offline.log"
+      },
+      "artifacts": [
+        "out/**"
+      ],
+      "env": {
+        "required": [],
+        "optional": [
+          "ACCESS_TOKEN_SECRET (required when NODE_ENV=production)",
+          "ACCESS_TOKEN_TTL_HOURS",
+          "TRUSTED_PROXY_HOPS",
+          "ACCESS_MAX_FAILED_ATTEMPTS",
+          "ACCESS_FAILED_WINDOW_MINUTES",
+          "MAX_MESSAGE_CHARS",
+          "MAX_BODY_BYTES",
+          "RATE_LIMIT_CHAT_PER_MINUTE",
+          "MAX_CONCURRENT_TURNS",
+          "NEW_SESSIONS_PER_HOUR",
+          "NODE_ENV",
+          "PORT",
+          "LLM_API_KEY | DEEPSEEK_API_KEY (without a key the server starts and /api/health reports llm: sin_clave)"
         ],
         "missing": []
       },
-      "depends_on": [],
+      "depends_on": [
+        "agent"
+      ],
       "probe": {
-        "result": "not_present",
-        "detail": "promised by ROADMAP phase 3",
-        "checked_at": "2026-10-13T02:08:13Z"
+        "result": "not_probed",
+        "detail": "same pattern the tests/http suite exercises inside gate-test (green)",
+        "checked_at": "2026-10-15T13:11:37Z"
       },
       "fallback": "auto",
       "in_local_qa_scope": true,
@@ -394,9 +497,13 @@
     {
       "name": "web",
       "kind": "web",
-      "present": false,
+      "present": true,
       "available_from_phase": 3,
-      "detected_by": [],
+      "detected_by": [
+        "web/vite.config.ts",
+        "package.json scripts.dev:web / build:web",
+        "web/src (React 19)"
+      ],
       "start": {
         "cmd": "bun run dev",
         "cwd": "."
@@ -405,12 +512,15 @@
       "readiness": {
         "kind": "http",
         "url": "/",
+        "expect": 200,
         "timeout_s": 120
       },
       "logs": {
         "path": ".qa/logs/web.log"
       },
-      "artifacts": [],
+      "artifacts": [
+        "web/dist/** (build:web)"
+      ],
       "env": {
         "required": [],
         "optional": [],
@@ -420,22 +530,24 @@
         "api"
       ],
       "probe": {
-        "result": "not_present",
-        "detail": "promised by ROADMAP phase 3; browser checks need Playwright-MCP",
-        "checked_at": "2026-10-13T02:08:13Z"
+        "result": "up",
+        "detail": "Vite 8.3.3 ready in ~100 ms; GET / 200; proxied /api/health 200 once api is up (502 when api is down). Torn down.",
+        "checked_at": "2026-10-15T13:11:37Z"
       },
       "fallback": "auto",
       "in_local_qa_scope": true,
-      "human_requirements": [
-        "Configure the Playwright MCP server before Phase 3 browser tests"
-      ]
+      "human_requirements": [],
+      "notes": "Playwright MCP is available in this session (mcp__playwright__*); requirement resolved."
     },
     {
       "name": "deploy",
       "kind": "deploy",
-      "present": false,
+      "present": true,
       "available_from_phase": 3,
-      "detected_by": [],
+      "detected_by": [
+        "Dockerfile (oven/bun:1.4.3-slim, two stages, EXPOSE 10000)",
+        "render.yaml (runtime docker, plan free, healthCheckPath /api/health, autoDeploy true)"
+      ],
       "start": {
         "cmd": null,
         "cwd": "."
@@ -443,7 +555,8 @@
       "port": null,
       "readiness": {
         "kind": "http",
-        "url": "<public Render URL>/api/health",
+        "url": "https://registro-proveedor-bfnt.onrender.com/api/health",
+        "expect": 200,
         "timeout_s": 120
       },
       "logs": {
@@ -451,21 +564,34 @@
       },
       "artifacts": [],
       "env": {
-        "required": [],
-        "optional": [],
+        "required": [
+          "LLM_API_KEY (Render dashboard, sync: false)",
+          "ACCESS_CODE (Render dashboard, sync: false)",
+          "ACCESS_TOKEN_SECRET (generateValue)"
+        ],
+        "optional": [
+          "NODE_ENV",
+          "FECHA_EJECUCION",
+          "TZ_NEGOCIO",
+          "LOG_LEVEL",
+          "TRUSTED_PROXY_HOPS"
+        ],
         "missing": []
       },
       "depends_on": [],
       "probe": {
-        "result": "not_present",
-        "detail": "Render free; warm it before the defense",
-        "checked_at": "2026-10-13T02:08:13Z"
+        "result": "not_probed",
+        "detail": "fallback human (default probe skips it); Render free sleeps after 15 min, cold start ~1 min; autoDeploy on push to main",
+        "checked_at": "2026-10-15T13:11:37Z"
       },
       "fallback": "human",
       "in_local_qa_scope": false,
       "human_requirements": [
-        "Provide the public URL once deployed"
-      ]
+        "The human types the public access code at test time; it is never stored or logged by QA.",
+        "Chat on the public URL spends the personal provider key: authorize real-model turns explicitly.",
+        "Warm the service (GET /api/health) before timed checks; Render Events/Logs are only visible to the human."
+      ],
+      "url": "https://registro-proveedor-bfnt.onrender.com"
     }
   ],
   "db_connections": []
