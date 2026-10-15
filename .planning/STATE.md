@@ -3,16 +3,16 @@ gsd_state_version: "1.0"
 current_phase: 03
 current_phase_name: Chat web, API SSE y despliegue
 status: executing
-stopped_at: Completed 03-37-PLAN.md
-last_updated: "2026-10-15T17:46:39.414Z"
+stopped_at: Completed 03-38-PLAN.md
+last_updated: "2026-10-15T17:51:26.152Z"
 last_activity: 2026-10-15
 last_activity_desc: Phase 03 execution started
-state_head: 24ff9c6f375be8bf1a3ec37b4bb73de40f1c13e9
+state_head: ed290a6ebdad7cf7355a357eaeba999da4122438
 progress:
   total_phases: 4
   completed_phases: 2
   total_plans: 78
-  completed_plans: 76
+  completed_plans: 77
   percent: 50
 ---
 
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-10-14)
 ## Current Position
 
 Phase: 03 (Chat web, API SSE y despliegue) — EXECUTING
-Plan: 11 of 39
+Plan: 12 of 39
 Status: Ready to execute
 Last activity: 2026-10-15 — Phase 03 execution started
 
@@ -133,6 +133,7 @@ Progress: [█████░░░░░] 50%
 | Phase 03 P35 | 3min | 2 tasks | 10 files |
 | Phase 03 P36 | 3 min | 2 tasks | 6 files |
 | Phase 03 P37 | 3min | 2 tasks | 9 files |
+| Phase 03 P38 | 2 min | 2 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -325,6 +326,8 @@ Recent decisions affecting current work:
 - [Phase 03]: 03-37: prefijo y valor de fecha y modelo van en un span inline común; en inline-flex el espacio final del prefijo se colapsaba entre flex items
 - [Phase 03]: 03-37: en angosto el prefijo de fecha y modelo es sr-only (CLASE_GLOBAL.OCULTO) y la fila meta usa nowrap con elipsis; el texto completo queda para lectores de pantalla
 - [Phase 03]: 03-37: la franja compacta en angosto usa etiquetas cortas (Demo §11, Los {n} casos) con aria-label completo y flex-wrap sin scroll horizontal; todos(n) se deriva de todosCorto(n)
+- [Phase 03]: 03-38: Nueva sesión ya no borra el sessionId guardado; el id anterior vive en localStorage y en sesionAnterior hasta el turn_start de la sesión nueva (G-03-04, causa 3b)
+- [Phase 03]: 03-38: solo un 429 con sesión anterior y sin sesión vigente ofrece Volver a la sesión anterior; VOLVER_SESION_ANTERIOR reutiliza estadoAlCargar y el efecto de carga existente, sin POST a /api/chat
 
 ### Pending Todos
 
@@ -360,6 +363,6 @@ Items acknowledged and deferred at milestone close, most recent first:
 
 ## Session Continuity
 
-Last session: 2026-10-15T17:46:33.671Z
-Stopped at: Completed 03-37-PLAN.md
+Last session: 2026-10-15T17:51:20.400Z
+Stopped at: Completed 03-38-PLAN.md
 Resume file: None
