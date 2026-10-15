@@ -17,6 +17,8 @@ services:
         value: info
       - key: TRUSTED_PROXY_HOPS
         value: "3"
+      - key: NEW_SESSIONS_PER_HOUR
+        value: "20"
       - key: LLM_API_KEY
         sync: false
       - key: ACCESS_CODE

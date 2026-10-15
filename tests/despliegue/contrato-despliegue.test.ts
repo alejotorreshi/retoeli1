@@ -3,7 +3,12 @@ import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { z } from "zod";
 import { FECHA_DEMO } from "@/config/constants/demo.constants.ts";
-import { ENTORNO_APP, RUTA_API, SALTOS_PROXY_RENDER } from "@/config/constants/http.constants.ts";
+import {
+  ENTORNO_APP,
+  RUTA_API,
+  SALTOS_PROXY_RENDER,
+  SESIONES_NUEVAS_POR_HORA_RENDER,
+} from "@/config/constants/http.constants.ts";
 import { NIVELES_LOG } from "@/config/constants/logging.constants.ts";
 import { ZONA_HORARIA_POR_DEFECTO } from "@/config/constants/runtime.constants.ts";
 
@@ -251,7 +256,7 @@ describe("render.yaml (DEP-02)", () => {
     });
   });
 
-  test("fija la fecha de ejecución, la zona, el entorno, el nivel de log y los saltos del proxy", () => {
+  test("fija la fecha de ejecución, la zona, el entorno, el nivel de log, los saltos del proxy y el tope de sesiones nuevas", () => {
     expect(
       Object.fromEntries(
         [...variables].filter(([, v]) => v.value !== undefined).map(([k, v]) => [k, v.value]),
@@ -262,6 +267,7 @@ describe("render.yaml (DEP-02)", () => {
       TZ_NEGOCIO: ZONA_HORARIA_POR_DEFECTO,
       LOG_LEVEL: NIVELES_LOG.INFO,
       TRUSTED_PROXY_HOPS: String(SALTOS_PROXY_RENDER),
+      NEW_SESSIONS_PER_HOUR: String(SESIONES_NUEVAS_POR_HORA_RENDER),
     });
   });
 

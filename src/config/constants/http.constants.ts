@@ -92,6 +92,8 @@ export const SALTOS_PROXY_POR_DEFECTO = 1;
 
 export const SALTOS_PROXY_RENDER = 3;
 
+export const SESIONES_NUEVAS_POR_HORA_RENDER = 20;
+
 export const SALTOS_PROXY_TOPE = 10;
 
 export const SEPARADOR_X_FORWARDED_FOR = ",";

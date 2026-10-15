@@ -15,7 +15,7 @@ Esta sección la debe recoger también `SOLUCION.md` (fase 4).
 | Tope diario de tokens (`AGENT_DAILY_TOKEN_BUDGET`, 2M por defecto) | Memoria, en `llm/decorators/daily-budget.decorator.ts` | Vuelve a cero. No es un tope por día calendario sino por proceso y día: se reinicia a medianoche en `TZ_NEGOCIO` **y** en cada reinicio. Además, el chequeo ocurre antes de cada llamada y el registro después, así que con `MAX_CONCURRENT_TURNS` turnos a la vez el tope se puede pasar en hasta esa cantidad de llamadas. |
 | Intentos fallidos de acceso por IP (`ACCESS_MAX_FAILED_ATTEMPTS` en `ACCESS_FAILED_WINDOW_MINUTES`) | Memoria, `http/services/rate-limiter.service.ts` | Se borra el contador y se levantan los bloqueos. |
 | Mensajes por minuto por IP (`RATE_LIMIT_CHAT_PER_MINUTE`) | Memoria | Se borra. |
-| Sesiones nuevas por hora por IP (`NEW_SESSIONS_PER_HOUR`) | Memoria | Se borra. |
+| Sesiones nuevas por hora por IP (`NEW_SESSIONS_PER_HOUR`, 5 por defecto y 20 en Render) | Memoria | Se borra. |
 | Turnos simultáneos (`MAX_CONCURRENT_TURNS`) | Memoria, `http/services/turn-slots.service.ts` | Vuelve a cero, y los turnos en curso se cortan. |
 | Sesiones del chat y su presupuesto de tokens (`AGENT_SESSION_TOKEN_BUDGET`) | Memoria, `infra/sessions/memory-session-store.adapter.ts` | Se pierden. La SPA lo detecta y ofrece empezar una sesión nueva. |
 | Archivos generados en `out/<caso>/` | Disco efímero del contenedor | Se borran. La SPA avisa que el disco se borró y sugiere reprocesar el caso. |
@@ -30,6 +30,20 @@ La cookie de acceso sí sobrevive, porque su firma depende de `ACCESS_TOKEN_SECR
 - Persistir los contadores exigiría una base de datos o un Redis externo, y eso es un no-objetivo del PRD. Render free tampoco tiene disco persistente.
 
 Lo que sí limita el gasto aunque el proceso se reinicie: el tope de iteraciones por turno, el presupuesto de tokens por sesión, el `max_tokens` por llamada, el plazo por turno y el código de acceso.
+
+## Tope de sesiones nuevas en Render
+
+En local el tope de sesiones nuevas por IP es 5 por hora (`SESIONES_NUEVAS_POR_HORA_POR_DEFECTO`). En Render, `render.yaml` lo sube a 20 por hora (`SESIONES_NUEVAS_POR_HORA_RENDER`), y el contrato de despliegue lo exige.
+
+Subirlo no aumenta el gasto máximo. Cada sesión tiene un presupuesto de 300 k tokens (`AGENT_SESSION_TOKEN_BUDGET`), así que 20 sesiones podrían pedir hasta 6 M tokens en una hora. Pero el tope diario global de 2 M tokens (`AGENT_DAILY_TOKEN_BUDGET`) corta antes, porque alcanza para unas 6 sesiones agotadas por día. Ese tope diario sigue siendo el límite real de gasto, junto con el código de acceso, los 10 mensajes por minuto por IP y el saldo prepago. El blueprint no lo cambia: sigue con su valor por defecto.
+
+El tope de sesiones solo frena la rotación patológica, es decir, abrir sesiones sin parar para estrenar presupuesto. Con 5 por hora, la defensa podía chocar con él por motivos normales que también cuentan como sesión nueva:
+
+- los ensayos previos desde la misma red;
+- las recargas con un id vencido o tras un reinicio de Render, que borra las sesiones;
+- varias personas que salen a internet por la misma IP (una oficina o una red con NAT).
+
+Con 20 por hora queda margen para todo eso. Si aun así se llega al tope, el 429 dice en cuántos minutos se puede abrir otra sesión (por ejemplo, "Podrás abrir otra en 12 minutos."), y la SPA ofrece volver a la sesión anterior en lugar de dejar a la analista sin sesión (03-38).
 
 ## Un solo camino de entrada
 
