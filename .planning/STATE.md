@@ -3,16 +3,16 @@ gsd_state_version: "1.0"
 current_phase: 03
 current_phase_name: Chat web, API SSE y despliegue
 status: executing
-stopped_at: Completed 03-15-PLAN.md
-last_updated: "2026-10-15T02:21:39.369Z"
+stopped_at: Completed 03-16-PLAN.md
+last_updated: "2026-10-15T02:30:59.551Z"
 last_activity: 2026-10-14
 last_activity_desc: Phase 03 execution started
-state_head: a588837e5e8310d724db383c1733f29cbd6c4b15
+state_head: d8357715f4c7d3e34935d9c26fcd4308273fcb46
 progress:
   total_phases: 4
   completed_phases: 2
   total_plans: 66
-  completed_plans: 54
+  completed_plans: 55
   percent: 50
 ---
 
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-10-14)
 ## Current Position
 
 Phase: 03 (Chat web, API SSE y despliegue) — EXECUTING
-Plan: 16 of 27
+Plan: 17 of 27
 Status: Ready to execute
 Last activity: 2026-10-14 — Phase 03 execution started
 
@@ -111,6 +111,7 @@ Progress: [█████░░░░░] 50%
 | Phase 03 P13 | 5 min | 2 tasks | 14 files |
 | Phase 03 P14 | 9 min | 2 tasks | 15 files |
 | Phase 03 P15 | 5 min | 2 tasks | 14 files |
+| Phase 03 P16 | 6 min | 2 tasks | 12 files |
 
 ## Accumulated Context
 
@@ -254,6 +255,9 @@ Recent decisions affecting current work:
 - [Phase 03]: 03-14: limitador de mensajes y cupos de turno viven en memoria por instancia y se pierden en reinicios (D-73.6), documentar en SOLUCION.md
 - [Phase 03]: 03-15: el tope de sesiones nuevas (5/h por IP) se comprueba antes del cupo y se cuenta solo al obtenerlo; sessionId null o desconocido cuenta como nueva
 - [Phase 03]: 03-15: AlmacenSesiones.leer no crea, no renueva el TTL ni cambia el orden de desalojo; Agente.existeSesion se apoya en él
+- [Phase 03]: 03-16: tool_start/tool_end llevan caso (de los argumentos redactados) y tool_end lleva resultado: ResultadoVisible proyectado en el servidor desde el JSON de la herramienta, redactado y revalidado con zod; null si la herramienta falla
+- [Phase 03]: 03-16: generar_formulario no expone conteo en su respuesta; la UI toma los contadores del resultado de mapear_campos
+- [Phase 03]: 03-16: confirmation_required agrega bloqueosLegibles (motivosDeBloqueo, mismo texto que checklist.md); bloqueos sigue con ids crudos del contrato v1
 
 ### Pending Todos
 
@@ -289,6 +293,6 @@ Items acknowledged and deferred at milestone close, most recent first:
 
 ## Session Continuity
 
-Last session: 2026-10-15T02:21:39.284Z
-Stopped at: Completed 03-15-PLAN.md
+Last session: 2026-10-15T02:30:59.468Z
+Stopped at: Completed 03-16-PLAN.md
 Resume file: None
