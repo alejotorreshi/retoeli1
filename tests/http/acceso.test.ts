@@ -607,6 +607,15 @@ describe("GET /api/config con los datos que la SPA no inventa (UI-09)", () => {
     });
   });
 
+  test("la fecha y la zona de /api/config son las del proceso, las mismas que leen las herramientas, aunque el entorno inyectado traiga otras", async () => {
+    const app = appDe(crear({ entorno: { FECHA_EJECUCION: "2026-01-02", TZ_NEGOCIO: "Asia/Tokyo" } }));
+    const cookie = await entrar(app);
+    const respuesta = await conVariables({ FECHA_EJECUCION: FECHA_CONFIG, TZ_NEGOCIO: ZONA_CONFIG }, () =>
+      pedir(app, RUTA_API.CONFIG, { headers: { Cookie: cookie } }),
+    );
+    expect(await respuesta.json()).toMatchObject({ fechaEjecucion: FECHA_CONFIG, zona: ZONA_CONFIG });
+  });
+
   test("sin acceso /api/config responde 401 con el mensaje de acceso vencido", async () => {
     const respuesta = await pedir(appCon(), RUTA_API.CONFIG);
     expect(respuesta.status).toBe(RESPUESTA_HTTP.NO_AUTORIZADO);

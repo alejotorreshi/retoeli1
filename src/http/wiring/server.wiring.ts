@@ -23,18 +23,13 @@ import {
   VENTANA_SESIONES_NUEVAS_HORAS,
 } from "@/config/constants/http.constants.ts";
 import { MAX_ISSUES_ARGS } from "@/config/constants/limits.constants.ts";
-import {
-  MS_POR_HORA,
-  MS_POR_MINUTO,
-  ZONA_HORARIA_POR_DEFECTO,
-} from "@/config/constants/runtime.constants.ts";
+import { MS_POR_HORA, MS_POR_MINUTO } from "@/config/constants/runtime.constants.ts";
 import {
   type AgentEnv,
   parseAgentEnv,
   parseServerEnv,
   readAgentEnv,
   readServerEnv,
-  readToolEnv,
   type ServerEnv,
 } from "@/config/env.ts";
 import { MENSAJE_HTTP, TEXTO_ENV, TEXTO_HTTP } from "@/config/strings.ts";
@@ -63,13 +58,17 @@ import type {
   ServerOptions,
   ServerStart,
 } from "@/http/types/server.type.ts";
-import { clockFromToolEnv, systemClock } from "@/infra/clock/clock.adapter.ts";
 import { listCases } from "@/infra/fixtures/case-resolver.adapter.ts";
 import { resolveRoot } from "@/infra/fixtures/fixtures-reader.adapter.ts";
 import { createLogger } from "@/infra/logging/logger.adapter.ts";
 import { createArtifactReader } from "@/infra/output/artifact-reader.adapter.ts";
 import type { OpcionesAgente } from "@/loop/types/agente.type.ts";
-import { crearAgente, secretosDelAgente } from "@/loop/wiring/agente.wiring.ts";
+import {
+  crearAgente,
+  relojDeNegocio,
+  secretosDelAgente,
+  zonaDeNegocio,
+} from "@/loop/wiring/agente.wiring.ts";
 
 function readEnv(options: ServerOptions) {
   return options.envSource === undefined ? readServerEnv() : parseServerEnv(options.envSource);
@@ -150,21 +149,12 @@ function httpLogger(options: ServerOptions, config: AgentEnv, secrets: readonly 
   return createLogger({ level: config.logLevel, secrets, ...destination });
 }
 
-function businessCalendar() {
-  const toolEnv = readToolEnv();
-  if (!toolEnv.success) {
-    return { clock: systemClock(ZONA_HORARIA_POR_DEFECTO), zone: ZONA_HORARIA_POR_DEFECTO };
-  }
-  return { clock: clockFromToolEnv(toolEnv.data), zone: toolEnv.data.TZ_NEGOCIO };
-}
-
 function configSource(rootDirectory: string, config: AgentEnv, env: ServerEnv): ConfigSource {
   const root = resolveRoot(rootDirectory);
   return async () => {
-    const { clock, zone } = businessCalendar();
     return {
-      fechaEjecucion: clock.hoy(),
-      zona: zone,
+      fechaEjecucion: relojDeNegocio().hoy(),
+      zona: zonaDeNegocio(),
       casos: await listCases(root),
       presupuestoSesion: config.sessionTokenBudget,
       mensajeMaximo: env.MAX_MESSAGE_CHARS,
@@ -261,7 +251,7 @@ export function createServer(options: ServerOptions): ServerCreation {
     maxMessageChars: env.data.MAX_MESSAGE_CHARS,
     turnSlots: createTurnSlots(env.data.MAX_CONCURRENT_TURNS),
     newSessions: newSessionsLimiter(env.data, options),
-    businessZone: () => businessCalendar().zone,
+    businessZone: zonaDeNegocio,
   });
   registerStaticRoutes(app, { webDirectory: webDirectory(options) });
   return { ok: true, app, port: env.data.PORT };

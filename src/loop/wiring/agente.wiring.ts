@@ -45,7 +45,7 @@ function nuevoId(): string {
   return crypto.randomUUID();
 }
 
-function zonaDeNegocio(): string {
+export function zonaDeNegocio(): string {
   const config = readToolEnv();
   return config.success ? config.data.TZ_NEGOCIO : ZONA_HORARIA_POR_DEFECTO;
 }
@@ -59,7 +59,7 @@ function relojVigente(): Reloj {
   return config.success ? clockFromToolEnv(config.data) : systemClock(ZONA_HORARIA_POR_DEFECTO);
 }
 
-function relojCompartidoConHerramientas(): Reloj {
+export function relojDeNegocio(): Reloj {
   return {
     hoy: () => relojVigente().hoy(),
     instanteReal: () => relojVigente().instanteReal(),
@@ -139,7 +139,7 @@ function dependencias(
   apiKey: string,
   control: ControlModelo,
 ): DependenciasTurno {
-  const reloj = relojCompartidoConHerramientas();
+  const reloj = relojDeNegocio();
   const secretos = [...secretosDelAgente(config), ...(opciones.secretosAdicionales ?? [])];
   return {
     llm: modeloDelAgente(opciones, config, apiKey, control),
