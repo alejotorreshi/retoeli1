@@ -68,6 +68,8 @@ export const VIGENCIA_ACCESO_HORAS_TOPE = 168;
 
 export const SALTOS_PROXY_POR_DEFECTO = 1;
 
+export const SALTOS_PROXY_RENDER = 3;
+
 export const SALTOS_PROXY_TOPE = 10;
 
 export const SEPARADOR_X_FORWARDED_FOR = ",";

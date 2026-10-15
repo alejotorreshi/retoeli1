@@ -16,7 +16,7 @@ services:
       - key: LOG_LEVEL
         value: info
       - key: TRUSTED_PROXY_HOPS
-        value: "1"
+        value: "3"
       - key: LLM_API_KEY
         sync: false
       - key: ACCESS_CODE

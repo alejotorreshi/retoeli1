@@ -3,7 +3,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { z } from "zod";
 import { FECHA_DEMO } from "@/config/constants/demo.constants.ts";
-import { ENTORNO_APP, RUTA_API, SALTOS_PROXY_POR_DEFECTO } from "@/config/constants/http.constants.ts";
+import { ENTORNO_APP, RUTA_API, SALTOS_PROXY_RENDER } from "@/config/constants/http.constants.ts";
 import { NIVELES_LOG } from "@/config/constants/logging.constants.ts";
 import { ZONA_HORARIA_POR_DEFECTO } from "@/config/constants/runtime.constants.ts";
 
@@ -238,7 +238,7 @@ describe("render.yaml (DEP-02)", () => {
       FECHA_EJECUCION: FECHA_DEMO,
       TZ_NEGOCIO: ZONA_HORARIA_POR_DEFECTO,
       LOG_LEVEL: NIVELES_LOG.INFO,
-      TRUSTED_PROXY_HOPS: String(SALTOS_PROXY_POR_DEFECTO),
+      TRUSTED_PROXY_HOPS: String(SALTOS_PROXY_RENDER),
     });
   });
 
