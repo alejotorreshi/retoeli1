@@ -303,6 +303,21 @@ describe("orden de los casos en el panel", () => {
     ];
     expect(progreso(acciones).map((elemento) => elemento.caso)).toEqual([EC, CO]);
   });
+
+  test("la confirmación que el servidor repite al cerrar cada turno no mueve un caso que ya esperaba", () => {
+    const acciones = [
+      ...turno(`procesa ${EC}`),
+      ...flujoHastaPaquete(EC),
+      confirmacion(EC),
+      finDeTurno,
+      ...turno(`procesa ${CO}`),
+      ...llamada(LEER, CO),
+      confirmacion(EC),
+      finDeTurno,
+    ];
+    expect(progreso(acciones).map((elemento) => elemento.caso)).toEqual([CO, EC]);
+    expect(estadosDe(acciones, EC)).toEqual([HECHA, HECHA, HECHA, HECHA, ESPERANDO, PENDIENTE]);
+  });
 });
 
 describe("firma del progreso para el punto de cambios sin ver", () => {

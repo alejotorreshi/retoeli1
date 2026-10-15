@@ -161,6 +161,12 @@ class PlegadoDeProgreso {
     });
   }
 
+  registrarConfirmacion(caso: string): void {
+    const previo = this.avances.get(caso)?.etapas.get(ETAPA.CONFIRMACION);
+    if (previo === ESTADO_ETAPA.ESPERANDO) return;
+    this.registrar(caso, [[ETAPA.CONFIRMACION, ESTADO_ETAPA.ESPERANDO]]);
+  }
+
   resultado(): readonly ProgresoDeCaso[] {
     const porAparicion = [...this.avances.entries()].sort(
       ([, uno], [, otro]) => uno.primeraAparicion - otro.primeraAparicion,
@@ -192,7 +198,7 @@ function confirmacionesTras(
 function plegarTurno(plegado: PlegadoDeProgreso, turno: TurnoConversacion, turnoActivo: boolean): void {
   const registrarConfirmaciones = (llamadas: number) => {
     for (const confirmacion of confirmacionesTras(turno.confirmaciones, llamadas)) {
-      plegado.registrar(confirmacion.caso, [[ETAPA.CONFIRMACION, ESTADO_ETAPA.ESPERANDO]]);
+      plegado.registrarConfirmacion(confirmacion.caso);
     }
   };
   turno.llamadas.forEach((llamada, indice) => {
