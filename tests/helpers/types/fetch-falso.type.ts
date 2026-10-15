@@ -3,7 +3,7 @@ import type { FetchLike } from "@/llm/types/provider.type.ts";
 export type RespuestaGuion = {
   readonly estado?: number;
   readonly cuerpo: unknown;
-  readonly demora?: Promise<void>;
+  readonly demora?: () => Promise<void>;
   readonly colgar?: boolean;
 };
 

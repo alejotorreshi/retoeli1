@@ -215,7 +215,7 @@ describe("dos turnos nunca se intercalan sobre una sesión (AGT-04)", () => {
   test("un segundo turno en vuelo recibe SESION_OCUPADA y no toca el historial", async () => {
     const espera = diferido();
     const { fetch, pedidos } = crearFetchFalso([
-      { cuerpo: cuerpoConTexto("respuesta A"), demora: espera.promesa },
+      { cuerpo: cuerpoConTexto("respuesta A"), demora: () => espera.promesa },
       { cuerpo: cuerpoConTexto("respuesta C") },
     ]);
     const agente = agenteCon(fetch);
@@ -335,7 +335,7 @@ describe("un turno abandonado o vencido nunca bloquea ni pisa la sesión (AGT-04
           argumentos: { caso: CASO },
         }),
       },
-      { cuerpo: cuerpoConTexto("respuesta B"), demora: espera.promesa },
+      { cuerpo: cuerpoConTexto("respuesta B"), demora: () => espera.promesa },
       { cuerpo: cuerpoConTexto("respuesta A tarde") },
       { cuerpo: cuerpoConTexto("respuesta C") },
     ]);

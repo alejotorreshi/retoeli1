@@ -52,7 +52,7 @@ export function crearFetchFalso(respuestas: readonly RespuestaGuion[]): FetchFal
     indice += 1;
     if (respuesta === undefined) throw new Error("guion agotado");
     if (respuesta.colgar === true) return colgarHastaAbortar(init.signal);
-    if (respuesta.demora !== undefined) await respuesta.demora;
+    if (respuesta.demora !== undefined) await respuesta.demora();
     return new Response(textoDe(respuesta.cuerpo), {
       status: respuesta.estado ?? 200,
       headers: { "Content-Type": "application/json" },

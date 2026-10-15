@@ -118,7 +118,7 @@ function guionDeLectura(texto: string): RespuestaGuion[] {
 describe("POST /api/chat sobre un socket real", () => {
   test("con idleTimeout de 1 s y 2,5 s de silencio del proveedor el SSE igual termina con turn_end", async () => {
     const { servidor } = servidorCon([
-      { cuerpo: cuerpoConTexto("Listo."), demora: Bun.sleep(DEMORA_SILENCIO_MS) },
+      { cuerpo: cuerpoConTexto("Listo."), demora: () => Bun.sleep(DEMORA_SILENCIO_MS) },
     ]);
     const url = socketReal(servidor);
     const { eventos } = await leerSse(await fetch(url, pedidoChat(null, "hola")));
@@ -128,7 +128,7 @@ describe("POST /api/chat sobre un socket real", () => {
 
   test("con idleTimeout de 1 s y 2,5 s de silencio el respaldo JSON también completa", async () => {
     const { servidor } = servidorCon([
-      { cuerpo: cuerpoConTexto("Listo."), demora: Bun.sleep(DEMORA_SILENCIO_MS) },
+      { cuerpo: cuerpoConTexto("Listo."), demora: () => Bun.sleep(DEMORA_SILENCIO_MS) },
     ]);
     const url = socketReal(servidor);
     const respuesta = await fetch(url, pedidoChat(null, "hola", TIPO_CONTENIDO.JSON));
@@ -184,7 +184,7 @@ describe("POST /api/chat sobre un socket real", () => {
 describe("POST /api/chat: latido, codificación e invariante SSE/JSON", () => {
   test("escribe un comentario de latido mientras el turno espera al proveedor", async () => {
     const { servidor } = servidorCon(
-      [{ cuerpo: cuerpoConTexto("Listo."), demora: Bun.sleep(DEMORA_LATIDO_MS) }],
+      [{ cuerpo: cuerpoConTexto("Listo."), demora: () => Bun.sleep(DEMORA_LATIDO_MS) }],
       LATIDO_CORTO_MS,
     );
     const { secuencia, comentarios } = await servidor.leerSse(

@@ -382,7 +382,7 @@ describe("misma sesión", () => {
   test("un segundo mensaje en la sesión mientras su turno corre recibe SESION_OCUPADA y turn_end, y el primero termina normal", async () => {
     const espera = diferido();
     const { servidor, pedidos } = await servidorCon({}, [
-      { cuerpo: cuerpoConTexto("Primero listo."), demora: espera.promesa },
+      { cuerpo: cuerpoConTexto("Primero listo."), demora: () => espera.promesa },
     ]);
     const lector = lectorDe(await turno(servidor, "procesa el caso", TIPO_CONTENIDO.SSE));
     const inicio = await primerEvento(lector);
