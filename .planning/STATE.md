@@ -3,16 +3,16 @@ gsd_state_version: "1.0"
 current_phase: 03
 current_phase_name: Chat web, API SSE y despliegue
 status: executing
-stopped_at: Completed 03-25-PLAN.md
-last_updated: "2026-10-15T05:20:37.056Z"
+stopped_at: Completed 03-26-PLAN.md
+last_updated: "2026-10-15T05:32:33.575Z"
 last_activity: 2026-10-14
 last_activity_desc: Phase 03 execution started
-state_head: 166a2828e3c734b9191ec2b7c763172b042208c1
+state_head: 6071c283973372e8a59d858f7ca9f788f1fd0825
 progress:
   total_phases: 4
   completed_phases: 2
   total_plans: 66
-  completed_plans: 64
+  completed_plans: 65
   percent: 50
 ---
 
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-10-14)
 ## Current Position
 
 Phase: 03 (Chat web, API SSE y despliegue) — EXECUTING
-Plan: 25 of 27
+Plan: 26 of 27
 Status: Ready to execute
 Last activity: 2026-10-14 — Phase 03 execution started
 
@@ -121,6 +121,7 @@ Progress: [█████░░░░░] 50%
 | Phase 03 P22 | 12 min | 2 tasks | 21 files |
 | Phase 03 P23 | 10 min | 2 tasks | 16 files |
 | Phase 03 P25 | 6 min | 2 tasks | 15 files |
+| Phase 03 P26 | 9min | 2 tasks | 21 files |
 
 ## Accumulated Context
 
@@ -290,6 +291,9 @@ Recent decisions affecting current work:
 - [Phase 03]: 03-23: la etapa 5 del progreso queda cancelada al cierre del turno en que la tarjeta se canceló; esperando y hecha siguen saliendo de confirmation_required y de simular_envio ok, que coinciden con la tarjeta abierta y la registrada
 - [Phase 03]: 03-25: la recarga pliega GET /api/sessions/:id con estadoDesdeVista reusando reducirConfirmaciones; los pendientes del último turno vienen del servidor y los intermedios de las llamadas correctas
 - [Phase 03]: 03-25: un 404 al cargar avisa el mensaje del servidor y olvida el sessionId guardado; otros fallos avisan el error y conservan el id
+- [Phase 03]: 03-26: la carga de la sesión vive en useChat; DETENER y RECARGAR solo marcan hidratando y el mismo efecto pide la vista asentada (un reintento tras REINTENTO_OCUPADA_MS si sigue ocupada) y despacha HIDRATAR
+- [Phase 03]: 03-26: turn_start con sesionExpirada deja solo el turno actual y su texto siguiente pasa a AvisoSistema; las tarjetas de la sesión vencida se descartan
+- [Phase 03]: 03-26: ErrorVisible.accion (RECARGAR o NUEVA_SESION) decide el botón del AvisoError; NUEVA_SESION conserva acceso, config y borrador y olvidarSesion lo llama useChat
 
 ### Pending Todos
 
@@ -325,6 +329,6 @@ Items acknowledged and deferred at milestone close, most recent first:
 
 ## Session Continuity
 
-Last session: 2026-10-15T05:20:36.973Z
-Stopped at: Completed 03-25-PLAN.md
+Last session: 2026-10-15T05:32:33.484Z
+Stopped at: Completed 03-26-PLAN.md
 Resume file: None

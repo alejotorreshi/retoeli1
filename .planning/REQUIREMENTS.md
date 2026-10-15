@@ -86,7 +86,7 @@ Fuente vinculante: `reto-01/PRD.md`, sin modificar. Fixtures: `reto-01/fixtures/
 - [x] **UI-05**: Una tarjeta de resultado por caso, construida con los datos de las herramientas, muestra contadores de lleno, faltante y por confirmar, el badge `listo_para_firma`, los bloqueos y la ruta de salida.
 - [ ] **UI-06**: Un panel de artefactos permite descargar o previsualizar los archivos generados del caso.
 - [x] **UI-07**: Hay chips de acción rápida: el prompt §11, procesar los 4 casos y listar los casos.
-- [ ] **UI-08**: Un indicador de progreso por caso muestra las etapas leído → mapeado → generado → paquete → confirmación → envío. El `sessionId` persiste en el navegador, el historial se recarga desde la API y hay un botón "Nueva sesión".
+- [x] **UI-08**: Un indicador de progreso por caso muestra las etapas leído → mapeado → generado → paquete → confirmación → envío. El `sessionId` persiste en el navegador, el historial se recarga desde la API y hay un botón "Nueva sesión".
 - [x] **UI-09**: La UI muestra la fecha de ejecución efectiva y pide el código de acceso una sola vez.
 
 ### Seguridad, PII y observabilidad (§8, RN5, CA4)
@@ -225,7 +225,7 @@ Cada requisito v1 está asignado a exactamente una fase del roadmap (`.planning/
 | UI-05 | Phase 3 | Complete |
 | UI-06 | Phase 3 | Pending |
 | UI-07 | Phase 3 | Complete |
-| UI-08 | Phase 3 | Pending |
+| UI-08 | Phase 3 | Complete |
 | UI-09 | Phase 3 | Complete |
 | SEG-01 | Phase 3 | Complete |
 | SEG-02 | Phase 1 | Partial — política de rutas PII, test grep y redactar() única para logs y resúmenes de tool calls (Fase 2) listos; falta aplicarla a API/SSE (Fase 3) |
