@@ -166,7 +166,7 @@ Plans:
   4. Desde el panel de artefactos, la analista descarga o previsualiza los archivos generados del caso; solo se sirven nombres en lista blanca y detrás del código de acceso. Si no hay clave, se agotó el saldo, el proveedor cayó o se alcanzó el tope diario, `/api/health` lo reporta y la UI muestra un aviso claro; el flujo sin modelo sigue disponible con `demo.ts`.
   5. Sin código de acceso, la API rechaza toda petición salvo `/api/health`. El rate limit por IP y el límite de tamaño de mensaje responden con un mensaje claro. Un test verifica que la clave del LLM no aparece en `web/dist`, en las respuestas de la API ni en el stream SSE.
 
-**Plans:** 27/37 plans executed
+**Plans:** 27/39 plans executed
 
 Plans:
 **Wave 1**
@@ -240,25 +240,29 @@ Plans:
 
 **Cierre de brechas de la UAT, Wave 1** *(gap closure)*
 - [ ] 03-28-PLAN.md — El listado de casos sale del servidor con caso null y el panel solo muestra casos reales, en vivo y al recargar (G-03-17)
-- [ ] 03-29-PLAN.md — Todo envío simulado que no terminó ENVIADO deja un aviso determinista del servidor en la respuesta, sin reescribir la prosa del modelo, y gate_blocked registra el caso (G-03-26)
-- [ ] 03-30-PLAN.md — La vista previa distingue 422 (mensaje del servidor), 404 (pista de reinicio y aviso de disco) y red caída (G-03-10)
+- [ ] 03-29-PLAN.md — Todo envío simulado de un caso legible que no terminó ENVIADO deja un aviso determinista del servidor (requiere confirmación, primero armar, ya enviado o falló), sin reescribir la prosa del modelo (G-03-26)
+- [ ] 03-31-PLAN.md — La vista previa distingue 422 (mensaje del servidor), 404 (pista de reinicio y aviso de disco) y red caída (G-03-10)
 
-**Cierre de brechas de la UAT, Wave 2** *(03-31 blocked on 03-28; 03-32 blocked on 03-29 and 03-30)*
-- [ ] 03-31-PLAN.md — El estado del modelo se refresca al terminar cada pedido de chat, sin sondeo (G-03-14)
-- [ ] 03-32-PLAN.md — Banner por estado sin comandos (qué pasa, qué sigue funcionando, qué hacer, cuándo vuelve), "Comprobar de nuevo", saldo coherente y AUTENTICACION como sin_clave (G-03-15)
+**Cierre de brechas de la UAT, Wave 2** *(03-30 blocked on 03-28 and 03-29; 03-32 on 03-28; 03-33 on 03-29 and 03-31)*
+- [ ] 03-30-PLAN.md — El envío simulado sin caso legible también deja su aviso, gate_blocked registra el caso y el aviso llega por SSE y por el respaldo JSON (G-03-26)
+- [ ] 03-32-PLAN.md — El estado del modelo se refresca al terminar cada pedido de chat, sin sondeo (G-03-14)
+- [ ] 03-33-PLAN.md — Banner por estado sin comandos (qué pasa, qué sigue funcionando, qué hacer, cuándo vuelve), "Comprobar de nuevo", saldo coherente y AUTENTICACION como sin_clave (G-03-15)
 
-**Cierre de brechas de la UAT, Wave 3** *(blocked on 03-32; 03-33 also on 03-28)*
-- [ ] 03-33-PLAN.md — El envío queda en pausa solo en sin_clave y tope_diario: compositor, chips y tarjetas de confirmación (G-03-15)
-- [ ] 03-34-PLAN.md — 20 sesiones nuevas por hora en Render y un 429 que dice cuántos minutos esperar (G-03-04)
+**Cierre de brechas de la UAT, Wave 3** *(blocked on 03-33; 03-34 also on 03-28)*
+- [ ] 03-34-PLAN.md — El envío queda en pausa solo en sin_clave y tope_diario: compositor, chips y tarjetas de confirmación (G-03-15)
+- [ ] 03-35-PLAN.md — 20 sesiones nuevas por hora en Render y un 429 que dice cuántos minutos esperar (G-03-04)
 
-**Cierre de brechas de la UAT, Wave 4** *(blocked on 03-33)*
-- [ ] 03-35-PLAN.md — La línea de tiempo sigue el turno salvo que la usuaria suba y se re-ancla al enviar; "Ir al final" solo con ícono, encabezado en dos líneas y chips en una fila a 375 (G-03-04, G-03-20)
+**Cierre de brechas de la UAT, Wave 4** *(blocked on 03-34)*
+- [ ] 03-36-PLAN.md — La línea de tiempo sigue el turno salvo que la usuaria suba y se re-ancla al enviar; "Ir al final" solo con ícono a 375 (G-03-04, G-03-20)
 
-**Cierre de brechas de la UAT, Wave 5** *(blocked on 03-31, 03-34 and 03-35)*
-- [ ] 03-36-PLAN.md — Nueva sesión conserva el id anterior hasta que el servidor la acepta y el 429 ofrece "Volver a la sesión anterior" (G-03-04)
+**Cierre de brechas de la UAT, Wave 5** *(blocked on 03-36)*
+- [ ] 03-37-PLAN.md — A 375 el encabezado ocupa dos líneas y los chips compactos una fila, sin perder el texto accesible (G-03-04)
 
-**Cierre de brechas de la UAT, Wave 6** *(blocked on 03-28 to 03-36)*
-- [ ] 03-37-PLAN.md — D-70, LLM-06, el criterio 4 y la UI-SPEC reescritos con la opción C+ y las decisiones D-71.1, D-73.5.1, D-75 y D-76 (G-03-15, G-03-14, G-03-10, G-03-04, G-03-20, G-03-17, G-03-26)
+**Cierre de brechas de la UAT, Wave 6** *(blocked on 03-32, 03-35 and 03-37)*
+- [ ] 03-38-PLAN.md — Nueva sesión conserva el id anterior hasta que el servidor la acepta y el 429 ofrece "Volver a la sesión anterior" (G-03-04)
+
+**Cierre de brechas de la UAT, Wave 7** *(blocked on 03-28 to 03-38)*
+- [ ] 03-39-PLAN.md — D-70, LLM-06, el criterio 4 y la UI-SPEC reescritos con la opción C+ y las decisiones D-71.1, D-73.5.1, D-75 y D-76 (G-03-15, G-03-14, G-03-10, G-03-04, G-03-20, G-03-17, G-03-26)
 
 **UI hint**: yes
 **Research flag**: SSE a través del proxy de Render (los reportes de la comunidad se contradicen) y comportamiento de Bun cuando el cliente se desconecta. Desplegar apenas exista el endpoint SSE y probar con `curl -N`. Si bufferiza, usar el fallback JSON y luego Koyeb o Fly con el mismo Dockerfile.
