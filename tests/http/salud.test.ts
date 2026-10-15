@@ -2,9 +2,14 @@ import { afterEach, describe, expect, test } from "bun:test";
 import { CLAVE_PRUEBA } from "@tests/helpers/agente-fetch.helper.ts";
 import { crearFetchFalso, cuerpoConTexto } from "@tests/helpers/fetch-falso.helper.ts";
 import { crearProyectoTemporal } from "@tests/helpers/proyecto-temporal.helper.ts";
-import { cabecerasPrueba, crearServidorPrueba } from "@tests/helpers/servidor-prueba.helper.ts";
+import {
+  BINDINGS_PRUEBA,
+  cabecerasPrueba,
+  crearServidorPrueba,
+} from "@tests/helpers/servidor-prueba.helper.ts";
 import type { RespuestaGuion } from "@tests/helpers/types/fetch-falso.type.ts";
 import type { ServidorPrueba } from "@tests/helpers/types/servidor-prueba.type.ts";
+import { CODIGO_AGENTE } from "@/config/constants/agent.constants.ts";
 import {
   CABECERA,
   PUERTO_API_POR_DEFECTO,
@@ -13,6 +18,7 @@ import {
   TIPO_CONTENIDO,
 } from "@/config/constants/http.constants.ts";
 import { ESTADO_HTTP, ESTADO_LLM } from "@/config/constants/llm.constants.ts";
+import { MENSAJE_AGENTE } from "@/config/strings.ts";
 import type { HealthResponse } from "@/http/types/api.type.ts";
 
 const SALUD_ESPERADA: HealthResponse = {
@@ -21,6 +27,8 @@ const SALUD_ESPERADA: HealthResponse = {
   model: "deepseek-flash",
   llm: ESTADO_LLM.DISPONIBLE,
 };
+
+const SIN_CLAVE = { LLM_API_KEY: "" };
 
 const SALDO_AGOTADO: RespuestaGuion = {
   estado: ESTADO_HTTP.PAGO_REQUERIDO,
@@ -48,12 +56,16 @@ function cabecerasComoTexto(respuesta: Response): string {
   return JSON.stringify([...respuesta.headers.entries()]);
 }
 
-async function turnoJson(servidor: ServidorPrueba, mensaje: string): Promise<Response> {
+async function turno(servidor: ServidorPrueba, mensaje: string, acepta: string): Promise<Response> {
   return servidor.pedir(RUTA_API.CHAT, {
     method: "POST",
-    headers: { [CABECERA.ACCEPT]: TIPO_CONTENIDO.JSON },
+    headers: { [CABECERA.ACCEPT]: acepta },
     body: JSON.stringify({ sessionId: null, message: mensaje }),
   });
+}
+
+async function turnoJson(servidor: ServidorPrueba, mensaje: string): Promise<Response> {
+  return turno(servidor, mensaje, TIPO_CONTENIDO.JSON);
 }
 
 async function salud(servidor: ServidorPrueba): Promise<unknown> {
@@ -116,5 +128,50 @@ describe("GET /api/health", () => {
   test("sin PORT el servidor usa el puerto por defecto", async () => {
     const { armar } = await servidorDePrueba();
     expect(armar().port).toBe(PUERTO_API_POR_DEFECTO);
+  });
+});
+
+describe("servidor sin clave del modelo", () => {
+  test("arranca y health reporta sin_clave con el proveedor y el modelo configurados", async () => {
+    const { armar, pedidos } = await servidorDePrueba(SIN_CLAVE);
+    const servidor = armar();
+    expect(await salud(servidor)).toEqual(saludCon(ESTADO_LLM.SIN_CLAVE));
+    expect(pedidos).toHaveLength(0);
+  });
+
+  test.each([TIPO_CONTENIDO.JSON, TIPO_CONTENIDO.SSE])(
+    "el chat con acceso responde 503 con el mensaje de clave faltante (Accept %p)",
+    async (acepta) => {
+      const { armar, pedidos } = await servidorDePrueba(SIN_CLAVE);
+      const respuesta = await turno(armar(), "procesa el caso co-industrias-delta", acepta);
+      expect(respuesta.status).toBe(RESPUESTA_HTTP.NO_DISPONIBLE);
+      expect(await respuesta.json()).toEqual({ mensaje: MENSAJE_AGENTE[CODIGO_AGENTE.PROVEEDOR_SIN_CLAVE] });
+      expect(pedidos).toHaveLength(0);
+    },
+  );
+
+  test("el chat sin acceso sigue respondiendo 401 antes de hablar de la clave", async () => {
+    const { armar } = await servidorDePrueba(SIN_CLAVE);
+    const respuesta = await armar().app.request(
+      RUTA_API.CHAT,
+      {
+        method: "POST",
+        headers: { "Content-Type": TIPO_CONTENIDO.JSON },
+        body: JSON.stringify({ sessionId: null, message: "hola" }),
+      },
+      BINDINGS_PRUEBA,
+    );
+    expect(respuesta.status).toBe(RESPUESTA_HTTP.NO_AUTORIZADO);
+  });
+
+  test("un cuerpo inválido sigue respondiendo 400 antes de hablar de la clave", async () => {
+    const { armar } = await servidorDePrueba(SIN_CLAVE);
+    const respuesta = await armar().pedir(RUTA_API.CHAT, { method: "POST", body: JSON.stringify({}) });
+    expect(respuesta.status).toBe(RESPUESTA_HTTP.PEDIDO_INVALIDO);
+  });
+
+  test("una configuración inválida del modelo sigue impidiendo el arranque con su mensaje en español", async () => {
+    const { armar } = await servidorDePrueba({ LLM_TIMEOUT_MS: "nunca" });
+    expect(armar).toThrow(MENSAJE_AGENTE[CODIGO_AGENTE.CONFIGURACION_LLM_INVALIDA]);
   });
 });
