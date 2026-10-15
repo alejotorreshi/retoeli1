@@ -7,7 +7,14 @@ import {
   esperarPedidos,
 } from "@tests/helpers/fetch-falso.helper.ts";
 import { crearProyectoTemporal } from "@tests/helpers/proyecto-temporal.helper.ts";
-import { crearServidorPrueba, eventoDeFrame, eventosSse } from "@tests/helpers/servidor-prueba.helper.ts";
+import {
+  BINDINGS_PRUEBA,
+  bindingsDesde,
+  CODIGO_PRUEBA,
+  crearServidorPrueba,
+  eventoDeFrame,
+  eventosSse,
+} from "@tests/helpers/servidor-prueba.helper.ts";
 import type { RespuestaGuion } from "@tests/helpers/types/fetch-falso.type.ts";
 import type { ServidorPrueba } from "@tests/helpers/types/servidor-prueba.type.ts";
 import { CODIGO_AGENTE, MOTIVO_FIN, TIPO_EVENTO } from "@/config/constants/agent.constants.ts";
@@ -43,6 +50,10 @@ const UNA_HORA_MS = 3_600_000;
 const SESION_INVENTADA = "sesion-inventada-1";
 const OTRA_SESION_INVENTADA = "sesion-inventada-2";
 const UNA_SESION_NUEVA = { NEW_SESSIONS_PER_HOUR: "1" };
+const SIN_CLAVE_DEL_MODELO = { LLM_API_KEY: "" };
+const BEARER_ERRADO = "Bearer codigo-equivocado-Zx9Q";
+const RUTA_API_DESCONOCIDA = "/api/sesiones";
+const VUELTAS_SIN_MODELO = 5;
 const COLGADO: RespuestaGuion = { cuerpo: null, colgar: true };
 const NO_DISPONIBLE: RespuestaGuion = {
   estado: RESPUESTA_HTTP.NO_DISPONIBLE,
@@ -480,5 +491,115 @@ describe("sesiones nuevas", () => {
     await sesionDe(await hastaQueHayaCupo(() => turno(servidor, "dos", TIPO_CONTENIDO.JSON)));
     await esRechazoDeSesiones(await turno(servidor, "tres", TIPO_CONTENIDO.JSON));
     expect(pedidos).toHaveLength(2);
+  });
+});
+
+describe("ningún camino llega al modelo", () => {
+  function chatSinCredencial(autorizacion: string | null): RequestInit {
+    const headers = new Headers({
+      "Content-Type": TIPO_CONTENIDO.JSON,
+      [CABECERA.ACCEPT]: TIPO_CONTENIDO.JSON,
+    });
+    if (autorizacion !== null) headers.set(CABECERA.AUTORIZACION, autorizacion);
+    return { method: "POST", headers, body: JSON.stringify({ sessionId: null, message: "hola" }) };
+  }
+
+  test("sin acceso o con un código errado el chat responde 401 y no pide nada al proveedor", async () => {
+    const { servidor, pedidos } = await servidorCon({}, textos(1));
+    for (const autorizacion of [null, BEARER_ERRADO]) {
+      const respuesta = await servidor.app.request(
+        RUTA_API.CHAT,
+        chatSinCredencial(autorizacion),
+        BINDINGS_PRUEBA,
+      );
+      expect(respuesta.status).toBe(RESPUESTA_HTTP.NO_AUTORIZADO);
+    }
+    expect(pedidos).toHaveLength(0);
+  });
+
+  test("pasado el tope de mensajes por IP el chat responde 429 y no pide nada al proveedor", async () => {
+    const { servidor, pedidos } = await servidorCon({ RATE_LIMIT_CHAT_PER_MINUTE: "1" }, textos(1));
+    expect((await servidor.pedir(RUTA_API.CHAT, pedidoInvalido())).status).toBe(
+      RESPUESTA_HTTP.PEDIDO_INVALIDO,
+    );
+    for (const acepta of [TIPO_CONTENIDO.JSON, TIPO_CONTENIDO.SSE]) {
+      const rechazo = await turno(servidor, "hola", acepta);
+      expect(rechazo.status).toBe(RESPUESTA_HTTP.DEMASIADOS_PEDIDOS);
+      expect(await rechazo.json()).toEqual({ mensaje: MENSAJE_HTTP.demasiadosMensajes });
+    }
+    expect(pedidos).toHaveLength(0);
+  });
+
+  test("pasado el tope de sesiones nuevas ningún pedido nuevo llega al proveedor", async () => {
+    const { servidor, pedidos } = await servidorCon(
+      { ...SIN_TOPE_DE_MENSAJES, ...UNA_SESION_NUEVA },
+      textos(2),
+    );
+    await sesionDe(await turno(servidor, "hola", TIPO_CONTENIDO.JSON));
+    for (let vuelta = 0; vuelta < VUELTAS_SIN_MODELO; vuelta += 1) {
+      for (const acepta of [TIPO_CONTENIDO.JSON, TIPO_CONTENIDO.SSE]) {
+        await esRechazoDeSesiones(await turno(servidor, "hola", acepta));
+        await esRechazoDeSesiones(await turno(servidor, "hola", acepta, `${SESION_INVENTADA}-${vuelta}`));
+      }
+    }
+    expect(pedidos).toHaveLength(1);
+  });
+
+  test("sin cupos libres el chat responde 503 y no pide nada más al proveedor", async () => {
+    const { servidor, pedidos } = await servidorCon(UN_SOLO_CUPO, [COLGADO, ...textos(1)]);
+    const colgado = await turno(servidor, "uno", TIPO_CONTENIDO.SSE);
+    cortarAlFinal(colgado);
+    await esperarPedidos(pedidos, 1);
+    const inicio = await primerEvento(lectorDe(colgado));
+    if (inicio.tipo !== TIPO_EVENTO.INICIO_TURNO) throw new Error("falta turn_start");
+    for (const sesion of [null, inicio.sesionId]) {
+      for (const acepta of [TIPO_CONTENIDO.JSON, TIPO_CONTENIDO.SSE]) {
+        const rechazo = await turno(servidor, "dos", acepta, sesion);
+        expect(rechazo.status).toBe(RESPUESTA_HTTP.NO_DISPONIBLE);
+        expect(await rechazo.json()).toEqual({ mensaje: MENSAJE_HTTP.servidorOcupado });
+      }
+    }
+    expect(pedidos).toHaveLength(1);
+  });
+
+  test("con el tope diario agotado el chat responde 429 y no pide nada más al proveedor", async () => {
+    const { servidor, pedidos } = await servidorCon(TOPE_DIARIO_PEQUENO, textos(2));
+    const sesion = await sesionDe(await turno(servidor, "hola", TIPO_CONTENIDO.JSON));
+    for (const id of [null, sesion]) {
+      for (const acepta of [TIPO_CONTENIDO.JSON, TIPO_CONTENIDO.SSE]) {
+        const rechazo = await turno(servidor, "¿sigues?", acepta, id);
+        expect(rechazo.status).toBe(RESPUESTA_HTTP.DEMASIADOS_PEDIDOS);
+        expect(await rechazo.json()).toEqual({ mensaje: MENSAJE_HTTP.topeDiario(ZONA_TOPES) });
+      }
+    }
+    expect(pedidos).toHaveLength(1);
+  });
+
+  test("sin clave del modelo el chat responde 503 sin llamar a ningún proveedor", async () => {
+    const { servidor, pedidos } = await servidorCon(SIN_CLAVE_DEL_MODELO, textos(1));
+    const rechazo = await turno(servidor, "hola", TIPO_CONTENIDO.JSON);
+    expect(rechazo.status).toBe(RESPUESTA_HTTP.NO_DISPONIBLE);
+    expect(await rechazo.json()).toEqual({ mensaje: MENSAJE_AGENTE[CODIGO_AGENTE.PROVEEDOR_SIN_CLAVE] });
+    expect(pedidos).toHaveLength(0);
+  });
+
+  test("health, config, la entrada, una ruta desconocida y la SPA nunca llaman al modelo, ni con y sin acceso", async () => {
+    const { servidor, pedidos } = await servidorCon({}, textos(1));
+    for (let vuelta = 0; vuelta < VUELTAS_SIN_MODELO; vuelta += 1) {
+      expect((await servidor.pedir(RUTA_API.SALUD)).status).toBe(RESPUESTA_HTTP.OK);
+      expect((await servidor.pedir(RUTA_API.CONFIG)).status).toBe(RESPUESTA_HTTP.OK);
+      expect((await servidor.app.request(RUTA_API.SALUD, {}, bindingsDesde(IP_OTRO_CLIENTE))).status).toBe(
+        RESPUESTA_HTTP.OK,
+      );
+      expect((await servidor.app.request(RUTA_API.CONFIG, {}, BINDINGS_PRUEBA)).status).toBe(
+        RESPUESTA_HTTP.NO_AUTORIZADO,
+      );
+      const entrada = { method: "POST", body: JSON.stringify({ codigo: CODIGO_PRUEBA }) };
+      expect((await servidor.pedir(RUTA_API.ACCESO, entrada)).status).toBe(RESPUESTA_HTTP.SIN_CONTENIDO);
+      expect((await servidor.pedir(RUTA_API_DESCONOCIDA)).status).toBe(RESPUESTA_HTTP.NO_ENCONTRADO);
+      expect((await servidor.pedir(RUTA_API.CHAT)).status).toBe(RESPUESTA_HTTP.NO_ENCONTRADO);
+      await servidor.pedir("/");
+    }
+    expect(pedidos).toHaveLength(0);
   });
 });

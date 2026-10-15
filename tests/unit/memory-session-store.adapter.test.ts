@@ -243,3 +243,55 @@ describe("el candado de sesión es un plazo con ficha (AGT-04, WR-03)", () => {
     expect(almacen.abrir(primera.id)).toMatchObject({ nueva: true, expirada: true });
   });
 });
+
+describe("leer consulta una sesión sin crearla ni renovarla", () => {
+  test("un id desconocido o mal formado devuelve null y no crea ninguna sesión", () => {
+    const { almacen } = crearBanco();
+    for (const id of ["desconocida", "", "con espacio", "../salir", "x".repeat(500)]) {
+      expect(almacen.leer(id)).toBeNull();
+      expect(almacen.ocupar(id, PLAZO_MS)).toBeNull();
+    }
+    expect(almacen.abrir(null).sesion.id).toBe("sesion-1");
+  });
+
+  test("una sesión viva devuelve la misma sesión con ocupada según su candado", () => {
+    const { almacen, avanzar } = crearBanco();
+    const { sesion } = almacen.abrir(null);
+    expect(almacen.leer(sesion.id)).toEqual({ sesion, ocupada: false });
+    const candado = tomar(almacen, sesion.id);
+    expect(almacen.leer(sesion.id)).toEqual({ sesion, ocupada: true });
+    almacen.liberar(sesion.id, candado);
+    expect(almacen.leer(sesion.id)).toEqual({ sesion, ocupada: false });
+    tomar(almacen, sesion.id);
+    avanzar(PLAZO_MS + 1);
+    expect(almacen.leer(sesion.id)).toEqual({ sesion, ocupada: false });
+  });
+
+  test("leer no renueva el TTL: una sesión leída justo antes de vencer expira a tiempo", () => {
+    const { almacen, avanzar } = crearBanco();
+    const { sesion } = almacen.abrir(null);
+    avanzar(TTL_MS - 1);
+    expect(almacen.leer(sesion.id)).not.toBeNull();
+    avanzar(2);
+    expect(almacen.leer(sesion.id)).toBeNull();
+    expect(almacen.abrir(sesion.id)).toMatchObject({ nueva: true, expirada: true });
+  });
+
+  test("leer no cambia el orden de desalojo", () => {
+    const { almacen } = crearBanco(2);
+    const primera = almacen.abrir(null).sesion;
+    const segunda = almacen.abrir(null).sesion;
+    expect(almacen.leer(primera.id)).not.toBeNull();
+    almacen.abrir(null);
+    expect(almacen.leer(primera.id)).toBeNull();
+    expect(almacen.leer(segunda.id)).toEqual({ sesion: segunda, ocupada: false });
+  });
+
+  test("leer barre las sesiones expiradas", () => {
+    const { almacen, avanzar } = crearBanco();
+    const vieja = almacen.abrir(null).sesion;
+    avanzar(TTL_MS + 1);
+    expect(almacen.leer("otra")).toBeNull();
+    expect(almacen.ocupar(vieja.id, PLAZO_MS)).toBeNull();
+  });
+});
