@@ -7,7 +7,16 @@ import {
   PRESUPUESTO_TOKENS_SESION_POR_DEFECTO,
   TTL_SESION_MINUTOS_POR_DEFECTO,
 } from "@/config/constants/agent.constants.ts";
-import { PUERTO_API_POR_DEFECTO, PUERTO_MAXIMO } from "@/config/constants/http.constants.ts";
+import {
+  ENTORNO_APP,
+  LONGITUD_MAXIMA_CODIGO_ACCESO,
+  LONGITUD_MINIMA_CODIGO_ACCESO,
+  LONGITUD_MINIMA_SECRETO_TOKEN,
+  PUERTO_API_POR_DEFECTO,
+  PUERTO_MAXIMO,
+  VIGENCIA_ACCESO_HORAS_POR_DEFECTO,
+  VIGENCIA_ACCESO_HORAS_TOPE,
+} from "@/config/constants/http.constants.ts";
 import {
   BOOLEANO_ENV,
   CAPACIDADES_GENERICAS,
@@ -326,9 +335,35 @@ export function readAgentEnv() {
   return parseAgentEnv(process.env);
 }
 
-const serverEnvSchema = z.object({
-  PORT: withDefault(z.coerce.number().int().min(1).max(PUERTO_MAXIMO), PUERTO_API_POR_DEFECTO),
-});
+const accessCode = z.preprocess(
+  emptyAsUndefined,
+  z
+    .string({ error: TEXTO_ENV.codigoAccesoRequerido })
+    .trim()
+    .min(LONGITUD_MINIMA_CODIGO_ACCESO, TEXTO_ENV.codigoAccesoCorto)
+    .max(LONGITUD_MAXIMA_CODIGO_ACCESO),
+);
+
+const serverEnvSchema = z
+  .object({
+    PORT: withDefault(z.coerce.number().int().min(1).max(PUERTO_MAXIMO), PUERTO_API_POR_DEFECTO),
+    NODE_ENV: withDefault(z.enum(ENTORNO_APP), ENTORNO_APP.PRODUCCION),
+    ACCESS_CODE: accessCode,
+    ACCESS_TOKEN_SECRET: optional(z.string().min(LONGITUD_MINIMA_SECRETO_TOKEN, TEXTO_ENV.secretoTokenCorto)),
+    ACCESS_TOKEN_TTL_HOURS: withDefault(
+      positiveInt(VIGENCIA_ACCESO_HORAS_TOPE),
+      VIGENCIA_ACCESO_HORAS_POR_DEFECTO,
+    ),
+  })
+  .superRefine((env, ctx) => {
+    if (env.NODE_ENV === ENTORNO_APP.PRODUCCION && env.ACCESS_TOKEN_SECRET === undefined) {
+      ctx.addIssue({
+        code: "custom",
+        message: TEXTO_ENV.secretoTokenRequerido,
+        path: ["ACCESS_TOKEN_SECRET"],
+      });
+    }
+  });
 
 export type ServerEnv = z.output<typeof serverEnvSchema>;
 

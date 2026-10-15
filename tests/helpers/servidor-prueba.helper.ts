@@ -7,11 +7,23 @@ import type {
 } from "@tests/helpers/types/servidor-prueba.type.ts";
 import { type EventSourceMessage, EventSourceParserStream } from "eventsource-parser/stream";
 import { TIPO_EVENTO } from "@/config/constants/agent.constants.ts";
-import { TIPO_CONTENIDO } from "@/config/constants/http.constants.ts";
+import { CABECERA, ENTORNO_APP, PREFIJO_BEARER, TIPO_CONTENIDO } from "@/config/constants/http.constants.ts";
 import { NIVELES_LOG } from "@/config/constants/logging.constants.ts";
 import type { HttpBindings } from "@/http/types/server.type.ts";
 import { createServer } from "@/http/wiring/server.wiring.ts";
 import type { EventoAgente, EventoInicioTurno } from "@/loop/types/evento.type.ts";
+
+export const CODIGO_PRUEBA = "codigo-acceso-Kp7W";
+
+export const SECRETO_PRUEBA = "secreto-firma-acceso-Hm3V-0123456789abcdef";
+
+export const ENTORNO_SERVIDOR_PRUEBA = {
+  LLM_API_KEY: CLAVE_PRUEBA,
+  LOG_LEVEL: NIVELES_LOG.SILENCIO,
+  ACCESS_CODE: CODIGO_PRUEBA,
+  ACCESS_TOKEN_SECRET: SECRETO_PRUEBA,
+  NODE_ENV: ENTORNO_APP.PRUEBA,
+} as const;
 
 export const BINDINGS_PRUEBA: HttpBindings = {
   timeout: () => undefined,
@@ -19,7 +31,10 @@ export const BINDINGS_PRUEBA: HttpBindings = {
 };
 
 export function cabecerasPrueba(extra?: RequestInit["headers"]): Headers {
-  const cabeceras = new Headers({ "Content-Type": TIPO_CONTENIDO.JSON });
+  const cabeceras = new Headers({
+    "Content-Type": TIPO_CONTENIDO.JSON,
+    [CABECERA.AUTORIZACION]: `${PREFIJO_BEARER}${CODIGO_PRUEBA}`,
+  });
   for (const [nombre, valor] of new Headers(extra)) cabeceras.set(nombre, valor);
   return cabeceras;
 }
@@ -66,7 +81,7 @@ export function crearServidorPrueba(opciones: OpcionesServidorPrueba): ServidorP
   const creacion = createServer({
     rootDirectory: opciones.raiz,
     fetch: opciones.fetch,
-    envSource: { LLM_API_KEY: CLAVE_PRUEBA, LOG_LEVEL: NIVELES_LOG.SILENCIO, ...opciones.entorno },
+    envSource: { ...ENTORNO_SERVIDOR_PRUEBA, ...opciones.entorno },
     wait: async () => undefined,
     ...(opciones.latidoMs === undefined ? {} : { heartbeatMs: opciones.latidoMs }),
     ...(opciones.destinoLogs === undefined ? {} : { logDestination: opciones.destinoLogs }),

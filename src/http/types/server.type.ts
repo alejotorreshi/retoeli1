@@ -17,6 +17,15 @@ export type ServerOptions = {
   readonly wait?: RetryOptions["wait"];
   readonly logDestination?: DestinoBitacora;
   readonly heartbeatMs?: number;
+  readonly now?: () => number;
+};
+
+export type AccessSettings = {
+  readonly code: string;
+  readonly tokenSecret: string;
+  readonly ttlMs: number;
+  readonly secureCookie: boolean;
+  readonly now: () => number;
 };
 
 export type ServerCreation =

@@ -13,7 +13,42 @@ export const PREFIJO_API = "/api";
 export const RUTA_API = {
   SALUD: `${PREFIJO_API}/health`,
   CHAT: `${PREFIJO_API}/chat`,
+  ACCESO: `${PREFIJO_API}/acceso`,
 } as const;
+
+export const RUTA_API_PROTEGIDA = `${PREFIJO_API}/*`;
+
+export const ENTORNO_APP = {
+  PRODUCCION: "production",
+  DESARROLLO: "development",
+  PRUEBA: "test",
+} as const;
+
+export const NOMBRE_COOKIE_ACCESO = "acceso";
+
+export const VERSION_TOKEN_ACCESO = "v1";
+
+export const SEPARADOR_TOKEN = ".";
+
+export const RUTA_COOKIE = PREFIJO_API;
+
+export const SAME_SITE_COOKIE = "Strict";
+
+export const PREFIJO_BEARER = "Bearer ";
+
+export const LONGITUD_MINIMA_CODIGO_ACCESO = 12;
+
+export const LONGITUD_MAXIMA_CODIGO_ACCESO = 256;
+
+export const LONGITUD_MINIMA_SECRETO_TOKEN = 32;
+
+export const BYTES_SECRETO_TOKEN = 32;
+
+export const CODIFICACION_SECRETO_TOKEN = "hex";
+
+export const VIGENCIA_ACCESO_HORAS_POR_DEFECTO = 12;
+
+export const VIGENCIA_ACCESO_HORAS_TOPE = 168;
 
 export const LATIDO_SSE_MS = 8_000;
 
@@ -23,6 +58,7 @@ export const CABECERA = {
   CACHE_CONTROL: "Cache-Control",
   X_ACCEL_BUFFERING: "X-Accel-Buffering",
   ACCEPT: "Accept",
+  AUTORIZACION: "Authorization",
 } as const;
 
 export const VALOR_CABECERA = {

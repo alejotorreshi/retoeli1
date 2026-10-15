@@ -11,6 +11,10 @@ export type ChatBody = {
   readonly message: string;
 };
 
+export type AccessBody = {
+  readonly codigo: string;
+};
+
 export type ErrorResponse = {
   readonly mensaje: string;
 };

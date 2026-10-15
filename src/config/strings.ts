@@ -1,6 +1,11 @@
 import { CODIGO_AGENTE } from "@/config/constants/agent.constants.ts";
 import { CODIGO_ERROR } from "@/config/constants/errors.constants.ts";
 import { ARCHIVO_PROYECTO, ARCHIVOS_SALIDA, OUT_DIR } from "@/config/constants/files.constants.ts";
+import {
+  ENTORNO_APP,
+  LONGITUD_MINIMA_CODIGO_ACCESO,
+  LONGITUD_MINIMA_SECRETO_TOKEN,
+} from "@/config/constants/http.constants.ts";
 import { LONGITUD_MAXIMA_CASO } from "@/config/constants/limits.constants.ts";
 import { ESQUEMA_LOOPBACK, ESQUEMA_SEGURO, HOSTS_LOOPBACK } from "@/config/constants/llm.constants.ts";
 import { ESTADO_CAMPO } from "@/config/constants/mapping.constants.ts";
@@ -316,6 +321,10 @@ export const TEXTO_ENV = {
   urlRequerida:
     "Falta la URL del proveedor: es obligatoria cuando el proveedor no tiene valores por defecto.",
   modeloRequerido: "Falta el modelo: es obligatorio cuando el proveedor no tiene valores por defecto.",
+  codigoAccesoRequerido: "Falta el código de acceso: es obligatorio para abrir la API.",
+  codigoAccesoCorto: `El código de acceso debe tener al menos ${LONGITUD_MINIMA_CODIGO_ACCESO} caracteres.`,
+  secretoTokenCorto: `El secreto de firma del acceso debe tener al menos ${LONGITUD_MINIMA_SECRETO_TOKEN} caracteres.`,
+  secretoTokenRequerido: `Falta el secreto de firma del acceso: es obligatorio con NODE_ENV=${ENTORNO_APP.PRODUCCION} y debe ser distinto del código de acceso y de la clave del modelo.`,
 } as const;
 
 export const TEXTO_CONTEXTO = {
@@ -327,6 +336,9 @@ export const MENSAJE_HTTP = {
     "El pedido no es válido: envía un JSON con sessionId (texto o null) y message (texto no vacío), sin otros campos.",
   errorInterno: "Ocurrió un error interno en el servidor. Intenta de nuevo en unos segundos.",
   rutaNoEncontrada: "La ruta pedida no existe en la API.",
+  cuerpoAccesoInvalido: "El pedido no es válido: envía un JSON con codigo (texto), sin otros campos.",
+  codigoInvalido: "El código no es válido. Revísalo y vuelve a intentarlo.",
+  accesoVencido: "Tu acceso venció. Escribe el código de nuevo para seguir.",
 } as const;
 
 export const TEXTO_SESION = {

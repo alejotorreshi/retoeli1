@@ -56,12 +56,12 @@ La API agrega la capa `http` y la entrada del proceso `src/server.ts`. El guardi
 
 | Carpeta | Sufijo | Rol |
 |---|---|---|
-| `http/routes/` | `.route.ts` | Una ruta Hono por recurso: salud del servicio sin acceso y sin llamar al modelo (`health`) y el turno del chat por SSE con latido, timeout de inactividad desactivado, corte al cerrar la pestaña y respaldo JSON del PRD §6.4 (`chat`). |
-| `http/middlewares/` | `.middleware.ts` | Middlewares Hono que se aplican antes de las rutas. |
-| `http/services/` | `.service.ts` | Lógica HTTP pura, sin Hono, que las rutas reutilizan: proyección de cada evento del bucle a un frame SSE redactado y el temporizador del latido (`sse`). |
-| `http/schemas/` | `.schema.ts` | Validación zod de los cuerpos que recibe la API, con `satisfies z.ZodType<T>`. |
-| `http/types/` | `.type.ts` | El contrato del cable (`api.type.ts`, que el front importa con `import type`) y los tipos del servidor (`server.type.ts`: `HttpBindings`, `HttpEnv`, `ServerOptions`, `ServerCreation`). |
-| `http/wiring/` | `.wiring.ts` | `server.wiring.ts`, el tercer composition root: lee `ServerEnv`, arma el agente con `crearAgente` y la app Hono, y `startServer` levanta `Bun.serve` en `0.0.0.0:PORT`. |
+| `http/routes/` | `.route.ts` | Una ruta Hono por recurso: salud del servicio sin acceso y sin llamar al modelo (`health`) y el turno del chat por SSE con latido, timeout de inactividad desactivado, corte al cerrar la pestaña y respaldo JSON del PRD §6.4 (`chat`), y la entrada con el código compartido, comparado en tiempo constante, que responde con la cookie firmada `HttpOnly; Secure; SameSite=Strict; Path=/api` (`access`). |
+| `http/middlewares/` | `.middleware.ts` | Middlewares Hono que se aplican antes de las rutas: la guardia de acceso de todo `/api` salvo health y la entrada, que acepta la cookie firmada y vigente o `Authorization: Bearer` con el código, comparado en tiempo constante (`access`). |
+| `http/services/` | `.service.ts` | Lógica HTTP pura, sin Hono, que las rutas reutilizan: proyección de cada evento del bucle a un frame SSE redactado y el temporizador del latido (`sse`), y la emisión y la validación del token de acceso `v1.<vence en ms>` con el reloj inyectado (`access-token`). |
+| `http/schemas/` | `.schema.ts` | Validación zod de los cuerpos que recibe la API, con `satisfies z.ZodType<T>`: el del chat (`chat-body`) y el de la entrada (`access-body`). |
+| `http/types/` | `.type.ts` | El contrato del cable (`api.type.ts`, que el front importa con `import type`) y los tipos del servidor (`server.type.ts`: `HttpBindings`, `HttpEnv`, `ServerOptions`, `ServerCreation`, `AccessSettings`). |
+| `http/wiring/` | `.wiring.ts` | `server.wiring.ts`, el tercer composition root: lee `ServerEnv` (puerto, `NODE_ENV`, `ACCESS_CODE`, `ACCESS_TOKEN_SECRET` y `ACCESS_TOKEN_TTL_HOURS`; en desarrollo, sin secreto, genera uno efímero de 256 bits), arma el agente con `crearAgente` y la app Hono, suma el código y el secreto a los secretos que se redactan en SSE y en los logs, y `startServer` levanta `Bun.serve` en `0.0.0.0:PORT`. |
 | `src/server.ts` | (sin sufijo) | Entrada del proceso: deriva la raíz del proyecto de `import.meta.dir` y llama a `startServer`. Con el entorno inválido escribe el motivo y sale con código 1. |
 
 Idioma: `src/http` va en inglés, como infra, porque es un adaptador. El contrato del cable conserva los nombres del PRD (`sessionId`, `message`, `reply`, `toolCalls`, `needsConfirmation`) y los que fijó la usuaria (`accion`, `tipo`, `caso`, `mensaje`).
