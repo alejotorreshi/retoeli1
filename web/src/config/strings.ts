@@ -3,21 +3,26 @@ import {
   ESTADO_ETAPA,
   ESTADO_FIRMA,
   ESTADO_HERRAMIENTA,
+  ESTADO_TARJETA_CONFIRMACION,
   ETAPA,
   PESTANA,
   SEPARADOR_LISTA_CASOS,
 } from "@web/config/constants/ui.constants.ts";
 import type {
+  AccionDeTarjeta,
   EstadoCampoUi,
   EstadoEtapa,
   EstadoFirma,
   EstadoHerramienta,
   EstadoModelo,
+  EstadoTarjetaConfirmacion,
   Etapa,
   FormatoVisible,
   ResumenLlamadas,
 } from "@web/types/chat.type.ts";
 import type { EstadoModeloConAviso, PartesAvisoModelo, Pestana } from "@web/types/ui.type.ts";
+import { TIPO_ACCION } from "@/config/constants/confirmation.constants.ts";
+import { ARCHIVOS_SALIDA } from "@/config/constants/files.constants.ts";
 import { FORMATO } from "@/config/constants/forms.constants.ts";
 import { VIGENCIA_ACCESO_HORAS_POR_DEFECTO } from "@/config/constants/http.constants.ts";
 import { ESTADO_LLM } from "@/config/constants/llm.constants.ts";
@@ -257,4 +262,35 @@ export const TEXTO_PESTANAS = {
   grupo: "Vistas del agente",
   etiqueta: (pestana: Pestana) => ETIQUETA_DE_PESTANA[pestana],
   cambiosSinVer: ", hay cambios sin ver",
+} as const;
+
+const ACCION_CONFIRMADA = "Envío simulado";
+
+const DESENLACE_DE_TARJETA = {
+  [ESTADO_TARJETA_CONFIRMACION.ABIERTA]: "Confirmación pendiente",
+  [ESTADO_TARJETA_CONFIRMACION.REGISTRADA]: "Envío registrado",
+  [ESTADO_TARJETA_CONFIRMACION.CANCELADA]: "Envío cancelado",
+  [ESTADO_TARJETA_CONFIRMACION.REEMPLAZADA]: "Reemplazada por una confirmación nueva",
+} as const satisfies Record<EstadoTarjetaConfirmacion, string>;
+
+const MENSAJE_DE_ACCION = {
+  [TIPO_ACCION.CONFIRMAR]: (caso: string) => `Sí, envía ${caso}`,
+  [TIPO_ACCION.CANCELAR]: (caso: string) => `Cancela el envío de ${caso}`,
+} as const satisfies Record<AccionDeTarjeta["tipo"], (caso: string) => string>;
+
+export const TEXTO_CONFIRMACION = {
+  titulo: `Confirmación requerida ${SEPARADOR} ${ACCION_CONFIRMADA}`,
+  caso: "Caso: ",
+  accion: `Acción: ${ACCION_CONFIRMADA}`,
+  bloqueos: "Bloqueos",
+  conBloqueos: (cantidad: number) => `Se registrará con ${cantidad} bloqueo(s).`,
+  nota: `Confirmar registra solo ${ARCHIVOS_SALIDA.ENVIO_SIMULADO}. No se envía ningún correo real.`,
+  confirmar: "Confirmar envío simulado",
+  cancelar: "Cancelar envío",
+  enviando: "Enviando…",
+  ocupada: "Espera a que termine la respuesta actual.",
+  desenlace: (estado: EstadoTarjetaConfirmacion) => DESENLACE_DE_TARJETA[estado],
+  mensaje: ({ tipo, caso }: AccionDeTarjeta) => MENSAJE_DE_ACCION[tipo](caso),
+  anuncio: (casos: readonly string[]) => `Confirmación requerida para ${casos.join(SEPARADOR_LISTA_CASOS)}`,
+  etiqueta: (caso: string) => `Confirmación de ${caso}`,
 } as const;

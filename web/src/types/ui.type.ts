@@ -1,5 +1,6 @@
 import type { DISENO, PESTANA, TAMANO_ICONO, TONO } from "@web/config/constants/ui.constants.ts";
 import type {
+  AccionDeTarjeta,
   EstadoEtapa,
   EstadoHerramienta,
   EstadoModelo,
@@ -7,6 +8,7 @@ import type {
   ProgresoDeCaso,
   ResultadoDeCaso,
   SaludModelo,
+  TarjetaDeConfirmacion,
   TurnoConversacion,
 } from "@web/types/chat.type.ts";
 import type { ReactNode } from "react";
@@ -33,6 +35,8 @@ export type PropsAviso = {
 export type PropsLineaDeTiempo = {
   readonly turnos: readonly TurnoConversacion[];
   readonly enCurso: boolean;
+  readonly tarjetasConfirmacion: readonly TarjetaDeConfirmacion[];
+  readonly alResponderConfirmacion: (accion: AccionDeTarjeta) => void;
   readonly acciones: ReactNode;
   readonly children?: ReactNode;
 };
@@ -52,6 +56,21 @@ export type PropsTurno = {
   readonly turno: TurnoConversacion;
   readonly enCurso: boolean;
   readonly resultados: readonly ResultadoDeCaso[];
+  readonly confirmaciones: ReactNode;
+};
+
+export type PropsPilaConfirmaciones = {
+  readonly tarjetas: readonly TarjetaDeConfirmacion[];
+  readonly turnos: readonly TurnoConversacion[];
+  readonly ocupada: boolean;
+  readonly alResponder: (accion: AccionDeTarjeta) => void;
+};
+
+export type PropsTarjetaConfirmacion = {
+  readonly tarjeta: TarjetaDeConfirmacion;
+  readonly listoParaFirma: boolean | null;
+  readonly ocupada: boolean;
+  readonly alResponder: (accion: AccionDeTarjeta) => void;
 };
 
 export type PropsTarjetaResultado = {

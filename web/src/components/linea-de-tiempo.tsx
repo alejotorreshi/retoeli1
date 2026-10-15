@@ -2,15 +2,17 @@ import { AvisoError } from "@web/components/aviso.tsx";
 import { GrupoHerramientas } from "@web/components/grupo-herramientas.tsx";
 import estilos from "@web/components/linea-de-tiempo.module.css";
 import { MensajeAgente, MensajeUsuaria } from "@web/components/mensaje.tsx";
+import { PilaConfirmaciones } from "@web/components/tarjeta-confirmacion.tsx";
 import { TarjetaResultado } from "@web/components/tarjeta-resultado.tsx";
 import { CLASE_GLOBAL, DISTANCIA_PEGADO_AL_FINAL } from "@web/config/constants/ui.constants.ts";
 import { TEXTO_CHAT } from "@web/config/strings.ts";
 import { resultadosDelTurno } from "@web/state/casos.ts";
+import { tarjetasDelTurno } from "@web/state/confirmaciones.ts";
 import { anuncioDeEstado } from "@web/state/conversacion.ts";
 import type { PropsEstadoVacio, PropsLineaDeTiempo, PropsTurno } from "@web/types/ui.type.ts";
 import { useEffect, useRef, useState } from "react";
 
-function Turno({ turno, enCurso, resultados }: PropsTurno) {
+function Turno({ turno, enCurso, resultados, confirmaciones }: PropsTurno) {
   return (
     <>
       <MensajeUsuaria texto={turno.mensaje} />
@@ -21,6 +23,7 @@ function Turno({ turno, enCurso, resultados }: PropsTurno) {
       {resultados.map((resultado) => (
         <TarjetaResultado key={resultado.caso} resultado={resultado} />
       ))}
+      {confirmaciones}
       {turno.error === null ? null : (
         <li>
           <AvisoError mensaje={turno.error.mensaje} />
@@ -48,7 +51,14 @@ function bajarAlFinal(zona: HTMLElement): void {
   zona.scrollTop = zona.scrollHeight;
 }
 
-export function LineaDeTiempo({ turnos, enCurso, acciones, children }: PropsLineaDeTiempo) {
+export function LineaDeTiempo({
+  turnos,
+  enCurso,
+  tarjetasConfirmacion,
+  alResponderConfirmacion,
+  acciones,
+  children,
+}: PropsLineaDeTiempo) {
   const zona = useRef<HTMLElement>(null);
   const contenido = useRef<HTMLDivElement>(null);
   const pegadoAlFinal = useRef(true);
@@ -98,6 +108,14 @@ export function LineaDeTiempo({ turnos, enCurso, acciones, children }: PropsLine
                   turno={turno}
                   enCurso={enCurso && indice === turnos.length - 1}
                   resultados={resultadosDelTurno(turnos, indice)}
+                  confirmaciones={
+                    <PilaConfirmaciones
+                      tarjetas={tarjetasDelTurno(tarjetasConfirmacion, turno.clave)}
+                      turnos={turnos}
+                      ocupada={enCurso}
+                      alResponder={alResponderConfirmacion}
+                    />
+                  }
                 />
               ))}
             </ol>
@@ -111,7 +129,7 @@ export function LineaDeTiempo({ turnos, enCurso, acciones, children }: PropsLine
         </button>
       ) : null}
       <div aria-live="polite" className={CLASE_GLOBAL.OCULTO}>
-        {anuncioDeEstado({ turnos, enCurso })}
+        {anuncioDeEstado({ turnos, enCurso, tarjetasConfirmacion })}
       </div>
     </div>
   );

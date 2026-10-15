@@ -4,12 +4,19 @@ import type {
   ESTADO_ETAPA,
   ESTADO_FIRMA,
   ESTADO_HERRAMIENTA,
+  ESTADO_TARJETA_CONFIRMACION,
   ETAPA,
   RESULTADO_API,
 } from "@web/config/constants/ui.constants.ts";
 import type { TIPO_EVENTO } from "@/config/constants/agent.constants.ts";
 import type { ValorDe } from "@/config/types/valor-de.type.ts";
-import type { ConfigResponse, ErrorResponse, HealthResponse, SseEvent } from "@/http/types/api.type.ts";
+import type {
+  ChatBody,
+  ConfigResponse,
+  ErrorResponse,
+  HealthResponse,
+  SseEvent,
+} from "@/http/types/api.type.ts";
 
 export type ErrorVisible = {
   readonly codigo: string | null;
@@ -79,6 +86,27 @@ export type ConfirmacionDelTurno = {
   readonly trasLlamadas: number;
 };
 
+export type AccionDeTarjeta = NonNullable<ChatBody["accion"]>;
+
+export type TipoAccion = AccionDeTarjeta["tipo"];
+
+export type EstadoTarjetaConfirmacion = ValorDe<typeof ESTADO_TARJETA_CONFIRMACION>;
+
+export type TarjetaDeConfirmacion = {
+  readonly clave: number;
+  readonly caso: string;
+  readonly turno: number;
+  readonly bloqueosLegibles: readonly string[];
+  readonly estado: EstadoTarjetaConfirmacion;
+  readonly resueltaEnTurno: number | null;
+  readonly enviando: TipoAccion | null;
+};
+
+export type TurnoTerminado = {
+  readonly turno: TurnoConversacion;
+  readonly completo: boolean;
+};
+
 export type Etapa = ValorDe<typeof ETAPA>;
 
 export type EstadoEtapa = ValorDe<typeof ESTADO_ETAPA>;
@@ -110,6 +138,8 @@ export type TurnoConversacion = {
 
 export type VistaTurnos = Pick<EstadoConversacion, "turnos" | "enCurso">;
 
+export type VistaConConfirmaciones = Pick<EstadoConversacion, "turnos" | "enCurso" | "tarjetasConfirmacion">;
+
 export type EstadoAcceso =
   | { readonly tipo: typeof ESTADO_ACCESO.VERIFICANDO }
   | { readonly tipo: typeof ESTADO_ACCESO.PEDIDO; readonly aviso: string | null }
@@ -127,6 +157,7 @@ export type EstadoConversacion = {
   readonly sesionId: string | null;
   readonly turnos: readonly TurnoConversacion[];
   readonly enCurso: boolean;
+  readonly tarjetasConfirmacion: readonly TarjetaDeConfirmacion[];
   readonly acceso: EstadoAcceso;
   readonly config: ConfigResponse | null;
   readonly borrador: string;
@@ -135,6 +166,7 @@ export type EstadoConversacion = {
 export type AccionEnviar = {
   readonly tipo: typeof ACCION_UI.ENVIAR;
   readonly mensaje: string;
+  readonly accion?: AccionDeTarjeta;
 };
 
 export type AccionEvento = {
@@ -195,6 +227,7 @@ export type ControlChat = {
   readonly cambiarBorrador: (borrador: string) => void;
   readonly enviar: () => void;
   readonly enviarTexto: (mensaje: string) => void;
+  readonly responderConfirmacion: (accion: AccionDeTarjeta) => void;
   readonly recibirConfig: (resultado: ResultadoApi<ConfigResponse>) => void;
 };
 

@@ -1,12 +1,14 @@
 import { enviarMensaje } from "@web/api/flujo-chat.ts";
 import { ACCION_UI } from "@web/config/constants/ui.constants.ts";
+import { TEXTO_CONFIRMACION } from "@web/config/strings.ts";
+import { hayTarjetaAbierta } from "@web/state/confirmaciones.ts";
 import {
   accionDeConfig,
   esFalloDeTurno,
   estadoInicialConversacion,
   reducirConversacion,
 } from "@web/state/conversacion.ts";
-import type { ControlChat, Despachar, ResultadoApi } from "@web/types/chat.type.ts";
+import type { AccionDeTarjeta, ControlChat, Despachar, ResultadoApi } from "@web/types/chat.type.ts";
 import { useCallback, useReducer, useRef } from "react";
 import type { ConfigResponse } from "@/http/types/api.type.ts";
 
@@ -22,19 +24,22 @@ export function useChat(alFallarTurno: () => void): ControlChat {
     despachar({ tipo: ACCION_UI.CAMBIAR_BORRADOR, borrador });
   }
 
-  function enviarTexto(texto: string): void {
+  function iniciarTurno(texto: string, accion: AccionDeTarjeta | null): void {
     const mensaje = texto.trim();
     if (mensaje.length === 0 || estado.enCurso || turnoActivo.current !== null) return;
     const controlador = new AbortController();
     turnoActivo.current = controlador;
     let turnoFallido = false;
-    const despacharDelTurno: Despachar = (accion) => {
-      if (esFalloDeTurno(accion)) turnoFallido = true;
-      despachar(accion);
+    const despacharDelTurno: Despachar = (accionUi) => {
+      if (esFalloDeTurno(accionUi)) turnoFallido = true;
+      despachar(accionUi);
     };
-    despachar({ tipo: ACCION_UI.ENVIAR, mensaje });
+    const pedido = { sessionId: estado.sesionId, message: mensaje };
+    despachar(
+      accion === null ? { tipo: ACCION_UI.ENVIAR, mensaje } : { tipo: ACCION_UI.ENVIAR, mensaje, accion },
+    );
     void enviarMensaje(
-      { sessionId: estado.sesionId, message: mensaje },
+      accion === null ? pedido : { ...pedido, accion },
       despacharDelTurno,
       controlador.signal,
     ).finally(() => {
@@ -43,9 +48,26 @@ export function useChat(alFallarTurno: () => void): ControlChat {
     });
   }
 
+  function enviarTexto(texto: string): void {
+    iniciarTurno(texto, null);
+  }
+
   function enviar(): void {
     enviarTexto(estado.borrador);
   }
 
-  return { estado, borrador: estado.borrador, cambiarBorrador, enviar, enviarTexto, recibirConfig };
+  function responderConfirmacion(accion: AccionDeTarjeta): void {
+    if (!hayTarjetaAbierta(estado.tarjetasConfirmacion, accion.caso)) return;
+    iniciarTurno(TEXTO_CONFIRMACION.mensaje(accion), accion);
+  }
+
+  return {
+    estado,
+    borrador: estado.borrador,
+    cambiarBorrador,
+    enviar,
+    enviarTexto,
+    responderConfirmacion,
+    recibirConfig,
+  };
 }

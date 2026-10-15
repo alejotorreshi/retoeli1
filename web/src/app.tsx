@@ -111,7 +111,8 @@ function atributosDeVista(
 
 export function App() {
   const { salud, refrescar } = useSalud();
-  const { estado, borrador, cambiarBorrador, enviar, enviarTexto, recibirConfig } = useChat(refrescar);
+  const { estado, borrador, cambiarBorrador, enviar, enviarTexto, responderConfirmacion, recibirConfig } =
+    useChat(refrescar);
   const diseno = useDiseno();
   const conPestanas = diseno !== DISENO.ANCHO;
   const progresos = progresoPorCaso(estado);
@@ -165,6 +166,8 @@ export function App() {
             <LineaDeTiempo
               turnos={estado.turnos}
               enCurso={estado.enCurso}
+              tarjetasConfirmacion={estado.tarjetasConfirmacion}
+              alResponderConfirmacion={responderConfirmacion}
               acciones={
                 <AccionesRapidas
                   casos={casos}

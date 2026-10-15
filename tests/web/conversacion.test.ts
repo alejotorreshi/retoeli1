@@ -56,6 +56,7 @@ describe("reducirConversacion", () => {
       sesionId: null,
       turnos: [],
       enCurso: false,
+      tarjetasConfirmacion: [],
       acceso: { tipo: ESTADO_ACCESO.VERIFICANDO },
       config: null,
       borrador: "",

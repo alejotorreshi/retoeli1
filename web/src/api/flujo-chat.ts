@@ -63,12 +63,16 @@ async function informarRechazo(respuesta: Response, despachar: Despachar): Promi
   despachar({ tipo: ACCION_UI.ERROR_HTTP, status: respuesta.status, mensaje: rechazo.mensaje });
 }
 
+function cuerpoDelPedido({ sessionId, message, accion }: ChatBody): string {
+  return JSON.stringify(accion === undefined ? { sessionId, message } : { sessionId, message, accion });
+}
+
 export async function enviarMensaje(
   pedido: ChatBody,
   despachar: Despachar,
   signal: AbortSignal,
 ): Promise<void> {
-  const respuesta = await pedir(RUTA_API.CHAT, { ...PEDIDO_JSON, body: JSON.stringify(pedido), signal });
+  const respuesta = await pedir(RUTA_API.CHAT, { ...PEDIDO_JSON, body: cuerpoDelPedido(pedido), signal });
   if (signal.aborted) return;
   if (respuesta === null) {
     despachar({ tipo: ACCION_UI.ERROR_RED });

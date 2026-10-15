@@ -152,6 +152,15 @@ export const ESTADO_ETAPA = {
 
 export const SEPARADOR_FIRMA = "|";
 
+export const ESTADO_TARJETA_CONFIRMACION = {
+  ABIERTA: "abierta",
+  REGISTRADA: "registrada",
+  CANCELADA: "cancelada",
+  REEMPLAZADA: "reemplazada",
+} as const;
+
+export const SEPARADOR_ANUNCIOS = ". ";
+
 export const PUNTO_DE_QUIEBRE_PX = {
   MEDIO: 640,
   ANCHO: 1024,

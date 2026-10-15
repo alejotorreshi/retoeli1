@@ -5,9 +5,17 @@ import {
   MAXIMO_TARJETAS_ABIERTAS,
   RESULTADO_API,
   SANGRIA_JSON,
+  SEPARADOR_ANUNCIOS,
 } from "@web/config/constants/ui.constants.ts";
-import { TEXTO_CHAT, TEXTO_ERROR, TEXTO_HERRAMIENTA } from "@web/config/strings.ts";
+import { TEXTO_CHAT, TEXTO_CONFIRMACION, TEXTO_ERROR, TEXTO_HERRAMIENTA } from "@web/config/strings.ts";
+import {
+  casosAbiertosEnTurno,
+  marcarEnviando,
+  reducirConfirmaciones,
+  soltarEnvios,
+} from "@web/state/confirmaciones.ts";
 import type {
+  AccionEnviar,
   AccionUi,
   ConfirmacionDelTurno,
   ErrorVisible,
@@ -19,9 +27,10 @@ import type {
   ResultadoApi,
   ResumenLlamadas,
   TurnoConversacion,
+  VistaConConfirmaciones,
   VistaTurnos,
 } from "@web/types/chat.type.ts";
-import { TIPO_EVENTO } from "@/config/constants/agent.constants.ts";
+import { CODIGO_AGENTE, TIPO_EVENTO } from "@/config/constants/agent.constants.ts";
 import { RESPUESTA_HTTP } from "@/config/constants/http.constants.ts";
 import type { ConfigResponse, SseEvent } from "@/http/types/api.type.ts";
 
@@ -29,6 +38,7 @@ export const estadoInicialConversacion: EstadoConversacion = {
   sesionId: null,
   turnos: [],
   enCurso: false,
+  tarjetasConfirmacion: [],
   acceso: { tipo: ESTADO_ACCESO.VERIFICANDO },
   config: null,
   borrador: "",
@@ -54,7 +64,7 @@ function conUltimoTurno(
   return { ...estado, turnos: [...estado.turnos.slice(0, -1), cambiar(ultimo)] };
 }
 
-function agregarTurno(estado: EstadoConversacion, mensaje: string): EstadoConversacion {
+function agregarTurno(estado: EstadoConversacion, { mensaje, accion }: AccionEnviar): EstadoConversacion {
   const turno: TurnoConversacion = {
     clave: estado.turnos.length,
     mensaje,
@@ -64,7 +74,23 @@ function agregarTurno(estado: EstadoConversacion, mensaje: string): EstadoConver
     confirmaciones: [],
     error: null,
   };
-  return { ...estado, turnos: [...estado.turnos, turno], enCurso: true };
+  const tarjetasConfirmacion =
+    accion === undefined ? estado.tarjetasConfirmacion : marcarEnviando(estado.tarjetasConfirmacion, accion);
+  return { ...estado, turnos: [...estado.turnos, turno], enCurso: true, tarjetasConfirmacion };
+}
+
+function terminarTurno(estado: EstadoConversacion, completo: boolean): EstadoConversacion {
+  const turno = estado.turnos.at(-1);
+  if (!estado.enCurso || turno === undefined) return { ...estado, enCurso: false };
+  return {
+    ...estado,
+    enCurso: false,
+    tarjetasConfirmacion: reducirConfirmaciones(estado.tarjetasConfirmacion, { turno, completo }),
+  };
+}
+
+function turnoRechazadoPorOcupada(estado: EstadoConversacion): boolean {
+  return estado.turnos.at(-1)?.error?.codigo === CODIGO_AGENTE.SESION_OCUPADA;
 }
 
 function registrarError(estado: EstadoConversacion, error: ErrorVisible): EstadoConversacion {
@@ -72,12 +98,18 @@ function registrarError(estado: EstadoConversacion, error: ErrorVisible): Estado
 }
 
 function cerrarConError(estado: EstadoConversacion, mensaje: string): EstadoConversacion {
-  return { ...registrarError(estado, { codigo: null, mensaje }), enCurso: false };
+  return terminarTurno(registrarError(estado, { codigo: null, mensaje }), false);
 }
 
 function pedirAcceso(estado: EstadoConversacion, aviso: string | null): EstadoConversacion {
   const turnos = estado.enCurso ? estado.turnos.slice(0, -1) : estado.turnos;
-  return { ...estado, turnos, enCurso: false, acceso: { tipo: ESTADO_ACCESO.PEDIDO, aviso } };
+  return {
+    ...estado,
+    turnos,
+    enCurso: false,
+    tarjetasConfirmacion: soltarEnvios(estado.tarjetasConfirmacion),
+    acceso: { tipo: ESTADO_ACCESO.PEDIDO, aviso },
+  };
 }
 
 function recibirConfig(estado: EstadoConversacion, config: ConfigResponse | null): EstadoConversacion {
@@ -167,7 +199,7 @@ function aplicarEvento(estado: EstadoConversacion, evento: SseEvent): EstadoConv
     case TIPO_EVENTO.ERROR:
       return registrarError(estado, { codigo: evento.codigo, mensaje: evento.mensaje });
     case TIPO_EVENTO.FIN_TURNO:
-      return { ...estado, enCurso: false };
+      return terminarTurno(estado, !turnoRechazadoPorOcupada(estado));
     default:
       return estado;
   }
@@ -190,7 +222,7 @@ export function esFalloDeTurno(accion: AccionUi): boolean {
 export function reducirConversacion(estado: EstadoConversacion, accion: AccionUi): EstadoConversacion {
   switch (accion.tipo) {
     case ACCION_UI.ENVIAR:
-      return agregarTurno(estado, accion.mensaje);
+      return agregarTurno(estado, accion);
     case ACCION_UI.EVENTO:
       return aplicarEvento(contarEvento(estado), accion.evento);
     case ACCION_UI.ERROR_HTTP:
@@ -238,13 +270,17 @@ export function llamadaEnCurso({ turnos, enCurso }: VistaTurnos): LlamadaDelTurn
   return abiertas.at(-1) ?? null;
 }
 
-export function anuncioDeEstado(vista: VistaTurnos): string {
+export function anuncioDeEstado(vista: VistaConConfirmaciones): string {
   if (vista.enCurso) {
     const llamada = llamadaEnCurso(vista);
     return llamada === null ? "" : TEXTO_HERRAMIENTA.anuncio(llamada.herramienta, llamada.caso);
   }
   const ultimo = vista.turnos.at(-1);
-  return ultimo !== undefined && ultimo.error === null ? TEXTO_CHAT.respuestaLista : "";
+  if (ultimo === undefined || ultimo.error !== null) return "";
+  const porConfirmar = casosAbiertosEnTurno(vista.tarjetasConfirmacion, ultimo.clave);
+  return porConfirmar.length === 0
+    ? TEXTO_CHAT.respuestaLista
+    : [TEXTO_CHAT.respuestaLista, TEXTO_CONFIRMACION.anuncio(porConfirmar)].join(SEPARADOR_ANUNCIOS);
 }
 
 export function etiquetaPensando(vista: VistaTurnos): string {

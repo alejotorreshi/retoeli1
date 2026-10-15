@@ -88,6 +88,15 @@ export function resultadosDelTurno(
   return [...plegarPorCaso([turno]).keys()].flatMap((caso) => acumulado.get(caso) ?? []);
 }
 
+export function listoParaFirmaHasta(
+  turnos: readonly TurnoConversacion[],
+  caso: string,
+  claveTurno: number | null,
+): boolean | null {
+  const hasta = claveTurno === null ? turnos : turnos.filter((turno) => turno.clave <= claveTurno);
+  return plegarPorCaso(hasta).get(caso)?.listoParaFirma ?? null;
+}
+
 export function estadoDeFirma(listoParaFirma: boolean | null): EstadoFirma {
   if (listoParaFirma === null) return ESTADO_FIRMA.SIN_ARMAR;
   return listoParaFirma ? ESTADO_FIRMA.LISTO : ESTADO_FIRMA.NO_LISTO;
