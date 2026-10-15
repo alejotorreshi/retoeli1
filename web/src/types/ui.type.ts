@@ -163,9 +163,8 @@ export type Tono = ValorDe<typeof TONO>;
 export type EstadoModeloConAviso = Exclude<EstadoModelo, typeof ESTADO_LLM.DISPONIBLE>;
 
 export type PartesAvisoModelo = {
-  readonly texto: string;
-  readonly comando: string | null;
-  readonly cierre: string;
+  readonly titulo: string;
+  readonly detalle: string;
 };
 
 export type PropsAvisoModelo = {

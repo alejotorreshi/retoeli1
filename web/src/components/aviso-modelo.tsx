@@ -12,11 +12,10 @@ function CuerpoAvisoModelo({ estado, zona }: PropsCuerpoAvisoModelo) {
       <span className={estilos.icono}>
         <IconoAlerta tamano={TAMANO_ICONO.GRANDE} />
       </span>
-      <p className={estilos.texto}>
-        {partes.texto}
-        {partes.comando === null ? null : <code className={estilos.comando}>{partes.comando}</code>}
-        {partes.cierre}
-      </p>
+      <div className={estilos.texto}>
+        <p className={estilos.titulo}>{partes.titulo}</p>
+        <p className={estilos.detalle}>{partes.detalle}</p>
+      </div>
     </div>
   );
 }

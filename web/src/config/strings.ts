@@ -38,7 +38,6 @@ const TITULO_APP = "Registro como proveedor";
 const SUBTITULO_APP = "Periferia IT Group";
 const SEPARADOR = "·";
 const SIN_DATO = "—";
-const COMANDO_DEMO = "bun run demo.ts";
 
 export const TEXTO_APP = {
   titulo: TITULO_APP,
@@ -107,36 +106,47 @@ export const TEXTO_NUEVA_SESION = {
   empezar: ACCION_DEL_AVISO[ACCION_AVISO.NUEVA_SESION],
 } as const;
 
-function avisoSinComando(texto: string): PartesAvisoModelo {
-  return { texto, comando: null, cierre: "" };
-}
-
 const ETIQUETA_DEL_MODELO = {
   [ESTADO_LLM.DISPONIBLE]: "Disponible",
-  [ESTADO_LLM.SIN_CLAVE]: "Sin clave",
+  [ESTADO_LLM.SIN_CLAVE]: "Sin clave válida",
   [ESTADO_LLM.SALDO_AGOTADO]: "Sin saldo",
   [ESTADO_LLM.NO_DISPONIBLE]: "No disponible",
   [ESTADO_LLM.TOPE_DIARIO]: "Tope diario",
 } as const satisfies Record<EstadoModelo, string>;
 
+const COMPROBAR_MODELO = "Comprobar de nuevo";
+const MIENTRAS_TANTO =
+  "Mientras tanto, puedes ver y descargar los archivos ya generados en el panel de casos.";
+const SESION_ABIERTA = "la sesión sigue abierta.";
+
+function avisoDelModelo(titulo: string, ...pasos: readonly string[]): PartesAvisoModelo {
+  return { titulo, detalle: [MIENTRAS_TANTO, ...pasos].join(" ") };
+}
+
 const AVISO_DEL_MODELO = {
-  [ESTADO_LLM.SIN_CLAVE]: () => ({
-    texto:
-      "El modelo no está configurado en este servidor: falta la clave del proveedor. El chat no puede procesar mensajes; para ver el flujo sin modelo, corre ",
-    comando: COMANDO_DEMO,
-    cierre: " en local.",
-  }),
+  [ESTADO_LLM.SIN_CLAVE]: () =>
+    avisoDelModelo(
+      "El chat no puede procesar mensajes: el servidor no tiene una clave válida del proveedor del modelo.",
+      "Avisa a quien administra el servicio para que la configure.",
+      `Vuelve cuando el servicio se reinicie con una clave válida; usa "${COMPROBAR_MODELO}" para verlo.`,
+    ),
   [ESTADO_LLM.SALDO_AGOTADO]: () =>
-    avisoSinComando(
-      "El proveedor del modelo se quedó sin saldo. Los mensajes van a fallar hasta que se recargue la cuenta.",
+    avisoDelModelo(
+      "El proveedor del modelo se quedó sin saldo: los mensajes van a fallar hasta que se recargue la cuenta.",
+      "Avisa a quien administra el servicio para que la recargue.",
+      `Cuando se recargue la cuenta, vuelve a enviar tu mensaje; ${SESION_ABIERTA}`,
     ),
   [ESTADO_LLM.NO_DISPONIBLE]: () =>
-    avisoSinComando(
-      "El proveedor del modelo no respondió en el último intento. Puedes volver a intentarlo en unos minutos; la sesión sigue abierta.",
+    avisoDelModelo(
+      "El proveedor del modelo no respondió en el último intento.",
+      "Espera unos minutos y vuelve a enviar tu mensaje; si sigue fallando, avisa a quien administra el servicio.",
+      `Suele volver solo; ${SESION_ABIERTA}`,
     ),
   [ESTADO_LLM.TOPE_DIARIO]: (zona: string | null) =>
-    avisoSinComando(
-      `Se alcanzó el tope diario de uso del modelo. El chat vuelve a estar disponible después de la medianoche (${zona ?? SIN_DATO}).`,
+    avisoDelModelo(
+      "Se alcanzó el tope diario de uso del modelo: el chat no puede procesar más mensajes hoy.",
+      "No hace falta que hagas nada: el tope protege el costo del servicio.",
+      `El chat vuelve a estar disponible después de la medianoche (${zona ?? SIN_DATO}).`,
     ),
 } as const satisfies Record<EstadoModeloConAviso, (zona: string | null) => PartesAvisoModelo>;
 
@@ -144,6 +154,8 @@ export const TEXTO_MODELO = {
   estado: (modelo: string, estado: EstadoModelo) => `${modelo} ${SEPARADOR} ${ETIQUETA_DEL_MODELO[estado]}`,
   aviso: (estado: EstadoModeloConAviso, zona: string | null): PartesAvisoModelo =>
     AVISO_DEL_MODELO[estado](zona),
+  comprobar: COMPROBAR_MODELO,
+  comprobando: "Comprobando…",
 } as const;
 
 const ETIQUETA_DE_HERRAMIENTA = {

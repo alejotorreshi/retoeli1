@@ -5,12 +5,18 @@ import { ESTADO_LLM } from "@/config/constants/llm.constants.ts";
 
 const MODELO = "deepseek-flash";
 const ZONA = "America/Bogota";
+const ESTADOS_CON_AVISO = [
+  ESTADO_LLM.SIN_CLAVE,
+  ESTADO_LLM.SALDO_AGOTADO,
+  ESTADO_LLM.NO_DISPONIBLE,
+  ESTADO_LLM.TOPE_DIARIO,
+] as const;
 
 describe("estado del modelo en el encabezado", () => {
   test("cada estado se lee como '{modelo} · {estado}' con la etiqueta del UI-SPEC", () => {
     expect(Object.values(ESTADO_LLM).map((estado) => TEXTO_MODELO.estado(MODELO, estado))).toEqual([
       "deepseek-flash · Disponible",
-      "deepseek-flash · Sin clave",
+      "deepseek-flash · Sin clave válida",
       "deepseek-flash · Sin saldo",
       "deepseek-flash · No disponible",
       "deepseek-flash · Tope diario",
@@ -28,31 +34,57 @@ describe("estado del modelo en el encabezado", () => {
   });
 });
 
+const MIENTRAS_TANTO =
+  "Mientras tanto, puedes ver y descargar los archivos ya generados en el panel de casos.";
+
 describe("banner del modelo", () => {
-  test("sin clave remite a demo.ts como comando aparte", () => {
-    const aviso = TEXTO_MODELO.aviso(ESTADO_LLM.SIN_CLAVE, ZONA);
-    expect(aviso.comando).toBe("bun run demo.ts");
-    expect(`${aviso.texto}${aviso.comando}${aviso.cierre}`).toBe(
-      "El modelo no está configurado en este servidor: falta la clave del proveedor. El chat no puede procesar mensajes; para ver el flujo sin modelo, corre bun run demo.ts en local.",
-    );
+  test("sin clave dice qué pasa, qué sigue funcionando, qué hacer y cuándo vuelve", () => {
+    expect(TEXTO_MODELO.aviso(ESTADO_LLM.SIN_CLAVE, ZONA)).toEqual({
+      titulo:
+        "El chat no puede procesar mensajes: el servidor no tiene una clave válida del proveedor del modelo.",
+      detalle:
+        'Mientras tanto, puedes ver y descargar los archivos ya generados en el panel de casos. Avisa a quien administra el servicio para que la configure. Vuelve cuando el servicio se reinicie con una clave válida; usa "Comprobar de nuevo" para verlo.',
+    });
   });
 
-  test("saldo agotado y no disponible usan la copia del UI-SPEC sin comando", () => {
+  test("saldo agotado pide recargar la cuenta y volver a enviar el mensaje", () => {
     expect(TEXTO_MODELO.aviso(ESTADO_LLM.SALDO_AGOTADO, ZONA)).toEqual({
-      texto:
-        "El proveedor del modelo se quedó sin saldo. Los mensajes van a fallar hasta que se recargue la cuenta.",
-      comando: null,
-      cierre: "",
+      titulo:
+        "El proveedor del modelo se quedó sin saldo: los mensajes van a fallar hasta que se recargue la cuenta.",
+      detalle:
+        "Mientras tanto, puedes ver y descargar los archivos ya generados en el panel de casos. Avisa a quien administra el servicio para que la recargue. Cuando se recargue la cuenta, vuelve a enviar tu mensaje; la sesión sigue abierta.",
     });
-    expect(TEXTO_MODELO.aviso(ESTADO_LLM.NO_DISPONIBLE, ZONA).texto).toBe(
-      "El proveedor del modelo no respondió en el último intento. Puedes volver a intentarlo en unos minutos; la sesión sigue abierta.",
-    );
+  });
+
+  test("no disponible pide esperar unos minutos y volver a enviar el mensaje", () => {
+    expect(TEXTO_MODELO.aviso(ESTADO_LLM.NO_DISPONIBLE, ZONA)).toEqual({
+      titulo: "El proveedor del modelo no respondió en el último intento.",
+      detalle:
+        "Mientras tanto, puedes ver y descargar los archivos ya generados en el panel de casos. Espera unos minutos y vuelve a enviar tu mensaje; si sigue fallando, avisa a quien administra el servicio. Suele volver solo; la sesión sigue abierta.",
+    });
   });
 
   test("tope diario nombra la zona de /api/config y, sin config, la marca como sin dato", () => {
-    expect(TEXTO_MODELO.aviso(ESTADO_LLM.TOPE_DIARIO, ZONA).texto).toBe(
-      "Se alcanzó el tope diario de uso del modelo. El chat vuelve a estar disponible después de la medianoche (America/Bogota).",
-    );
-    expect(TEXTO_MODELO.aviso(ESTADO_LLM.TOPE_DIARIO, null).texto).toContain("medianoche (—).");
+    expect(TEXTO_MODELO.aviso(ESTADO_LLM.TOPE_DIARIO, ZONA)).toEqual({
+      titulo: "Se alcanzó el tope diario de uso del modelo: el chat no puede procesar más mensajes hoy.",
+      detalle:
+        "Mientras tanto, puedes ver y descargar los archivos ya generados en el panel de casos. No hace falta que hagas nada: el tope protege el costo del servicio. El chat vuelve a estar disponible después de la medianoche (America/Bogota).",
+    });
+    expect(TEXTO_MODELO.aviso(ESTADO_LLM.TOPE_DIARIO, null).detalle).toEndWith("medianoche (—).");
+  });
+
+  test("ningún aviso menciona comandos y todos empiezan por lo que sigue funcionando", () => {
+    for (const estado of ESTADOS_CON_AVISO) {
+      const aviso = TEXTO_MODELO.aviso(estado, ZONA);
+      const texto = `${aviso.titulo} ${aviso.detalle}`.toLowerCase();
+      expect(texto).not.toContain("demo");
+      expect(texto).not.toContain("bun");
+      expect(aviso.detalle.startsWith(MIENTRAS_TANTO)).toBe(true);
+    }
+  });
+
+  test("el botón del banner solo comprueba la salud", () => {
+    expect(TEXTO_MODELO.comprobar).toBe("Comprobar de nuevo");
+    expect(TEXTO_MODELO.comprobando).toBe("Comprobando…");
   });
 });
