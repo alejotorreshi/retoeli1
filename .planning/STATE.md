@@ -3,16 +3,16 @@ gsd_state_version: "1.0"
 current_phase: 03
 current_phase_name: Chat web, API SSE y despliegue
 status: executing
-stopped_at: Completed 03-43-PLAN.md
-last_updated: "2026-10-15T22:48:17.022Z"
+stopped_at: Completed 03-44-PLAN.md
+last_updated: "2026-10-15T23:01:14.839Z"
 last_activity: 2026-10-15
 last_activity_desc: Phase 03 execution started
-state_head: 11b5fdc439cbf330e109df8cf339cdb3ce6c0bc8
+state_head: e1abd8da92cd97241fd5f4c607896f766a571856
 progress:
   total_phases: 4
   completed_phases: 2
   total_plans: 86
-  completed_plans: 82
+  completed_plans: 83
   percent: 50
 ---
 
@@ -27,8 +27,8 @@ See: .planning/PROJECT.md (updated 2026-10-14)
 
 ## Current Position
 
-Phase: 03 (Chat web, API SSE y despliegue) — READY TO EXECUTE
-Plan: 5 of 43
+Phase: 03 (Chat web, API SSE y despliegue) — EXECUTING
+Plan: 2 of 47
 Status: Ready to execute
 Last activity: 2026-10-15 — Phase 03 execution started
 
@@ -139,6 +139,7 @@ Progress: [█████░░░░░] 50%
 | Phase 03 P41 | 4 min | 2 tasks | 3 files |
 | Phase 03 P42 | 4 min | 2 tasks | 4 files |
 | Phase 03 P43 | 4min | 2 tasks | 6 files |
+| Phase 03 P44 | 4 min | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -339,6 +340,7 @@ Recent decisions affecting current work:
 - [Phase 03]: D-77 (03-41): el limitador desaloja solo la clave no bloqueada más antigua, limita a limit los golpes desalojados por ventana y falla cerrado sin lugar seguro; la rotación de claves queda acotada a (K+1)xL
 - [Phase 03]: D-73.5.2 (03-42): Empezar sesión nueva olvida el sessionId guardado (sesionGuardadaTras + sincronizarSesionGuardada); el anterior vive solo en memoria y Volver a la sesión anterior lo vuelve a guardar; recargar tras el 429 empieza sin sesión
 - [Phase 03]: D-78 aplicado por posición (03-43): cualquier subida que deja la vista a más de 96 px del fondo despega sin ventana de tiempo; la bajada propia anota AJUSTE_PROPIO y el anclaje o un encogimiento no despegan
+- [Phase 03]: 03-44 (D-77.1): se quita el cupo de desalojos; la clave nueva hereda los golpes de la libre más antigua desalojada con start en now, la cota vuelve a K × L con cualquier rotación y el limitador solo falla cerrado con todas las claves bloqueadas
 
 ### Pending Todos
 
@@ -374,6 +376,6 @@ Items acknowledged and deferred at milestone close, most recent first:
 
 ## Session Continuity
 
-Last session: 2026-10-15T20:19:35.854Z
-Stopped at: Completed 03-43-PLAN.md
+Last session: 2026-10-15T23:01:14.741Z
+Stopped at: Completed 03-44-PLAN.md
 Resume file: None

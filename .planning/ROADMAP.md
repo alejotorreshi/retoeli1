@@ -166,7 +166,7 @@ Plans:
   4. Desde el panel de artefactos, la analista descarga o previsualiza los archivos generados del caso; solo se sirven nombres en lista blanca y detrás del código de acceso. Si no hay clave, se agotó el saldo, el proveedor cayó o se alcanzó el tope diario, `/api/health` lo reporta y la UI explica en lenguaje claro qué pasa, qué sigue funcionando, qué hacer y cuándo vuelve, sin pedirle a la analista correr comandos; `demo.ts` queda como la verificación sin modelo documentada en el README.
   5. Sin código de acceso, la API rechaza toda petición salvo `/api/health`. El rate limit por IP y el límite de tamaño de mensaje responden con un mensaje claro. Un test verifica que la clave del LLM no aparece en `web/dist`, en las respuestas de la API ni en el stream SSE.
 
-**Plans:** 43/47 plans executed
+**Plans:** 44/47 plans executed
 
 Plans:
 **Wave 1**
@@ -273,7 +273,7 @@ Plans:
 - [x] 03-43-PLAN.md — El seguimiento del final se despega con cualquier subida de la usuaria (barra, teclado sin foco, inercia), sin ventana de tiempo (WR-03, D-78)
 
 **Tercer cierre de brechas, Wave 1** *(gap closure: D-77.1, D-76.2)*
-- [ ] 03-44-PLAN.md — La clave nueva hereda los golpes de la libre desalojada: rotar K + L claves de un golpe ya no deja fuera a una IP nueva, la cota vuelve a K × L y el documento dice el costo real (CR-01, IN-01, IN-02, D-77.1)
+- [x] 03-44-PLAN.md — La clave nueva hereda los golpes de la libre desalojada: rotar K + L claves de un golpe ya no deja fuera a una IP nueva, la cota vuelve a K × L y el documento dice el costo real (CR-01, IN-01, IN-02, D-77.1)
 - [ ] 03-46-PLAN.md — Avisos exactos del servidor: el de sin caso habla solo del intento ilegible y el truncado de un caso confirmado tiene su propio texto; aplicarEvento exhaustivo (WR-02, WR-03, IN-05, D-76.2)
 
 **Tercer cierre de brechas, Wave 2** *(03-45 blocked on 03-44: comparten el limitador y el documento; 03-47 blocked on 03-46: comparten la UI-SPEC)*
@@ -307,5 +307,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 |-------|----------------|--------|-----------|
 | 1. Núcleo determinista | 15/15 | Complete    | 2026-10-13 |
 | 2. Agente y compuerta de confirmación | 24/24 | Complete    | 2026-10-14 |
-| 3. Chat web, API SSE y despliegue | 43/43 | In Progress | - |
+| 3. Chat web, API SSE y despliegue | 44/47 | In Progress | - |
 | 4. Módulo, documentación y defensa | 0/TBD | Not started | - |
