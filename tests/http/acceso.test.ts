@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import { capturarLogs } from "@tests/helpers/bitacora.helper.ts";
-import { crearFetchFalso, cuerpoConTexto } from "@tests/helpers/fetch-falso.helper.ts";
+import { crearFetchFalso, cuerpoConHerramientas, cuerpoConTexto } from "@tests/helpers/fetch-falso.helper.ts";
 import { crearProyectoTemporal } from "@tests/helpers/proyecto-temporal.helper.ts";
 import {
   BINDINGS_PRUEBA,
@@ -12,6 +12,7 @@ import {
 import type { RespuestaGuion } from "@tests/helpers/types/fetch-falso.type.ts";
 import type { ProyectoTemporal } from "@tests/helpers/types/proyecto-temporal.type.ts";
 import type { Hono } from "hono";
+import { EVENTO_BITACORA } from "@/config/constants/agent.constants.ts";
 import { FECHA_DEMO } from "@/config/constants/demo.constants.ts";
 import {
   CABECERA,
@@ -581,5 +582,47 @@ describe("GET /api/config con los datos que la SPA no inventa (UI-09)", () => {
     const respuesta = await pedir(appCon(), RUTA_API.CONFIG);
     expect(respuesta.status).toBe(RESPUESTA_HTTP.NO_AUTORIZADO);
     expect(await respuesta.json()).toEqual({ mensaje: MENSAJE_HTTP.accesoVencido });
+  });
+});
+
+describe("el código y el secreto de acceso en la redacción propia del agente (SEG-01, T-03-37)", () => {
+  test("un mensaje con el código y el secreto, que el modelo repite en una llamada a herramienta, no los deja en frames SSE ni en logs del agente", async () => {
+    const captura = capturarLogs();
+    const eco = `Repito ${CODIGO_PRUEBA} y ${SECRETO_PRUEBA}.`;
+    const llamada = {
+      id: `call_${CODIGO_PRUEBA}`,
+      nombre: `proveedor_${SECRETO_PRUEBA}`,
+      argumentos: { caso: CODIGO_PRUEBA, nota: SECRETO_PRUEBA },
+    };
+    const app = crearServidorPrueba({
+      raiz: proyecto.raiz,
+      fetch: crearFetchFalso([{ cuerpo: cuerpoConHerramientas(llamada) }, { cuerpo: cuerpoConTexto(eco) }])
+        .fetch,
+      entorno: { LOG_LEVEL: NIVELES_LOG.DEPURACION },
+      destinoLogs: captura.destino,
+    }).app;
+    const cookie = await entrar(app);
+    const pedido: RequestInit = {
+      method: "POST",
+      headers: {
+        "Content-Type": TIPO_CONTENIDO.JSON,
+        [CABECERA.ACCEPT]: TIPO_CONTENIDO.SSE,
+        Cookie: cookie,
+      },
+      body: JSON.stringify({
+        sessionId: null,
+        message: `Mi código es ${CODIGO_PRUEBA} y el secreto ${SECRETO_PRUEBA}`,
+      }),
+    };
+    const frames = await volcado(await pedir(app, RUTA_API.CHAT, pedido));
+    expect(frames).toContain("event:");
+    const eventos = captura.lineas().map((linea) => linea.msg);
+    expect(eventos).toContain(EVENTO_BITACORA.HERRAMIENTA);
+    expect(eventos).toContain(EVENTO_BITACORA.TURNO_FIN);
+    const logs = captura.crudas.join("");
+    for (const texto of [frames, logs]) {
+      expect(texto).not.toContain(CODIGO_PRUEBA);
+      expect(texto).not.toContain(SECRETO_PRUEBA);
+    }
   });
 });
