@@ -324,6 +324,7 @@ export const TEXTO_ENV = {
   codigoAccesoRequerido: "Falta el código de acceso: es obligatorio para abrir la API.",
   codigoAccesoCorto: `El código de acceso debe tener al menos ${LONGITUD_MINIMA_CODIGO_ACCESO} caracteres.`,
   secretoTokenCorto: `El secreto de firma del acceso debe tener al menos ${LONGITUD_MINIMA_SECRETO_TOKEN} caracteres.`,
+  secretoTokenRepetido: "Debe ser distinto del código de acceso y de la clave del modelo.",
   secretoTokenRequerido: `Falta el secreto de firma del acceso: es obligatorio con NODE_ENV=${ENTORNO_APP.PRODUCCION} y debe ser distinto del código de acceso y de la clave del modelo.`,
 } as const;
 

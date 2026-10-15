@@ -9,6 +9,7 @@ import {
   LATIDO_SSE_MS,
   RESPUESTA_HTTP,
   RUTA_API_PROTEGIDA,
+  VARIABLE_SECRETO_TOKEN,
 } from "@/config/constants/http.constants.ts";
 import { MAX_ISSUES_ARGS } from "@/config/constants/limits.constants.ts";
 import { MS_POR_HORA } from "@/config/constants/runtime.constants.ts";
@@ -20,7 +21,7 @@ import {
   readServerEnv,
   type ServerEnv,
 } from "@/config/env.ts";
-import { MENSAJE_HTTP } from "@/config/strings.ts";
+import { MENSAJE_HTTP, TEXTO_ENV } from "@/config/strings.ts";
 import { formatearIssues } from "@/domain/utils/formatear-issues.util.ts";
 import { requireAccess } from "@/http/middlewares/access.middleware.ts";
 import { registerAccessRoute } from "@/http/routes/access.route.ts";
@@ -71,6 +72,13 @@ function accessSettings(env: ServerEnv, options: ServerOptions): AccessSettings 
   };
 }
 
+function sharedTokenSecretReason(): string {
+  return formatearIssues(
+    [{ path: [VARIABLE_SECRETO_TOKEN], message: TEXTO_ENV.secretoTokenRepetido }],
+    MAX_ISSUES_ARGS,
+  );
+}
+
 function httpLogger(options: ServerOptions, config: AgentEnv, secrets: readonly string[]) {
   const destination = options.logDestination === undefined ? {} : { destination: options.logDestination };
   return createLogger({ level: config.logLevel, secrets, ...destination });
@@ -96,7 +104,9 @@ export function createServer(options: ServerOptions): ServerCreation {
   const config = readAgentConfig(options);
   if (!config.success) return { ok: false, mensaje: formatearIssues(config.error.issues, MAX_ISSUES_ARGS) };
   const access = accessSettings(env.data, options);
-  const secrets = [...secretosDelAgente(config.data), access.code, access.tokenSecret];
+  const agentSecrets = secretosDelAgente(config.data);
+  if (agentSecrets.includes(access.tokenSecret)) return { ok: false, mensaje: sharedTokenSecretReason() };
+  const secrets = [...agentSecrets, access.code, access.tokenSecret];
   const logger = httpLogger(options, config.data, secrets);
   const app = new Hono<HttpEnv>();
   registerFallbackHandlers(app, logger);

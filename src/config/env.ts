@@ -14,6 +14,7 @@ import {
   LONGITUD_MINIMA_SECRETO_TOKEN,
   PUERTO_API_POR_DEFECTO,
   PUERTO_MAXIMO,
+  VARIABLE_SECRETO_TOKEN,
   VIGENCIA_ACCESO_HORAS_POR_DEFECTO,
   VIGENCIA_ACCESO_HORAS_TOPE,
 } from "@/config/constants/http.constants.ts";
@@ -360,7 +361,14 @@ const serverEnvSchema = z
       ctx.addIssue({
         code: "custom",
         message: TEXTO_ENV.secretoTokenRequerido,
-        path: ["ACCESS_TOKEN_SECRET"],
+        path: [VARIABLE_SECRETO_TOKEN],
+      });
+    }
+    if (env.ACCESS_TOKEN_SECRET === env.ACCESS_CODE) {
+      ctx.addIssue({
+        code: "custom",
+        message: TEXTO_ENV.secretoTokenRepetido,
+        path: [VARIABLE_SECRETO_TOKEN],
       });
     }
   });

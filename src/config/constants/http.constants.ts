@@ -30,6 +30,10 @@ export const VERSION_TOKEN_ACCESO = "v1";
 
 export const SEPARADOR_TOKEN = ".";
 
+export const PARTES_TOKEN_ACCESO = 2;
+
+export const VARIABLE_SECRETO_TOKEN = "ACCESS_TOKEN_SECRET";
+
 export const RUTA_COOKIE = PREFIJO_API;
 
 export const SAME_SITE_COOKIE = "Strict";
