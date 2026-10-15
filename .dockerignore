@@ -9,3 +9,10 @@ web/dist/
 .git
 .planning
 tests
+.qa
+.codegraph
+.gsd
+.claude
+.agents
+.playwright-mcp
+web/node_modules

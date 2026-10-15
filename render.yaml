@@ -1,0 +1,25 @@
+services:
+  - type: web
+    name: registro-proveedor
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: FECHA_EJECUCION
+        value: "2026-09-03"
+      - key: TZ_NEGOCIO
+        value: America/Bogota
+      - key: LOG_LEVEL
+        value: info
+      - key: TRUSTED_PROXY_HOPS
+        value: "1"
+      - key: LLM_API_KEY
+        sync: false
+      - key: ACCESS_CODE
+        sync: false
+      - key: ACCESS_TOKEN_SECRET
+        generateValue: true
