@@ -1,0 +1,93 @@
+.panel {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  background: var(--secundario);
+}
+
+.contenido {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: var(--espacio-lg);
+}
+
+.titulo {
+  margin: 0 0 var(--espacio-md);
+  font-size: var(--titulo-tamano);
+  font-weight: var(--titulo-peso);
+  line-height: var(--titulo-interlinea);
+  color: var(--texto);
+}
+
+.vacio {
+  margin: 0;
+  color: var(--texto-tenue);
+}
+
+.casos {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-lg);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.bloque {
+  min-width: 0;
+  background: var(--dominante);
+  border: var(--borde-ancho) solid var(--borde);
+  border-radius: var(--radio);
+}
+
+.resumen {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-sm);
+  min-height: var(--alto-control);
+  padding: var(--espacio-sm) var(--espacio-md);
+  list-style: none;
+  cursor: pointer;
+}
+
+.resumen::-webkit-details-marker {
+  display: none;
+}
+
+.chevron {
+  display: inline-flex;
+  flex: none;
+  color: var(--texto-tenue);
+}
+
+details[open] > .resumen .chevron {
+  transform: rotate(90deg);
+}
+
+.caso {
+  min-width: 0;
+  margin: 0;
+  font-family: var(--fuente-mono);
+  font-size: var(--titulo-tamano);
+  font-weight: var(--titulo-peso);
+  line-height: var(--titulo-interlinea);
+  color: var(--texto);
+  overflow-wrap: anywhere;
+}
+
+.detalle {
+  padding: 0 var(--espacio-md) var(--espacio-md);
+}
+
+.pie {
+  flex: none;
+  margin: 0;
+  padding: var(--espacio-md) var(--espacio-lg);
+  font-size: var(--etiqueta-tamano);
+  line-height: var(--etiqueta-interlinea);
+  color: var(--texto-tenue);
+  border-block-start: var(--borde-ancho) solid var(--borde);
+}

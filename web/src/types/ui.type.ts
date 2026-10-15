@@ -1,8 +1,10 @@
 import type { TAMANO_ICONO, TONO } from "@web/config/constants/ui.constants.ts";
 import type {
+  EstadoEtapa,
   EstadoHerramienta,
   EstadoModelo,
   LlamadaDelTurno,
+  ProgresoDeCaso,
   ResultadoDeCaso,
   SaludModelo,
   TurnoConversacion,
@@ -122,4 +124,21 @@ export type PropsEstadoDelModelo = {
 export type PropsPantallaAcceso = {
   readonly aviso: string | null;
   readonly alEntrar: () => Promise<void>;
+};
+
+export type PropsProgresoCaso = {
+  readonly progreso: ProgresoDeCaso;
+};
+
+export type PropsIconoDeEtapa = {
+  readonly estado: EstadoEtapa;
+};
+
+export type PropsPanelCasos = {
+  readonly progresos: readonly ProgresoDeCaso[];
+};
+
+export type PropsBloqueCaso = {
+  readonly progreso: ProgresoDeCaso;
+  readonly reciente: boolean;
 };

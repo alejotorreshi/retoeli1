@@ -5,11 +5,13 @@ import { Compositor } from "@web/components/compositor.tsx";
 import { Encabezado } from "@web/components/encabezado.tsx";
 import { IndicadorPensando } from "@web/components/indicador-pensando.tsx";
 import { LineaDeTiempo } from "@web/components/linea-de-tiempo.tsx";
+import { PanelCasos } from "@web/components/panel-casos.tsx";
 import { PantallaAcceso } from "@web/components/pantalla-acceso.tsx";
 import { CLASE_GLOBAL, ESTADO_ACCESO } from "@web/config/constants/ui.constants.ts";
 import { TEXTO_APP } from "@web/config/strings.ts";
 import { useChat } from "@web/hooks/usar-chat.ts";
 import { useSalud } from "@web/hooks/usar-salud.ts";
+import { progresoPorCaso } from "@web/state/casos.ts";
 import { etiquetaPensando, eventosDelTurno } from "@web/state/conversacion.ts";
 import { useEffect } from "react";
 
@@ -47,37 +49,49 @@ export function App() {
   const conHistorial = estado.turnos.length > 0;
 
   return (
-    <>
+    <div className={CLASE_GLOBAL.APP}>
       <Encabezado fechaEjecucion={estado.config?.fechaEjecucion ?? null} salud={salud} />
       <AvisoModelo estado={salud?.llm ?? null} zona={estado.config?.zona ?? null} />
-      <main>
-        <LineaDeTiempo
-          turnos={estado.turnos}
-          enCurso={estado.enCurso}
-          acciones={
-            <AccionesRapidas
-              casos={casos}
+      <div className={CLASE_GLOBAL.COLUMNAS}>
+        <div className={CLASE_GLOBAL.VISTA_CHAT}>
+          <main className={CLASE_GLOBAL.CHAT}>
+            <LineaDeTiempo
+              turnos={estado.turnos}
               enCurso={estado.enCurso}
-              compactas={false}
-              alEnviar={enviarTexto}
+              acciones={
+                <AccionesRapidas
+                  casos={casos}
+                  enCurso={estado.enCurso}
+                  compactas={false}
+                  alEnviar={enviarTexto}
+                />
+              }
+            >
+              {estado.enCurso ? (
+                <IndicadorPensando etiqueta={etiquetaPensando(estado)} marca={eventosDelTurno(estado)} />
+              ) : null}
+            </LineaDeTiempo>
+            {conHistorial ? (
+              <AccionesRapidas
+                casos={casos}
+                enCurso={estado.enCurso}
+                compactas={true}
+                alEnviar={enviarTexto}
+              />
+            ) : null}
+            <Compositor
+              valor={borrador}
+              maximo={estado.config?.mensajeMaximo ?? null}
+              enCurso={estado.enCurso}
+              alCambiar={cambiarBorrador}
+              alEnviar={enviar}
             />
-          }
-        >
-          {estado.enCurso ? (
-            <IndicadorPensando etiqueta={etiquetaPensando(estado)} marca={eventosDelTurno(estado)} />
-          ) : null}
-        </LineaDeTiempo>
-        {conHistorial ? (
-          <AccionesRapidas casos={casos} enCurso={estado.enCurso} compactas={true} alEnviar={enviarTexto} />
-        ) : null}
-        <Compositor
-          valor={borrador}
-          maximo={estado.config?.mensajeMaximo ?? null}
-          enCurso={estado.enCurso}
-          alCambiar={cambiarBorrador}
-          alEnviar={enviar}
-        />
-      </main>
-    </>
+          </main>
+        </div>
+        <div className={CLASE_GLOBAL.VISTA_CASOS}>
+          <PanelCasos progresos={progresoPorCaso(estado)} />
+        </div>
+      </div>
+    </div>
   );
 }

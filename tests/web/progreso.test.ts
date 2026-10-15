@@ -1,0 +1,337 @@
+import { describe, expect, test } from "bun:test";
+import {
+  ACCION_UI,
+  ESTADO_ETAPA,
+  ETAPA,
+  ETAPA_DE_HERRAMIENTA,
+  ORDEN_ETAPAS,
+} from "@web/config/constants/ui.constants.ts";
+import { TEXTO_PANEL, TEXTO_PROGRESO } from "@web/config/strings.ts";
+import { firmaDelProgreso, progresoPorCaso } from "@web/state/casos.ts";
+import { estadoInicialConversacion, reducirConversacion } from "@web/state/conversacion.ts";
+import type { AccionUi, EstadoConversacion, EstadoEtapa, ProgresoDeCaso } from "@web/types/chat.type.ts";
+import { ACCION, MOTIVO_FIN, TIPO_EVENTO } from "@/config/constants/agent.constants.ts";
+import { CODIGO_ERROR } from "@/config/constants/errors.constants.ts";
+import { HERRAMIENTA, NOMBRE_VISIBLE, ORDEN_FLUJO_HERRAMIENTAS } from "@/config/constants/tools.constants.ts";
+import type { SseEvent } from "@/http/types/api.type.ts";
+
+const SESION = "sesion-de-progreso";
+const TURNO = "turno-progreso";
+const EC = "ec-corp-andina";
+const CO = "co-industrias-delta";
+const PE = "pe-andes-logistica";
+const LEER = NOMBRE_VISIBLE[HERRAMIENTA.LEER_SOLICITUD];
+const MAPEAR = NOMBRE_VISIBLE[HERRAMIENTA.MAPEAR_CAMPOS];
+const GENERAR = NOMBRE_VISIBLE[HERRAMIENTA.GENERAR_FORMULARIO];
+const ARMAR = NOMBRE_VISIBLE[HERRAMIENTA.ARMAR_PAQUETE];
+const ENVIAR = NOMBRE_VISIBLE[HERRAMIENTA.SIMULAR_ENVIO];
+const BLOQUEO = "Certificado bancario vencido";
+
+let secuencia = 0;
+
+function evento(eventoDelServidor: SseEvent): AccionUi {
+  return { tipo: ACCION_UI.EVENTO, evento: eventoDelServidor };
+}
+
+function turno(mensaje: string): readonly AccionUi[] {
+  return [
+    { tipo: ACCION_UI.ENVIAR, mensaje },
+    evento({
+      tipo: TIPO_EVENTO.INICIO_TURNO,
+      sesionId: SESION,
+      turnoId: TURNO,
+      sesionNueva: false,
+      sesionExpirada: false,
+    }),
+  ];
+}
+
+function inicio(herramienta: string, caso: string): AccionUi {
+  secuencia += 1;
+  return evento({
+    tipo: TIPO_EVENTO.INICIO_HERRAMIENTA,
+    turnoId: TURNO,
+    llamadaId: `call_${secuencia}`,
+    herramienta,
+    caso,
+    argumentos: { caso },
+  });
+}
+
+function fin(herramienta: string, caso: string, ok: boolean): AccionUi {
+  return evento({
+    tipo: TIPO_EVENTO.FIN_HERRAMIENTA,
+    turnoId: TURNO,
+    llamadaId: `call_${secuencia}`,
+    herramienta,
+    caso,
+    ok,
+    codigo: ok ? null : CODIGO_ERROR.CASO_NO_ENCONTRADO,
+    resumen: null,
+    resultado: null,
+  });
+}
+
+function llamada(herramienta: string, caso: string, ok = true): readonly AccionUi[] {
+  return [inicio(herramienta, caso), fin(herramienta, caso, ok)];
+}
+
+function confirmacion(caso: string): AccionUi {
+  return evento({
+    tipo: TIPO_EVENTO.CONFIRMACION_REQUERIDA,
+    turnoId: TURNO,
+    caso,
+    accion: ACCION.ENVIO,
+    bloqueos: [],
+    bloqueosLegibles: [BLOQUEO],
+  });
+}
+
+function texto(contenido: string): AccionUi {
+  return evento({ tipo: TIPO_EVENTO.TEXTO, turnoId: TURNO, texto: contenido });
+}
+
+const finDeTurno = evento({
+  tipo: TIPO_EVENTO.FIN_TURNO,
+  turnoId: TURNO,
+  motivo: MOTIVO_FIN.FINAL,
+  needsConfirmation: false,
+});
+
+const corte: AccionUi = { tipo: ACCION_UI.FIN_STREAM };
+
+function flujoHastaPaquete(caso: string): readonly AccionUi[] {
+  return [
+    ...llamada(LEER, caso),
+    ...llamada(MAPEAR, caso),
+    ...llamada(GENERAR, caso),
+    ...llamada(ARMAR, caso),
+  ];
+}
+
+function aplicar(acciones: readonly AccionUi[]): EstadoConversacion {
+  return acciones.reduce(reducirConversacion, estadoInicialConversacion);
+}
+
+function progreso(acciones: readonly AccionUi[]): readonly ProgresoDeCaso[] {
+  return progresoPorCaso(aplicar(acciones));
+}
+
+function estadosDe(acciones: readonly AccionUi[], caso: string): readonly EstadoEtapa[] {
+  const delCaso = progreso(acciones).find((elemento) => elemento.caso === caso);
+  return delCaso === undefined ? [] : delCaso.etapas.map((etapa) => etapa.estado);
+}
+
+const { PENDIENTE, EN_CURSO, HECHA, ERROR, ESPERANDO } = ESTADO_ETAPA;
+
+describe("las seis etapas del progreso por caso (UI-08)", () => {
+  test("el orden de las etapas sigue el flujo de las herramientas y deja la confirmación antes del envío", () => {
+    expect(ORDEN_ETAPAS).toEqual([
+      ETAPA.LEIDO,
+      ETAPA.MAPEADO,
+      ETAPA.GENERADO,
+      ETAPA.PAQUETE,
+      ETAPA.CONFIRMACION,
+      ETAPA.ENVIO,
+    ]);
+    expect(ORDEN_FLUJO_HERRAMIENTAS.map((herramienta) => ETAPA_DE_HERRAMIENTA[herramienta])).toEqual(
+      ORDEN_ETAPAS.filter((etapa) => etapa !== ETAPA.CONFIRMACION),
+    );
+  });
+
+  test("sin herramientas no hay casos en el panel", () => {
+    expect(progreso([])).toEqual([]);
+    expect(progreso([...turno("hola"), texto("Hola, ¿qué caso procesamos?"), finDeTurno])).toEqual([]);
+  });
+
+  test("tool_end ok de leer, mapear, generar y armar marca hechas las etapas 1 a 4 en orden", () => {
+    const acciones = [...turno(`procesa ${EC}`), ...flujoHastaPaquete(EC), finDeTurno];
+    expect(progreso(acciones)).toEqual([
+      {
+        caso: EC,
+        etapas: [
+          { etapa: ETAPA.LEIDO, estado: HECHA },
+          { etapa: ETAPA.MAPEADO, estado: HECHA },
+          { etapa: ETAPA.GENERADO, estado: HECHA },
+          { etapa: ETAPA.PAQUETE, estado: HECHA },
+          { etapa: ETAPA.CONFIRMACION, estado: PENDIENTE },
+          { etapa: ETAPA.ENVIO, estado: PENDIENTE },
+        ],
+      },
+    ]);
+  });
+
+  test("confirmation_required del caso deja la etapa 5 esperando", () => {
+    const acciones = [...turno(`procesa ${EC}`), ...flujoHastaPaquete(EC), confirmacion(EC), finDeTurno];
+    expect(estadosDe(acciones, EC)).toEqual([HECHA, HECHA, HECHA, HECHA, ESPERANDO, PENDIENTE]);
+  });
+
+  test("tool_end ok de simular_envio marca hecha la etapa 6 y cierra la confirmación", () => {
+    const acciones = [
+      ...turno(`procesa ${EC}`),
+      ...flujoHastaPaquete(EC),
+      confirmacion(EC),
+      finDeTurno,
+      ...turno(`Sí, envía ${EC}`),
+      ...llamada(ENVIAR, EC),
+      finDeTurno,
+    ];
+    expect(estadosDe(acciones, EC)).toEqual([HECHA, HECHA, HECHA, HECHA, HECHA, HECHA]);
+  });
+
+  test("un tool_end con ok false deja su etapa en error y las siguientes pendientes", () => {
+    const acciones = [
+      ...turno(`procesa ${EC}`),
+      ...llamada(LEER, EC),
+      ...llamada(MAPEAR, EC),
+      ...llamada(GENERAR, EC, false),
+      corte,
+    ];
+    expect(estadosDe(acciones, EC)).toEqual([HECHA, HECHA, ERROR, PENDIENTE, PENDIENTE, PENDIENTE]);
+  });
+
+  test("un simular_envio con ok false deja la etapa 6 en error y la 5 sigue esperando", () => {
+    const acciones = [
+      ...turno(`procesa ${EC}`),
+      ...flujoHastaPaquete(EC),
+      confirmacion(EC),
+      finDeTurno,
+      ...turno(`Sí, envía ${EC}`),
+      ...llamada(ENVIAR, EC, false),
+      finDeTurno,
+    ];
+    expect(estadosDe(acciones, EC)).toEqual([HECHA, HECHA, HECHA, HECHA, ESPERANDO, ERROR]);
+  });
+
+  test("un armar_paquete nuevo con ok reinicia las etapas 5 y 6 a pendiente (D-63.4)", () => {
+    const acciones = [
+      ...turno(`procesa ${EC}`),
+      ...flujoHastaPaquete(EC),
+      confirmacion(EC),
+      finDeTurno,
+      ...turno(`Sí, envía ${EC}`),
+      ...llamada(ENVIAR, EC),
+      finDeTurno,
+      ...turno(`arma de nuevo el paquete de ${EC}`),
+      ...llamada(ARMAR, EC),
+      finDeTurno,
+    ];
+    expect(estadosDe(acciones, EC)).toEqual([HECHA, HECHA, HECHA, HECHA, PENDIENTE, PENDIENTE]);
+  });
+
+  test("dentro de un mismo turno, la confirmación que llega después del paquete nuevo vuelve a esperar", () => {
+    const acciones = [
+      ...turno(`procesa ${EC}`),
+      ...flujoHastaPaquete(EC),
+      confirmacion(EC),
+      ...llamada(ARMAR, EC),
+      confirmacion(EC),
+      finDeTurno,
+    ];
+    expect(estadosDe(acciones, EC)).toEqual([HECHA, HECHA, HECHA, HECHA, ESPERANDO, PENDIENTE]);
+  });
+
+  test("un armar_paquete con ok false no reinicia la confirmación pendiente", () => {
+    const acciones = [
+      ...turno(`procesa ${EC}`),
+      ...flujoHastaPaquete(EC),
+      confirmacion(EC),
+      ...llamada(ARMAR, EC, false),
+      finDeTurno,
+    ];
+    expect(estadosDe(acciones, EC)).toEqual([HECHA, HECHA, HECHA, ERROR, ESPERANDO, PENDIENTE]);
+  });
+
+  test("un tool_start sin tool_end deja su etapa en curso mientras corre el turno", () => {
+    const acciones = [...turno(`procesa ${EC}`), ...llamada(LEER, EC), inicio(MAPEAR, EC)];
+    expect(estadosDe(acciones, EC)).toEqual([HECHA, EN_CURSO, PENDIENTE, PENDIENTE, PENDIENTE, PENDIENTE]);
+  });
+
+  test("un turno cortado deja hechas solo las etapas con tool_end ok, sin etapas en curso", () => {
+    const acciones = [...turno(`procesa ${EC}`), ...llamada(LEER, EC), inicio(MAPEAR, EC), corte];
+    expect(estadosDe(acciones, EC)).toEqual([HECHA, PENDIENTE, PENDIENTE, PENDIENTE, PENDIENTE, PENDIENTE]);
+  });
+
+  test("el texto del agente nunca marca una etapa (T-03-42)", () => {
+    const acciones = [
+      ...turno(`procesa ${EC}`),
+      ...llamada(LEER, EC),
+      texto(`Listo: ${EC} leído, mapeado, generado, paquete armado y envío registrado.`),
+      finDeTurno,
+    ];
+    expect(estadosDe(acciones, EC)).toEqual([HECHA, PENDIENTE, PENDIENTE, PENDIENTE, PENDIENTE, PENDIENTE]);
+  });
+
+  test("una herramienta sin caso no agrega bloques al panel", () => {
+    secuencia += 1;
+    const sinCaso = evento({
+      tipo: TIPO_EVENTO.FIN_HERRAMIENTA,
+      turnoId: TURNO,
+      llamadaId: `call_${secuencia}`,
+      herramienta: LEER,
+      caso: null,
+      ok: true,
+      codigo: null,
+      resumen: null,
+      resultado: null,
+    });
+    expect(progreso([...turno("¿Qué casos hay disponibles?"), sinCaso, finDeTurno])).toEqual([]);
+  });
+});
+
+describe("orden de los casos en el panel", () => {
+  test("el caso con actividad más reciente va primero y el resto sigue el orden de primera aparición", () => {
+    const acciones = [
+      ...turno("procesa los casos"),
+      ...llamada(LEER, EC),
+      ...llamada(LEER, CO),
+      ...llamada(LEER, PE),
+      finDeTurno,
+    ];
+    expect(progreso(acciones).map((elemento) => elemento.caso)).toEqual([PE, EC, CO]);
+    const conActividadNueva = [...acciones, ...turno(`mapea ${EC}`), ...llamada(MAPEAR, EC), finDeTurno];
+    expect(progreso(conActividadNueva).map((elemento) => elemento.caso)).toEqual([EC, CO, PE]);
+  });
+
+  test("una confirmación también cuenta como actividad del caso", () => {
+    const acciones = [
+      ...turno("procesa los casos"),
+      ...flujoHastaPaquete(EC),
+      ...llamada(LEER, CO),
+      confirmacion(EC),
+      finDeTurno,
+    ];
+    expect(progreso(acciones).map((elemento) => elemento.caso)).toEqual([EC, CO]);
+  });
+});
+
+describe("firma del progreso para el punto de cambios sin ver", () => {
+  test("cambia cuando cambia una etapa y no cambia con el texto del agente", () => {
+    const antes = [...turno(`procesa ${EC}`), ...llamada(LEER, EC)];
+    const firmaAntes = firmaDelProgreso(progreso(antes));
+    expect(firmaDelProgreso(progreso([...antes, texto("Seguimos.")]))).toBe(firmaAntes);
+    expect(firmaDelProgreso(progreso([...antes, ...llamada(MAPEAR, EC)]))).not.toBe(firmaAntes);
+    expect(firmaDelProgreso([])).toBe(firmaDelProgreso(progreso([])));
+  });
+});
+
+describe("textos del progreso y del panel", () => {
+  test("cada etapa lleva un aria-label completo con su estado", () => {
+    expect(TEXTO_PROGRESO.aria(ETAPA.MAPEADO, HECHA)).toBe("Mapeado: hecho");
+    expect(TEXTO_PROGRESO.aria(ETAPA.LEIDO, PENDIENTE)).toBe("Leído: pendiente");
+    expect(TEXTO_PROGRESO.aria(ETAPA.GENERADO, EN_CURSO)).toBe("Generado: en curso");
+    expect(TEXTO_PROGRESO.aria(ETAPA.PAQUETE, ERROR)).toBe("Paquete: con error");
+    expect(TEXTO_PROGRESO.aria(ETAPA.CONFIRMACION, ESPERANDO)).toBe("Confirmación: esperando confirmación");
+    expect(TEXTO_PROGRESO.aria(ETAPA.ENVIO, ESTADO_ETAPA.CANCELADA)).toBe("Envío: cancelado");
+  });
+
+  test("el panel vacío y el pie usan la copia del contrato", () => {
+    expect(TEXTO_PANEL.titulo).toBe("Casos de esta sesión");
+    expect(TEXTO_PANEL.vacio).toBe(
+      "Todavía no se procesó ningún caso. Aquí verás el avance de cada caso y sus archivos.",
+    );
+    expect(TEXTO_PANEL.pie).toBe(
+      "Los archivos viven en el disco temporal del servidor y se borran si se reinicia.",
+    );
+  });
+});

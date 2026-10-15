@@ -4,6 +4,7 @@ import {
   METODO_POST,
   TIPO_CONTENIDO_JSON,
 } from "@/config/constants/llm.constants.ts";
+import { HERRAMIENTA } from "@/config/constants/tools.constants.ts";
 import type { ValorDe } from "@/config/types/valor-de.type.ts";
 
 export const ACCION_UI = {
@@ -58,6 +59,11 @@ export const ICONO_SVG = {
 } as const;
 
 export const CLASE_GLOBAL = {
+  APP: "app",
+  COLUMNAS: "columnas",
+  VISTA_CHAT: "vista-chat",
+  CHAT: "chat",
+  VISTA_CASOS: "vista-casos",
   GIRAR: "girar",
   OCULTO: "sr-only",
   TRANSICION: "transicion",
@@ -100,3 +106,45 @@ export const SEPARADOR_RUTA = "/";
 export const CASO_DEMO_PRD = "ec-corp-andina";
 
 export const SEPARADOR_LISTA_CASOS = ", ";
+
+export const ETAPA = {
+  LEIDO: "leido",
+  MAPEADO: "mapeado",
+  GENERADO: "generado",
+  PAQUETE: "paquete",
+  CONFIRMACION: "confirmacion",
+  ENVIO: "envio",
+} as const;
+
+export const ORDEN_ETAPAS = [
+  ETAPA.LEIDO,
+  ETAPA.MAPEADO,
+  ETAPA.GENERADO,
+  ETAPA.PAQUETE,
+  ETAPA.CONFIRMACION,
+  ETAPA.ENVIO,
+] as const satisfies readonly ValorDe<typeof ETAPA>[];
+
+export const ETAPA_DE_HERRAMIENTA = {
+  [HERRAMIENTA.LEER_SOLICITUD]: ETAPA.LEIDO,
+  [HERRAMIENTA.MAPEAR_CAMPOS]: ETAPA.MAPEADO,
+  [HERRAMIENTA.GENERAR_FORMULARIO]: ETAPA.GENERADO,
+  [HERRAMIENTA.ARMAR_PAQUETE]: ETAPA.PAQUETE,
+  [HERRAMIENTA.SIMULAR_ENVIO]: ETAPA.ENVIO,
+} as const satisfies Record<ValorDe<typeof HERRAMIENTA>, ValorDe<typeof ETAPA>>;
+
+export const ETAPAS_QUE_REINICIA_EL_PAQUETE = [
+  ETAPA.CONFIRMACION,
+  ETAPA.ENVIO,
+] as const satisfies readonly ValorDe<typeof ETAPA>[];
+
+export const ESTADO_ETAPA = {
+  PENDIENTE: "pendiente",
+  EN_CURSO: "en_curso",
+  HECHA: "hecha",
+  ERROR: "error",
+  ESPERANDO: "esperando",
+  CANCELADA: "cancelada",
+} as const;
+
+export const SEPARADOR_FIRMA = "|";

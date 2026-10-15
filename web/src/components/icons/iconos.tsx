@@ -101,3 +101,11 @@ export function IconoInfo({ tamano = TAMANO_ICONO.CHICO }: PropsIcono) {
     </SvgIcono>
   );
 }
+
+export function IconoPendiente({ tamano = TAMANO_ICONO.CHICO }: PropsIcono) {
+  return (
+    <SvgIcono tamano={tamano}>
+      <Circulo radio={ICONO_SVG.RADIO_CIRCULO} />
+    </SvgIcono>
+  );
+}

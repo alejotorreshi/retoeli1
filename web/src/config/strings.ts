@@ -1,14 +1,18 @@
 import {
   CASO_DEMO_PRD,
+  ESTADO_ETAPA,
   ESTADO_FIRMA,
   ESTADO_HERRAMIENTA,
+  ETAPA,
   SEPARADOR_LISTA_CASOS,
 } from "@web/config/constants/ui.constants.ts";
 import type {
   EstadoCampoUi,
+  EstadoEtapa,
   EstadoFirma,
   EstadoHerramienta,
   EstadoModelo,
+  Etapa,
   FormatoVisible,
   ResumenLlamadas,
 } from "@web/types/chat.type.ts";
@@ -211,4 +215,34 @@ export const TEXTO_ACCIONES = {
     `Procesa estos casos: ${casos.join(SEPARADOR_LISTA_CASOS)}. Dime el estado de cada uno. No envíes nada todavía.`,
   listar: "¿Qué casos hay?",
   mensajeListar: "¿Qué casos hay disponibles?",
+} as const;
+
+const ETIQUETA_DE_ETAPA = {
+  [ETAPA.LEIDO]: "Leído",
+  [ETAPA.MAPEADO]: "Mapeado",
+  [ETAPA.GENERADO]: "Generado",
+  [ETAPA.PAQUETE]: "Paquete",
+  [ETAPA.CONFIRMACION]: "Confirmación",
+  [ETAPA.ENVIO]: "Envío",
+} as const satisfies Record<Etapa, string>;
+
+const ESTADO_DE_ETAPA = {
+  [ESTADO_ETAPA.PENDIENTE]: "pendiente",
+  [ESTADO_ETAPA.EN_CURSO]: "en curso",
+  [ESTADO_ETAPA.HECHA]: "hecho",
+  [ESTADO_ETAPA.ERROR]: "con error",
+  [ESTADO_ETAPA.ESPERANDO]: "esperando confirmación",
+  [ESTADO_ETAPA.CANCELADA]: "cancelado",
+} as const satisfies Record<EstadoEtapa, string>;
+
+export const TEXTO_PROGRESO = {
+  etapa: (etapa: Etapa) => ETIQUETA_DE_ETAPA[etapa],
+  aria: (etapa: Etapa, estado: EstadoEtapa) => `${ETIQUETA_DE_ETAPA[etapa]}: ${ESTADO_DE_ETAPA[estado]}`,
+  lista: (caso: string) => `Avance de ${caso}`,
+} as const;
+
+export const TEXTO_PANEL = {
+  titulo: "Casos de esta sesión",
+  vacio: "Todavía no se procesó ningún caso. Aquí verás el avance de cada caso y sus archivos.",
+  pie: "Los archivos viven en el disco temporal del servidor y se borran si se reinicia.",
 } as const;

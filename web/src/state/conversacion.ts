@@ -9,8 +9,10 @@ import {
 import { TEXTO_CHAT, TEXTO_ERROR, TEXTO_HERRAMIENTA } from "@web/config/strings.ts";
 import type {
   AccionUi,
+  ConfirmacionDelTurno,
   ErrorVisible,
   EstadoConversacion,
+  EventoConfirmacionUi,
   EventoFinHerramientaUi,
   EventoInicioHerramientaUi,
   LlamadaDelTurno,
@@ -59,6 +61,7 @@ function agregarTurno(estado: EstadoConversacion, mensaje: string): EstadoConver
     llamadas: [],
     eventos: 0,
     textos: [],
+    confirmaciones: [],
     error: null,
   };
   return { ...estado, turnos: [...estado.turnos, turno], enCurso: true };
@@ -133,6 +136,15 @@ function cerrarLlamada(turno: TurnoConversacion, evento: EventoFinHerramientaUi)
   };
 }
 
+function registrarConfirmacion(turno: TurnoConversacion, evento: EventoConfirmacionUi): TurnoConversacion {
+  const confirmacion: ConfirmacionDelTurno = {
+    caso: evento.caso,
+    bloqueosLegibles: evento.bloqueosLegibles,
+    trasLlamadas: turno.llamadas.length,
+  };
+  return { ...turno, confirmaciones: [...turno.confirmaciones, confirmacion] };
+}
+
 function contarEvento(estado: EstadoConversacion): EstadoConversacion {
   return conUltimoTurno(estado, (turno) => ({ ...turno, eventos: turno.eventos + 1 }));
 }
@@ -150,6 +162,8 @@ function aplicarEvento(estado: EstadoConversacion, evento: SseEvent): EstadoConv
         ...turno,
         textos: [...turno.textos, { clave: turno.textos.length, texto: evento.texto }],
       }));
+    case TIPO_EVENTO.CONFIRMACION_REQUERIDA:
+      return conUltimoTurno(estado, (turno) => registrarConfirmacion(turno, evento));
     case TIPO_EVENTO.ERROR:
       return registrarError(estado, { codigo: evento.codigo, mensaje: evento.mensaje });
     case TIPO_EVENTO.FIN_TURNO:

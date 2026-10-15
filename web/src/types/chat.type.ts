@@ -1,8 +1,10 @@
 import type {
   ACCION_UI,
   ESTADO_ACCESO,
+  ESTADO_ETAPA,
   ESTADO_FIRMA,
   ESTADO_HERRAMIENTA,
+  ETAPA,
   RESULTADO_API,
 } from "@web/config/constants/ui.constants.ts";
 import type { TIPO_EVENTO } from "@/config/constants/agent.constants.ts";
@@ -66,6 +68,31 @@ export type ResultadoDeCaso = {
   readonly aviso: string | null;
 };
 
+export type EventoConfirmacionUi = Extract<
+  SseEvent,
+  { readonly tipo: typeof TIPO_EVENTO.CONFIRMACION_REQUERIDA }
+>;
+
+export type ConfirmacionDelTurno = {
+  readonly caso: string;
+  readonly bloqueosLegibles: readonly string[];
+  readonly trasLlamadas: number;
+};
+
+export type Etapa = ValorDe<typeof ETAPA>;
+
+export type EstadoEtapa = ValorDe<typeof ESTADO_ETAPA>;
+
+export type EtapaDeCaso = {
+  readonly etapa: Etapa;
+  readonly estado: EstadoEtapa;
+};
+
+export type ProgresoDeCaso = {
+  readonly caso: string;
+  readonly etapas: readonly EtapaDeCaso[];
+};
+
 export type ContadorDeCaso = {
   readonly estado: EstadoCampoUi;
   readonly cantidad: number | null;
@@ -77,6 +104,7 @@ export type TurnoConversacion = {
   readonly llamadas: readonly LlamadaDelTurno[];
   readonly eventos: number;
   readonly textos: readonly TextoAgente[];
+  readonly confirmaciones: readonly ConfirmacionDelTurno[];
   readonly error: ErrorVisible | null;
 };
 

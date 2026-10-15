@@ -26,11 +26,29 @@ body {
   height: 100%;
 }
 
-#root > main {
+#root > main,
+.app,
+.vista-chat,
+.chat {
   display: flex;
   flex: 1;
   flex-direction: column;
+  min-width: 0;
   min-height: 0;
+}
+
+.columnas {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+
+.vista-casos {
+  display: flex;
+  flex: none;
+  width: var(--ancho-panel);
+  min-height: 0;
+  border-inline-start: var(--borde-ancho) solid var(--borde);
 }
 
 button,

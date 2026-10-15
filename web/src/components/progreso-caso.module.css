@@ -1,0 +1,71 @@
+.etapas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espacio-sm) var(--espacio-md);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.etapa {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espacio-xs);
+  min-width: 0;
+  font-size: var(--etiqueta-tamano);
+  line-height: var(--etiqueta-interlinea);
+}
+
+.icono {
+  display: inline-flex;
+  flex: none;
+}
+
+.giro,
+.quieto {
+  display: inline-flex;
+}
+
+.quieto {
+  display: none;
+}
+
+.nombre {
+  overflow-wrap: anywhere;
+}
+
+.pendiente {
+  color: var(--texto-tenue);
+}
+
+.enCurso {
+  color: var(--acento);
+  font-weight: var(--etiqueta-peso-fuerte);
+}
+
+.hecha {
+  color: var(--exito-texto);
+}
+
+.error {
+  color: var(--error-texto);
+}
+
+.esperando {
+  color: var(--atencion-texto);
+  font-weight: var(--etiqueta-peso-fuerte);
+}
+
+.cancelada {
+  color: var(--info-texto);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .giro {
+    display: none;
+  }
+
+  .quieto {
+    display: inline-flex;
+  }
+}
