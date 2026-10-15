@@ -10,8 +10,10 @@ import {
 import { TEXTO_ERROR } from "@web/config/strings.ts";
 import {
   accionDeConfig,
+  configResuelta,
   esFalloDeTurno,
   estadoInicialConversacion,
+  faltaConfig,
   reducirConversacion,
   usoDeSesion,
 } from "@web/state/conversacion.ts";
@@ -350,6 +352,32 @@ describe("el borrador del compositor", () => {
       { tipo: ACCION_UI.CONFIG_RECIBIDA, config: CONFIG },
     ]);
     expect(estado.borrador).toBe(MENSAJE);
+  });
+});
+
+describe("reintento de la config tras entrar (IN-08)", () => {
+  test("falta la config cuando el acceso está concedido y la config no llegó", () => {
+    const sinConfig = reducirConversacion(
+      estadoInicialConversacion,
+      accionDeConfig({ tipo: RESULTADO_API.SIN_RED }),
+    );
+    expect(faltaConfig(sinConfig)).toBe(true);
+    const conConfig = reducirConversacion(
+      sinConfig,
+      accionDeConfig({ tipo: RESULTADO_API.OK, valor: CONFIG }),
+    );
+    expect(faltaConfig(conConfig)).toBe(false);
+    expect(conConfig.config).toEqual(CONFIG);
+    expect(faltaConfig(estadoInicialConversacion)).toBe(false);
+  });
+
+  test("solo una config válida o un 401 resuelven el reintento; sin red o un rechazo siguen esperando", () => {
+    expect(configResuelta({ tipo: RESULTADO_API.OK, valor: CONFIG })).toBe(true);
+    expect(configResuelta({ tipo: RESULTADO_API.ACCESO_VENCIDO, mensaje: ACCESO_VENCIDO })).toBe(true);
+    expect(configResuelta({ tipo: RESULTADO_API.SIN_RED })).toBe(false);
+    expect(
+      configResuelta({ tipo: RESULTADO_API.RECHAZO, status: RESPUESTA_HTTP.ERROR_INTERNO, mensaje: "x" }),
+    ).toBe(false);
   });
 });
 

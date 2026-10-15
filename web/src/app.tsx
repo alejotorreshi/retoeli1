@@ -22,9 +22,10 @@ import { TEXTO_APP, TEXTO_PESTANAS } from "@web/config/strings.ts";
 import { useChat } from "@web/hooks/usar-chat.ts";
 import { useDiseno } from "@web/hooks/usar-diseno.ts";
 import { usePestanas } from "@web/hooks/usar-pestanas.ts";
+import { useReintentoConfig } from "@web/hooks/usar-reintento-config.ts";
 import { useSalud } from "@web/hooks/usar-salud.ts";
 import { firmaDelProgreso, marcasDeArchivos, progresoPorCaso } from "@web/state/casos.ts";
-import { etiquetaPensando, eventosDelTurno, usoDeSesion } from "@web/state/conversacion.ts";
+import { etiquetaPensando, eventosDelTurno, faltaConfig, usoDeSesion } from "@web/state/conversacion.ts";
 import type { AccionDeAviso } from "@web/types/chat.type.ts";
 import type { ControlPestanas, IdsDePestanas, Pestana, PropsBarraDePestanas } from "@web/types/ui.type.ts";
 import { type HTMLAttributes, type KeyboardEvent, useEffect, useId, useRef, useState } from "react";
@@ -145,6 +146,8 @@ export function App() {
     });
     return () => controlador.abort();
   }, [recibirConfig]);
+
+  useReintentoConfig(faltaConfig(estado), recibirConfig);
 
   function alAccionDeAviso(accion: AccionDeAviso): void {
     if (accion === ACCION_AVISO.RECARGAR) recargar();

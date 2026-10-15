@@ -66,6 +66,14 @@ export function sesionDelEvento(accion: AccionUi): string | null {
     : null;
 }
 
+export function faltaConfig(estado: EstadoConversacion): boolean {
+  return estado.acceso.tipo === ESTADO_ACCESO.CONCEDIDO && estado.config === null;
+}
+
+export function configResuelta(resultado: ResultadoApi<ConfigResponse>): boolean {
+  return resultado.tipo === RESULTADO_API.OK || resultado.tipo === RESULTADO_API.ACCESO_VENCIDO;
+}
+
 export function accionDeConfig(resultado: ResultadoApi<ConfigResponse>): AccionUi {
   switch (resultado.tipo) {
     case RESULTADO_API.OK:

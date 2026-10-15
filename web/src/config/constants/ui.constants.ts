@@ -29,6 +29,8 @@ export const ACCION_AVISO = {
 
 export const REINTENTO_OCUPADA_MS = 1_000;
 
+export const REINTENTO_CONFIG_MS = 10_000;
+
 export const TOKENS_POR_MILES = 1_000;
 
 export const AVISO_SESION = {
