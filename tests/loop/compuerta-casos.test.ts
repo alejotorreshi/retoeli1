@@ -487,6 +487,69 @@ describe("AGT-04 (G-02-3, D-63.4): un caso ya enviado no se reabre ni se envía 
   });
 });
 
+describe("T-03-49: la línea gate_blocked nombra el caso legible de la llamada", () => {
+  function agenteConLogs(
+    guion: readonly PasoLlmFalso[],
+    destino: ReturnType<typeof capturarLogs>["destino"],
+  ) {
+    return crearAgentePrueba({
+      raiz: proyecto.raiz,
+      guion,
+      bitacora: createLogger({ level: NIVELES_LOG.INFO, secrets: [], destination: destino }),
+    });
+  }
+
+  function lineasDeCompuerta(captura: ReturnType<typeof capturarLogs>, evento: string) {
+    return captura
+      .lineas()
+      .filter((linea) => linea.msg === evento)
+      .map(({ llamadaId, caso }) => ({ llamadaId, caso }));
+  }
+
+  test("escenario A: un caso legible sin paquete en la sesión queda registrado en gate_blocked", async () => {
+    const captura = capturarLogs();
+    const prueba = agenteConLogs(
+      [
+        respuestaHerramientas(simular("simular-1", { caso: CO, confirmado: true })),
+        respuestaTexto(`Registré el envío simulado de ${CO}.`),
+      ],
+      captura.destino,
+    );
+    await prueba.turno(`Sí, envía ${CO}`);
+    expect(lineasDeCompuerta(captura, EVENTO_BITACORA.COMPUERTA_BLOQUEO)).toEqual([
+      { llamadaId: "simular-1", caso: CO },
+    ]);
+    expect(lineasDeCompuerta(captura, EVENTO_BITACORA.COMPUERTA_PERMISO)).toEqual([]);
+  });
+
+  test("gate_permit conserva su caso y gate_blocked registra el caso legible o null sin caso legible (escenario D)", async () => {
+    const captura = capturarLogs();
+    const prueba = agenteConLogs(
+      [
+        ...armarCaso(EC),
+        respuestaHerramientas(
+          simular("simular-1", { caso: EC }),
+          simular("simular-2", { caso: CO }),
+          simular("simular-3", {}),
+          simular("simular-4", { caso: "../x" }),
+        ),
+        respuestaTexto("Hecho."),
+      ],
+      captura.destino,
+    );
+    await prueba.turno(`procesa ${EC}`);
+    await prueba.turno("envía");
+    expect(lineasDeCompuerta(captura, EVENTO_BITACORA.COMPUERTA_PERMISO)).toEqual([
+      { llamadaId: "simular-1", caso: EC },
+    ]);
+    expect(lineasDeCompuerta(captura, EVENTO_BITACORA.COMPUERTA_BLOQUEO)).toEqual([
+      { llamadaId: "simular-2", caso: CO },
+      { llamadaId: "simular-3", caso: null },
+      { llamadaId: "simular-4", caso: null },
+    ]);
+  });
+});
+
 describe("D-63.4: un armado nuevo tras el envío abre otro ciclo", () => {
   test("re-armar ec tras enviarlo vuelve a preguntar y el 'envía' siguiente escribe un segundo envío", async () => {
     const prueba = agente([

@@ -1,10 +1,11 @@
-import { afterAll, beforeAll, describe, expect, test } from "bun:test";
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test } from "bun:test";
 import { CLAVE_PRUEBA } from "@tests/helpers/agente-fetch.helper.ts";
 import {
   casosConEnvioSimulado,
   confirmaciones,
   finDeTurno,
   finesDeHerramienta,
+  textoFinal,
 } from "@tests/helpers/eventos.helper.ts";
 import { crearFetchFalso, cuerpoConHerramientas, cuerpoConTexto } from "@tests/helpers/fetch-falso.helper.ts";
 import { mapearProyectado } from "@tests/helpers/flujo.helper.ts";
@@ -18,8 +19,9 @@ import {
 import type { RespuestaGuion } from "@tests/helpers/types/fetch-falso.type.ts";
 import type { ProyectoTemporal } from "@tests/helpers/types/proyecto-temporal.type.ts";
 import { TIPO_EVENTO } from "@/config/constants/agent.constants.ts";
-import { TIPO_ACCION } from "@/config/constants/confirmation.constants.ts";
+import { DESENLACE_ENVIO, TIPO_ACCION } from "@/config/constants/confirmation.constants.ts";
 import { FECHA_DEMO } from "@/config/constants/demo.constants.ts";
+import { CODIGO_ERROR } from "@/config/constants/errors.constants.ts";
 import {
   CABECERA,
   RESPUESTA_HTTP,
@@ -27,9 +29,10 @@ import {
   TIPO_CONTENIDO,
   VALOR_CABECERA,
 } from "@/config/constants/http.constants.ts";
+import { SEPARADOR_PARRAFOS } from "@/config/constants/text.constants.ts";
 import { HERRAMIENTA, NOMBRE_VISIBLE } from "@/config/constants/tools.constants.ts";
 import { pinExecutionDate } from "@/config/env.ts";
-import { MENSAJE_HTTP } from "@/config/strings.ts";
+import { MENSAJE_HTTP, TEXTO_ENVIO_NO_REGISTRADO } from "@/config/strings.ts";
 import type { EventoAgente } from "@/loop/types/evento.type.ts";
 import { crearHerramientas } from "@/tools/factories/herramientas.factory.ts";
 
@@ -164,4 +167,72 @@ describe("POST /api/chat con accion estructurada (D-68)", () => {
       expect(falso.pedidos).toHaveLength(0);
     });
   }
+});
+
+describe("G-03-26: el aviso de un envío que no ocurrió llega por el respaldo JSON y por SSE", () => {
+  const AFIRMACION = "Registré el envío simulado.";
+  const AVISO_SIN_PAQUETE = TEXTO_ENVIO_NO_REGISTRADO[DESENLACE_ENVIO.SIN_PAQUETE](CASO);
+  const AVISO_SIN_CASO = TEXTO_ENVIO_NO_REGISTRADO[DESENLACE_ENVIO.SIN_CASO]();
+  let limpio: ProyectoTemporal;
+
+  beforeEach(async () => {
+    limpio = await crearProyectoTemporal();
+  });
+
+  afterEach(async () => {
+    await limpio.limpiar();
+  });
+
+  function servidorConEnvio(argumentos: unknown) {
+    const falso = crearFetchFalso([
+      { cuerpo: cuerpoConHerramientas({ nombre: SIMULAR, argumentos }) },
+      { cuerpo: cuerpoConTexto(AFIRMACION) },
+    ]);
+    return crearServidorPrueba({ raiz: limpio.raiz, fetch: falso.fetch });
+  }
+
+  function chatJson(message: string): RequestInit {
+    return { ...cuerpoChat(null, message), headers: { [CABECERA.ACCEPT]: TIPO_CONTENIDO.JSON } };
+  }
+
+  const escenarios: readonly (readonly [string, unknown, string])[] = [
+    ["escenario A: un caso sin paquete armado", { caso: CASO, confirmado: true }, AVISO_SIN_PAQUETE],
+    ["escenario D: un pedido sin caso legible", { confirmado: true }, AVISO_SIN_CASO],
+  ];
+
+  for (const [nombre, argumentos, aviso] of escenarios) {
+    test(`${nombre} responde por JSON con el aviso como último párrafo y needsConfirmation false`, async () => {
+      const servidor = servidorConEnvio(argumentos);
+      const respuesta = await servidor.pedir(RUTA_API.CHAT, chatJson(`Sí, envía ${CASO}`));
+      expect(respuesta.status).toBe(RESPUESTA_HTTP.OK);
+      expect(respuesta.headers.get("Content-Type")).toStartWith(TIPO_CONTENIDO.JSON);
+      expect(await respuesta.json()).toEqual({
+        sessionId: expect.any(String),
+        reply: `${AFIRMACION}${SEPARADOR_PARRAFOS}${aviso}`,
+        toolCalls: [
+          expect.objectContaining({
+            herramienta: SIMULAR,
+            ok: false,
+            codigo: CODIGO_ERROR.CONFIRMACION_REQUERIDA,
+          }),
+        ],
+        needsConfirmation: false,
+      });
+      expect(await casosConEnvioSimulado(limpio.raiz)).toEqual([]);
+    });
+  }
+
+  test("escenario A por SSE: el último evento text antes de turn_end termina con el aviso SIN_PAQUETE", async () => {
+    const servidor = servidorConEnvio({ caso: CASO, confirmado: true });
+    const respuesta = await servidor.pedir(RUTA_API.CHAT, cuerpoChat(null, `Sí, envía ${CASO}`));
+    expect(respuesta.status).toBe(RESPUESTA_HTTP.OK);
+    const { eventos } = await lecturaDe(respuesta);
+    const tipos = eventos.map(({ tipo }) => tipo);
+    expect(tipos.at(-1)).toBe(TIPO_EVENTO.FIN_TURNO);
+    expect(tipos.lastIndexOf(TIPO_EVENTO.TEXTO)).toBeLessThan(tipos.lastIndexOf(TIPO_EVENTO.FIN_TURNO));
+    expect(textoFinal(eventos)).toEndWith(`${SEPARADOR_PARRAFOS}${AVISO_SIN_PAQUETE}`);
+    expect(confirmaciones(eventos)).toEqual([]);
+    expect(finDeTurno(eventos).needsConfirmation).toBe(false);
+    expect(await casosConEnvioSimulado(limpio.raiz)).toEqual([]);
+  });
 });
