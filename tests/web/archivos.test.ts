@@ -11,6 +11,7 @@ import {
   ESTADO_ETAPA,
   ESTADO_HERRAMIENTA,
   ESTADO_LISTA_ARCHIVOS,
+  ESTADO_VISTA_PREVIA,
   ETAPA,
   ORDEN_ETAPAS,
   RESULTADO_API,
@@ -22,6 +23,7 @@ import {
   esArchivoNoEncontrado,
   marcasDeArchivos,
 } from "@web/state/casos.ts";
+import { estadoDeVistaPreviaFallida } from "@web/state/vista-previa.ts";
 import type {
   ArchivoUi,
   EstadoEtapa,
@@ -46,6 +48,7 @@ import {
 } from "@/config/constants/http.constants.ts";
 import { ESTADO_CAMPO } from "@/config/constants/mapping.constants.ts";
 import { HERRAMIENTA, NOMBRE_VISIBLE } from "@/config/constants/tools.constants.ts";
+import { MENSAJE_HTTP } from "@/config/strings.ts";
 import type { FileListResponse, PreviewResponse } from "@/http/types/api.type.ts";
 
 const EC = "ec-corp-andina";
@@ -360,6 +363,28 @@ describe("obtenerVistaPrevia", () => {
       Response.json({ mensaje: "No hay vista previa." }, { status: RESPUESTA_HTTP.NO_ENCONTRADO }),
     );
     expect(esArchivoNoEncontrado(await obtenerVistaPrevia(EC, ARCHIVOS_SALIDA.FORMULARIO_PDF))).toBe(true);
+  });
+});
+
+describe("estadoDeVistaPreviaFallida: el texto del diálogo según la causa (G-03-10)", () => {
+  test("un 422 muestra el mensaje del servidor tal como llega, sin la pista de reinicio", () => {
+    expect(
+      estadoDeVistaPreviaFallida({
+        tipo: RESULTADO_API.RECHAZO,
+        status: RESPUESTA_HTTP.NO_PROCESABLE,
+        mensaje: MENSAJE_HTTP.vistaPreviaNoDisponible,
+      }),
+    ).toEqual({ tipo: ESTADO_VISTA_PREVIA.ERROR, texto: MENSAJE_HTTP.vistaPreviaNoDisponible });
+  });
+
+  test("solo un 404 muestra el texto con la pista de reinicio", () => {
+    expect(
+      estadoDeVistaPreviaFallida({
+        tipo: RESULTADO_API.RECHAZO,
+        status: RESPUESTA_HTTP.NO_ENCONTRADO,
+        mensaje: MENSAJE_HTTP.archivoNoEncontrado,
+      }),
+    ).toEqual({ tipo: ESTADO_VISTA_PREVIA.ERROR, texto: TEXTO_VISTA_PREVIA.error });
   });
 });
 
