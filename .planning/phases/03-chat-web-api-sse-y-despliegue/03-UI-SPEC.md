@@ -11,7 +11,7 @@ created: "2026-10-14"
 # Phase 3 — UI Design Contract
 
 > Contrato visual y de interacción del chat web (`web/`). Lo generó gsd-ui-researcher y lo verifica gsd-ui-checker.
-> Fuentes: 03-CONTEXT.md (D-64..D-73 bloqueadas; el diseño visual es discreción de esta fase), REQUIREMENTS.md (UI-01..UI-09, API-01..API-05, LLM-06 reducido), PRD §6.1, §6.3, §6.4 y §11, STACK.md y FEATURES.md (DF-04, DF-05, DF-11, DF-14).
+> Fuentes: 03-CONTEXT.md (D-64..D-73 bloqueadas; el diseño visual es discreción de esta fase), REQUIREMENTS.md (UI-01..UI-09, API-01..API-05, LLM-06 según D-70 reescrita), PRD §6.1, §6.3, §6.4 y §11, STACK.md y FEATURES.md (DF-04, DF-05, DF-11, DF-14).
 > Los valores marcados **[default]** los fijó esta fase sin pregunta a la usuaria, porque CONTEXT.md delega todo el diseño visual a `/gsd-ui-phase 3`.
 
 ---
@@ -41,7 +41,7 @@ Could not enumerate: no hay sistema de diseño instalado (Tool: none, CSS propio
 |------------|---------------|-----------------|
 | `PantallaAcceso` | `<main>` + `<form>` | Pide el código una vez (D-72). Es la única pantalla antes del acceso. |
 | `Encabezado` | `<header>` | Título, fecha de ejecución efectiva (UI-09), estado del modelo y botón "Nueva sesión". |
-| `AvisoModelo` | `<div role="status">` | Banner del estado del LLM (D-70, D-71). Se oculta cuando el estado es `disponible`. |
+| `AvisoModelo` | `<div role="status">` | Banner del estado del LLM (D-70, D-71): título y detalle por estado más el botón secundario "Comprobar de nuevo". Se oculta cuando el estado es `disponible`. |
 | `LineaDeTiempo` | `<section aria-label>` + `<ol>` | Historial del chat: mensajes, grupos de herramientas, tarjetas de confirmación, tarjetas de resultado y avisos. |
 | `MensajeUsuaria` / `MensajeAgente` | `<li>` | Burbujas de texto plano `pre-wrap`. |
 | `GrupoHerramientas` | `<details>` | Agrupa las tool calls de un turno. |
@@ -199,10 +199,13 @@ Ningún otro elemento usa el acento. Los botones secundarios ("Cancelar envío",
 - Estado del modelo: punto de 8 px de color semántico más el texto "{modelo} · {estado}" (ver Copywriting). Nunca solo color.
 - "Nueva sesión" abre `DialogoNuevaSesion`. Está deshabilitado mientras corre un turno.
 
-### AvisoModelo (D-70, D-71)
-- Origen: `GET /api/health` (campo `llm`). Se consulta al cargar la app, al volver el foco a la pestaña (`visibilitychange`) y después de cada `turn_end` que trajo un evento `error`. **Sin sondeo por intervalo** (no despertar Render ni gastar nada).
-- Ancho completo bajo el encabezado, ícono más texto y sin botón de cerrar (refleja el estado del servidor). Para `disponible` no se pinta nada.
-- El compositor **sigue habilitado** en todos los estados: el servidor decide y responde con su mensaje (D-70: no hay flujo sin IA en la UI).
+### AvisoModelo (D-70 reescrita, D-71, D-71.1)
+- Origen: `GET /api/health` (campo `llm`). Se consulta al cargar la app, al volver el foco a la pestaña (`visibilitychange`), al terminar cada pedido de chat (turno correcto, error, rechazo HTTP, red caída, stream cortado o "Detener respuesta") y con el botón "Comprobar de nuevo". **Sin sondeo por intervalo** (no despertar Render ni gastar nada). Health nunca llama al modelo.
+- Contenido: ancho completo bajo el encabezado, ícono, un título (600) que dice qué pasa y un detalle que dice qué sigue funcionando, qué hacer y cuándo vuelve (copia por estado en Copywriting). Todo detalle empieza con "Mientras tanto, puedes ver y descargar los archivos ya generados en el panel de casos.". Sin botón de cerrar (refleja el estado del servidor). Para `disponible` no se pinta nada.
+- Botón secundario "Comprobar de nuevo" (fondo dominante, borde `--borde`, alto `--alto-control`, anillo de foco global): solo relee `GET /api/health`. Mientras hay un pedido de health en vuelo, sea del botón o de un refresco automático, dice "Comprobando…" y queda deshabilitado. No toca el chat.
+- Pausa del envío **solo en `sin_clave` y `tope_diario`**: el compositor (campo, "Enviar mensaje" y Enter), los chips de `AccionesRapidas`, el chip de reproceso del panel y los botones de las tarjetas de confirmación quedan deshabilitados. El compositor muestra su ayuda de pausa y las tarjetas la suya (ver Copywriting).
+- En `saldo_agotado` y `no_disponible` la entrada **sigue habilitada**, porque solo una llamada correcta limpia esos estados. Con health sin respuesta (todavía `null`) también sigue habilitada. La pausa es solo UX: el servidor sigue siendo la compuerta (503 sin clave, 429 por tope diario).
+- La UI nunca menciona comandos ni scripts.
 
 ### LineaDeTiempo
 - Orden por turno: mensaje de la usuaria → `GrupoHerramientas` → `MensajeAgente` (eventos `text`) → `TarjetaResultado` (una por caso con herramientas en ese turno) → `TarjetaConfirmacion` (una por caso pendiente) → `AvisoError` si hubo `error`.
@@ -351,11 +354,17 @@ Todo en español. Copia propia del front en `web/src/config/strings.ts`. Las fil
 | Resultado: badges | "Listo para firma" · "No listo para firma" · "Paquete sin armar" |
 | Resultado: sin bloqueos | "Sin bloqueos" |
 | Resultado: portal | "Formato no soportado: se generaron los valores para cargar a mano en el portal." |
-| Modelo: estado en el encabezado | "{modelo} · Disponible" · "{modelo} · Sin clave" · "{modelo} · Sin saldo" · "{modelo} · No disponible" · "{modelo} · Tope diario" |
-| Banner `sin_clave` | "El modelo no está configurado en este servidor: falta la clave del proveedor. El chat no puede procesar mensajes; para ver el flujo sin modelo, corre `bun run demo.ts` en local." |
-| Banner `saldo_agotado` | "El proveedor del modelo se quedó sin saldo. Los mensajes van a fallar hasta que se recargue la cuenta." |
-| Banner `no_disponible` | "El proveedor del modelo no respondió en el último intento. Puedes volver a intentarlo en unos minutos; la sesión sigue abierta." |
-| Banner `tope_diario` | "Se alcanzó el tope diario de uso del modelo. El chat vuelve a estar disponible después de la medianoche ({zona})." |
+| Modelo: estado en el encabezado | "{modelo} · Disponible" · "{modelo} · Sin clave válida" · "{modelo} · Sin saldo" · "{modelo} · No disponible" · "{modelo} · Tope diario" |
+| Banner: frase común del detalle | "Mientras tanto, puedes ver y descargar los archivos ya generados en el panel de casos." (abre el detalle de los cuatro estados) |
+| Banner `sin_clave` | Título: "El chat no puede procesar mensajes: el servidor no tiene una clave válida del proveedor del modelo." · detalle: "Mientras tanto, puedes ver y descargar los archivos ya generados en el panel de casos. Avisa a quien administra el servicio para que la configure. Vuelve cuando el servicio se reinicie con una clave válida; usa \"Comprobar de nuevo\" para verlo." |
+| Banner `saldo_agotado` | Título: "El proveedor del modelo se quedó sin saldo: los mensajes van a fallar hasta que se recargue la cuenta." · detalle: "Mientras tanto, puedes ver y descargar los archivos ya generados en el panel de casos. Avisa a quien administra el servicio para que la recargue. Cuando se recargue la cuenta, vuelve a enviar tu mensaje; la sesión sigue abierta." |
+| Banner `no_disponible` | Título: "El proveedor del modelo no respondió en el último intento." · detalle: "Mientras tanto, puedes ver y descargar los archivos ya generados en el panel de casos. Espera unos minutos y vuelve a enviar tu mensaje; si sigue fallando, avisa a quien administra el servicio. Suele volver solo; la sesión sigue abierta." |
+| Banner `tope_diario` | Título: "Se alcanzó el tope diario de uso del modelo: el chat no puede procesar más mensajes hoy." · detalle: "Mientras tanto, puedes ver y descargar los archivos ya generados en el panel de casos. No hace falta que hagas nada: el tope protege el costo del servicio. El chat vuelve a estar disponible después de la medianoche ({zona})." |
+| Banner: botón | "Comprobar de nuevo"; mientras corre el pedido de health, "Comprobando…" (deshabilitado) |
+| Compositor en pausa (`sin_clave`, `tope_diario`) | "El envío está en pausa mientras el modelo no esté disponible; el aviso de arriba explica qué hacer." (reemplaza la línea de ayuda, referenciada por `aria-describedby`) |
+| Confirmación en pausa (`sin_clave`, `tope_diario`) | "Podrás confirmar o cancelar cuando el modelo vuelva a estar disponible." (si además corre un turno, manda la ayuda "Espera a que termine la respuesta actual.") |
+| Error: saldo agotado (servidor, `MENSAJE_AGENTE`, 402) | "Saldo agotado en el proveedor del modelo: hay que recargar la cuenta antes de seguir. La sesión sigue abierta; cuando se recargue la cuenta, vuelve a enviar tu mensaje." (coincide con el banner `saldo_agotado`) |
+| Error: clave rechazada (servidor, `MENSAJE_AGENTE`, 401/403) | "La clave del proveedor del modelo no es válida o no tiene permiso: hay que corregirla en el servidor antes de seguir. La sesión sigue abierta." (health pasa a `sin_clave`, D-71.1) |
 | Error state (stream cortado, front) | "Se perdió la conexión con el servidor durante la respuesta. Recarga la conversación para ver lo que alcanzó a hacer, o vuelve a enviar el mensaje." · botón "Recargar conversación" |
 | Error: sin red (front) | "No hay conexión con el servidor. Revisa tu red y vuelve a intentarlo." |
 | Error: mensaje largo (front y servidor, 413) | "El mensaje supera los 2000 caracteres. Acórtalo y vuelve a enviarlo." |

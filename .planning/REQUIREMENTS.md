@@ -67,7 +67,7 @@ Fuente vinculante: `reto-01/PRD.md`, sin modificar. Fixtures: `reto-01/fixtures/
 - [x] **LLM-03**: Hay timeout al proveedor con mensaje claro. Se reintenta con backoff y jitter solo ante errores transitorios (429, 500, 503 y red). Los errores 400, 401 y 422 no se reintentan, y el 402 se informa como "saldo agotado".
 - [x] **LLM-04**: Un decorador de fallback pasa a la segunda ranura (`LLM_FALLBACK_*`, `deepseek-v4-pro` por defecto) solo cuando el primario agotó sus reintentos ante errores transitorios. La ranura de respaldo hereda la clave del primario solo si la URL base es idéntica.
 - [x] **LLM-05**: El tope de tokens por sesión y el tope de iteraciones por turno son configurables. Al superarlos, el usuario recibe un mensaje claro, no un 500.
-- [x] **LLM-06**: `/api/health` reporta la disponibilidad del LLM (`disponible`, `sin_clave`, `saldo_agotado`, `no_disponible` o `tope_diario`) sin llamar al modelo ni exponer claves, y la UI muestra un aviso claro cuando no está disponible. El flujo sin modelo se corre con `demo.ts`.
+- [x] **LLM-06**: `/api/health` reporta la disponibilidad del LLM (`disponible`, `sin_clave`, `saldo_agotado`, `no_disponible` o `tope_diario`) sin llamar al modelo ni exponer claves. Cuando el modelo no está disponible, la UI explica por estado, en lenguaje claro y sin comandos, qué pasa, qué sigue funcionando (ver y descargar los archivos ya generados), qué hacer y cuándo vuelve; ofrece "Comprobar de nuevo", que solo relee `/api/health`, y pausa el envío solo en `sin_clave` y `tope_diario`. `demo.ts` es la verificación sin modelo del evaluador, documentada en el README y SOLUCION.md, no en la UI (D-70, reescrita).
 
 ### API HTTP (§6.4)
 

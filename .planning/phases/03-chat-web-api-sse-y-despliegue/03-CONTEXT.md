@@ -13,7 +13,7 @@ La analista abre el link público en Render, entra con el código de acceso y co
 - el chat React que traduce los eventos del ciclo (Fase 2);
 - el despliegue de un único servicio Docker en Render.
 
-Requisitos: API-01 a API-05, UI-01 a UI-09, LLM-06 (reducido, ver D-70), SEG-01, DEP-01 y DEP-02.
+Requisitos: API-01 a API-05, UI-01 a UI-09, LLM-06 (ver D-70, reescrita), SEG-01, DEP-01 y DEP-02.
 
 Fuera de esta fase:
 - `modulo/`, `SOLUCION.md`, la CI y el pre-flight DEP-03 (Fase 4);
@@ -37,8 +37,13 @@ Fuera de esta fase:
 - **D-68:** `POST /api/chat` acepta, además de `{ sessionId, message }`, un campo opcional **`accion: { tipo: "confirmar" | "cancelar", caso }`** (los tipos se definen como constante `as const` y `z.enum` construido desde ella). Los botones mandan un texto visible (por ejemplo "Sí, envía co-industrias-delta" o "Cancela el envío de co-industrias-delta"), que queda en el historial para el modelo y la analista, **y** la acción estructurada. El servidor decide con `accion` **sin pasar por el clasificador de texto** (precedencia de D-39). Una `accion` vale solo si su `caso` está pendiente en la sesión. Si no lo está, no autoriza nada y se trata como texto normal, y el servidor vuelve a preguntar si corresponde. — **Reversibility:** costly — cambia el contrato de `EntradaTurno` del ciclo, el body de la API, la UI y los tests de la compuerta.
 - **D-69:** **Hay una tarjeta por caso pendiente**, con su caso, la acción y los bloqueos (del evento `confirmacion_requerida`) y sus botones Confirmar y Cancelar. **Cancelar estructurado cancela solo ese caso** y los demás pendientes siguen igual, a diferencia del rechazo por texto, que cancela todos (D-63.11). El input del chat **sigue activo** con tarjetas abiertas, y la tarjeta **refleja lo que decide el servidor**: se cierra o sigue abierta según los eventos del turno siguiente, nunca por una decisión local de la UI. `GET /api/sessions/:id` devuelve también los **pendientes vigentes** (`{ caso, bloqueos }[]`), así que al recargar la UI vuelve a pintar las tarjetas activas con botones. Las tarjetas de turnos ya resueltos quedan en el historial sin botones.
 
-### Modo degradado (LLM-06, reducido)
-- **D-70:** El PRD **no pide** modo degradado. Lo que exige es CA5 (errores del proveedor en lenguaje claro y la sesión sigue viva), Robustez (timeout con mensaje claro) y que `demo.ts` corra sin clave (hecho en la Fase 1). Por eso **LLM-06 se reduce a health y aviso**: `/api/health` reporta la disponibilidad del LLM y la UI muestra un banner claro cuando no está disponible. **No hay flujo sin IA en la UI**, y para correr sin clave está `demo.ts`. Hay que **reformular LLM-06 en REQUIREMENTS.md** y ajustar el criterio de éxito 4 del ROADMAP en la misma tarea. El "procesar sin IA" pasa a ideas diferidas.
+### Modo degradado (LLM-06, ver D-70)
+- **D-70 (reescrita el 2026-10-15 por G-03-15, decisión de la usuaria, opción C+):** El PRD **no pide** modo degradado. Lo que exige es CA5 (errores del proveedor en lenguaje claro y la sesión sigue viva), Robustez (timeout con mensaje claro) y que `demo.ts` corra sin clave (hecho en la Fase 1).
+  - **`demo.ts` es la verificación sin modelo del evaluador y del desarrollador** (PRD §6.6). Se documenta en el README y en SOLUCION.md (Fase 4). **La UI nunca lo menciona**, ni ningún otro comando o script.
+  - **Para la analista**, `/api/health` reporta el estado del modelo (D-71) y el banner `AvisoModelo` explica, por estado y en lenguaje claro, **qué pasa, qué sigue funcionando** (ver y descargar los archivos ya generados en el panel de casos), **qué hacer y cuándo vuelve**. Trae el botón secundario **"Comprobar de nuevo"**, que solo relee `/api/health` y nunca llama al modelo.
+  - **El envío se pausa solo en `sin_clave` y `tope_diario`**: el compositor, los chips de acción rápida, el chip de reproceso del panel y los botones de las tarjetas de confirmación. En `saldo_agotado` y `no_disponible` sigue habilitado, porque solo una llamada correcta limpia esos estados. La pausa es solo UX: el servidor sigue siendo la compuerta.
+  - La copia de saldo del servidor (`MENSAJE_AGENTE`) y la del banner coinciden ("recargue la cuenta", "vuelve a enviar tu mensaje").
+  - **No hay flujo sin modelo en la UI.** La opción A de G-03-15 ("Procesar sin el modelo") queda diferida a una fase posterior (3.1 o 4), ver Deferred Ideas.
 - **D-71 (health):** `/api/health` sigue barato y **nunca llama al LLM**. Devuelve `{ ok, provider, model, llm }`, donde `llm` es una constante `as const` con estos valores:
   - `disponible`;
   - `sin_clave`, cuando falta la clave en la config;
@@ -139,14 +144,14 @@ Fuera de esta fase:
 
 - La usuaria pidió **lo mejor según las buenas prácticas** para el acceso. Por eso se eligió la cookie HttpOnly firmada en vez de `localStorage`, y SOLUCION.md (Fase 4) debe explicarlo así.
 - La usuaria insistió en que **no se cuelen llamados que consuman la API o la IA sin control, porque hay costos**. Las capas de D-73 responden a eso, y cada una necesita un test que demuestre que corta.
-- Ante el modo degradado, la usuaria pidió seguir **lo que dicen los requisitos del reto**. El PRD no lo pide, así que se redujo (D-70).
+- Ante el modo degradado, la usuaria pidió seguir **lo que dicen los requisitos del reto**. El PRD no lo pide, así que se redujo (D-70). En la UAT (G-03-15) la usuaria juzgó que pedirle a la analista correr `demo.ts` era una mala estrategia y eligió la opción C+, con la que se reescribió D-70.
 
 </specifics>
 
 <deferred>
 ## Deferred Ideas
 
-- **Flujo sin IA desde la UI** ("procesar sin IA" con las herramientas de `demo.ts`, incluido el envío con el botón Confirmar): era LLM-06 completo y DF-15. El PRD no lo pide y se redujo a health y aviso (D-70). Se puede retomar si sobra tiempo antes de la defensa.
+- **Flujo sin IA desde la UI: opción A de G-03-15, "Procesar sin el modelo"** (03-UAT.md, Deferred Follow-Ups). Una acción determinista del servidor que corre las herramientas en orden fijo (leer → mapear → generar → armar) por `darPaso`, con las mismas tarjetas, la misma compuerta y la misma bitácora, y que deja completar las confirmaciones sin modelo. Era LLM-06 completo y DF-15. Revierte D-70, así que necesita una decisión explícita de la usuaria. Se planea como fase 3.1 o dentro de la Fase 4, antes de la defensa.
 - **Regenerar artefactos al vuelo** cuando el disco efímero los borró: descartado en favor del aviso honesto (D-67).
 - Vienen de la Fase 2 y siguen diferidos: revelar el valor real en la UI por un canal aparte del modelo, y cambiar el proveedor o el modelo desde la UI en vivo.
 
