@@ -3,16 +3,16 @@ gsd_state_version: "1.0"
 current_phase: 03
 current_phase_name: Chat web, API SSE y despliegue
 status: executing
-stopped_at: Completed 03-29-PLAN.md
-last_updated: "2026-10-15T17:05:05.048Z"
+stopped_at: Completed 03-31-PLAN.md
+last_updated: "2026-10-15T17:09:59.766Z"
 last_activity: 2026-10-15
 last_activity_desc: Phase 03 execution started
-state_head: 6fd3ffe7beaa0dab869091f57a0bc051ebdf711e
+state_head: b9c133bfef6e13bd92f6ec9fef934f39e96c564f
 progress:
   total_phases: 4
   completed_phases: 2
   total_plans: 78
-  completed_plans: 68
+  completed_plans: 69
   percent: 50
 ---
 
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-10-14)
 ## Current Position
 
 Phase: 03 (Chat web, API SSE y despliegue) — EXECUTING
-Plan: 3 of 39
+Plan: 4 of 39
 Status: Ready to execute
 Last activity: 2026-10-15 — Phase 03 execution started
 
@@ -125,6 +125,7 @@ Progress: [█████░░░░░] 50%
 | Phase 03 P27 | 10 min | 2 tasks | 19 files |
 | Phase 03 P28 | 5 min | 2 tasks | 8 files |
 | Phase 03 P29 | 9 min | 2 tasks | 10 files |
+| Phase 03 P31 | 3 min | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -302,6 +303,7 @@ Recent decisions affecting current work:
 - [Phase 03]: 03-27: Descargar es un <a href download> interceptado que pide con fetch para ver el 404 y guarda con una URL de objeto (descarga-local.ts); un 401 en archivos vuelve a la pantalla de acceso
 - [Phase 03]: 03-29 G-03-26: cada simular_envio de un caso legible que no terminó ENVIADO agrega un aviso determinista del servidor al cierre del turno (texto del modelo, aviso, pregunta); la prosa del modelo no se toca (AGT-03/T-02-41 se mantienen)
 - [Phase 03]: 03-29: desenlacesDeEnvio clasifica BLOQUEADO como YA_ENVIADO (caso enviado), REQUIERE_CONFIRMACION (paquete conocido o pendiente) o SIN_PAQUETE, y FALLIDO como FALLIDO; ARMADO, ENVIADO y un turno abortado no dan aviso
+- [Phase 03]: G-03-10: el error de la vista previa lleva su texto en el estado; solo el 404 muestra la pista de reinicio y dispara el aviso de disco (mismo predicado esArchivoNoEncontrado); 422/500/503 y acceso vencido muestran el mensaje del servidor; SIN_RED muestra errorSinConexion
 
 ### Pending Todos
 
@@ -337,6 +339,6 @@ Items acknowledged and deferred at milestone close, most recent first:
 
 ## Session Continuity
 
-Last session: 2026-10-15T17:04:57.856Z
-Stopped at: Completed 03-29-PLAN.md
+Last session: 2026-10-15T17:09:59.646Z
+Stopped at: Completed 03-31-PLAN.md
 Resume file: None
