@@ -80,6 +80,8 @@ export const BYTES_SECRETO_TOKEN = 32;
 
 export const CODIFICACION_SECRETO_TOKEN = "hex";
 
+export const ALGORITMO_FIRMA_ACCESO = "sha256";
+
 export const VIGENCIA_ACCESO_HORAS_POR_DEFECTO = 12;
 
 export const VIGENCIA_ACCESO_HORAS_TOPE = 168;

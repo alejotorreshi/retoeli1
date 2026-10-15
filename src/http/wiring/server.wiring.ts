@@ -49,6 +49,7 @@ import { registerConfigRoute } from "@/http/routes/config.route.ts";
 import { registerHealthRoute } from "@/http/routes/health.route.ts";
 import { registerSessionsRoute } from "@/http/routes/sessions.route.ts";
 import { registerStaticRoutes } from "@/http/routes/static.route.ts";
+import { accessSigningKey } from "@/http/services/access-token.service.ts";
 import { createRateLimiter } from "@/http/services/rate-limiter.service.ts";
 import { createTurnSlots } from "@/http/services/turn-slots.service.ts";
 import type { ErrorResponse } from "@/http/types/api.type.ts";
@@ -100,9 +101,11 @@ function clockOf(options: ServerOptions): () => number {
 
 function accessSettings(env: ServerEnv, options: ServerOptions): AccessSettings {
   const now = clockOf(options);
+  const tokenSecret = env.ACCESS_TOKEN_SECRET ?? ephemeralTokenSecret();
   return {
     code: env.ACCESS_CODE,
-    tokenSecret: env.ACCESS_TOKEN_SECRET ?? ephemeralTokenSecret(),
+    tokenSecret,
+    signingKey: accessSigningKey(tokenSecret, env.ACCESS_CODE),
     ttlMs: env.ACCESS_TOKEN_TTL_HOURS * MS_POR_HORA,
     secureCookie: env.NODE_ENV !== ENTORNO_APP.DESARROLLO,
     now,
@@ -211,7 +214,8 @@ export function createServer(options: ServerOptions): ServerCreation {
   const env = readEnv(options);
   if (!env.success) return { ok: false, mensaje: formatearIssues(env.error.issues, MAX_ISSUES_ARGS) };
   const access = accessSettings(env.data, options);
-  const creation = crearAgente(agentOptions(options, [access.code, access.tokenSecret]));
+  const accessSecrets = [access.code, access.tokenSecret, access.signingKey];
+  const creation = crearAgente(agentOptions(options, accessSecrets));
   if (!creation.ok && creation.codigo !== CODIGO_AGENTE.PROVEEDOR_SIN_CLAVE) {
     return { ok: false, mensaje: creation.mensaje };
   }
@@ -220,7 +224,7 @@ export function createServer(options: ServerOptions): ServerCreation {
   if (!config.success) return { ok: false, mensaje: formatearIssues(config.error.issues, MAX_ISSUES_ARGS) };
   const agentSecrets = secretosDelAgente(config.data);
   if (agentSecrets.includes(access.tokenSecret)) return { ok: false, mensaje: sharedTokenSecretReason() };
-  const secrets = [...agentSecrets, access.code, access.tokenSecret];
+  const secrets = [...agentSecrets, ...accessSecrets];
   const logger = httpLogger(options, config.data, secrets);
   const app = new Hono<HttpEnv>();
   registerFallbackHandlers(app, logger);

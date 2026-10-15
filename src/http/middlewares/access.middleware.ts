@@ -31,7 +31,7 @@ export function requireAccess(access: AccessSettings): MiddlewareHandler<HttpEnv
       const locked: ErrorResponse = { mensaje: access.lockedMessage };
       return c.json(locked, RESPUESTA_HTTP.DEMASIADOS_PEDIDOS);
     }
-    const token = await getSignedCookie(c, access.tokenSecret, NOMBRE_COOKIE_ACCESO);
+    const token = await getSignedCookie(c, access.signingKey, NOMBRE_COOKIE_ACCESO);
     if (typeof token === "string" && isAccessTokenValid(token, access.now())) return next();
     const body: ErrorResponse = { mensaje: MENSAJE_HTTP.accesoVencido };
     return c.json(body, RESPUESTA_HTTP.NO_AUTORIZADO);

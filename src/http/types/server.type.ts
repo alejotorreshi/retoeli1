@@ -64,6 +64,7 @@ export type StaticSettings = {
 export type AccessSettings = {
   readonly code: string;
   readonly tokenSecret: string;
+  readonly signingKey: string;
   readonly ttlMs: number;
   readonly secureCookie: boolean;
   readonly now: () => number;

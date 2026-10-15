@@ -1,9 +1,15 @@
 import { describe, expect, test } from "bun:test";
 import { SEPARADOR_TOKEN, VERSION_TOKEN_ACCESO } from "@/config/constants/http.constants.ts";
-import { isAccessTokenValid, issueAccessToken } from "@/http/services/access-token.service.ts";
+import {
+  accessSigningKey,
+  isAccessTokenValid,
+  issueAccessToken,
+} from "@/http/services/access-token.service.ts";
 
 const AHORA = 1_790_000_000_000;
 const VIGENCIA = 43_200_000;
+const SECRETO = "secreto-de-firma-0123456789abcdef";
+const CODIGO = "codigo-de-acceso-Kp7W";
 
 function token(...partes: string[]): string {
   return partes.join(SEPARADOR_TOKEN);
@@ -51,5 +57,16 @@ describe("isAccessTokenValid", () => {
     expect(isAccessTokenValid(VERSION_TOKEN_ACCESO, AHORA)).toBe(false);
     expect(isAccessTokenValid(token(VERSION_TOKEN_ACCESO, ""), AHORA)).toBe(false);
     expect(isAccessTokenValid("", AHORA)).toBe(false);
+  });
+});
+
+describe("accessSigningKey", () => {
+  test("depende del secreto y del código, y no contiene ninguno de los dos", () => {
+    const clave = accessSigningKey(SECRETO, CODIGO);
+    expect(clave).toBe(accessSigningKey(SECRETO, CODIGO));
+    expect(clave).not.toBe(accessSigningKey(SECRETO, `${CODIGO}-rotado`));
+    expect(clave).not.toBe(accessSigningKey(`${SECRETO}-otro`, CODIGO));
+    expect(clave).not.toContain(SECRETO);
+    expect(clave).not.toContain(CODIGO);
   });
 });

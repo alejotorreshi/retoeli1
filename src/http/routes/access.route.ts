@@ -39,7 +39,7 @@ async function grantAccess(c: Context<HttpEnv>, access: AccessSettings): Promise
     c,
     NOMBRE_COOKIE_ACCESO,
     issueAccessToken(access.now(), access.ttlMs),
-    access.tokenSecret,
+    access.signingKey,
     {
       httpOnly: true,
       secure: access.secureCookie,

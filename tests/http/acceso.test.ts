@@ -32,6 +32,7 @@ import type { HttpBindings, HttpEnv, ServerCreation } from "@/http/types/server.
 import { createServer } from "@/http/wiring/server.wiring.ts";
 
 const CODIGO_ERRADO = "codigo-equivocado-0000";
+const CODIGO_ROTADO = "codigo-acceso-rotado-Zq4X";
 const RESPUESTA_MODELO = "Listo, te escucho.";
 const AHORA = 1_790_000_000_000;
 const VIGENCIA_MS = 43_200_000;
@@ -262,6 +263,20 @@ describe("cookies adulteradas o ajenas (D-72, T-03-10)", () => {
     const cookie = await entrar(ajena);
     const respuesta = await pedir(appCon(), RUTA_API.CHAT, pedidoChat({ Cookie: cookie }));
     expect(respuesta.status).toBe(RESPUESTA_HTTP.NO_AUTORIZADO);
+  });
+});
+
+describe("rotación del código de acceso (WR-02)", () => {
+  test("cambiar ACCESS_CODE invalida las cookies emitidas con el código anterior aunque el secreto sea el mismo", async () => {
+    const cookie = await entrar(appCon());
+    const mismoCodigo = appCon([{ cuerpo: cuerpoConTexto(RESPUESTA_MODELO) }]);
+    expect((await pedir(mismoCodigo, RUTA_API.CHAT, pedidoChat({ Cookie: cookie }))).status).toBe(
+      RESPUESTA_HTTP.OK,
+    );
+    const rotada = appDe(crear({ entorno: { ACCESS_CODE: CODIGO_ROTADO } }));
+    const respuesta = await pedir(rotada, RUTA_API.CHAT, pedidoChat({ Cookie: cookie }));
+    expect(respuesta.status).toBe(RESPUESTA_HTTP.NO_AUTORIZADO);
+    expect(await respuesta.json()).toEqual({ mensaje: MENSAJE_HTTP.accesoVencido });
   });
 });
 
