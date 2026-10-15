@@ -480,6 +480,92 @@ describe("D-68: la acción estructurada de un caso pendiente tiene precedencia s
   });
 });
 
+describe("D-69: Cancelar estructurado cancela solo ese caso", () => {
+  test("con ec y co pendientes, cancelar co deja solo ec pendiente y el servidor vuelve a preguntar por ec", async () => {
+    const prueba = agente([
+      ...armarCaso(EC),
+      ...armarCaso(CO),
+      respuestaTexto(`Cancelé el envío de ${CO}.`),
+      ...enviar("simular-ec", EC),
+    ]);
+    await prueba.turno(`procesa ${EC}`);
+    const turno2 = await prueba.turno(`procesa el caso ${CO}`);
+    expect(casosPorConfirmar(turno2)).toEqual([EC, CO]);
+    const texto = `Cancela el envío de ${CO}`;
+    expect(clasificarConfirmacion(texto, [EC, CO]).decision).toBe(DECISION_CONFIRMACION.RECHAZA);
+
+    const turno3 = await prueba.turno(texto, { accion: { tipo: TIPO_ACCION.CANCELAR, caso: CO } });
+    expect(finesDeHerramienta(turno3)).toEqual([]);
+    expect(casosPorConfirmar(turno3)).toEqual([EC]);
+    terminaPreguntandoPor(textoFinal(turno3), EC);
+    expect(finDeTurno(turno3).needsConfirmation).toBe(true);
+
+    const turno4 = await prueba.turno("envía");
+    expect(finesDeHerramienta(turno4)).toEqual([exitosa()]);
+    expect(await casosConEnvioSimulado(proyecto.raiz)).toEqual([EC]);
+    expect(finDeTurno(turno4).needsConfirmation).toBe(false);
+    historialSano(prueba);
+  });
+
+  test("cancelar co con solo ec pendiente se ignora como botón y el texto visible sigue la decisión del clasificador", async () => {
+    const prueba = agente([
+      ...armarCaso(EC),
+      respuestaTexto("Entendido, no envío nada."),
+      ...enviar("simular-ec", EC),
+    ]);
+    await prueba.turno(`procesa ${EC}`);
+    const texto = `Cancela el envío de ${CO}`;
+    expect(clasificarConfirmacion(texto, [EC])).toEqual({ decision: DECISION_CONFIRMACION.RECHAZA });
+
+    const turno2 = await prueba.turno(texto, { accion: { tipo: TIPO_ACCION.CANCELAR, caso: CO } });
+    expect(finesDeHerramienta(turno2)).toEqual([]);
+    expect(confirmaciones(turno2)).toEqual([]);
+    expect(finDeTurno(turno2).needsConfirmation).toBe(false);
+    expect(textoFinal(turno2)).toBe("Entendido, no envío nada.");
+
+    const turno3 = await prueba.turno(`envía ${EC}`);
+    expect(finesDeHerramienta(turno3)).toEqual([bloqueada()]);
+    expect(await casosConEnvioSimulado(proyecto.raiz)).toEqual([]);
+    historialSano(prueba);
+  });
+
+  test("confirmar un caso ya enviado en la sesión no autoriza nada ni escribe un segundo envío (D-63.4)", async () => {
+    const prueba = agente([...armarCaso(EC), ...enviar("simular-1", EC), ...enviar("simular-2", EC)]);
+    await prueba.turno(`procesa ${EC}`);
+    const turno2 = await prueba.turno(`Sí, envía ${EC}`, {
+      accion: { tipo: TIPO_ACCION.CONFIRMAR, caso: EC },
+    });
+    expect(finesDeHerramienta(turno2)).toEqual([exitosa()]);
+    expect(prueba.sesionActual().casosEnviados).toEqual([EC]);
+
+    const turno3 = await prueba.turno(`Sí, envía ${EC}`, {
+      accion: { tipo: TIPO_ACCION.CONFIRMAR, caso: EC },
+    });
+    expect(finesDeHerramienta(turno3)).toEqual([bloqueada()]);
+    expect(confirmaciones(turno3)).toEqual([]);
+    expect(finDeTurno(turno3).needsConfirmation).toBe(false);
+    expect(await enviosOk()).toBe(1);
+    expect(await casosConEnvioSimulado(proyecto.raiz)).toEqual([EC]);
+    historialSano(prueba);
+  });
+
+  test("tras cancelar ec, un confirmado true del modelo sin autorización pendiente no envía", async () => {
+    const prueba = agente([
+      ...armarCaso(EC),
+      respuestaHerramientas(simular("simular-1", { caso: EC, confirmado: true })),
+      respuestaTexto("Hecho."),
+    ]);
+    await prueba.turno(`procesa ${EC}`);
+    const turno2 = await prueba.turno(`Cancela el envío de ${EC}`, {
+      accion: { tipo: TIPO_ACCION.CANCELAR, caso: EC },
+    });
+    expect(finesDeHerramienta(turno2)).toEqual([bloqueada()]);
+    expect(await enviosOk()).toBe(0);
+    expect(await casosConEnvioSimulado(proyecto.raiz)).toEqual([]);
+    historialSano(prueba);
+  });
+});
+
 describe("D-60: el texto final sale en texto plano y la pregunta va al final", () => {
   test("negritas, encabezados y tablas del modelo desaparecen y la pregunta de ec queda como último párrafo", async () => {
     const prueba = agente(armarCaso(EC, MARKDOWN));
