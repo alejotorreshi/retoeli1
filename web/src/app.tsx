@@ -1,13 +1,15 @@
 import { enviarMensaje } from "@web/api/flujo-chat.ts";
+import { AvisoError } from "@web/components/aviso.tsx";
 import {
   ACCION_UI,
+  ACCIONES_QUE_DEVUELVEN_EL_BORRADOR,
   ESTILO_TEXTO_PLANO,
   FILAS_COMPOSITOR,
   TECLA_ENVIAR,
 } from "@web/config/constants/ui.constants.ts";
 import { TEXTO_APP, TEXTO_CHAT } from "@web/config/strings.ts";
 import { estadoInicialConversacion, reducirConversacion } from "@web/state/conversacion.ts";
-import type { TurnoConversacion } from "@web/types/chat.type.ts";
+import type { Despachar, TurnoConversacion } from "@web/types/chat.type.ts";
 import { type FormEvent, type KeyboardEvent, useReducer, useRef, useState } from "react";
 
 function BurbujasDelTurno({ turno }: { readonly turno: TurnoConversacion }) {
@@ -23,9 +25,7 @@ function BurbujasDelTurno({ turno }: { readonly turno: TurnoConversacion }) {
       ))}
       {turno.error === null ? null : (
         <li>
-          <div role="alert" style={ESTILO_TEXTO_PLANO}>
-            {turno.error.mensaje}
-          </div>
+          <AvisoError mensaje={turno.error.mensaje} />
         </li>
       )}
     </>
@@ -43,9 +43,15 @@ export function App() {
     despachar({ tipo: ACCION_UI.ENVIAR, mensaje });
     setBorrador("");
     controlador.current = new AbortController();
+    const despacharDevolviendoBorrador: Despachar = (accion) => {
+      if (ACCIONES_QUE_DEVUELVEN_EL_BORRADOR.has(accion.tipo)) {
+        setBorrador((actual) => (actual.length === 0 ? mensaje : actual));
+      }
+      despachar(accion);
+    };
     void enviarMensaje(
       { sessionId: estado.sesionId, message: mensaje },
-      despachar,
+      despacharDevolviendoBorrador,
       controlador.current.signal,
     );
   }

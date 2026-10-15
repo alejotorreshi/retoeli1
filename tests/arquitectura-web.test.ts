@@ -254,6 +254,7 @@ describe("guardián de web/ sobre el código real", () => {
   });
 
   test("W12: los módulos CSS usan tokens para colores y tamaños", () => {
+    expect(listarModulosCss()).toContain("web/src/components/aviso.module.css");
     expect(listarModulosCss().flatMap((ruta) => violacionesDeEstilos(ruta, leer(ruta)))).toEqual([]);
   });
 

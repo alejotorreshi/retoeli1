@@ -1,0 +1,87 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  font-family: var(--fuente-base);
+  font-size: var(--cuerpo-tamano);
+  font-weight: var(--cuerpo-peso);
+  line-height: var(--cuerpo-interlinea);
+  color: var(--texto);
+  background: var(--dominante);
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  height: 100dvh;
+  overflow: hidden;
+}
+
+#root {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+#root > main {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+button,
+input,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+:focus-visible {
+  outline: var(--foco);
+  outline-offset: var(--foco-separacion);
+}
+
+.sr-only {
+  position: absolute;
+  width: var(--tamano-oculto);
+  height: var(--tamano-oculto);
+  margin: calc(-1 * var(--tamano-oculto));
+  padding: 0;
+  border: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.transicion {
+  transition:
+    opacity var(--duracion-transicion) ease,
+    transform var(--duracion-transicion) ease;
+}
+
+.girar {
+  animation: girar var(--duracion-giro) linear infinite;
+}
+
+@keyframes girar {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --duracion-transicion: 0ms;
+  }
+
+  .transicion {
+    transition: none;
+  }
+
+  .girar {
+    animation: none;
+  }
+}

@@ -1,3 +1,5 @@
+import "@web/styles/tokens.css";
+import "@web/styles/global.css";
 import { App } from "@web/app.tsx";
 import { ID_RAIZ } from "@web/config/constants/ui.constants.ts";
 import { TEXTO_APP } from "@web/config/strings.ts";
