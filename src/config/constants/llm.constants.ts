@@ -33,6 +33,7 @@ export const TIPO_ERROR_LLM = {
   ABORTADO: "abortado",
   RESPUESTA_INVALIDA: "respuesta_invalida",
   FILTRO_CONTENIDO: "filtro_contenido",
+  TOPE_DIARIO: "tope_diario",
 } as const;
 
 export const ESTADO_LLM = {
@@ -54,6 +55,7 @@ export const ESTADO_LLM_TRAS_ERROR = {
   [TIPO_ERROR_LLM.ABORTADO]: null,
   [TIPO_ERROR_LLM.RESPUESTA_INVALIDA]: ESTADO_LLM.NO_DISPONIBLE,
   [TIPO_ERROR_LLM.FILTRO_CONTENIDO]: null,
+  [TIPO_ERROR_LLM.TOPE_DIARIO]: null,
 } as const satisfies Record<ValorDe<typeof TIPO_ERROR_LLM>, ValorDe<typeof ESTADO_LLM> | null>;
 
 export const TIPOS_ERROR_LLM_REINTENTABLES: ReadonlySet<string> = new Set([

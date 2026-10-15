@@ -11,6 +11,7 @@ import {
   readToolEnv,
 } from "@/config/env.ts";
 import { MENSAJE_AGENTE, TEXTO_AGENTE } from "@/config/strings.ts";
+import type { ValorDe } from "@/config/types/valor-de.type.ts";
 import { formatearIssues } from "@/domain/utils/formatear-issues.util.ts";
 import { clockFromToolEnv, systemClock } from "@/infra/clock/clock.adapter.ts";
 import { sleepWithSignal } from "@/infra/clock/sleep.util.ts";
@@ -24,13 +25,14 @@ import { createAuditLog } from "@/infra/logging/audit-log.adapter.ts";
 import { createLogger } from "@/infra/logging/logger.adapter.ts";
 import { createMemorySessionStore } from "@/infra/sessions/memory-session-store.adapter.ts";
 import { createOpenAICompatibleAdapter } from "@/llm/adapters/openai-compatible.adapter.ts";
+import { createDailyBudget, withDailyBudget } from "@/llm/decorators/daily-budget.decorator.ts";
 import { withFallback } from "@/llm/decorators/fallback.decorator.ts";
 import { createHealthMonitor, withHealthReport } from "@/llm/decorators/health-report.decorator.ts";
 import { withObservation } from "@/llm/decorators/observation.decorator.ts";
 import { withRetry } from "@/llm/decorators/retry.decorator.ts";
 import { withTimeout } from "@/llm/decorators/timeout.decorator.ts";
 import type { AdaptadorLlm, ErrorLlm, OpcionesEnvio } from "@/llm/types/llm.type.ts";
-import type { LlmHealthMonitor } from "@/llm/types/resilience.type.ts";
+import type { DailyBudget, LlmHealthMonitor } from "@/llm/types/resilience.type.ts";
 import { ejecutarTurno, sesionVacia } from "@/loop/services/ejecutar-turno.service.ts";
 import { crearRegistroHerramientas } from "@/loop/services/registro-herramientas.service.ts";
 import type { CreacionAgente, OpcionesAgente } from "@/loop/types/agente.type.ts";
@@ -39,6 +41,15 @@ import * as proveedor from "@/tools/proveedor.ts";
 
 function nuevoId(): string {
   return crypto.randomUUID();
+}
+
+function zonaDeNegocio(): string {
+  const config = readToolEnv();
+  return config.success ? config.data.TZ_NEGOCIO : ZONA_HORARIA_POR_DEFECTO;
+}
+
+function hoyDeNegocio(): string {
+  return systemClock(zonaDeNegocio()).hoy();
 }
 
 function relojVigente(): Reloj {
@@ -83,14 +94,31 @@ function avisarCambio(error: ErrorLlm, envio: OpcionesEnvio): void {
   envio.observador?.cambio(error);
 }
 
+type ControlModelo = {
+  readonly monitor: LlmHealthMonitor;
+  readonly presupuestoDiario: DailyBudget;
+};
+
+function controlDelModelo(config: AgentEnv): ControlModelo {
+  return {
+    monitor: createHealthMonitor(ESTADO_LLM.DISPONIBLE),
+    presupuestoDiario: createDailyBudget({ limit: config.dailyTokenBudget, today: hoyDeNegocio }),
+  };
+}
+
 function modeloDelAgente(
   opciones: OpcionesAgente,
   config: AgentEnv,
   apiKey: string,
-  monitor: LlmHealthMonitor,
+  control: ControlModelo,
 ): AdaptadorLlm {
   const primario = resiliente(config.primary, apiKey, config, opciones);
-  return withHealthReport(withFallback(primario, respaldoDe(config, opciones), avisarCambio), monitor);
+  const conRespaldo = withFallback(primario, respaldoDe(config, opciones), avisarCambio);
+  return withDailyBudget(withHealthReport(conRespaldo, control.monitor), control.presupuestoDiario);
+}
+
+function estadoDelModelo(control: ControlModelo): ValorDe<typeof ESTADO_LLM> {
+  return control.presupuestoDiario.exhausted() ? ESTADO_LLM.TOPE_DIARIO : control.monitor.current();
 }
 
 export function secretosDelAgente(config: AgentEnv): readonly string[] {
@@ -107,12 +135,12 @@ function dependencias(
   opciones: OpcionesAgente,
   config: AgentEnv,
   apiKey: string,
-  monitor: LlmHealthMonitor,
+  control: ControlModelo,
 ): DependenciasTurno {
   const reloj = relojCompartidoConHerramientas();
   const secretos = [...secretosDelAgente(config), ...(opciones.secretosAdicionales ?? [])];
   return {
-    llm: modeloDelAgente(opciones, config, apiKey, monitor),
+    llm: modeloDelAgente(opciones, config, apiKey, control),
     herramientas: crearRegistroHerramientas(proveedor),
     instrucciones: createInstructionsLoader({
       agentDirectory: opciones.directorioAgente ?? DEFAULT_AGENT_DIRECTORY,
@@ -149,14 +177,14 @@ export function crearAgente(opciones: OpcionesAgente): CreacionAgente {
     const codigo = CODIGO_AGENTE.PROVEEDOR_SIN_CLAVE;
     return { ok: false, codigo, mensaje: MENSAJE_AGENTE[codigo] };
   }
-  const monitor = createHealthMonitor(ESTADO_LLM.DISPONIBLE);
-  const deps = dependencias(opciones, config.data, primary.apiKey, monitor);
+  const control = controlDelModelo(config.data);
+  const deps = dependencias(opciones, config.data, primary.apiKey, control);
   return {
     ok: true,
     agente: {
       proveedor: primary.provider,
       modelo: primary.model,
-      estadoLlm: () => monitor.current(),
+      estadoLlm: () => estadoDelModelo(control),
       turno: (entrada) => ejecutarTurno(entrada, deps),
     },
   };

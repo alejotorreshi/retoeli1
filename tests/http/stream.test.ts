@@ -36,6 +36,7 @@ import {
 } from "@/config/constants/http.constants.ts";
 import { ESTADO_LLM } from "@/config/constants/llm.constants.ts";
 import { NIVELES_LOG } from "@/config/constants/logging.constants.ts";
+import { ZONA_HORARIA_POR_DEFECTO } from "@/config/constants/runtime.constants.ts";
 import { HERRAMIENTA, NOMBRE_VISIBLE } from "@/config/constants/tools.constants.ts";
 import { pinExecutionDate } from "@/config/env.ts";
 import { MENSAJE_HTTP } from "@/config/strings.ts";
@@ -276,6 +277,7 @@ describe("POST /api/chat: cuerpos inválidos y errores contenidos", () => {
       logger,
       heartbeatMs: LATIDO_CORTO_MS,
       maxMessageChars: MENSAJE_MAXIMO_CARACTERES_POR_DEFECTO,
+      businessZone: () => ZONA_HORARIA_POR_DEFECTO,
     });
     const respuesta = await app.request(RUTA_API.CHAT, pedidoChat(null, "hola"), BINDINGS_PRUEBA);
     const crudo = await respuesta.clone().text();

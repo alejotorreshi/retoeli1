@@ -33,7 +33,7 @@ El agente agrega dos capas. El guardián de capas de `tests/architecture.test.ts
 | `llm/types/` | `.type.ts` | El puerto neutral `AdaptadorLlm` (`enviar(mensajes, herramientas, opciones)`) y los tipos del protocolo compatible con OpenAI. |
 | `llm/schemas/` | `.schema.ts` | Validación zod tolerante de la respuesta del proveedor. |
 | `llm/adapters/` | `.adapter.ts` | El adaptador genérico compatible con OpenAI. Lo propio de cada proveedor llega como flags de capacidad, nunca como ramas por nombre. |
-| `llm/decorators/` | `.decorator.ts` | Envoltorios sobre un `AdaptadorLlm`: resiliencia (`timeout`, reintentos en `retry` y respaldo en `fallback`) aviso de cada fallo al observador del turno (`observation`) y publicación del último estado del modelo para `/api/health` (`health-report`). |
+| `llm/decorators/` | `.decorator.ts` | Envoltorios sobre un `AdaptadorLlm`: resiliencia (`timeout`, reintentos en `retry` y respaldo en `fallback`) aviso de cada fallo al observador del turno (`observation`) publicación del último estado del modelo para `/api/health` (`health-report`) y tope diario global de tokens, que cuenta también el respaldo y se reinicia a medianoche en `TZ_NEGOCIO` (`daily-budget`). |
 | `llm/mappers/` | `.mapper.ts` | Traducción entre el modelo neutral y el formato del proveedor, y de estados HTTP a errores tipados. |
 | `loop/types/` | `.type.ts` | Eventos del turno, sesión, estado y dependencias del turno, registro de herramientas y lectura tolerante del resultado de una herramienta. |
 | `loop/schemas/` | `.schema.ts` | Lectura tolerante del resultado JSON de una herramienta. |

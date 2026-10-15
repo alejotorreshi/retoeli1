@@ -215,6 +215,7 @@ export function createServer(options: ServerOptions): ServerCreation {
     logger,
     heartbeatMs: options.heartbeatMs ?? LATIDO_SSE_MS,
     maxMessageChars: env.data.MAX_MESSAGE_CHARS,
+    businessZone: () => businessCalendar().zone,
   });
   registerStaticRoutes(app, { webDirectory: webDirectory(options) });
   return { ok: true, app, port: env.data.PORT };

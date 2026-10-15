@@ -273,6 +273,9 @@ function conSesionAbierta(mensaje: string): string {
 
 const HERRAMIENTAS_DISPONIBLES = Object.values(NOMBRE_VISIBLE).join(", ");
 
+const TOPE_DIARIO_ALCANZADO =
+  "Se alcanzó el tope diario de uso del modelo. Vuelve a intentarlo después de la medianoche";
+
 export const MENSAJE_AGENTE = {
   [CODIGO_AGENTE.INSTRUCCIONES_NO_DISPONIBLES]: conSesionAbierta(
     "No pude cargar las instrucciones del agente, así que no procesé el mensaje.",
@@ -312,6 +315,7 @@ export const MENSAJE_AGENTE = {
   [CODIGO_AGENTE.PROVEEDOR_FILTRO_CONTENIDO]: conSesionAbierta(
     "El proveedor del modelo filtró la respuesta por su política de contenido.",
   ),
+  [CODIGO_AGENTE.TOPE_DIARIO_ALCANZADO]: `${TOPE_DIARIO_ALCANZADO}.`,
 } as const satisfies Record<ValorDe<typeof CODIGO_AGENTE>, string>;
 
 export const TEXTO_ENV = {
@@ -355,6 +359,7 @@ export const MENSAJE_HTTP = {
   cuerpoDemasiadoGrande: "El pedido es demasiado grande. Acorta el mensaje y vuelve a enviarlo.",
   mensajeDemasiadoLargo: (maximo: number): string =>
     `El mensaje supera los ${maximo} caracteres. Acórtalo y vuelve a enviarlo.`,
+  topeDiario: (zona: string): string => `${TOPE_DIARIO_ALCANZADO} (${zona}).`,
 } as const;
 
 export const TEXTO_SESION = {

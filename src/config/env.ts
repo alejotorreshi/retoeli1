@@ -5,6 +5,7 @@ import {
   MAX_ITERACIONES_TOPE,
   MAX_SESIONES_POR_DEFECTO,
   PRESUPUESTO_TOKENS_SESION_POR_DEFECTO,
+  TOPE_TOKENS_DIARIO_POR_DEFECTO,
   TTL_SESION_MINUTOS_POR_DEFECTO,
 } from "@/config/constants/agent.constants.ts";
 import {
@@ -114,6 +115,7 @@ export type AgentEnv = {
   readonly turnDeadlineMs: number;
   readonly maxIterations: number;
   readonly sessionTokenBudget: number;
+  readonly dailyTokenBudget: number;
   readonly sessionTtlMinutes: number;
   readonly maxSessions: number;
   readonly logLevel: ValorDe<typeof NIVELES_LOG>;
@@ -202,6 +204,7 @@ const agentEnvSchema = z.object({
   AGENT_TURN_DEADLINE_MS: withDefault(positiveInt(), DEADLINE_TURNO_MS_POR_DEFECTO),
   AGENT_MAX_ITERATIONS: withDefault(positiveInt(MAX_ITERACIONES_TOPE), MAX_ITERACIONES_POR_DEFECTO),
   AGENT_SESSION_TOKEN_BUDGET: withDefault(positiveInt(), PRESUPUESTO_TOKENS_SESION_POR_DEFECTO),
+  AGENT_DAILY_TOKEN_BUDGET: withDefault(positiveInt(), TOPE_TOKENS_DIARIO_POR_DEFECTO),
   AGENT_SESSION_TTL_MINUTES: withDefault(positiveInt(), TTL_SESION_MINUTOS_POR_DEFECTO),
   AGENT_MAX_SESSIONS: withDefault(positiveInt(), MAX_SESIONES_POR_DEFECTO),
   LOG_LEVEL: withDefault(z.enum(NIVELES_LOG), NIVEL_LOG_POR_DEFECTO),
@@ -328,6 +331,7 @@ const resolvedAgentEnvSchema = agentEnvSchema.transform((input, ctx): AgentEnv =
     turnDeadlineMs: input.AGENT_TURN_DEADLINE_MS,
     maxIterations: input.AGENT_MAX_ITERATIONS,
     sessionTokenBudget: input.AGENT_SESSION_TOKEN_BUDGET,
+    dailyTokenBudget: input.AGENT_DAILY_TOKEN_BUDGET,
     sessionTtlMinutes: input.AGENT_SESSION_TTL_MINUTES,
     maxSessions: input.AGENT_MAX_SESSIONS,
     logLevel: input.LOG_LEVEL,

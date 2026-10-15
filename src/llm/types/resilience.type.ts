@@ -18,3 +18,13 @@ export type LlmHealthMonitor = {
   current(): LlmHealthState;
   publish(state: LlmHealthState): void;
 };
+
+export type DailyBudgetOptions = {
+  readonly limit: number;
+  today(): string;
+};
+
+export type DailyBudget = {
+  exhausted(): boolean;
+  record(tokens: number): void;
+};

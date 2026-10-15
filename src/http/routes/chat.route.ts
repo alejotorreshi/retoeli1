@@ -10,6 +10,7 @@ import {
   TIPO_CONTENIDO,
   VALOR_CABECERA,
 } from "@/config/constants/http.constants.ts";
+import { ESTADO_LLM } from "@/config/constants/llm.constants.ts";
 import { MENSAJE_AGENTE, MENSAJE_HTTP } from "@/config/strings.ts";
 import { redactar } from "@/domain/policies/redaccion.policy.ts";
 import { chatBodySchema } from "@/http/schemas/chat-body.schema.ts";
@@ -26,6 +27,7 @@ type ChatDeps = {
   readonly logger: BitacoraEstructurada;
   readonly heartbeatMs: number;
   readonly maxMessageChars: number;
+  businessZone(): string;
 };
 
 type TurnDeps = ChatDeps & { readonly agente: Agente };
@@ -52,6 +54,11 @@ function messageTooLong(c: Context<HttpEnv>, maxMessageChars: number): Response 
 function missingProviderKey(c: Context<HttpEnv>): Response {
   const body: ErrorResponse = { mensaje: MENSAJE_AGENTE[CODIGO_AGENTE.PROVEEDOR_SIN_CLAVE] };
   return c.json(body, RESPUESTA_HTTP.NO_DISPONIBLE);
+}
+
+function dailyCapReached(c: Context<HttpEnv>, zone: string): Response {
+  const body: ErrorResponse = { mensaje: MENSAJE_HTTP.topeDiario(zone) };
+  return c.json(body, RESPUESTA_HTTP.DEMASIADOS_PEDIDOS);
 }
 
 function internalErrorData(): string {
@@ -109,6 +116,7 @@ export function registerChatRoute(app: Hono<HttpEnv>, deps: ChatDeps): void {
     if (body.message.length > deps.maxMessageChars) return messageTooLong(c, deps.maxMessageChars);
     const { agente } = deps;
     if (agente === null) return missingProviderKey(c);
+    if (agente.estadoLlm() === ESTADO_LLM.TOPE_DIARIO) return dailyCapReached(c, deps.businessZone());
     const turnDeps: TurnDeps = { ...deps, agente };
     return wantsJson(c) ? jsonTurn(c, body, turnDeps) : streamTurn(c, body, turnDeps);
   });
