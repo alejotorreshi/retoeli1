@@ -85,6 +85,7 @@ export function crearServidorPrueba(opciones: OpcionesServidorPrueba): ServidorP
     wait: async () => undefined,
     ...(opciones.latidoMs === undefined ? {} : { heartbeatMs: opciones.latidoMs }),
     ...(opciones.destinoLogs === undefined ? {} : { logDestination: opciones.destinoLogs }),
+    ...(opciones.directorioWeb === undefined ? {} : { webDirectory: opciones.directorioWeb }),
   });
   if (!creacion.ok) throw new Error(creacion.mensaje);
   const { app, port } = creacion;

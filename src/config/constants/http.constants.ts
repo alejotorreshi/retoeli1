@@ -6,6 +6,8 @@ export const PUERTO_WEB_DEV = 5173;
 
 export const DIRECTORIO_WEB_DIST = "web/dist";
 
+export const ARCHIVO_INDEX_WEB = "index.html";
+
 export const HOST_SERVIDOR = "0.0.0.0";
 
 export const PREFIJO_API = "/api";
@@ -18,6 +20,8 @@ export const RUTA_API = {
 } as const;
 
 export const RUTA_API_PROTEGIDA = `${PREFIJO_API}/*`;
+
+export const RUTA_COMODIN = "*";
 
 export const ENTORNO_APP = {
   PRODUCCION: "production",

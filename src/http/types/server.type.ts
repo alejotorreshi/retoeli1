@@ -48,6 +48,11 @@ export type ServerOptions = {
   readonly logDestination?: DestinoBitacora;
   readonly heartbeatMs?: number;
   readonly now?: () => number;
+  readonly webDirectory?: string;
+};
+
+export type StaticSettings = {
+  readonly webDirectory: string;
 };
 
 export type AccessSettings = {

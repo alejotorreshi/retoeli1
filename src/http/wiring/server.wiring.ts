@@ -1,8 +1,10 @@
-import { Hono } from "hono";
+import { resolve } from "node:path";
+import { type Context, Hono } from "hono";
 import type { BitacoraEstructurada } from "@/application/types/puertos-agente.type.ts";
 import {
   BYTES_SECRETO_TOKEN,
   CODIFICACION_SECRETO_TOKEN,
+  DIRECTORIO_WEB_DIST,
   ENTORNO_APP,
   EVENTO_HTTP,
   HOST_SERVIDOR,
@@ -34,6 +36,7 @@ import { registerAccessRoute } from "@/http/routes/access.route.ts";
 import { registerChatRoute } from "@/http/routes/chat.route.ts";
 import { registerConfigRoute } from "@/http/routes/config.route.ts";
 import { registerHealthRoute } from "@/http/routes/health.route.ts";
+import { registerStaticRoutes } from "@/http/routes/static.route.ts";
 import { createRateLimiter } from "@/http/services/rate-limiter.service.ts";
 import type { ErrorResponse } from "@/http/types/api.type.ts";
 import type {
@@ -125,11 +128,17 @@ function configSource(rootDirectory: string, config: AgentEnv): ConfigSource {
   };
 }
 
+function notFound(c: Context<HttpEnv>): Response {
+  const body: ErrorResponse = { mensaje: MENSAJE_HTTP.rutaNoEncontrada };
+  return c.json(body, RESPUESTA_HTTP.NO_ENCONTRADO);
+}
+
+function webDirectory(options: ServerOptions): string {
+  return resolve(options.webDirectory ?? resolve(options.rootDirectory, DIRECTORIO_WEB_DIST));
+}
+
 function registerFallbackHandlers(app: Hono<HttpEnv>, logger: BitacoraEstructurada): void {
-  app.notFound((c) => {
-    const body: ErrorResponse = { mensaje: MENSAJE_HTTP.rutaNoEncontrada };
-    return c.json(body, RESPUESTA_HTTP.NO_ENCONTRADO);
-  });
+  app.notFound(notFound);
   app.onError((error, c) => {
     logger.error(EVENTO_HTTP.ERROR_NO_CONTROLADO, { error, path: c.req.path });
     const body: ErrorResponse = { mensaje: MENSAJE_HTTP.errorInterno };
@@ -162,6 +171,7 @@ export function createServer(options: ServerOptions): ServerCreation {
     logger,
     heartbeatMs: options.heartbeatMs ?? LATIDO_SSE_MS,
   });
+  registerStaticRoutes(app, { webDirectory: webDirectory(options) });
   return { ok: true, app, port: env.data.PORT };
 }
 

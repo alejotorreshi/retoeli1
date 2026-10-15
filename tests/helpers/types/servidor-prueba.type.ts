@@ -9,6 +9,7 @@ export type OpcionesServidorPrueba = {
   readonly entorno?: Readonly<Record<string, string>>;
   readonly latidoMs?: number;
   readonly destinoLogs?: DestinoBitacora;
+  readonly directorioWeb?: string;
 };
 
 export type FrameSse = {
