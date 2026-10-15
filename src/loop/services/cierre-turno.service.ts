@@ -1,4 +1,5 @@
 import { ACCION, TIPO_EVENTO } from "@/config/constants/agent.constants.ts";
+import { motivosDeBloqueo } from "@/domain/builders/checklist.builder.ts";
 import { cierreConPregunta } from "@/domain/builders/cierre-turno.builder.ts";
 import { cerrarTurno, pendientesDe } from "@/domain/policies/compuerta.policy.ts";
 import type { CasoPendiente } from "@/domain/types/compuerta.type.ts";
@@ -13,6 +14,7 @@ function eventoConfirmacion(turnoId: string, pendiente: CasoPendiente): EventoCo
     caso: pendiente.caso,
     accion: ACCION.ENVIO,
     bloqueos: pendiente.bloqueos,
+    bloqueosLegibles: motivosDeBloqueo({ motivos_bloqueo: pendiente.motivos }),
   };
 }
 

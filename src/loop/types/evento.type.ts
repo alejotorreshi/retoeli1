@@ -47,6 +47,7 @@ export type EventoConfirmacionRequerida = {
   readonly caso: string;
   readonly accion: typeof ACCION.ENVIO;
   readonly bloqueos: readonly string[];
+  readonly bloqueosLegibles: readonly string[];
 };
 
 export type EventoUso = {
