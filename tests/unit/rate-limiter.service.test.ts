@@ -5,6 +5,8 @@ import type { ObservableRateLimiter } from "@/http/types/server.type.ts";
 
 const LIMITE = 5;
 const VENTANA_MS = 900_000;
+const LIMITE_CORTO = 2;
+const VENTANA_HORA_MS = 3_600_000;
 const CLAVE = "198.51.100.7";
 const OTRA_CLAVE = "203.0.113.9";
 const TERCERA_CLAVE = "192.0.2.33";
@@ -14,11 +16,15 @@ type Banco = {
   avanzar(ms: number): void;
 };
 
-function crearBanco(maxClaves: number = MAX_CLAVES_LIMITADOR): Banco {
+function crearBanco(
+  maxClaves: number = MAX_CLAVES_LIMITADOR,
+  limite: number = LIMITE,
+  ventanaMs: number = VENTANA_MS,
+): Banco {
   let ahora = 1_790_000_000_000;
   const limitador = createRateLimiter({
-    limit: LIMITE,
-    windowMs: VENTANA_MS,
+    limit: limite,
+    windowMs: ventanaMs,
     maxKeys: maxClaves,
     now: () => ahora,
   });
@@ -28,6 +34,10 @@ function crearBanco(maxClaves: number = MAX_CLAVES_LIMITADOR): Banco {
       ahora += ms;
     },
   };
+}
+
+function crearBancoDeHora(): Banco {
+  return crearBanco(MAX_CLAVES_LIMITADOR, LIMITE_CORTO, VENTANA_HORA_MS);
 }
 
 function golpear(limitador: ObservableRateLimiter, clave: string, veces: number): boolean[] {
@@ -112,5 +122,30 @@ describe("createRateLimiter", () => {
     expect(limitador.trackedKeys()).toBe(2);
     expect(limitador.isLocked(CLAVE)).toBe(false);
     expect(limitador.hit(OTRA_CLAVE)).toBe(true);
+  });
+});
+
+describe("retryAfterMs", () => {
+  test("es 0 para una clave sin golpes y para una clave que todavía no llegó al tope", () => {
+    const { limitador } = crearBancoDeHora();
+    expect(limitador.retryAfterMs(CLAVE)).toBe(0);
+    limitador.hit(CLAVE);
+    expect(limitador.retryAfterMs(CLAVE)).toBe(0);
+  });
+
+  test("con la clave bloqueada da lo que falta para que venza su ventana, hasta 1 ms antes", () => {
+    const { limitador, avanzar } = crearBancoDeHora();
+    golpear(limitador, CLAVE, LIMITE_CORTO);
+    expect(limitador.retryAfterMs(CLAVE)).toBe(VENTANA_HORA_MS);
+    avanzar(VENTANA_HORA_MS - 1);
+    expect(limitador.retryAfterMs(CLAVE)).toBe(1);
+  });
+
+  test("al vencer la ventana vuelve a 0 y no afecta a otras claves", () => {
+    const { limitador, avanzar } = crearBancoDeHora();
+    golpear(limitador, CLAVE, LIMITE_CORTO);
+    expect(limitador.retryAfterMs(OTRA_CLAVE)).toBe(0);
+    avanzar(VENTANA_HORA_MS);
+    expect(limitador.retryAfterMs(CLAVE)).toBe(0);
   });
 });

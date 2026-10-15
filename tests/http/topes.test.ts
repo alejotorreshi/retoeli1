@@ -50,6 +50,9 @@ const UNA_HORA_MS = 3_600_000;
 const SESION_INVENTADA = "sesion-inventada-1";
 const OTRA_SESION_INVENTADA = "sesion-inventada-2";
 const UNA_SESION_NUEVA = { NEW_SESSIONS_PER_HOUR: "1" };
+const DOS_SESIONES_NUEVAS = { NEW_SESSIONS_PER_HOUR: "2" };
+const MINUTOS_DE_LA_VENTANA = 60;
+const UN_SEGUNDO_MS = 1_000;
 const SIN_CLAVE_DEL_MODELO = { LLM_API_KEY: "" };
 const BEARER_ERRADO = "Bearer codigo-equivocado-Zx9Q";
 const RUTA_API_DESCONOCIDA = "/api/sesiones";
@@ -116,9 +119,12 @@ function pedidoDeTurno(mensaje: string, acepta: string = TIPO_CONTENIDO.JSON): R
   };
 }
 
-async function esRechazoDeSesiones(respuesta: Response): Promise<void> {
+async function esRechazoDeSesiones(
+  respuesta: Response,
+  minutos: number = MINUTOS_DE_LA_VENTANA,
+): Promise<void> {
   expect(respuesta.status).toBe(RESPUESTA_HTTP.DEMASIADOS_PEDIDOS);
-  expect(await respuesta.json()).toEqual({ mensaje: MENSAJE_HTTP.demasiadasSesiones });
+  expect(await respuesta.json()).toEqual({ mensaje: MENSAJE_HTTP.demasiadasSesiones(minutos) });
 }
 
 async function sesionDe(respuesta: Response): Promise<string> {
@@ -444,10 +450,55 @@ describe("sesiones nuevas", () => {
     await sesionDe(await servidor.pedirDesde(IP_OTRO_CLIENTE, RUTA_API.CHAT, pedidoDeTurno("hola")));
 
     ahora = AHORA + UNA_HORA_MS - 1;
-    await esRechazoDeSesiones(await servidor.pedirDesde(IP_CLIENTE, RUTA_API.CHAT, pedidoDeTurno("otra")));
+    await esRechazoDeSesiones(await servidor.pedirDesde(IP_CLIENTE, RUTA_API.CHAT, pedidoDeTurno("otra")), 1);
     ahora = AHORA + UNA_HORA_MS;
     await sesionDe(await servidor.pedirDesde(IP_CLIENTE, RUTA_API.CHAT, pedidoDeTurno("otra")));
     expect(falso.pedidos).toHaveLength(SESIONES_POR_HORA + 2);
+  });
+
+  test("el 429 de sesiones nuevas dice en cuántos minutos se puede abrir otra", () => {
+    const encabezado = "Abriste demasiadas sesiones nuevas en la última hora.";
+    expect(MENSAJE_HTTP.demasiadasSesiones(1)).toStartWith(encabezado);
+    expect(MENSAJE_HTTP.demasiadasSesiones(1)).toEndWith("Podrás abrir otra en un minuto.");
+    expect(MENSAJE_HTTP.demasiadasSesiones(MINUTOS_DE_LA_VENTANA)).toStartWith(encabezado);
+    expect(MENSAJE_HTTP.demasiadasSesiones(MINUTOS_DE_LA_VENTANA)).toEndWith(
+      "Podrás abrir otra en 60 minutos.",
+    );
+  });
+
+  test("con NEW_SESSIONS_PER_HOUR=2 la primera y la segunda sesión nueva pasan, la tercera recibe 429 con los minutos de espera y la primera sesión sigue", async () => {
+    let ahora = AHORA;
+    const proyecto = await crearProyectoTemporal();
+    limpiezas.push(proyecto.limpiar);
+    const falso = crearFetchFalso(textos(3));
+    const servidor = crearServidorPrueba({
+      raiz: proyecto.raiz,
+      fetch: falso.fetch,
+      entorno: { ...SIN_TOPE_DE_MENSAJES, ...DOS_SESIONES_NUEVAS },
+      ahora: () => ahora,
+    });
+
+    const primera = await sesionDe(await servidor.pedirDesde(IP_CLIENTE, RUTA_API.CHAT, pedidoDeTurno("uno")));
+    await sesionDe(await servidor.pedirDesde(IP_CLIENTE, RUTA_API.CHAT, pedidoDeTurno("dos")));
+    await esRechazoDeSesiones(
+      await servidor.pedirDesde(IP_CLIENTE, RUTA_API.CHAT, pedidoDeTurno("tres")),
+      MINUTOS_DE_LA_VENTANA,
+    );
+    expect(await sesionDe(await turno(servidor, "sigo", TIPO_CONTENIDO.JSON, primera))).toBe(primera);
+
+    const esperas: readonly (readonly [number, number])[] = [
+      [AHORA + UN_SEGUNDO_MS, MINUTOS_DE_LA_VENTANA],
+      [AHORA + UNA_HORA_MS - UN_MINUTO_MS, 1],
+      [AHORA + UNA_HORA_MS - 1, 1],
+    ];
+    for (const [instante, minutos] of esperas) {
+      ahora = instante;
+      await esRechazoDeSesiones(
+        await servidor.pedirDesde(IP_CLIENTE, RUTA_API.CHAT, pedidoDeTurno("otra")),
+        minutos,
+      );
+    }
+    expect(falso.pedidos).toHaveLength(3);
   });
 
   test("seguir en una sesión existente nunca cuenta como sesión nueva", async () => {
