@@ -1,9 +1,16 @@
 import { afterAll, afterEach, beforeAll, describe, expect, setSystemTime, test } from "bun:test";
-import { crearFetchFalso, cuerpoConHerramientas, cuerpoConTexto } from "@tests/helpers/fetch-falso.helper.ts";
+import {
+  crearFetchFalso,
+  cuerpoConHerramientas,
+  cuerpoConTexto,
+  diferido,
+  esperarPedidos,
+} from "@tests/helpers/fetch-falso.helper.ts";
 import { crearProyectoTemporal } from "@tests/helpers/proyecto-temporal.helper.ts";
-import { crearServidorPrueba, eventoDeFrame } from "@tests/helpers/servidor-prueba.helper.ts";
+import { crearServidorPrueba, eventoDeFrame, eventosSse } from "@tests/helpers/servidor-prueba.helper.ts";
 import type { RespuestaGuion } from "@tests/helpers/types/fetch-falso.type.ts";
 import type { ServidorPrueba } from "@tests/helpers/types/servidor-prueba.type.ts";
+import type { EventSourceMessage } from "eventsource-parser/stream";
 import { CODIGO_AGENTE, MOTIVO_FIN, TIPO_EVENTO } from "@/config/constants/agent.constants.ts";
 import { FECHA_DEMO } from "@/config/constants/demo.constants.ts";
 import { CABECERA, RESPUESTA_HTTP, RUTA_API, TIPO_CONTENIDO } from "@/config/constants/http.constants.ts";
@@ -12,6 +19,7 @@ import { HERRAMIENTA, NOMBRE_VISIBLE } from "@/config/constants/tools.constants.
 import { pinExecutionDate } from "@/config/env.ts";
 import { MENSAJE_AGENTE, MENSAJE_HTTP } from "@/config/strings.ts";
 import type { ChatJsonResponse, HealthResponse } from "@/http/types/api.type.ts";
+import type { EventoAgente } from "@/loop/types/evento.type.ts";
 
 const ZONA_TOPES = "America/Lima";
 const TOPE_DIARIO_PEQUENO = { AGENT_DAILY_TOKEN_BUDGET: "300" };
@@ -25,6 +33,13 @@ const MENSAJES_POR_MINUTO = 10;
 const UN_MINUTO_MS = 60_000;
 const AHORA = 1_790_000_000_000;
 const CUERPO_INVALIDO = JSON.stringify({});
+const TURNOS_SIMULTANEOS = 3;
+const SIN_TOPE_DE_MENSAJES = { RATE_LIMIT_CHAT_PER_MINUTE: "1000" };
+const UN_SOLO_CUPO = { ...SIN_TOPE_DE_MENSAJES, MAX_CONCURRENT_TURNS: "1" };
+const SIN_RESPALDO = { LLM_FALLBACK_ENABLED: "false", LLM_MAX_RETRIES: "0" };
+const ESPERAS_DE_CUPO = 200;
+const PAUSA_CUPO_MS = 5;
+const COLGADO: RespuestaGuion = { cuerpo: null, colgar: true };
 const NO_DISPONIBLE: RespuestaGuion = {
   estado: RESPUESTA_HTTP.NO_DISPONIBLE,
   cuerpo: { error: { message: "servicio no disponible" } },
@@ -79,6 +94,41 @@ async function salud(servidor: ServidorPrueba): Promise<unknown> {
 
 function pedidoInvalido(): RequestInit {
   return { method: "POST", body: CUERPO_INVALIDO };
+}
+
+function cortarAlFinal(respuesta: Response): Response {
+  limpiezas.push(() => respuesta.body?.cancel().catch(() => undefined));
+  return respuesta;
+}
+
+async function hastaQueHayaCupo(intentar: () => Promise<Response>): Promise<Response> {
+  for (let espera = 0; espera < ESPERAS_DE_CUPO; espera += 1) {
+    const respuesta = await intentar();
+    if (respuesta.status !== RESPUESTA_HTTP.NO_DISPONIBLE) return respuesta;
+    await Bun.sleep(PAUSA_CUPO_MS);
+  }
+  throw new Error("el cupo no se liberó");
+}
+
+async function primerEvento(lector: ReadableStreamDefaultReader<EventSourceMessage>) {
+  const { value } = await lector.read();
+  if (value === undefined) throw new Error("el stream terminó sin eventos");
+  return eventoDeFrame({ event: value.event ?? "", data: value.data });
+}
+
+async function restoDeEventos(
+  lector: ReadableStreamDefaultReader<EventSourceMessage>,
+): Promise<EventoAgente[]> {
+  const eventos: EventoAgente[] = [];
+  for (let leido = await lector.read(); !leido.done; leido = await lector.read()) {
+    eventos.push(eventoDeFrame({ event: leido.value.event ?? "", data: leido.value.data }));
+  }
+  return eventos;
+}
+
+function lectorDe(respuesta: Response) {
+  if (respuesta.body === null) throw new Error("respuesta sin cuerpo");
+  return eventosSse(respuesta.body).getReader();
 }
 
 function conEstado(llm: HealthResponse["llm"]): Partial<HealthResponse> {
@@ -211,5 +261,116 @@ describe("mensajes por minuto", () => {
     expect((await servidor.pedir(RUTA_API.CHAT, pedidoInvalido())).status).toBe(
       RESPUESTA_HTTP.PEDIDO_INVALIDO,
     );
+  });
+});
+
+describe("turnos simultáneos", () => {
+  test("tres turnos colgados ocupan los cupos, el cuarto recibe 503, health responde 200 sin pedir al proveedor y abortar uno libera su cupo", async () => {
+    const { servidor, pedidos } = await servidorCon({}, [
+      COLGADO,
+      COLGADO,
+      COLGADO,
+      { cuerpo: cuerpoConTexto("Ya hay lugar.") },
+    ]);
+    const colgados: Response[] = [];
+    for (let turnoColgado = 0; turnoColgado < TURNOS_SIMULTANEOS; turnoColgado += 1) {
+      colgados.push(cortarAlFinal(await turno(servidor, "procesa el caso", TIPO_CONTENIDO.SSE)));
+    }
+    await esperarPedidos(pedidos, TURNOS_SIMULTANEOS);
+
+    for (const acepta of [TIPO_CONTENIDO.JSON, TIPO_CONTENIDO.SSE]) {
+      const cuarto = await turno(servidor, "hola", acepta);
+      expect(cuarto.status).toBe(RESPUESTA_HTTP.NO_DISPONIBLE);
+      expect(await cuarto.json()).toEqual({ mensaje: MENSAJE_HTTP.servidorOcupado });
+    }
+
+    const enCarga = await servidor.pedir(RUTA_API.SALUD);
+    expect(enCarga.status).toBe(RESPUESTA_HTTP.OK);
+    expect(await enCarga.json()).toMatchObject(conEstado(ESTADO_LLM.DISPONIBLE));
+    expect(pedidos).toHaveLength(TURNOS_SIMULTANEOS);
+
+    await colgados[0]?.body?.cancel();
+    const liberado = await hastaQueHayaCupo(() => turno(servidor, "hola", TIPO_CONTENIDO.JSON));
+    expect(liberado.status).toBe(RESPUESTA_HTTP.OK);
+    const esperada: Partial<ChatJsonResponse> = { reply: "Ya hay lugar." };
+    expect(await liberado.json()).toMatchObject(esperada);
+    expect(pedidos).toHaveLength(TURNOS_SIMULTANEOS + 1);
+  });
+
+  test("un cupo se libera cuando el turno termina por SSE o JSON, cuando falla y cuando el cliente lo aborta", async () => {
+    const { servidor, pedidos } = await servidorCon({ ...UN_SOLO_CUPO, ...SIN_RESPALDO }, [
+      { cuerpo: cuerpoConTexto("Por SSE.") },
+      { cuerpo: cuerpoConTexto("Por JSON.") },
+      NO_DISPONIBLE,
+      COLGADO,
+      { cuerpo: cuerpoConTexto("Después del aborto.") },
+    ]);
+    const porSse = await servidor.leerSse(await turno(servidor, "uno", TIPO_CONTENIDO.SSE));
+    expect(porSse.eventos.at(-1)?.event).toBe(TIPO_EVENTO.FIN_TURNO);
+
+    const porJson = await turno(servidor, "dos", TIPO_CONTENIDO.JSON);
+    expect(porJson.status).toBe(RESPUESTA_HTTP.OK);
+    await porJson.json();
+
+    const fallido = await servidor.leerSse(await turno(servidor, "tres", TIPO_CONTENIDO.SSE));
+    expect(fallido.eventos.map(eventoDeFrame).at(-1)).toMatchObject({
+      tipo: TIPO_EVENTO.FIN_TURNO,
+      motivo: MOTIVO_FIN.ERROR,
+    });
+
+    const colgado = cortarAlFinal(await turno(servidor, "cuatro", TIPO_CONTENIDO.SSE));
+    await esperarPedidos(pedidos, 4);
+    expect((await turno(servidor, "cinco", TIPO_CONTENIDO.JSON)).status).toBe(RESPUESTA_HTTP.NO_DISPONIBLE);
+
+    await colgado.body?.cancel();
+    const tras = await hastaQueHayaCupo(() => turno(servidor, "cinco", TIPO_CONTENIDO.JSON));
+    const esperada: Partial<ChatJsonResponse> = { reply: "Después del aborto." };
+    expect(await tras.json()).toMatchObject(esperada);
+    expect(pedidos).toHaveLength(5);
+  });
+
+  test("MAX_CONCURRENT_TURNS cambia la cantidad de cupos", async () => {
+    const { servidor, pedidos } = await servidorCon(UN_SOLO_CUPO, [COLGADO]);
+    cortarAlFinal(await turno(servidor, "uno", TIPO_CONTENIDO.SSE));
+    await esperarPedidos(pedidos, 1);
+    const segundo = await turno(servidor, "dos", TIPO_CONTENIDO.JSON);
+    expect(segundo.status).toBe(RESPUESTA_HTTP.NO_DISPONIBLE);
+    expect(await segundo.json()).toEqual({ mensaje: MENSAJE_HTTP.servidorOcupado });
+  });
+});
+
+describe("misma sesión", () => {
+  test("un segundo mensaje en la sesión mientras su turno corre recibe SESION_OCUPADA y turn_end, y el primero termina normal", async () => {
+    const espera = diferido();
+    const { servidor, pedidos } = await servidorCon({}, [
+      { cuerpo: cuerpoConTexto("Primero listo."), demora: espera.promesa },
+    ]);
+    const lector = lectorDe(await turno(servidor, "procesa el caso", TIPO_CONTENIDO.SSE));
+    const inicio = await primerEvento(lector);
+    if (inicio.tipo !== TIPO_EVENTO.INICIO_TURNO) throw new Error("falta turn_start");
+    await esperarPedidos(pedidos, 1);
+
+    const segundo = await servidor.leerSse(
+      await turno(servidor, "¿y ahora?", TIPO_CONTENIDO.SSE, inicio.sesionId),
+    );
+    const eventos = segundo.eventos.map(eventoDeFrame);
+    expect(eventos.map((evento) => evento.tipo)).toEqual([
+      TIPO_EVENTO.INICIO_TURNO,
+      TIPO_EVENTO.ERROR,
+      TIPO_EVENTO.FIN_TURNO,
+    ]);
+    expect(eventos[1]).toMatchObject({
+      codigo: CODIGO_AGENTE.SESION_OCUPADA,
+      mensaje: MENSAJE_AGENTE[CODIGO_AGENTE.SESION_OCUPADA],
+    });
+    expect(eventos[0]).toMatchObject({ sesionId: inicio.sesionId });
+    expect(pedidos).toHaveLength(1);
+
+    espera.soltar();
+    const resto = await restoDeEventos(lector);
+    expect(resto.find((evento) => evento.tipo === TIPO_EVENTO.TEXTO)).toMatchObject({
+      texto: "Primero listo.",
+    });
+    expect(resto.at(-1)).toMatchObject({ tipo: TIPO_EVENTO.FIN_TURNO, motivo: MOTIVO_FIN.FINAL });
   });
 });
