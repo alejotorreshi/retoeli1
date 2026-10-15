@@ -280,7 +280,8 @@ export const TEXTO_CIERRE = {
     "Llegaste al tope de pasos de este turno. Sin llamar herramientas, resume en texto plano lo que se completó y lo que falta según los resultados anteriores.",
 } as const;
 
-const SESION_SIGUE_ABIERTA = "La sesión sigue abierta; puedes volver a intentarlo.";
+const SESION_ABIERTA = "La sesión sigue abierta";
+const SESION_SIGUE_ABIERTA = `${SESION_ABIERTA}; puedes volver a intentarlo.`;
 
 function conSesionAbierta(mensaje: string): string {
   return `${mensaje} ${SESION_SIGUE_ABIERTA}`;
@@ -310,12 +311,8 @@ export const MENSAJE_AGENTE = {
   [CODIGO_AGENTE.PROVEEDOR_PETICION_INVALIDA]: conSesionAbierta(
     "El proveedor del modelo rechazó la solicitud.",
   ),
-  [CODIGO_AGENTE.PROVEEDOR_AUTENTICACION]: conSesionAbierta(
-    "La clave del proveedor del modelo no es válida o no tiene permiso.",
-  ),
-  [CODIGO_AGENTE.PROVEEDOR_SALDO_AGOTADO]: conSesionAbierta(
-    "Saldo agotado en el proveedor del modelo: hay que recargar la cuenta antes de seguir.",
-  ),
+  [CODIGO_AGENTE.PROVEEDOR_AUTENTICACION]: `La clave del proveedor del modelo no es válida o no tiene permiso: hay que corregirla en el servidor antes de seguir. ${SESION_ABIERTA}.`,
+  [CODIGO_AGENTE.PROVEEDOR_SALDO_AGOTADO]: `Saldo agotado en el proveedor del modelo: hay que recargar la cuenta antes de seguir. ${SESION_ABIERTA}; cuando se recargue la cuenta, vuelve a enviar tu mensaje.`,
   [CODIGO_AGENTE.PROVEEDOR_LIMITE_TASA]: conSesionAbierta(
     "El proveedor del modelo está limitando las solicitudes por exceso de uso.",
   ),
