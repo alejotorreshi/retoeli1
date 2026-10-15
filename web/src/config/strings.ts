@@ -324,6 +324,7 @@ export const TEXTO_VISTA_PREVIA = {
   cargando: "Cargando la vista previa…",
   error:
     "No se pudo cargar la vista previa. Si el servidor se reinició, vuelve a procesar el caso; si no, inténtalo de nuevo.",
+  errorSinConexion: "No se pudo cargar la vista previa por un problema de conexión. Inténtalo de nuevo.",
   descargar: "Descargar archivo",
   cerrar: "Cerrar vista previa",
 } as const;

@@ -5,8 +5,13 @@ import type { EstadoVistaPrevia, ResultadoFallido } from "@web/types/chat.type.t
 
 function textoDelFallo(resultado: ResultadoFallido): string {
   if (esArchivoNoEncontrado(resultado)) return TEXTO_VISTA_PREVIA.error;
-  if (resultado.tipo === RESULTADO_API.RECHAZO) return resultado.mensaje;
-  return TEXTO_VISTA_PREVIA.error;
+  switch (resultado.tipo) {
+    case RESULTADO_API.RECHAZO:
+    case RESULTADO_API.ACCESO_VENCIDO:
+      return resultado.mensaje;
+    case RESULTADO_API.SIN_RED:
+      return TEXTO_VISTA_PREVIA.errorSinConexion;
+  }
 }
 
 export function estadoDeVistaPreviaFallida(resultado: ResultadoFallido): EstadoVistaPrevia {
