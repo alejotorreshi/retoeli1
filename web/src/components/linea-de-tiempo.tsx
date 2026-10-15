@@ -6,12 +6,7 @@ import estilos from "@web/components/linea-de-tiempo.module.css";
 import { MensajeAgente, MensajeUsuaria } from "@web/components/mensaje.tsx";
 import { PilaConfirmaciones } from "@web/components/tarjeta-confirmacion.tsx";
 import { TarjetaResultado } from "@web/components/tarjeta-resultado.tsx";
-import {
-  AVISO_SESION,
-  CLASE_GLOBAL,
-  SENAL_SEGUIMIENTO,
-  TECLAS_DE_DESPLAZAMIENTO,
-} from "@web/config/constants/ui.constants.ts";
+import { AVISO_SESION, CLASE_GLOBAL, SENAL_SEGUIMIENTO } from "@web/config/constants/ui.constants.ts";
 import { TEXTO_AVISO, TEXTO_CHAT } from "@web/config/strings.ts";
 import { resultadosDelTurno } from "@web/state/casos.ts";
 import { tarjetasDelTurno } from "@web/state/confirmaciones.ts";
@@ -26,7 +21,7 @@ import type {
   PropsTurno,
   SenalSeguimiento,
 } from "@web/types/ui.type.ts";
-import type { KeyboardEvent, SyntheticEvent } from "react";
+import type { SyntheticEvent } from "react";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 
 function ErrorDelTurno({ error, alAccionDeAviso }: PropsErrorDelTurno) {
@@ -124,10 +119,6 @@ function distanciaAlFinal(zona: HTMLElement): number {
   return zona.scrollHeight - zona.scrollTop - zona.clientHeight;
 }
 
-function bajarAlFinal(zona: HTMLElement): void {
-  zona.scrollTop = zona.scrollHeight;
-}
-
 export function LineaDeTiempo({
   turnos,
   cargando,
@@ -155,46 +146,47 @@ export function LineaDeTiempo({
     }
   }, []);
 
+  const seguirAlFinal = useCallback(
+    (desplazable: HTMLElement) => {
+      desplazable.scrollTop = desplazable.scrollHeight;
+      despachar({ tipo: SENAL_SEGUIMIENTO.AJUSTE_PROPIO, posicion: desplazable.scrollTop });
+    },
+    [despachar],
+  );
+
   useEffect(() => {
     const desplazable = zona.current;
     const cuerpo = contenido.current;
     if (desplazable === null || cuerpo === null) return;
     const observador = new ResizeObserver(() => {
       despachar({ tipo: SENAL_SEGUIMIENTO.CRECIMIENTO });
-      if (seguimiento.current.pegado) bajarAlFinal(desplazable);
+      if (seguimiento.current.pegado) seguirAlFinal(desplazable);
     });
     observador.observe(cuerpo);
     return () => observador.disconnect();
-  }, [despachar]);
+  }, [despachar, seguirAlFinal]);
 
   useLayoutEffect(() => {
     const crecio = turnos.length > turnosVistos.current;
     turnosVistos.current = turnos.length;
     if (!crecio || zona.current === null) return;
     despachar({ tipo: SENAL_SEGUIMIENTO.ENVIO });
-    bajarAlFinal(zona.current);
-  }, [turnos.length, despachar]);
-
-  function alIntentarDesplazar(evento: SyntheticEvent): void {
-    despachar({ tipo: SENAL_SEGUIMIENTO.INTENCION, ms: evento.timeStamp });
-  }
-
-  function alPulsarTecla(evento: KeyboardEvent): void {
-    if (TECLAS_DE_DESPLAZAMIENTO.has(evento.key)) alIntentarDesplazar(evento);
-  }
+    seguirAlFinal(zona.current);
+  }, [turnos.length, despachar, seguirAlFinal]);
 
   function alDesplazar(evento: SyntheticEvent<HTMLElement>): void {
+    const desplazable = evento.currentTarget;
     despachar({
       tipo: SENAL_SEGUIMIENTO.DESPLAZAMIENTO,
-      ms: evento.timeStamp,
-      distancia: distanciaAlFinal(evento.currentTarget),
+      posicion: desplazable.scrollTop,
+      distancia: distanciaAlFinal(desplazable),
     });
   }
 
   function irAlFinal(): void {
     if (zona.current === null) return;
     despachar({ tipo: SENAL_SEGUIMIENTO.IR_AL_FINAL });
-    bajarAlFinal(zona.current);
+    seguirAlFinal(zona.current);
   }
 
   return (
@@ -204,10 +196,6 @@ export function LineaDeTiempo({
         aria-label={TEXTO_CHAT.lineaDeTiempo}
         className={vista.pegado ? `${estilos.zona} ${estilos.siguiendo}` : estilos.zona}
         onScroll={alDesplazar}
-        onWheel={alIntentarDesplazar}
-        onTouchStart={alIntentarDesplazar}
-        onPointerDown={alIntentarDesplazar}
-        onKeyDown={alPulsarTecla}
       >
         <div ref={contenido} className={estilos.contenido}>
           {aviso === null ? null : <AvisoInicial aviso={aviso} />}

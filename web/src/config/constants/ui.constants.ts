@@ -67,25 +67,13 @@ export const TECLA_ENVIAR = "Enter";
 
 export const DISTANCIA_PEGADO_AL_FINAL = 96;
 
-export const VENTANA_INTENCION_USUARIA_MS = 600;
-
 export const SENAL_SEGUIMIENTO = {
-  INTENCION: "intencion",
+  AJUSTE_PROPIO: "ajuste_propio",
   DESPLAZAMIENTO: "desplazamiento",
   CRECIMIENTO: "crecimiento",
   ENVIO: "envio",
   IR_AL_FINAL: "ir_al_final",
 } as const;
-
-export const TECLAS_DE_DESPLAZAMIENTO: ReadonlySet<string> = new Set([
-  "PageUp",
-  "PageDown",
-  "ArrowUp",
-  "ArrowDown",
-  "Home",
-  "End",
-  " ",
-]);
 
 export const MARGEN_AVISO_CONTADOR = 200;
 

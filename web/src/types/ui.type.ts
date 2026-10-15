@@ -62,14 +62,14 @@ export type PropsLineaDeTiempo = {
 export type EstadoSeguimiento = {
   readonly pegado: boolean;
   readonly contenidoNuevo: boolean;
-  readonly intencionMs: number | null;
+  readonly posicion: number | null;
 };
 
 export type SenalSeguimiento =
-  | { readonly tipo: typeof SENAL_SEGUIMIENTO.INTENCION; readonly ms: number }
+  | { readonly tipo: typeof SENAL_SEGUIMIENTO.AJUSTE_PROPIO; readonly posicion: number }
   | {
       readonly tipo: typeof SENAL_SEGUIMIENTO.DESPLAZAMIENTO;
-      readonly ms: number;
+      readonly posicion: number;
       readonly distancia: number;
     }
   | { readonly tipo: typeof SENAL_SEGUIMIENTO.CRECIMIENTO }
