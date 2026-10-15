@@ -134,10 +134,19 @@ function desenlaceDeEvento(
   evento: EventoCompuerta,
   conocidos: PaquetesConocidos,
 ): DesenlaceEnvio | null {
-  if (evento.tipo !== EVENTO_COMPUERTA.BLOQUEADO) return null;
-  if (enviados.has(evento.caso)) return null;
-  if (conocido(evento.caso, conocidos, pendientes) !== undefined) return null;
-  return { tipo: DESENLACE_ENVIO.SIN_PAQUETE, caso: evento.caso };
+  switch (evento.tipo) {
+    case EVENTO_COMPUERTA.ARMADO:
+    case EVENTO_COMPUERTA.ENVIADO:
+      return null;
+    case EVENTO_COMPUERTA.FALLIDO:
+      return { tipo: DESENLACE_ENVIO.FALLIDO, caso: evento.caso };
+    case EVENTO_COMPUERTA.BLOQUEADO:
+      if (enviados.has(evento.caso)) return { tipo: DESENLACE_ENVIO.YA_ENVIADO, caso: evento.caso };
+      if (conocido(evento.caso, conocidos, pendientes) === undefined) {
+        return { tipo: DESENLACE_ENVIO.SIN_PAQUETE, caso: evento.caso };
+      }
+      return { tipo: DESENLACE_ENVIO.REQUIERE_CONFIRMACION, caso: evento.caso };
+  }
 }
 
 export function desenlacesDeEnvio(entrada: EntradaCierreCompuerta): readonly DesenlaceEnvio[] {

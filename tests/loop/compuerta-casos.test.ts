@@ -53,13 +53,13 @@ import { ESTADO_SOPORTE } from "@/config/constants/supports.constants.ts";
 import { SEPARADOR_PARRAFOS } from "@/config/constants/text.constants.ts";
 import { HERRAMIENTA, NOMBRE_VISIBLE } from "@/config/constants/tools.constants.ts";
 import { pinExecutionDate } from "@/config/env.ts";
-import type { ValorDe } from "@/config/types/valor-de.type.ts";
 import {
   MENSAJE_AGENTE,
   MENSAJE_ERROR,
   RESUMEN_HERRAMIENTA,
   TEXTO_ENVIO_NO_REGISTRADO,
 } from "@/config/strings.ts";
+import type { ValorDe } from "@/config/types/valor-de.type.ts";
 import { cierreConPregunta } from "@/domain/builders/cierre-turno.builder.ts";
 import { clasificarConfirmacion } from "@/domain/policies/confirmacion.policy.ts";
 import type { CasoPendiente } from "@/domain/types/compuerta.type.ts";

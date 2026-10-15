@@ -20,6 +20,7 @@ import type { AgentePrueba } from "@tests/helpers/types/agente-prueba.type.ts";
 import type { PasoLlmFalso } from "@tests/helpers/types/llm-falso.type.ts";
 import type { ProyectoTemporal } from "@tests/helpers/types/proyecto-temporal.type.ts";
 import { ACCION, MOTIVO_FIN } from "@/config/constants/agent.constants.ts";
+import { DESENLACE_ENVIO } from "@/config/constants/confirmation.constants.ts";
 import { FECHA_DEMO } from "@/config/constants/demo.constants.ts";
 import { CODIGO_ERROR } from "@/config/constants/errors.constants.ts";
 import { ROL_MENSAJE } from "@/config/constants/llm.constants.ts";
@@ -27,6 +28,7 @@ import { ESTADO_SOPORTE } from "@/config/constants/supports.constants.ts";
 import { SEPARADOR_PARRAFOS } from "@/config/constants/text.constants.ts";
 import { HERRAMIENTA } from "@/config/constants/tools.constants.ts";
 import { pinExecutionDate } from "@/config/env.ts";
+import { TEXTO_ENVIO_NO_REGISTRADO } from "@/config/strings.ts";
 import { cierreConPregunta } from "@/domain/builders/cierre-turno.builder.ts";
 import type { CasoPendiente } from "@/domain/types/compuerta.type.ts";
 import { respuestaDeTurno } from "@/loop/services/respuesta-turno.service.ts";
@@ -500,11 +502,14 @@ describe("CR-02: con un caso pendiente la pregunta del servidor cierra el turno 
     historialSano(prueba);
   });
 
-  test("un texto del modelo sin pregunta sigue cerrando con la pregunta del servidor", async () => {
+  test("un texto del modelo sin pregunta sigue cerrando con la pregunta del servidor, después del aviso del envío bloqueado (G-03-26)", async () => {
     const prueba = agente(GUION_TURNO_1);
     const turno1 = await prueba.turno(MENSAJE_TURNO_1);
     const texto = textoFinal(turno1);
-    expect(texto).toBe(`${TEXTO_TURNO_1}${SEPARADOR_PARRAFOS}${cierreConPregunta("", [PENDIENTE_EC])}`);
+    const aviso = TEXTO_ENVIO_NO_REGISTRADO[DESENLACE_ENVIO.REQUIERE_CONFIRMACION](EC);
+    expect(texto).toBe(
+      `${TEXTO_TURNO_1}${SEPARADOR_PARRAFOS}${aviso}${SEPARADOR_PARRAFOS}${cierreConPregunta("", [PENDIENTE_EC])}`,
+    );
   });
 });
 
