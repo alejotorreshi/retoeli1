@@ -216,6 +216,7 @@ describe("las seis etapas del progreso por caso (UI-08)", () => {
       finDeTurno,
       ...turno(`Sí, envía ${EC}`),
       ...llamada(ENVIAR, EC, false),
+      confirmacion(EC),
       finDeTurno,
     ];
     expect(estadosDe(acciones, EC)).toEqual([HECHA, HECHA, HECHA, HECHA, ESPERANDO, ERROR]);

@@ -2,6 +2,7 @@ import {
   ESTADO_ETAPA,
   ESTADO_FIRMA,
   ESTADO_HERRAMIENTA,
+  ESTADO_TARJETA_CONFIRMACION,
   ETAPA,
   ETAPA_DE_HERRAMIENTA,
   ETAPAS_QUE_REINICIA_EL_PAQUETE,
@@ -19,8 +20,9 @@ import type {
   ProgresoDeCaso,
   ResultadoDeCaso,
   ResultadoVisibleUi,
+  TarjetaDeConfirmacion,
   TurnoConversacion,
-  VistaTurnos,
+  VistaConConfirmaciones,
 } from "@web/types/chat.type.ts";
 import { OUT_DIR } from "@/config/constants/files.constants.ts";
 import { ESTADO_CAMPO } from "@/config/constants/mapping.constants.ts";
@@ -217,10 +219,29 @@ function plegarTurno(plegado: PlegadoDeProgreso, turno: TurnoConversacion, turno
   registrarConfirmaciones(turno.llamadas.length);
 }
 
-export function progresoPorCaso({ turnos, enCurso }: VistaTurnos): readonly ProgresoDeCaso[] {
+function cancelacionesDelTurno(
+  tarjetas: readonly TarjetaDeConfirmacion[],
+  turno: TurnoConversacion,
+): readonly string[] {
+  return tarjetas
+    .filter(
+      (tarjeta) =>
+        tarjeta.estado === ESTADO_TARJETA_CONFIRMACION.CANCELADA && tarjeta.resueltaEnTurno === turno.clave,
+    )
+    .map((tarjeta) => tarjeta.caso);
+}
+
+export function progresoPorCaso({
+  turnos,
+  enCurso,
+  tarjetasConfirmacion,
+}: VistaConConfirmaciones): readonly ProgresoDeCaso[] {
   const plegado = new PlegadoDeProgreso();
   turnos.forEach((turno, indice) => {
     plegarTurno(plegado, turno, enCurso && indice === turnos.length - 1);
+    for (const caso of cancelacionesDelTurno(tarjetasConfirmacion, turno)) {
+      plegado.registrar(caso, [[ETAPA.CONFIRMACION, ESTADO_ETAPA.CANCELADA]]);
+    }
   });
   return plegado.resultado();
 }

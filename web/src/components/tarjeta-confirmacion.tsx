@@ -92,6 +92,15 @@ export function TarjetaConfirmacion({
             >
               {textoDelBoton(TIPO_ACCION.CONFIRMAR, tarjeta.enviando, TEXTO_CONFIRMACION.confirmar)}
             </button>
+            <button
+              type="button"
+              className={`${estilos.boton} ${estilos.cancelar}`}
+              aria-disabled={bloqueada}
+              aria-describedby={bloqueada ? idAyuda : undefined}
+              onClick={() => responder(TIPO_ACCION.CANCELAR)}
+            >
+              {textoDelBoton(TIPO_ACCION.CANCELAR, tarjeta.enviando, TEXTO_CONFIRMACION.cancelar)}
+            </button>
           </div>
           {bloqueada ? (
             <p id={idAyuda} className={estilos.ayuda}>
