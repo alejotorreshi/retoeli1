@@ -16,6 +16,7 @@ export type OpcionesAgente = {
   readonly esperar?: RetryOptions["wait"];
   readonly destinoLogs?: DestinoBitacora;
   readonly secretosAdicionales?: readonly string[];
+  readonly ahora?: () => number;
 };
 
 export type Agente = {

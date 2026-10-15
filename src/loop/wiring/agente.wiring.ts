@@ -153,7 +153,7 @@ function dependencias(
       newId: nuevoId,
       ttlMs: config.sessionTtlMinutes * MS_POR_MINUTO,
       maxSessions: config.maxSessions,
-      now: () => Date.now(),
+      now: opciones.ahora ?? Date.now,
     }),
     reloj,
     registrar: createAuditLog(resolveRoot(opciones.directorio), reloj),

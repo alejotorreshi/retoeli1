@@ -83,6 +83,7 @@ function agentOptions(options: ServerOptions, accessSecrets: readonly string[]):
     ...(options.envSource === undefined ? {} : { fuenteEntorno: options.envSource }),
     ...(options.wait === undefined ? {} : { esperar: options.wait }),
     ...(options.logDestination === undefined ? {} : { destinoLogs: options.logDestination }),
+    ...(options.now === undefined ? {} : { ahora: options.now }),
   };
 }
 
