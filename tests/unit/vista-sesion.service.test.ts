@@ -1,6 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import { ACCION } from "@/config/constants/agent.constants.ts";
 import { ESTADO_COMPUERTA } from "@/config/constants/confirmation.constants.ts";
+import { CODIGO_ERROR } from "@/config/constants/errors.constants.ts";
 import { FORMATO } from "@/config/constants/forms.constants.ts";
 import { ROL_MENSAJE } from "@/config/constants/llm.constants.ts";
 import { ESTADO_SOPORTE } from "@/config/constants/supports.constants.ts";
@@ -175,6 +176,32 @@ describe("vistaDeSesion proyecta la sesión guardada para recargar el chat (API-
       tokensUsados: 1234,
       ocupada: false,
     });
+  });
+
+  test("el listado de casos (leer_solicitud con caso vacío) vuelve con caso null (G-03-17)", () => {
+    const listado = {
+      ok: false,
+      codigo: CODIGO_ERROR.CASO_NO_ENCONTRADO,
+      error: "No existe el caso.",
+      resumen: `${LEER}: caso no encontrado`,
+      parcial: { casos_disponibles: [CO, EC] },
+    };
+    const historial: readonly Mensaje[] = [
+      { rol: ROL_MENSAJE.SISTEMA, contenido: PROMPT },
+      { rol: ROL_MENSAJE.USUARIO, contenido: "¿Qué casos hay disponibles?" },
+      {
+        rol: ROL_MENSAJE.ASISTENTE,
+        contenido: null,
+        llamadas: [{ id: "listar-1", nombre: LEER, argumentos: JSON.stringify({ caso: "" }) }],
+        razonamiento: null,
+      },
+      { rol: ROL_MENSAJE.HERRAMIENTA, llamadaId: "listar-1", contenido: JSON.stringify(listado) },
+      { rol: ROL_MENSAJE.ASISTENTE, contenido: `Casos: ${CO}, ${EC}.`, llamadas: [], razonamiento: null },
+    ];
+    const [herramienta] = vistaDeSesion({ ...SESION, historial }, false, []).turnos[0]?.herramientas ?? [];
+    expect(herramienta?.caso).toBeNull();
+    expect(herramienta?.argumentos).toEqual({ caso: "" });
+    expect(herramienta?.codigo).toBe(CODIGO_ERROR.CASO_NO_ENCONTRADO);
   });
 
   test("una llamada sin respuesta guardada queda como no correcta y sin resultado", () => {

@@ -6,21 +6,36 @@ import {
   ETAPA_DE_HERRAMIENTA,
   ORDEN_ETAPAS,
 } from "@web/config/constants/ui.constants.ts";
-import { TEXTO_PANEL, TEXTO_PROGRESO } from "@web/config/strings.ts";
+import { TEXTO_CHAT, TEXTO_HERRAMIENTA, TEXTO_PANEL, TEXTO_PROGRESO } from "@web/config/strings.ts";
 import { firmaDelProgreso, marcasDeArchivos, progresoPorCaso } from "@web/state/casos.ts";
-import { estadoInicialConversacion, reducirConversacion } from "@web/state/conversacion.ts";
-import type { AccionUi, EstadoConversacion, EstadoEtapa, ProgresoDeCaso } from "@web/types/chat.type.ts";
+import {
+  anuncioDeEstado,
+  estadoInicialConversacion,
+  etiquetaPensando,
+  reducirConversacion,
+} from "@web/state/conversacion.ts";
+import { estadoDesdeVista } from "@web/state/hidratacion.ts";
+import type {
+  AccionUi,
+  EstadoConversacion,
+  EstadoEtapa,
+  HerramientaVistaUi,
+  ProgresoDeCaso,
+  VistaSesionUi,
+} from "@web/types/chat.type.ts";
 import { ACCION, MOTIVO_FIN, TIPO_EVENTO } from "@/config/constants/agent.constants.ts";
 import { TIPO_ACCION } from "@/config/constants/confirmation.constants.ts";
 import { CODIGO_ERROR } from "@/config/constants/errors.constants.ts";
 import { HERRAMIENTA, NOMBRE_VISIBLE, ORDEN_FLUJO_HERRAMIENTAS } from "@/config/constants/tools.constants.ts";
-import type { SseEvent } from "@/http/types/api.type.ts";
+import type { ConfigResponse, SseEvent } from "@/http/types/api.type.ts";
 
 const SESION = "sesion-de-progreso";
 const TURNO = "turno-progreso";
 const EC = "ec-corp-andina";
 const CO = "co-industrias-delta";
 const PE = "pe-andes-logistica";
+const CASOS_FIXTURE = [CO, EC, "hn-agroexport-sula", "pa-logistica-istmo"];
+const PREGUNTA_LISTADO = "¿Qué casos hay disponibles?";
 const LEER = NOMBRE_VISIBLE[HERRAMIENTA.LEER_SOLICITUD];
 const MAPEAR = NOMBRE_VISIBLE[HERRAMIENTA.MAPEAR_CAMPOS];
 const GENERAR = NOMBRE_VISIBLE[HERRAMIENTA.GENERAR_FORMULARIO];
@@ -73,7 +88,10 @@ function fin(herramienta: string, caso: string, ok: boolean): AccionUi {
   });
 }
 
-function listado(caso: string | null): readonly AccionUi[] {
+function lecturaRefutada(
+  caso: string | null,
+  codigo: string = CODIGO_ERROR.CASO_NO_ENCONTRADO,
+): readonly AccionUi[] {
   return [
     inicio(LEER, caso),
     evento({
@@ -83,11 +101,15 @@ function listado(caso: string | null): readonly AccionUi[] {
       herramienta: LEER,
       caso,
       ok: false,
-      codigo: CODIGO_ERROR.CASO_NO_ENCONTRADO,
+      codigo,
       resumen: null,
       resultado: null,
     }),
   ];
+}
+
+function listado(caso: string | null): readonly AccionUi[] {
+  return lecturaRefutada(caso, CODIGO_ERROR.CASO_NO_ENCONTRADO);
 }
 
 function llamada(herramienta: string, caso: string, ok = true): readonly AccionUi[] {
@@ -300,7 +322,7 @@ describe("las seis etapas del progreso por caso (UI-08)", () => {
 });
 
 describe("el listado de casos no agrega bloques al panel ni pide archivos (G-03-17)", () => {
-  const pregunta = turno("¿Qué casos hay disponibles?");
+  const pregunta = turno(PREGUNTA_LISTADO);
 
   test("con la forma real del cable (caso vacío, CASO_NO_ENCONTRADO), en vivo y al cerrar el turno", () => {
     const eventos = listado("");
@@ -329,6 +351,107 @@ describe("el listado de casos no agrega bloques al panel ni pide archivos (G-03-
     ]);
     expect(progresoPorCaso(cerrado).map((elemento) => elemento.caso)).toEqual([EC]);
     expect([...marcasDeArchivos(cerrado)]).toEqual([[EC, 1]]);
+  });
+});
+
+const CONFIG: ConfigResponse = {
+  fechaEjecucion: "2026-09-15",
+  zona: "America/Bogota",
+  casos: CASOS_FIXTURE,
+  presupuestoSesion: 200_000,
+  mensajeMaximo: 2_000,
+};
+
+const conConfig: AccionUi = { tipo: ACCION_UI.CONFIG_RECIBIDA, config: CONFIG };
+
+describe("un caso desconocido o refutado no entra al panel ni a las marcas (G-03-17, T-03-46)", () => {
+  test("con config, un caso que no está en /api/config no crea bloque a mitad del turno ni al cerrarlo", () => {
+    expect(progreso([conConfig, ...turno(`procesa ${PE}`), inicio(LEER, PE)])).toEqual([]);
+    const cerrado = aplicar([conConfig, ...turno(`procesa ${PE}`), ...lecturaRefutada(PE), finDeTurno]);
+    expect(progresoPorCaso(cerrado)).toEqual([]);
+    expect(marcasDeArchivos(cerrado).size).toBe(0);
+  });
+
+  test("con config, un caso conocido sigue entrando al panel y a las marcas", () => {
+    const cerrado = aplicar([conConfig, ...turno(`procesa ${EC}`), ...llamada(LEER, EC), finDeTurno]);
+    expect(progresoPorCaso(cerrado).map((elemento) => elemento.caso)).toEqual([EC]);
+    expect([...marcasDeArchivos(cerrado)]).toEqual([[EC, 1]]);
+  });
+
+  test("sin config, el bloque no queda tras el tool_end refutado con CASO_NO_ENCONTRADO o CASO_INVALIDO", () => {
+    for (const codigo of [CODIGO_ERROR.CASO_NO_ENCONTRADO, CODIGO_ERROR.CASO_INVALIDO]) {
+      const cerrado = aplicar([...turno(`procesa ${PE}`), ...lecturaRefutada(PE, codigo), finDeTurno]);
+      expect(progresoPorCaso(cerrado)).toEqual([]);
+      expect(marcasDeArchivos(cerrado).size).toBe(0);
+    }
+  });
+
+  test("sin config, un caso real con otro fallo sigue en el panel con su etapa en error", () => {
+    const acciones = [...turno(`procesa ${EC}`), ...llamada(LEER, EC, false), finDeTurno];
+    expect(estadosDe(acciones, EC)).toEqual([ERROR, PENDIENTE, PENDIENTE, PENDIENTE, PENDIENTE, PENDIENTE]);
+    expect([...marcasDeArchivos(aplicar(acciones))]).toEqual([[EC, 1]]);
+  });
+});
+
+function herramientaVista(llamadaId: string, caso: string | null, ok: boolean): HerramientaVistaUi {
+  return {
+    llamadaId,
+    herramienta: LEER,
+    caso,
+    argumentos: { caso: caso ?? "" },
+    ok,
+    codigo: ok ? null : CODIGO_ERROR.CASO_NO_ENCONTRADO,
+    resumen: null,
+    resultado: null,
+  };
+}
+
+const VISTA_CON_LISTADO: VistaSesionUi = {
+  sesionId: SESION,
+  turnos: [
+    {
+      mensaje: PREGUNTA_LISTADO,
+      herramientas: [herramientaVista("call_viejo", "", false), herramientaVista("call_nuevo", null, false)],
+      texto: `Casos disponibles: ${CASOS_FIXTURE.join(", ")}.`,
+    },
+    {
+      mensaje: `procesa ${EC}`,
+      herramientas: [herramientaVista("call_ec", EC, true)],
+      texto: `Leí ${EC}.`,
+    },
+  ],
+  pendientes: [],
+  casosEnviados: [],
+  tokensUsados: 0,
+  ocupada: false,
+};
+
+describe("al recargar, el listado tampoco agrega bloques ni marcas (G-03-17)", () => {
+  test("con el caso vacío de un servidor anterior o con caso null, solo queda el caso real", () => {
+    const recargado = { ...estadoDesdeVista(VISTA_CON_LISTADO), enCurso: false };
+    expect(progresoPorCaso(recargado).map((elemento) => elemento.caso)).toEqual([EC]);
+    expect([...marcasDeArchivos(recargado)]).toEqual([[EC, 1]]);
+  });
+
+  test("con config cargada el resultado es el mismo", () => {
+    const recargado = { ...estadoDesdeVista(VISTA_CON_LISTADO), enCurso: false, config: CONFIG };
+    expect(progresoPorCaso(recargado).map((elemento) => elemento.caso)).toEqual([EC]);
+    expect([...marcasDeArchivos(recargado)]).toEqual([[EC, 1]]);
+  });
+});
+
+describe("el indicador y la región viva con el listado en curso (G-03-17)", () => {
+  test("dicen Leyendo la solicitud… y Ejecutando Leer solicitud, sin separador ni preposición colgando", () => {
+    const enCurso = aplicar([...turno(PREGUNTA_LISTADO), inicio(LEER, "")]);
+    expect(etiquetaPensando(enCurso)).toBe(TEXTO_CHAT.pensandoEn(TEXTO_HERRAMIENTA.gerundio(LEER), null));
+    expect(etiquetaPensando(enCurso)).toBe("Leyendo la solicitud…");
+    expect(anuncioDeEstado(enCurso)).toBe("Ejecutando Leer solicitud");
+  });
+
+  test("un caso desconocido con patrón válido se sigue nombrando mientras corre", () => {
+    const enCurso = aplicar([conConfig, ...turno(`procesa ${PE}`), inicio(LEER, PE)]);
+    expect(etiquetaPensando(enCurso)).toBe(`Leyendo la solicitud · ${PE}…`);
+    expect(anuncioDeEstado(enCurso)).toBe(`Ejecutando Leer solicitud de ${PE}`);
   });
 });
 
