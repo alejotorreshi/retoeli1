@@ -3,16 +3,16 @@ gsd_state_version: "1.0"
 current_phase: 03
 current_phase_name: Chat web, API SSE y despliegue
 status: executing
-stopped_at: Completed 03-04-PLAN.md
-last_updated: "2026-10-15T00:08:15.355Z"
+stopped_at: Completed 03-05-PLAN.md
+last_updated: "2026-10-15T00:19:46.857Z"
 last_activity: 2026-10-14
 last_activity_desc: Phase 03 execution started
-state_head: c14dd555421395b9a773ba7cd255e5a853a462b5
+state_head: d6cbf201e4134297c0702065a084f3e7843a67d4
 progress:
   total_phases: 4
   completed_phases: 2
   total_plans: 66
-  completed_plans: 43
+  completed_plans: 44
   percent: 50
 ---
 
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-10-14)
 ## Current Position
 
 Phase: 03 (Chat web, API SSE y despliegue) — EXECUTING
-Plan: 5 of 27
+Plan: 6 of 27
 Status: Ready to execute
 Last activity: 2026-10-14 — Phase 03 execution started
 
@@ -100,6 +100,7 @@ Progress: [█████░░░░░] 50%
 | Phase 03 P02 | 9 min | 2 tasks | 14 files |
 | Phase 03 P03 | 29min | 2 tasks | 15 files |
 | Phase 03 P04 | 8min | 2 tasks | 15 files |
+| Phase 03 P05 | 9 min | 2 tasks | 18 files |
 
 ## Accumulated Context
 
@@ -221,6 +222,8 @@ Recent decisions affecting current work:
 - [Phase 03]: 03-04: ACCESS_CODE obligatorio en todo entorno y NODE_ENV=production por defecto; ACCESS_TOKEN_SECRET obligatorio en producción y efímero (256 bits) en desarrollo
 - [Phase 03]: 03-04: ACCESS_TOKEN_SECRET no puede repetir ACCESS_CODE ni la clave del modelo; el servidor no arranca
 - [Phase 03]: 03-04: token de acceso v1.<vence en ms> firmado con setSignedCookie; vencimiento entero canónico comparado en el servidor; guardia app.use(/api/*) registrada después de health y acceso
+- [Phase 03]: 03-05: el guardián web (W1-W13) detecta el texto JSX transpilando con Bun.Transpiler y comparte los escáneres de G1-G16 desde tests/helpers
+- [Phase 03]: 03-05: ante ERROR_HTTP o ERROR_RED el borrador vuelve al compositor; ante FIN_STREAM no, porque el turno pudo correr
 
 ### Pending Todos
 
@@ -255,6 +258,6 @@ Items acknowledged and deferred at milestone close, most recent first:
 
 ## Session Continuity
 
-Last session: 2026-10-15T00:08:02.006Z
-Stopped at: Completed 03-04-PLAN.md
+Last session: 2026-10-15T00:19:46.778Z
+Stopped at: Completed 03-05-PLAN.md
 Resume file: None
