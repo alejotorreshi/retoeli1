@@ -22,7 +22,7 @@ function esCopiaDeFormulario(nombre: string): boolean {
   return COPIAS_DE_FORMULARIO.has(nombre);
 }
 
-function esCopiaDeSoporte(nombre: string): boolean {
+export function esCopiaDeSoporte(nombre: string): boolean {
   return (
     PATRON_ARCHIVO_SOPORTE.test(nombre) && !nombre.includes("..") && !NOMBRES_RESERVADOS_PAQUETE.has(nombre)
   );

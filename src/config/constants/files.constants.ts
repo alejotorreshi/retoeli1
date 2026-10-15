@@ -31,6 +31,8 @@ export const ARCHIVO_BITACORA = "log.jsonl";
 
 export const DIRECTORIO_PAQUETE = "paquete";
 
+export const PREFIJO_PAQUETE = `${DIRECTORIO_PAQUETE}/`;
+
 export const ARCHIVOS_SALIDA = {
   MAPEO: "mapeo.json",
   FORMULARIO_XLSX: "formulario.xlsx",
@@ -67,6 +69,31 @@ export const NOMBRES_RESERVADOS_PAQUETE: ReadonlySet<string> = new Set([
   ...Object.values(ARCHIVOS_PAQUETE),
   ...Object.values(ARCHIVO_FORMULARIO),
 ]);
+
+export const TIPO_ARCHIVO_CASO = {
+  FORMULARIO: "formulario",
+  VALORES_PORTAL: "valores_portal",
+  CHECKLIST: "checklist",
+  BORRADOR: "borrador",
+  ENVIO_SIMULADO: "envio_simulado",
+  SOPORTE: "soporte",
+} as const;
+
+export const TIPO_VISTA_PREVIA = {
+  TABLA: "tabla",
+  TEXTO: "texto",
+} as const;
+
+export const SEPARADOR_EXTENSION = ".";
+
+export const TIPO_CONTENIDO_POR_EXTENSION: Readonly<Record<string, string>> = {
+  xlsx: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  pdf: "application/pdf",
+  md: "text/markdown; charset=utf-8",
+  txt: "text/plain; charset=utf-8",
+};
+
+export const TIPO_CONTENIDO_BINARIO = "application/octet-stream";
 
 export const ARCHIVO_PLANTILLA = {
   [TIPO_PLANTILLA.CELDAS]: ARCHIVOS_CASO.plantillaCeldas,

@@ -1,3 +1,5 @@
+import { DIRECTORIO_PAQUETE } from "@/config/constants/files.constants.ts";
+
 export const PUERTO_API_POR_DEFECTO = 3000;
 
 export const PUERTO_MAXIMO = 65_535;
@@ -14,13 +16,26 @@ export const PREFIJO_API = "/api";
 
 export const PARAMETRO_SESION = "id";
 
+export const PARAMETRO_CASO = "caso";
+
+export const PARAMETRO_ARCHIVO = "nombre";
+
+const RUTA_CASO = `${PREFIJO_API}/casos/:${PARAMETRO_CASO}`;
+
 export const RUTA_API = {
   SALUD: `${PREFIJO_API}/health`,
   CHAT: `${PREFIJO_API}/chat`,
   ACCESO: `${PREFIJO_API}/acceso`,
   CONFIG: `${PREFIJO_API}/config`,
   SESION: `${PREFIJO_API}/sessions/:${PARAMETRO_SESION}`,
+  ARCHIVOS: `${RUTA_CASO}/archivos`,
+  ARCHIVO: `${RUTA_CASO}/archivos/:${PARAMETRO_ARCHIVO}`,
+  ARCHIVO_PAQUETE: `${RUTA_CASO}/archivos/${DIRECTORIO_PAQUETE}/:${PARAMETRO_ARCHIVO}`,
+  VISTA_PREVIA: `${RUTA_CASO}/vista-previa/:${PARAMETRO_ARCHIVO}`,
+  VISTA_PREVIA_PAQUETE: `${RUTA_CASO}/vista-previa/${DIRECTORIO_PAQUETE}/:${PARAMETRO_ARCHIVO}`,
 } as const;
+
+export const DISPOSICION_ADJUNTO = "attachment";
 
 export const RUTA_API_PROTEGIDA = `${PREFIJO_API}/*`;
 
@@ -114,11 +129,13 @@ export const CABECERA = {
   TIPO_CONTENIDO: "Content-Type",
   AUTORIZACION: "Authorization",
   X_FORWARDED_FOR: "X-Forwarded-For",
+  CONTENT_DISPOSITION: "Content-Disposition",
 } as const;
 
 export const VALOR_CABECERA = {
   SIN_CACHE_NI_TRANSFORMACION: "no-cache, no-transform",
   SIN_BUFFER: "no",
+  SIN_ALMACENAR: "no-store",
 } as const;
 
 export const TIPO_CONTENIDO = {

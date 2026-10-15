@@ -364,6 +364,9 @@ export const MENSAJE_HTTP = {
   servidorOcupado: "El servidor está atendiendo otras conversaciones. Vuelve a intentarlo en unos segundos.",
   demasiadasSesiones:
     "Abriste demasiadas sesiones nuevas en la última hora. Sigue en la sesión actual o vuelve a intentarlo más tarde.",
+  casoNoEncontrado: "El caso pedido no existe. Revisa el nombre del caso.",
+  archivoNoEncontrado:
+    "El archivo pedido no existe en este caso. Si el servidor se reinició, vuelve a procesar el caso.",
 } as const;
 
 export const TEXTO_SESION = {

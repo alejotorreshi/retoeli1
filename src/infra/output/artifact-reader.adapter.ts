@@ -1,0 +1,143 @@
+import { lstat, readdir, realpath } from "node:fs/promises";
+import { join } from "node:path";
+import type {
+  ArchivoCaso,
+  ArchivoServible,
+  LectorArtefactos,
+  TipoArchivo,
+  VistaPrevia,
+} from "@/application/types/artefactos.type.ts";
+import {
+  ARCHIVOS_PAQUETE,
+  ARCHIVOS_SALIDA,
+  ARCHIVOS_SISTEMA_IGNORADOS,
+  PREFIJO_PAQUETE,
+  SEPARADOR_EXTENSION,
+  TIPO_ARCHIVO_CASO,
+  TIPO_CONTENIDO_BINARIO,
+  TIPO_CONTENIDO_POR_EXTENSION,
+} from "@/config/constants/files.constants.ts";
+import { PATRON_CASO } from "@/config/constants/patterns.constants.ts";
+import { listCases } from "@/infra/fixtures/case-resolver.adapter.ts";
+import { isNotFound } from "@/infra/fs/fs.util.ts";
+import { existingRealCaseDirectory, isInside, realPackageDirectory } from "@/infra/fs/safe-paths.util.ts";
+import { esCopiaDeSoporte } from "@/infra/output/package-copy.adapter.ts";
+import type {
+  ArtifactDirectories,
+  ArtifactEntry,
+  ServableArtifact,
+} from "@/infra/types/artifact-reader.type.ts";
+
+function caseEntry(file: string, tipo: TipoArchivo): ArtifactEntry {
+  return { name: file, file, inPackage: false, tipo };
+}
+
+function packageEntry(file: string, tipo: TipoArchivo): ArtifactEntry {
+  return { name: `${PREFIJO_PAQUETE}${file}`, file, inPackage: true, tipo };
+}
+
+const FIXED_ENTRIES: readonly ArtifactEntry[] = [
+  caseEntry(ARCHIVOS_SALIDA.FORMULARIO_XLSX, TIPO_ARCHIVO_CASO.FORMULARIO),
+  caseEntry(ARCHIVOS_SALIDA.FORMULARIO_PDF, TIPO_ARCHIVO_CASO.FORMULARIO),
+  caseEntry(ARCHIVOS_SALIDA.VALORES_PORTAL, TIPO_ARCHIVO_CASO.VALORES_PORTAL),
+  packageEntry(ARCHIVOS_PAQUETE.CHECKLIST, TIPO_ARCHIVO_CASO.CHECKLIST),
+  packageEntry(ARCHIVOS_PAQUETE.BORRADOR_CORREO, TIPO_ARCHIVO_CASO.BORRADOR),
+  caseEntry(ARCHIVOS_SALIDA.ENVIO_SIMULADO, TIPO_ARCHIVO_CASO.ENVIO_SIMULADO),
+];
+
+function isPreviewable(tipo: TipoArchivo): boolean {
+  return tipo !== TIPO_ARCHIVO_CASO.SOPORTE;
+}
+
+function contentTypeOf(file: string): string {
+  const extension = file.slice(file.lastIndexOf(SEPARADOR_EXTENSION) + 1).toLowerCase();
+  return TIPO_CONTENIDO_POR_EXTENSION[extension] ?? TIPO_CONTENIDO_BINARIO;
+}
+
+async function isKnownCase(root: string, caso: string): Promise<boolean> {
+  return PATRON_CASO.test(caso) && (await listCases(root)).includes(caso);
+}
+
+async function existingPackageDirectory(caseDirectory: string): Promise<string | null> {
+  try {
+    return await realPackageDirectory(caseDirectory);
+  } catch (error) {
+    if (isNotFound(error)) return null;
+    throw error;
+  }
+}
+
+async function directoriesOf(root: string, caso: string): Promise<ArtifactDirectories | null> {
+  const caseDirectory = await existingRealCaseDirectory(root, caso);
+  if (caseDirectory === null) return null;
+  return { caseDirectory, packageDirectory: await existingPackageDirectory(caseDirectory) };
+}
+
+async function supportEntries(packageDirectory: string | null): Promise<readonly ArtifactEntry[]> {
+  if (packageDirectory === null) return [];
+  const entries = await readdir(packageDirectory, { withFileTypes: true });
+  return entries
+    .filter((entry) => entry.isFile() && !ARCHIVOS_SISTEMA_IGNORADOS.has(entry.name))
+    .map((entry) => entry.name)
+    .filter(esCopiaDeSoporte)
+    .sort()
+    .map((file) => packageEntry(file, TIPO_ARCHIVO_CASO.SOPORTE));
+}
+
+async function regularFileInside(directory: string, file: string): Promise<string | null> {
+  const path = join(directory, file);
+  try {
+    if (!(await lstat(path)).isFile()) return null;
+    const real = await realpath(path);
+    return isInside(directory, real) ? real : null;
+  } catch (error) {
+    if (isNotFound(error)) return null;
+    throw error;
+  }
+}
+
+async function resolveEntry(
+  entry: ArtifactEntry,
+  directories: ArtifactDirectories,
+): Promise<ServableArtifact | null> {
+  const directory = entry.inPackage ? directories.packageDirectory : directories.caseDirectory;
+  if (directory === null) return null;
+  const realPath = await regularFileInside(directory, entry.file);
+  return realPath === null ? null : { entry, realPath };
+}
+
+async function servableArtifacts(root: string, caso: string): Promise<readonly ServableArtifact[] | null> {
+  if (!(await isKnownCase(root, caso))) return null;
+  const directories = await directoriesOf(root, caso);
+  if (directories === null) return [];
+  const entries = [...FIXED_ENTRIES, ...(await supportEntries(directories.packageDirectory))];
+  const resolved = await Promise.all(entries.map((entry) => resolveEntry(entry, directories)));
+  return resolved.filter((artifact): artifact is ServableArtifact => artifact !== null);
+}
+
+function toCaseFile({ entry }: ServableArtifact): ArchivoCaso {
+  return { nombre: entry.name, tipo: entry.tipo, previsualizable: isPreviewable(entry.tipo) };
+}
+
+async function findArtifact(root: string, caso: string, nombre: string): Promise<ServableArtifact | null> {
+  const artifacts = await servableArtifacts(root, caso);
+  return artifacts?.find((artifact) => artifact.entry.name === nombre) ?? null;
+}
+
+export function createArtifactReader(root: string): LectorArtefactos {
+  return {
+    async listar(caso: string): Promise<readonly ArchivoCaso[] | null> {
+      const artifacts = await servableArtifacts(root, caso);
+      return artifacts === null ? null : artifacts.map(toCaseFile);
+    },
+    async abrir(caso: string, nombre: string): Promise<ArchivoServible | null> {
+      const artifact = await findArtifact(root, caso, nombre);
+      if (artifact === null) return null;
+      const tipoContenido = contentTypeOf(artifact.entry.file);
+      return { nombre: artifact.entry.file, tipoContenido, cuerpo: Bun.file(artifact.realPath) };
+    },
+    async vistaPrevia(_caso: string, _nombre: string): Promise<VistaPrevia | null> {
+      return null;
+    },
+  };
+}

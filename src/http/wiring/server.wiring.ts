@@ -43,6 +43,7 @@ import { resolveClientIp } from "@/http/middlewares/client-ip.middleware.ts";
 import { requireJson } from "@/http/middlewares/json-only.middleware.ts";
 import { limitByClientIp } from "@/http/middlewares/rate-limit.middleware.ts";
 import { registerAccessRoute } from "@/http/routes/access.route.ts";
+import { registerArtifactRoutes } from "@/http/routes/artifacts.route.ts";
 import { registerChatRoute } from "@/http/routes/chat.route.ts";
 import { registerConfigRoute } from "@/http/routes/config.route.ts";
 import { registerHealthRoute } from "@/http/routes/health.route.ts";
@@ -64,6 +65,7 @@ import { clockFromToolEnv, systemClock } from "@/infra/clock/clock.adapter.ts";
 import { listCases } from "@/infra/fixtures/case-resolver.adapter.ts";
 import { resolveRoot } from "@/infra/fixtures/fixtures-reader.adapter.ts";
 import { createLogger } from "@/infra/logging/logger.adapter.ts";
+import { createArtifactReader } from "@/infra/output/artifact-reader.adapter.ts";
 import type { OpcionesAgente } from "@/loop/types/agente.type.ts";
 import { crearAgente, secretosDelAgente } from "@/loop/wiring/agente.wiring.ts";
 
@@ -238,6 +240,7 @@ export function createServer(options: ServerOptions): ServerCreation {
   app.use(RUTA_API_PROTEGIDA, requireAccess(access));
   registerConfigRoute(app, configSource(options.rootDirectory, config.data, env.data));
   registerSessionsRoute(app, { agente });
+  registerArtifactRoutes(app, { lector: createArtifactReader(resolveRoot(options.rootDirectory)) });
   app.post(
     RUTA_API.CHAT,
     limitByClientIp(chatMessagesLimiter(env.data, options), MENSAJE_HTTP.demasiadosMensajes),
