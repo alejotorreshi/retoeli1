@@ -1369,3 +1369,65 @@ describe("D-76.1: un simular_envio truncado también deja su aviso", () => {
     historialSano(prueba);
   });
 });
+
+describe("D-76.1: un reintento del mismo caso legible manda sobre su intento truncado", () => {
+  test("un truncado de ec seguido de un reintento enviado de ec no deja aviso y envía una sola vez", async () => {
+    const afirmacion = `Registré el envío simulado de ${EC}.`;
+    const prueba = agente([
+      ...armarCaso(EC),
+      pasoCortado(simularCrudo("simular-1", JSON.stringify({ caso: EC, confirmado: true }))),
+      respuestaHerramientas(simular("simular-2", { caso: EC })),
+      respuestaTexto(afirmacion),
+    ]);
+    await prueba.turno(`procesa ${EC}`);
+    const turno2 = await prueba.turno(`envía ${EC}`);
+    expect(textoFinal(turno2)).toBe(afirmacion);
+    expect(finDeTurno(turno2).needsConfirmation).toBe(false);
+    expect(await casosConEnvioSimulado(proyecto.raiz)).toEqual([EC]);
+    expect(await enviosOk()).toBe(1);
+    historialSano(prueba);
+  });
+
+  test("un truncado sin caso legible seguido de un envío correcto de ec deja el aviso SIN_CASO y el envío registrado una vez", async () => {
+    const afirmacion = `Registré el envío simulado de ${EC}.`;
+    const prueba = agente([
+      ...armarCaso(EC),
+      pasoCortado(simularCrudo("simular-1", JSON_CORTADO_EC)),
+      respuestaHerramientas(simular("simular-2", { caso: EC })),
+      respuestaTexto(afirmacion),
+    ]);
+    await prueba.turno(`procesa ${EC}`);
+    const turno2 = await prueba.turno(`envía ${EC}`);
+    expect(textoFinal(turno2)).toBe(
+      `${afirmacion}${SEPARADOR_PARRAFOS}${TEXTO_ENVIO_NO_REGISTRADO[DESENLACE_ENVIO.SIN_CASO]()}`,
+    );
+    expect(finDeTurno(turno2).needsConfirmation).toBe(false);
+    expect(await casosConEnvioSimulado(proyecto.raiz)).toEqual([EC]);
+    expect(await enviosOk()).toBe(1);
+    historialSano(prueba);
+  });
+
+  test("un truncado de ec sin reintento no quema la autorización: vuelve a preguntar y el 'envía' siguiente envía una vez", async () => {
+    const afirmacion = `Registré el envío simulado de ${EC}.`;
+    const prueba = agente([
+      ...armarCaso(EC),
+      pasoCortado(simularCrudo("simular-1", JSON.stringify({ caso: EC, confirmado: true }))),
+      respuestaTexto(afirmacion),
+      ...enviar("simular-3", EC),
+    ]);
+    await prueba.turno(`procesa ${EC}`);
+    const turno2 = await prueba.turno(`envía ${EC}`);
+    expect(textoFinal(turno2)).toBe(
+      `${afirmacion}${SEPARADOR_PARRAFOS}${avisoDe(DESENLACE_ENVIO.REQUIERE_CONFIRMACION, EC)}${SEPARADOR_PARRAFOS}${PREGUNTA_EC}`,
+    );
+    expect(ultimoParrafo(textoFinal(turno2))).toBe(PREGUNTA_EC);
+    expect(finDeTurno(turno2).needsConfirmation).toBe(true);
+    expect(casosPorConfirmar(turno2)).toEqual([EC]);
+    expect(await casosConEnvioSimulado(proyecto.raiz)).toEqual([]);
+
+    const turno3 = await prueba.turno(`envía ${EC}`);
+    expect(finesDeHerramienta(turno3)).toEqual([exitosa()]);
+    expect(await enviosOk()).toBe(1);
+    historialSano(prueba);
+  });
+});
