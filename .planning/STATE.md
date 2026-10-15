@@ -3,16 +3,16 @@ gsd_state_version: "1.0"
 current_phase: 03
 current_phase_name: Chat web, API SSE y despliegue
 status: executing
-stopped_at: Completed 03-42-PLAN.md
-last_updated: "2026-10-15T20:14:08.063Z"
+stopped_at: Completed 03-43-PLAN.md
+last_updated: "2026-10-15T20:19:35.945Z"
 last_activity: 2026-10-15
 last_activity_desc: Phase 03 execution started
-state_head: 776f56d27e3762497e5f516f08d793ceb11b55dc
+state_head: 988124eb95c58831efe0cd6f1b0aea05b9c22a90
 progress:
   total_phases: 4
   completed_phases: 2
   total_plans: 82
-  completed_plans: 81
+  completed_plans: 82
   percent: 50
 ---
 
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-10-14)
 ## Current Position
 
 Phase: 03 (Chat web, API SSE y despliegue) — EXECUTING
-Plan: 4 of 43
+Plan: 5 of 43
 Status: Ready to execute
 Last activity: 2026-10-15 — Phase 03 execution started
 
@@ -138,6 +138,7 @@ Progress: [█████░░░░░] 50%
 | Phase 03 P40 | 4 min | 2 tasks | 6 files |
 | Phase 03 P41 | 4 min | 2 tasks | 3 files |
 | Phase 03 P42 | 4 min | 2 tasks | 4 files |
+| Phase 03 P43 | 4min | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -337,6 +338,7 @@ Recent decisions affecting current work:
 - [Phase 03]: 03-40 (D-76.1): un proveedor_simular_envio truncado anota EVENTO_COMPUERTA.TRUNCADO; con caso legible se clasifica como BLOQUEADO y un reintento posterior del mismo caso manda sobre él; sin caso legible deja siempre SIN_CASO
 - [Phase 03]: D-77 (03-41): el limitador desaloja solo la clave no bloqueada más antigua, limita a limit los golpes desalojados por ventana y falla cerrado sin lugar seguro; la rotación de claves queda acotada a (K+1)xL
 - [Phase 03]: D-73.5.2 (03-42): Empezar sesión nueva olvida el sessionId guardado (sesionGuardadaTras + sincronizarSesionGuardada); el anterior vive solo en memoria y Volver a la sesión anterior lo vuelve a guardar; recargar tras el 429 empieza sin sesión
+- [Phase 03]: D-78 aplicado por posición (03-43): cualquier subida que deja la vista a más de 96 px del fondo despega sin ventana de tiempo; la bajada propia anota AJUSTE_PROPIO y el anclaje o un encogimiento no despegan
 
 ### Pending Todos
 
@@ -372,6 +374,6 @@ Items acknowledged and deferred at milestone close, most recent first:
 
 ## Session Continuity
 
-Last session: 2026-10-15T20:14:07.971Z
-Stopped at: Completed 03-42-PLAN.md
+Last session: 2026-10-15T20:19:35.854Z
+Stopped at: Completed 03-43-PLAN.md
 Resume file: None
