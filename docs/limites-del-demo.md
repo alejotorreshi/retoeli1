@@ -31,6 +31,16 @@ La cookie de acceso sí sobrevive, porque su firma depende de `ACCESS_TOKEN_SECR
 
 Lo que sí limita el gasto aunque el proceso se reinicie: el tope de iteraciones por turno, el presupuesto de tokens por sesión, el `max_tokens` por llamada, el plazo por turno y el código de acceso.
 
+## Un solo camino de entrada
+
+Los topes por IP (intentos fallidos, mensajes por minuto y sesiones nuevas por hora) toman la IP del cliente de `X-Forwarded-For`, contando `TRUSTED_PROXY_HOPS` entradas desde la derecha. En Render el valor es `3` (`SALTOS_PROXY_RENDER`, fijado en `render.yaml`), y se midió en vivo sobre el único hostname público, `registro-proveedor-bfnt.onrender.com`, que pasa por Cloudflare y por el borde de Render.
+
+Ese número solo vale para ese camino. Si el servicio también se publicara por otro hostname con distinta cantidad de proxies (un dominio propio, otro CDN), quien llama podría anteponer entradas falsas a `X-Forwarded-For` y elegir la IP con la que se cuentan sus topes. Por eso:
+
+- el demo se publica por un solo hostname y no se le agrega un dominio propio;
+- si se agrega otro hostname, hay que volver a medir los saltos en cada uno (`curl` con y sin `-H "X-Forwarded-For: 203.0.113.9"` y `LOG_LEVEL=debug`, mirando `entradasXff` en el evento `http_client_ip_resolved`) y usar un solo valor que sirva para todos, o dejar uno solo;
+- si la entrada elegida no es una IP válida, el servidor cuenta por la dirección del socket en lugar de usar ese texto como clave.
+
 ## Qué haría un despliegue real
 
 - Guardar contadores, bloqueos y sesiones en un almacén compartido y persistente (Redis o una base de datos), con claves que venzan solas, para que sobrevivan a reinicios y valgan entre varias instancias.

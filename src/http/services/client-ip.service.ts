@@ -63,5 +63,5 @@ export function clientIpFrom(input: ClientIpInput): string {
   if (input.trustedHops === 0) return socket;
   const entries = forwardedEntries(input.forwardedFor);
   const chosen = entries[entries.length - input.trustedHops];
-  return chosen === undefined ? socket : keyOrRaw(chosen);
+  return (chosen === undefined ? null : rateLimitKeyOf(chosen)) ?? socket;
 }

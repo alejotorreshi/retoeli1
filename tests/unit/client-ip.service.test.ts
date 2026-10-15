@@ -113,4 +113,13 @@ describe("clientIpFrom con IPv6", () => {
     });
     expect(una).toBe(otra);
   });
+
+  test("si la entrada que toca no es una IP usa la dirección del socket", () => {
+    expect(
+      clientIpFrom({ forwardedFor: `${CLIENTE}, no-es-ip`, socketAddress: SOCKET, trustedHops: 1 }),
+    ).toBe(SOCKET);
+    expect(clientIpFrom({ forwardedFor: `unknown, ${CLIENTE}`, socketAddress: SOCKET, trustedHops: 2 })).toBe(
+      SOCKET,
+    );
+  });
 });
