@@ -59,9 +59,10 @@ function readAgentConfig(options: ServerOptions) {
   return options.envSource === undefined ? readAgentEnv() : parseAgentEnv(options.envSource);
 }
 
-function agentOptions(options: ServerOptions): OpcionesAgente {
+function agentOptions(options: ServerOptions, accessSecrets: readonly string[]): OpcionesAgente {
   return {
     directorio: options.rootDirectory,
+    secretosAdicionales: accessSecrets,
     fetch: options.fetch,
     ...(options.envSource === undefined ? {} : { fuenteEntorno: options.envSource }),
     ...(options.wait === undefined ? {} : { esperar: options.wait }),
@@ -139,11 +140,11 @@ function registerFallbackHandlers(app: Hono<HttpEnv>, logger: BitacoraEstructura
 export function createServer(options: ServerOptions): ServerCreation {
   const env = readEnv(options);
   if (!env.success) return { ok: false, mensaje: formatearIssues(env.error.issues, MAX_ISSUES_ARGS) };
-  const creation = crearAgente(agentOptions(options));
+  const access = accessSettings(env.data, options);
+  const creation = crearAgente(agentOptions(options, [access.code, access.tokenSecret]));
   if (!creation.ok) return { ok: false, mensaje: creation.mensaje };
   const config = readAgentConfig(options);
   if (!config.success) return { ok: false, mensaje: formatearIssues(config.error.issues, MAX_ISSUES_ARGS) };
-  const access = accessSettings(env.data, options);
   const agentSecrets = secretosDelAgente(config.data);
   if (agentSecrets.includes(access.tokenSecret)) return { ok: false, mensaje: sharedTokenSecretReason() };
   const secrets = [...agentSecrets, access.code, access.tokenSecret];

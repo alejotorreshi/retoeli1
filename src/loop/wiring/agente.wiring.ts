@@ -98,7 +98,7 @@ function bitacoraDe(opciones: OpcionesAgente, config: AgentEnv, secretos: readon
 
 function dependencias(opciones: OpcionesAgente, config: AgentEnv, apiKey: string): DependenciasTurno {
   const reloj = relojCompartidoConHerramientas();
-  const secretos = secretosDelAgente(config);
+  const secretos = [...secretosDelAgente(config), ...(opciones.secretosAdicionales ?? [])];
   return {
     llm: modeloDelAgente(opciones, config, apiKey),
     herramientas: crearRegistroHerramientas(proveedor),

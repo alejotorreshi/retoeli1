@@ -12,6 +12,7 @@ export type OpcionesAgente = {
   readonly directorioConocimiento?: string;
   readonly esperar?: RetryOptions["wait"];
   readonly destinoLogs?: DestinoBitacora;
+  readonly secretosAdicionales?: readonly string[];
 };
 
 export type Agente = {
