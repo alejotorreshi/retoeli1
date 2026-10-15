@@ -16,6 +16,7 @@ function cleanFields(
 
 function wrap(logger: Logger, secrets: readonly string[]): BitacoraEstructurada {
   return {
+    depurar: (event, fields) => logger.debug(cleanFields(fields, secrets), event),
     info: (event, fields) => logger.info(cleanFields(fields, secrets), event),
     advertir: (event, fields) => logger.warn(cleanFields(fields, secrets), event),
     error: (event, fields) => logger.error(cleanFields(fields, secrets), event),

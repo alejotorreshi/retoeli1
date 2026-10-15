@@ -20,6 +20,7 @@ export type DestinoBitacora = { write(linea: string): void };
 export type CamposBitacora = Readonly<Record<string, unknown>>;
 
 export type BitacoraEstructurada = {
+  depurar(evento: string, campos?: CamposBitacora): void;
   info(evento: string, campos?: CamposBitacora): void;
   advertir(evento: string, campos?: CamposBitacora): void;
   error(evento: string, campos?: CamposBitacora): void;

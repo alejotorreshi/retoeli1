@@ -5,6 +5,7 @@ import {
   ENTORNO_APP,
   LONGITUD_MINIMA_CODIGO_ACCESO,
   LONGITUD_MINIMA_SECRETO_TOKEN,
+  VENTANA_FALLOS_ACCESO_MINUTOS_POR_DEFECTO,
 } from "@/config/constants/http.constants.ts";
 import { LONGITUD_MAXIMA_CASO } from "@/config/constants/limits.constants.ts";
 import { ESQUEMA_LOOPBACK, ESQUEMA_SEGURO, HOSTS_LOOPBACK } from "@/config/constants/llm.constants.ts";
@@ -332,6 +333,14 @@ export const TEXTO_CONTEXTO = {
   fecha: (fecha: string): string => `Contexto de la sesión: la fecha de ejecución efectiva es ${fecha}.`,
 } as const;
 
+function esperarIntentos(minutos: number): string {
+  return `Demasiados intentos fallidos. Espera ${minutos} minutos y vuelve a intentarlo.`;
+}
+
+export const TEXTO_HTTP = {
+  demasiadosIntentos: esperarIntentos,
+} as const;
+
 export const MENSAJE_HTTP = {
   cuerpoInvalido:
     "El pedido no es válido: envía un JSON con sessionId (texto o null) y message (texto no vacío), sin otros campos.",
@@ -340,6 +349,7 @@ export const MENSAJE_HTTP = {
   cuerpoAccesoInvalido: "El pedido no es válido: envía un JSON con codigo (texto), sin otros campos.",
   codigoInvalido: "El código no es válido. Revísalo y vuelve a intentarlo.",
   accesoVencido: "Tu acceso venció. Escribe el código de nuevo para seguir.",
+  demasiadosIntentos: esperarIntentos(VENTANA_FALLOS_ACCESO_MINUTOS_POR_DEFECTO),
 } as const;
 
 export const TEXTO_SESION = {

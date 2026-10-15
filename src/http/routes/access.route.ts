@@ -24,7 +24,10 @@ async function readCode(c: Context<HttpEnv>): Promise<string | null> {
   }
 }
 
-type RejectStatus = typeof RESPUESTA_HTTP.PEDIDO_INVALIDO | typeof RESPUESTA_HTTP.NO_AUTORIZADO;
+type RejectStatus =
+  | typeof RESPUESTA_HTTP.PEDIDO_INVALIDO
+  | typeof RESPUESTA_HTTP.NO_AUTORIZADO
+  | typeof RESPUESTA_HTTP.DEMASIADOS_PEDIDOS;
 
 function reject(c: Context<HttpEnv>, mensaje: string, status: RejectStatus): Response {
   const body: ErrorResponse = { mensaje };
@@ -50,9 +53,14 @@ async function grantAccess(c: Context<HttpEnv>, access: AccessSettings): Promise
 
 export function registerAccessRoute(app: Hono<HttpEnv>, access: AccessSettings): void {
   app.post(RUTA_API.ACCESO, async (c) => {
+    const clientIp = c.get("clientIp");
+    if (access.failedAttempts.isLocked(clientIp)) {
+      return reject(c, access.lockedMessage, RESPUESTA_HTTP.DEMASIADOS_PEDIDOS);
+    }
     const codigo = await readCode(c);
     if (codigo === null) return reject(c, MENSAJE_HTTP.cuerpoAccesoInvalido, RESPUESTA_HTTP.PEDIDO_INVALIDO);
     if (!(await timingSafeEqual(codigo, access.code))) {
+      access.failedAttempts.hit(clientIp);
       return reject(c, MENSAJE_HTTP.codigoInvalido, RESPUESTA_HTTP.NO_AUTORIZADO);
     }
     return grantAccess(c, access);

@@ -12,7 +12,7 @@ import {
   VARIABLE_SECRETO_TOKEN,
 } from "@/config/constants/http.constants.ts";
 import { MAX_ISSUES_ARGS } from "@/config/constants/limits.constants.ts";
-import { MS_POR_HORA } from "@/config/constants/runtime.constants.ts";
+import { MS_POR_HORA, MS_POR_MINUTO } from "@/config/constants/runtime.constants.ts";
 import {
   type AgentEnv,
   parseAgentEnv,
@@ -21,12 +21,14 @@ import {
   readServerEnv,
   type ServerEnv,
 } from "@/config/env.ts";
-import { MENSAJE_HTTP, TEXTO_ENV } from "@/config/strings.ts";
+import { MENSAJE_HTTP, TEXTO_ENV, TEXTO_HTTP } from "@/config/strings.ts";
 import { formatearIssues } from "@/domain/utils/formatear-issues.util.ts";
 import { requireAccess } from "@/http/middlewares/access.middleware.ts";
+import { resolveClientIp } from "@/http/middlewares/client-ip.middleware.ts";
 import { registerAccessRoute } from "@/http/routes/access.route.ts";
 import { registerChatRoute } from "@/http/routes/chat.route.ts";
 import { registerHealthRoute } from "@/http/routes/health.route.ts";
+import { createRateLimiter } from "@/http/services/rate-limiter.service.ts";
 import type { ErrorResponse } from "@/http/types/api.type.ts";
 import type {
   AccessSettings,
@@ -63,12 +65,19 @@ function ephemeralTokenSecret(): string {
 }
 
 function accessSettings(env: ServerEnv, options: ServerOptions): AccessSettings {
+  const now = options.now ?? Date.now;
   return {
     code: env.ACCESS_CODE,
     tokenSecret: env.ACCESS_TOKEN_SECRET ?? ephemeralTokenSecret(),
     ttlMs: env.ACCESS_TOKEN_TTL_HOURS * MS_POR_HORA,
     secureCookie: env.NODE_ENV !== ENTORNO_APP.DESARROLLO,
-    now: options.now ?? Date.now,
+    now,
+    failedAttempts: createRateLimiter({
+      limit: env.ACCESS_MAX_FAILED_ATTEMPTS,
+      windowMs: env.ACCESS_FAILED_WINDOW_MINUTES * MS_POR_MINUTO,
+      now,
+    }),
+    lockedMessage: TEXTO_HTTP.demasiadosIntentos(env.ACCESS_FAILED_WINDOW_MINUTES),
   };
 }
 
@@ -110,6 +119,7 @@ export function createServer(options: ServerOptions): ServerCreation {
   const logger = httpLogger(options, config.data, secrets);
   const app = new Hono<HttpEnv>();
   registerFallbackHandlers(app, logger);
+  app.use(RUTA_API_PROTEGIDA, resolveClientIp({ trustedHops: env.data.TRUSTED_PROXY_HOPS, logger }));
   registerHealthRoute(app, { provider: creation.agente.proveedor, model: creation.agente.modelo });
   registerAccessRoute(app, access);
   app.use(RUTA_API_PROTEGIDA, requireAccess(access));

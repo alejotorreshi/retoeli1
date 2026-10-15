@@ -1,5 +1,5 @@
 import type { Hono } from "hono";
-import type { DestinoBitacora } from "@/application/types/puertos-agente.type.ts";
+import type { BitacoraEstructurada, DestinoBitacora } from "@/application/types/puertos-agente.type.ts";
 import type { FetchLike } from "@/llm/types/provider.type.ts";
 import type { RetryOptions } from "@/llm/types/resilience.type.ts";
 
@@ -8,7 +8,32 @@ export type HttpBindings = {
   requestIP(request: Request): { readonly address: string } | null;
 };
 
-export type HttpEnv = { Bindings: HttpBindings };
+export type HttpVariables = { clientIp: string };
+
+export type HttpEnv = { Bindings: HttpBindings; Variables: HttpVariables };
+
+export type RateLimiterOptions = {
+  readonly limit: number;
+  readonly windowMs: number;
+  readonly now: () => number;
+};
+
+export type RateLimiter = {
+  hit(key: string): boolean;
+  isLocked(key: string): boolean;
+  trackedKeys(): number;
+};
+
+export type ClientIpInput = {
+  readonly forwardedFor: string | undefined;
+  readonly socketAddress: string | undefined;
+  readonly trustedHops: number;
+};
+
+export type ClientIpSettings = {
+  readonly trustedHops: number;
+  readonly logger: BitacoraEstructurada;
+};
 
 export type ServerOptions = {
   readonly rootDirectory: string;
@@ -26,6 +51,8 @@ export type AccessSettings = {
   readonly ttlMs: number;
   readonly secureCookie: boolean;
   readonly now: () => number;
+  readonly failedAttempts: RateLimiter;
+  readonly lockedMessage: string;
 };
 
 export type ServerCreation =

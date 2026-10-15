@@ -3,6 +3,7 @@ import type { BitacoraEstructurada } from "@/application/types/puertos-agente.ty
 
 export function bitacoraMuda(): BitacoraEstructurada {
   const muda: BitacoraEstructurada = {
+    depurar: () => undefined,
     info: () => undefined,
     advertir: () => undefined,
     error: () => undefined,

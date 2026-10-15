@@ -54,6 +54,18 @@ export const VIGENCIA_ACCESO_HORAS_POR_DEFECTO = 12;
 
 export const VIGENCIA_ACCESO_HORAS_TOPE = 168;
 
+export const SALTOS_PROXY_POR_DEFECTO = 1;
+
+export const SALTOS_PROXY_TOPE = 10;
+
+export const SEPARADOR_X_FORWARDED_FOR = ",";
+
+export const IP_DESCONOCIDA = "unknown";
+
+export const INTENTOS_FALLIDOS_ACCESO_POR_DEFECTO = 5;
+
+export const VENTANA_FALLOS_ACCESO_MINUTOS_POR_DEFECTO = 15;
+
 export const LATIDO_SSE_MS = 8_000;
 
 export const COMENTARIO_LATIDO = "ping";
@@ -63,6 +75,7 @@ export const CABECERA = {
   X_ACCEL_BUFFERING: "X-Accel-Buffering",
   ACCEPT: "Accept",
   AUTORIZACION: "Authorization",
+  X_FORWARDED_FOR: "X-Forwarded-For",
 } as const;
 
 export const VALOR_CABECERA = {
@@ -78,6 +91,7 @@ export const TIPO_CONTENIDO = {
 export const EVENTO_HTTP = {
   STREAM_FALLIDO: "http_stream_failed",
   ERROR_NO_CONTROLADO: "http_unhandled_error",
+  IP_CLIENTE_RESUELTA: "http_client_ip_resolved",
 } as const;
 
 export const RESPUESTA_HTTP = {

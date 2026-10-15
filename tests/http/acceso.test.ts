@@ -24,7 +24,7 @@ import {
 } from "@/config/constants/http.constants.ts";
 import { pinExecutionDate } from "@/config/env.ts";
 import { MENSAJE_HTTP, TEXTO_ENV } from "@/config/strings.ts";
-import type { HttpEnv, ServerCreation } from "@/http/types/server.type.ts";
+import type { HttpBindings, HttpEnv, ServerCreation } from "@/http/types/server.type.ts";
 import { createServer } from "@/http/wiring/server.wiring.ts";
 
 const CODIGO_ERRADO = "codigo-equivocado-0000";
@@ -32,6 +32,9 @@ const RESPUESTA_MODELO = "Listo, te escucho.";
 const AHORA = 1_790_000_000_000;
 const VIGENCIA_MS = 43_200_000;
 const VACIO = "";
+const IP_CLIENTE = "192.0.2.10";
+const IP_OTRO_CLIENTE = "192.0.2.20";
+const FALLOS_PERMITIDOS = 5;
 
 type Armado = {
   readonly entorno?: Readonly<Record<string, string>>;
@@ -58,6 +61,14 @@ function appCon(respuestas: readonly RespuestaGuion[] = []): Hono<HttpEnv> {
 
 function pedir(app: Hono<HttpEnv>, ruta: string, init: RequestInit = {}): Promise<Response> {
   return Promise.resolve(app.request(ruta, init, BINDINGS_PRUEBA));
+}
+
+function bindingsDesde(ip: string): HttpBindings {
+  return { ...BINDINGS_PRUEBA, requestIP: () => ({ address: ip }) };
+}
+
+function pedirDesde(app: Hono<HttpEnv>, ip: string, ruta: string, init: RequestInit = {}): Promise<Response> {
+  return Promise.resolve(app.request(ruta, init, bindingsDesde(ip)));
 }
 
 function pedidoAcceso(codigo: string): RequestInit {
@@ -334,5 +345,31 @@ describe("configuración del acceso que falla cerrada (D-72)", () => {
     expect((await pedir(otra, RUTA_API.CHAT, pedidoChat({ Cookie: cookie }))).status).toBe(
       RESPUESTA_HTTP.NO_AUTORIZADO,
     );
+  });
+});
+
+describe("tope de intentos fallidos por IP del cliente (D-73.2)", () => {
+  test("cinco códigos errados desde un cliente responden 401 y el sexto 429, mientras otro cliente sigue entrando", async () => {
+    const app = appCon();
+    const estados: number[] = [];
+    for (let intento = 0; intento < FALLOS_PERMITIDOS; intento += 1) {
+      estados.push((await pedirDesde(app, IP_CLIENTE, RUTA_API.ACCESO, pedidoAcceso(CODIGO_ERRADO))).status);
+    }
+    expect(estados).toEqual(Array(FALLOS_PERMITIDOS).fill(RESPUESTA_HTTP.NO_AUTORIZADO));
+    const sexto = await pedirDesde(app, IP_CLIENTE, RUTA_API.ACCESO, pedidoAcceso(CODIGO_ERRADO));
+    expect(sexto.status).toBe(RESPUESTA_HTTP.DEMASIADOS_PEDIDOS);
+    expect(await sexto.json()).toEqual({ mensaje: MENSAJE_HTTP.demasiadosIntentos });
+    const otro = await pedirDesde(app, IP_OTRO_CLIENTE, RUTA_API.ACCESO, pedidoAcceso(CODIGO_PRUEBA));
+    expect(otro.status).toBe(RESPUESTA_HTTP.SIN_CONTENIDO);
+  });
+
+  test("bloqueado, el cliente recibe 429 aunque ahora mande el código correcto", async () => {
+    const app = appCon();
+    for (let intento = 0; intento < FALLOS_PERMITIDOS; intento += 1) {
+      await pedirDesde(app, IP_CLIENTE, RUTA_API.ACCESO, pedidoAcceso(CODIGO_ERRADO));
+    }
+    const correcto = await pedirDesde(app, IP_CLIENTE, RUTA_API.ACCESO, pedidoAcceso(CODIGO_PRUEBA));
+    expect(correcto.status).toBe(RESPUESTA_HTTP.DEMASIADOS_PEDIDOS);
+    expect(correcto.headers.get("Set-Cookie")).toBeNull();
   });
 });
