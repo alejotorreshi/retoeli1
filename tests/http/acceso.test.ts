@@ -1,4 +1,5 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
+import { capturarLogs } from "@tests/helpers/bitacora.helper.ts";
 import { crearFetchFalso, cuerpoConTexto } from "@tests/helpers/fetch-falso.helper.ts";
 import { crearProyectoTemporal } from "@tests/helpers/proyecto-temporal.helper.ts";
 import {
@@ -15,6 +16,7 @@ import { FECHA_DEMO } from "@/config/constants/demo.constants.ts";
 import {
   CABECERA,
   ENTORNO_APP,
+  EVENTO_HTTP,
   NOMBRE_COOKIE_ACCESO,
   PREFIJO_BEARER,
   RESPUESTA_HTTP,
@@ -22,8 +24,9 @@ import {
   SEPARADOR_TOKEN,
   TIPO_CONTENIDO,
 } from "@/config/constants/http.constants.ts";
+import { NIVELES_LOG } from "@/config/constants/logging.constants.ts";
 import { pinExecutionDate } from "@/config/env.ts";
-import { MENSAJE_HTTP, TEXTO_ENV } from "@/config/strings.ts";
+import { MENSAJE_HTTP, TEXTO_ENV, TEXTO_HTTP } from "@/config/strings.ts";
 import type { HttpBindings, HttpEnv, ServerCreation } from "@/http/types/server.type.ts";
 import { createServer } from "@/http/wiring/server.wiring.ts";
 
@@ -35,6 +38,10 @@ const VACIO = "";
 const IP_CLIENTE = "192.0.2.10";
 const IP_OTRO_CLIENTE = "192.0.2.20";
 const FALLOS_PERMITIDOS = 5;
+const VENTANA_FALLOS_MS = 900_000;
+const IP_PROXY = "10.0.0.1";
+const IP_REAL = "198.51.100.7";
+const IP_REAL_OTRA = "198.51.100.8";
 
 type Armado = {
   readonly entorno?: Readonly<Record<string, string>>;
@@ -371,5 +378,165 @@ describe("tope de intentos fallidos por IP del cliente (D-73.2)", () => {
     const correcto = await pedirDesde(app, IP_CLIENTE, RUTA_API.ACCESO, pedidoAcceso(CODIGO_PRUEBA));
     expect(correcto.status).toBe(RESPUESTA_HTTP.DEMASIADOS_PEDIDOS);
     expect(correcto.headers.get("Set-Cookie")).toBeNull();
+  });
+});
+
+function bearer(codigo: string): Record<string, string> {
+  return { [CABECERA.AUTORIZACION]: `${PREFIJO_BEARER}${codigo}` };
+}
+
+function viaProxy(falsificada: string, real: string): Record<string, string> {
+  return { [CABECERA.X_FORWARDED_FOR]: `${falsificada}, ${real}` };
+}
+
+function conCabeceras(init: RequestInit, extra: Record<string, string>): RequestInit {
+  return { ...init, headers: { ...Object.fromEntries(new Headers(init.headers)), ...extra } };
+}
+
+function chatInvalido(cabeceras: Record<string, string>): RequestInit {
+  return {
+    method: "POST",
+    headers: { "Content-Type": TIPO_CONTENIDO.JSON, ...cabeceras },
+    body: JSON.stringify({ sessionId: null }),
+  };
+}
+
+async function fallar(app: Hono<HttpEnv>, ip: string, veces: number): Promise<number[]> {
+  const estados: number[] = [];
+  for (let intento = 0; intento < veces; intento += 1) {
+    estados.push((await pedirDesde(app, ip, RUTA_API.ACCESO, pedidoAcceso(CODIGO_ERRADO))).status);
+  }
+  return estados;
+}
+
+describe("X-Forwarded-For falsificado, Bearer errados y vencimiento de la ventana (D-73.2, T-03-14)", () => {
+  test("seis códigos errados con seis entradas izquierdas distintas cortan igual al sexto, y otro cliente real entra", async () => {
+    const app = appCon();
+    const estados: number[] = [];
+    for (let intento = 0; intento <= FALLOS_PERMITIDOS; intento += 1) {
+      const pedido = conCabeceras(pedidoAcceso(CODIGO_ERRADO), viaProxy(`203.0.113.${intento + 1}`, IP_REAL));
+      estados.push((await pedirDesde(app, IP_PROXY, RUTA_API.ACCESO, pedido)).status);
+    }
+    expect(estados.slice(0, FALLOS_PERMITIDOS)).toEqual(
+      Array(FALLOS_PERMITIDOS).fill(RESPUESTA_HTTP.NO_AUTORIZADO),
+    );
+    expect(estados.at(-1)).toBe(RESPUESTA_HTTP.DEMASIADOS_PEDIDOS);
+    const otro = conCabeceras(pedidoAcceso(CODIGO_PRUEBA), viaProxy("203.0.113.1", IP_REAL_OTRA));
+    expect((await pedirDesde(app, IP_PROXY, RUTA_API.ACCESO, otro)).status).toBe(
+      RESPUESTA_HTTP.SIN_CONTENIDO,
+    );
+  });
+
+  test("cinco Bearer errados en /api/chat bloquean al cliente: el sexto, el código correcto y el Bearer correcto responden 429", async () => {
+    const app = appCon();
+    const estados: number[] = [];
+    for (let intento = 0; intento < FALLOS_PERMITIDOS; intento += 1) {
+      estados.push(
+        (await pedirDesde(app, IP_CLIENTE, RUTA_API.CHAT, pedidoChat(bearer(CODIGO_ERRADO)))).status,
+      );
+    }
+    expect(estados).toEqual(Array(FALLOS_PERMITIDOS).fill(RESPUESTA_HTTP.NO_AUTORIZADO));
+    const sexto = await pedirDesde(app, IP_CLIENTE, RUTA_API.CHAT, pedidoChat(bearer(CODIGO_ERRADO)));
+    expect(sexto.status).toBe(RESPUESTA_HTTP.DEMASIADOS_PEDIDOS);
+    expect(await sexto.json()).toEqual({ mensaje: MENSAJE_HTTP.demasiadosIntentos });
+    const codigo = await pedirDesde(app, IP_CLIENTE, RUTA_API.ACCESO, pedidoAcceso(CODIGO_PRUEBA));
+    expect(codigo.status).toBe(RESPUESTA_HTTP.DEMASIADOS_PEDIDOS);
+    const correcto = await pedirDesde(app, IP_CLIENTE, RUTA_API.CHAT, chatInvalido(bearer(CODIGO_PRUEBA)));
+    expect(correcto.status).toBe(RESPUESTA_HTTP.DEMASIADOS_PEDIDOS);
+    const otro = await pedirDesde(app, IP_OTRO_CLIENTE, RUTA_API.CHAT, chatInvalido(bearer(CODIGO_PRUEBA)));
+    expect(otro.status).toBe(RESPUESTA_HTTP.PEDIDO_INVALIDO);
+  });
+
+  test("los códigos errados de /api/acceso y los Bearer errados suman al mismo contador", async () => {
+    const app = appCon();
+    await fallar(app, IP_CLIENTE, FALLOS_PERMITIDOS - 1);
+    const quinto = await pedirDesde(app, IP_CLIENTE, RUTA_API.CHAT, chatInvalido(bearer(CODIGO_ERRADO)));
+    expect(quinto.status).toBe(RESPUESTA_HTTP.NO_AUTORIZADO);
+    const sexto = await pedirDesde(app, IP_CLIENTE, RUTA_API.ACCESO, pedidoAcceso(CODIGO_ERRADO));
+    expect(sexto.status).toBe(RESPUESTA_HTTP.DEMASIADOS_PEDIDOS);
+  });
+
+  test("un código o un Bearer correctos nunca suman al contador", async () => {
+    const app = appCon();
+    expect(await fallar(app, IP_CLIENTE, FALLOS_PERMITIDOS - 1)).toEqual(
+      Array(FALLOS_PERMITIDOS - 1).fill(RESPUESTA_HTTP.NO_AUTORIZADO),
+    );
+    for (let intento = 0; intento < FALLOS_PERMITIDOS; intento += 1) {
+      const entrada = await pedirDesde(app, IP_CLIENTE, RUTA_API.ACCESO, pedidoAcceso(CODIGO_PRUEBA));
+      expect(entrada.status).toBe(RESPUESTA_HTTP.SIN_CONTENIDO);
+      const chat = await pedirDesde(app, IP_CLIENTE, RUTA_API.CHAT, chatInvalido(bearer(CODIGO_PRUEBA)));
+      expect(chat.status).toBe(RESPUESTA_HTTP.PEDIDO_INVALIDO);
+    }
+    expect(await fallar(app, IP_CLIENTE, 1)).toEqual([RESPUESTA_HTTP.NO_AUTORIZADO]);
+    expect(await fallar(app, IP_CLIENTE, 1)).toEqual([RESPUESTA_HTTP.DEMASIADOS_PEDIDOS]);
+  });
+
+  test("sin Bearer ni cookie la guardia responde 401 y no suma al contador", async () => {
+    const app = appCon();
+    for (let intento = 0; intento <= FALLOS_PERMITIDOS; intento += 1) {
+      const respuesta = await pedirDesde(app, IP_CLIENTE, RUTA_API.CHAT, chatInvalido({}));
+      expect(respuesta.status).toBe(RESPUESTA_HTTP.NO_AUTORIZADO);
+    }
+    const entrada = await pedirDesde(app, IP_CLIENTE, RUTA_API.ACCESO, pedidoAcceso(CODIGO_PRUEBA));
+    expect(entrada.status).toBe(RESPUESTA_HTTP.SIN_CONTENIDO);
+  });
+
+  test("al vencer los 15 minutos el cliente vuelve a entrar, y 1 ms antes sigue bloqueado", async () => {
+    let ahora = AHORA;
+    const app = appDe(crear({ ahora: () => ahora }));
+    await fallar(app, IP_CLIENTE, FALLOS_PERMITIDOS);
+    expect(await fallar(app, IP_CLIENTE, 1)).toEqual([RESPUESTA_HTTP.DEMASIADOS_PEDIDOS]);
+    ahora = AHORA + VENTANA_FALLOS_MS - 1;
+    const antes = await pedirDesde(app, IP_CLIENTE, RUTA_API.ACCESO, pedidoAcceso(CODIGO_PRUEBA));
+    expect(antes.status).toBe(RESPUESTA_HTTP.DEMASIADOS_PEDIDOS);
+    ahora = AHORA + VENTANA_FALLOS_MS;
+    const despues = await pedirDesde(app, IP_CLIENTE, RUTA_API.ACCESO, pedidoAcceso(CODIGO_PRUEBA));
+    expect(despues.status).toBe(RESPUESTA_HTTP.SIN_CONTENIDO);
+  });
+
+  test("ACCESS_MAX_FAILED_ATTEMPTS y ACCESS_FAILED_WINDOW_MINUTES cambian el tope y el mensaje", async () => {
+    let ahora = AHORA;
+    const entorno = { ACCESS_MAX_FAILED_ATTEMPTS: "2", ACCESS_FAILED_WINDOW_MINUTES: "1" };
+    const app = appDe(crear({ entorno, ahora: () => ahora }));
+    expect(await fallar(app, IP_CLIENTE, 2)).toEqual([
+      RESPUESTA_HTTP.NO_AUTORIZADO,
+      RESPUESTA_HTTP.NO_AUTORIZADO,
+    ]);
+    const tercero = await pedirDesde(app, IP_CLIENTE, RUTA_API.ACCESO, pedidoAcceso(CODIGO_ERRADO));
+    expect(tercero.status).toBe(RESPUESTA_HTTP.DEMASIADOS_PEDIDOS);
+    expect(await tercero.json()).toEqual({ mensaje: TEXTO_HTTP.demasiadosIntentos(1) });
+    ahora = AHORA + 60_000;
+    expect(await fallar(app, IP_CLIENTE, 1)).toEqual([RESPUESTA_HTTP.NO_AUTORIZADO]);
+  });
+
+  test("TRUSTED_PROXY_HOPS=0 ignora X-Forwarded-For y cuenta por el socket", async () => {
+    const app = appDe(crear({ entorno: { TRUSTED_PROXY_HOPS: "0" } }));
+    for (let intento = 0; intento < FALLOS_PERMITIDOS; intento += 1) {
+      const pedido = conCabeceras(
+        pedidoAcceso(CODIGO_ERRADO),
+        viaProxy("203.0.113.1", `198.51.100.${intento}`),
+      );
+      await pedirDesde(app, IP_PROXY, RUTA_API.ACCESO, pedido);
+    }
+    const sexto = conCabeceras(pedidoAcceso(CODIGO_PRUEBA), viaProxy("203.0.113.1", IP_REAL_OTRA));
+    expect((await pedirDesde(app, IP_PROXY, RUTA_API.ACCESO, sexto)).status).toBe(
+      RESPUESTA_HTTP.DEMASIADOS_PEDIDOS,
+    );
+  });
+
+  test("el log de depuración registra solo la cantidad de entradas y los saltos, nunca una dirección", async () => {
+    const captura = capturarLogs();
+    const app = crearServidorPrueba({
+      raiz: proyecto.raiz,
+      fetch: crearFetchFalso([]).fetch,
+      entorno: { LOG_LEVEL: NIVELES_LOG.DEPURACION },
+      destinoLogs: captura.destino,
+    }).app;
+    const pedido = conCabeceras(pedidoAcceso(CODIGO_ERRADO), viaProxy("203.0.113.1", IP_REAL));
+    await pedirDesde(app, IP_PROXY, RUTA_API.ACCESO, pedido);
+    const sondeo = captura.lineas().find((linea) => linea.msg === EVENTO_HTTP.IP_CLIENTE_RESUELTA);
+    expect(sondeo).toMatchObject({ entradasXff: 2, saltosConfiables: 1 });
+    const crudo = captura.crudas.join("");
+    for (const ip of ["203.0.113.1", IP_REAL, IP_PROXY]) expect(crudo).not.toContain(ip);
   });
 });
