@@ -149,6 +149,8 @@ El gate del tracer se re-ejecutó (`bun test tests/http/acceso.test.ts tests/arc
 
 Ninguna. El plan se ejecutó tal como estaba escrito. La prueba de `/api/config` fija `FECHA_EJECUCION=2026-09-03` y además `TZ_NEGOCIO=America/Guayaquil` en process.env durante el pedido, para que la zona esperada no dependa del `.env` local.
 
+Seguimiento de requisitos: `requirements.mark-complete` marcó UI-09 y SEG-01 como completos, pero este plan solo cubre la mitad del servidor de UI-09 y una parte de SEG-01. En REQUIREMENTS.md quedaron como `Partial`, con lo que falta, y sin la casilla marcada.
+
 ## Issues Encountered
 
 Ninguno.

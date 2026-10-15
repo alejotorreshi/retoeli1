@@ -3,16 +3,16 @@ gsd_state_version: "1.0"
 current_phase: 03
 current_phase_name: Chat web, API SSE y despliegue
 status: executing
-stopped_at: Completed 03-07-PLAN.md
-last_updated: "2026-10-15T00:35:59.422Z"
+stopped_at: Completed 03-08-PLAN.md
+last_updated: "2026-10-15T00:42:08.711Z"
 last_activity: 2026-10-14
 last_activity_desc: Phase 03 execution started
-state_head: 7eeedece05fbad367c2357b08d79bc3dd8bba740
+state_head: c4c1d5514185c72d68ef8eaf3b3efa69eeef3647
 progress:
   total_phases: 4
   completed_phases: 2
   total_plans: 66
-  completed_plans: 46
+  completed_plans: 47
   percent: 50
 ---
 
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-10-14)
 ## Current Position
 
 Phase: 03 (Chat web, API SSE y despliegue) — EXECUTING
-Plan: 8 of 27
+Plan: 9 of 27
 Status: Ready to execute
 Last activity: 2026-10-14 — Phase 03 execution started
 
@@ -103,6 +103,7 @@ Progress: [█████░░░░░] 50%
 | Phase 03 P05 | 9 min | 2 tasks | 18 files |
 | Phase 03 P06 | 6min | 2 tasks | 18 files |
 | Phase 03 P07 | 5min | 2 tasks | 19 files |
+| Phase 03 P08 | 8 min | 2 tasks | 11 files |
 
 ## Accumulated Context
 
@@ -232,6 +233,8 @@ Recent decisions affecting current work:
 - [Phase 03]: 03-07: el hook de chat se exporta como useChat (archivo usar-chat.ts) porque Biome y React reconocen hooks solo por el prefijo use
 - [Phase 03]: 03-07: el envío solo sale del submit del Compositor; doble guarda con estado.enCurso y el ref del AbortController contra turnos pagados duplicados
 - [Phase 03]: 03-07: main es columna flex sin scroll; la LineaDeTiempo tiene scroll propio y el compositor queda fijo
+- [Phase 03]: 03-08: /api/config toma la fecha y la zona de readToolEnv (process.env), la misma fuente que las herramientas, y se evalúa en cada pedido
+- [Phase 03]: 03-08: los secretos de acceso entran al agente por OpcionesAgente.secretosAdicionales; server.wiring arma el acceso antes del agente
 
 ### Pending Todos
 
@@ -266,6 +269,6 @@ Items acknowledged and deferred at milestone close, most recent first:
 
 ## Session Continuity
 
-Last session: 2026-10-15T00:35:59.335Z
-Stopped at: Completed 03-07-PLAN.md
+Last session: 2026-10-15T00:42:08.625Z
+Stopped at: Completed 03-08-PLAN.md
 Resume file: None
