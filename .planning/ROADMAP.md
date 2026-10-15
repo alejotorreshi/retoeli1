@@ -166,7 +166,7 @@ Plans:
   4. Desde el panel de artefactos, la analista descarga o previsualiza los archivos generados del caso; solo se sirven nombres en lista blanca y detrás del código de acceso. Si no hay clave, se agotó el saldo, el proveedor cayó o se alcanzó el tope diario, `/api/health` lo reporta y la UI explica en lenguaje claro qué pasa, qué sigue funcionando, qué hacer y cuándo vuelve, sin pedirle a la analista correr comandos; `demo.ts` queda como la verificación sin modelo documentada en el README.
   5. Sin código de acceso, la API rechaza toda petición salvo `/api/health`. El rate limit por IP y el límite de tamaño de mensaje responden con un mensaje claro. Un test verifica que la clave del LLM no aparece en `web/dist`, en las respuestas de la API ni en el stream SSE.
 
-**Plans:** 39/43 plans executed
+**Plans:** 40/43 plans executed
 
 Plans:
 **Wave 1**
@@ -265,7 +265,7 @@ Plans:
 - [x] 03-39-PLAN.md — D-70, LLM-06, el criterio 4 y la UI-SPEC reescritos con la opción C+ y las decisiones D-71.1, D-73.5.1, D-75 y D-76 (G-03-15, G-03-14, G-03-10, G-03-04, G-03-20, G-03-17, G-03-26)
 
 **Segundo cierre de brechas, Wave 1** *(gap closure: D-76.1, D-77, D-73.5.2)*
-- [ ] 03-40-PLAN.md — Un simular_envio truncado por el límite de tokens también deja el aviso de D-76 (caso legible o sin caso), y un reintento del mismo turno manda sobre él (G-03-26, D-76.1)
+- [x] 03-40-PLAN.md — Un simular_envio truncado por el límite de tokens también deja el aviso de D-76 (caso legible o sin caso), y un reintento del mismo turno manda sobre él (G-03-26, D-76.1)
 - [ ] 03-41-PLAN.md — El limitador nunca suelta una clave bloqueada: desaloja primero las libres y, con todas bloqueadas, falla cerrado (WR-01, D-77)
 - [ ] 03-42-PLAN.md — "Empezar sesión nueva" olvida el id guardado; la sesión anterior queda solo en memoria para volver ante un 429 (WR-02, D-73.5.2)
 
@@ -299,5 +299,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 |-------|----------------|--------|-----------|
 | 1. Núcleo determinista | 15/15 | Complete    | 2026-10-13 |
 | 2. Agente y compuerta de confirmación | 24/24 | Complete    | 2026-10-14 |
-| 3. Chat web, API SSE y despliegue | 39/39 | In Progress | - |
+| 3. Chat web, API SSE y despliegue | 40/43 | In Progress | - |
 | 4. Módulo, documentación y defensa | 0/TBD | Not started | - |

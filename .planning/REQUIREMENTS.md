@@ -71,7 +71,7 @@ Fuente vinculante: `reto-01/PRD.md`, sin modificar. Fixtures: `reto-01/fixtures/
 
 ### API HTTP (§6.4)
 
-- [ ] **API-01**: `POST /api/chat` recibe `{ sessionId, message }` y emite un stream SSE de eventos por paso (`turn_start`, `tool_start`, `tool_end`, `text`, `confirmation_required`, `usage`, `error`, `turn_end`) con heartbeat. También hay un fallback JSON `{ reply, toolCalls[], needsConfirmation }`.
+- [x] **API-01**: `POST /api/chat` recibe `{ sessionId, message }` y emite un stream SSE de eventos por paso (`turn_start`, `tool_start`, `tool_end`, `text`, `confirmation_required`, `usage`, `error`, `turn_end`) con heartbeat. También hay un fallback JSON `{ reply, toolCalls[], needsConfirmation }`.
 - [ ] **API-02**: `GET /api/sessions/:id` devuelve el historial completo de la sesión, con la PII redactada.
 - [ ] **API-03**: `GET /api/health` devuelve `{ ok: true, provider, model, llm }` sin exponer claves y sin pedir código de acceso.
 - [ ] **API-04**: El link público exige un código de acceso, comparado en tiempo constante. Hay rate limit por IP, límite de tamaño de mensaje y headers de seguridad.
@@ -91,7 +91,7 @@ Fuente vinculante: `reto-01/PRD.md`, sin modificar. Fixtures: `reto-01/fixtures/
 
 ### Seguridad, PII y observabilidad (§8, RN5, CA4)
 
-- [ ] **SEG-01**: La clave del LLM vive solo en una env var del backend y nunca aparece en el front (sin el prefijo `VITE_`), los logs, las respuestas de la API ni el repo. Existe un `.env.example` sin valores y un test verifica que la clave no esté en `web/dist` ni en las respuestas.
+- [x] **SEG-01**: La clave del LLM vive solo en una env var del backend y nunca aparece en el front (sin el prefijo `VITE_`), los logs, las respuestas de la API ni el repo. Existe un `.env.example` sin valores y un test verifica que la clave no esté en `web/dist` ni en las respuestas.
 - [ ] **SEG-02**: Una única función `redactar()`, basada en una política de rutas sensibles, se aplica a los logs, la API, el SSE y los resúmenes de tool calls. Un test busca con grep valores PII conocidos y verifica que no aparezcan fuera de los archivos de salida.
 - [x] **SEG-03**: Los logs son JSON estructurados, con IDs de correlación por sesión, turno y tool call, y nunca registran la clave ni PII.
 - [x] **SEG-04**: Cada tool call queda registrada en `out/log.jsonl` (CA4) y en `out/<caso>/log.jsonl` (RN5) con `{ ts, herramienta, ok, resumen }`, con el resumen redactado.
@@ -213,7 +213,7 @@ Cada requisito v1 está asignado a exactamente una fase del roadmap (`.planning/
 | LLM-04 | Phase 2 | Complete |
 | LLM-05 | Phase 2 | Complete |
 | LLM-06 | Phase 3 | Gaps Found |
-| API-01 | Phase 3 | Gaps Found |
+| API-01 | Phase 3 | Complete |
 | API-02 | Phase 3 | Gaps Found |
 | API-03 | Phase 3 | Gaps Found |
 | API-04 | Phase 3 | Gaps Found |
@@ -227,7 +227,7 @@ Cada requisito v1 está asignado a exactamente una fase del roadmap (`.planning/
 | UI-07 | Phase 3 | Gaps Found |
 | UI-08 | Phase 3 | Gaps Found |
 | UI-09 | Phase 3 | Gaps Found |
-| SEG-01 | Phase 3 | Gaps Found |
+| SEG-01 | Phase 3 | Complete |
 | SEG-02 | Phase 1 | Partial — política de rutas PII, test grep y redactar() única para logs y resúmenes de tool calls (Fase 2) listos; falta aplicarla a API/SSE (Fase 3) |
 | SEG-03 | Phase 2 | Complete |
 | SEG-04 | Phase 1 | Complete |
