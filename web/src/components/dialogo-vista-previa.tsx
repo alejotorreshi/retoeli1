@@ -3,6 +3,7 @@ import estilos from "@web/components/dialogo-vista-previa.module.css";
 import { ESTADO_VISTA_PREVIA, RESULTADO_API } from "@web/config/constants/ui.constants.ts";
 import { TEXTO_VISTA_PREVIA } from "@web/config/strings.ts";
 import { esArchivoNoEncontrado } from "@web/state/casos.ts";
+import { estadoDeVistaPreviaFallida } from "@web/state/vista-previa.ts";
 import type { EstadoFilaVistaPrevia, EstadoVistaPrevia } from "@web/types/chat.type.ts";
 import type {
   PropsBadgeDeFila,
@@ -20,8 +21,6 @@ const CLASE_DE_ESTADO = {
 } as const satisfies Record<EstadoFilaVistaPrevia, string | undefined>;
 
 const VISTA_CARGANDO: EstadoVistaPrevia = { tipo: ESTADO_VISTA_PREVIA.CARGANDO };
-
-const VISTA_CON_ERROR: EstadoVistaPrevia = { tipo: ESTADO_VISTA_PREVIA.ERROR };
 
 function BadgeDeFila({ estado }: PropsBadgeDeFila) {
   return (
@@ -102,7 +101,7 @@ export function DialogoVistaPrevia({
       }
       if (resultado.tipo === RESULTADO_API.ACCESO_VENCIDO) alVencerAcceso(resultado.mensaje);
       if (esArchivoNoEncontrado(resultado)) alNoEncontrado();
-      setEstado(VISTA_CON_ERROR);
+      setEstado(estadoDeVistaPreviaFallida(resultado));
     });
     return () => controlador.abort();
   }, [caso, abierta, alNoEncontrado, alVencerAcceso]);
@@ -124,7 +123,7 @@ export function DialogoVistaPrevia({
         ) : null}
         {estado.tipo === ESTADO_VISTA_PREVIA.ERROR ? (
           <p className={estilos.error} role="alert">
-            {TEXTO_VISTA_PREVIA.error}
+            {estado.texto}
           </p>
         ) : null}
         {estado.tipo === ESTADO_VISTA_PREVIA.LISTA ? <CuerpoVistaPrevia vista={estado.vista} /> : null}

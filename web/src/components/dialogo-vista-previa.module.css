@@ -49,6 +49,8 @@
   padding: var(--espacio-md);
   font-size: var(--cuerpo-tamano);
   line-height: var(--cuerpo-interlinea);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
   color: var(--error-texto);
   background: var(--error-fondo);
   border: var(--borde-ancho) solid var(--error-borde);

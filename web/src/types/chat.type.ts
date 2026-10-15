@@ -355,5 +355,5 @@ export type EstadoFilaVistaPrevia = FilaVistaPreviaUi["estado"];
 
 export type EstadoVistaPrevia =
   | { readonly tipo: typeof ESTADO_VISTA_PREVIA.CARGANDO }
-  | { readonly tipo: typeof ESTADO_VISTA_PREVIA.ERROR }
+  | { readonly tipo: typeof ESTADO_VISTA_PREVIA.ERROR; readonly texto: string }
   | { readonly tipo: typeof ESTADO_VISTA_PREVIA.LISTA; readonly vista: VistaPreviaUi };
