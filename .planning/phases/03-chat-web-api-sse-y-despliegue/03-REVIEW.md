@@ -1,258 +1,189 @@
 ---
 phase: 03-chat-web-api-sse-y-despliegue
-reviewed: 2026-10-15T18:21:57Z
+reviewed: 2026-10-15T20:35:04Z
 depth: standard
-files_reviewed: 63
+files_reviewed: 17
 files_reviewed_list:
   - docs/limites-del-demo.md
-  - render.yaml
   - src/config/constants/confirmation.constants.ts
-  - src/config/constants/http.constants.ts
-  - src/config/constants/llm.constants.ts
-  - src/config/strings.ts
-  - src/domain/builders/cierre-turno.builder.ts
   - src/domain/policies/compuerta.policy.ts
   - src/domain/types/compuerta.type.ts
-  - src/http/routes/chat.route.ts
   - src/http/services/rate-limiter.service.ts
-  - src/http/types/server.type.ts
-  - src/loop/schemas/resultado-herramienta.schema.ts
-  - src/loop/services/bitacora-turno.service.ts
-  - src/loop/services/cierre-turno.service.ts
-  - src/loop/services/guardado-turno.service.ts
   - src/loop/services/paso-herramientas.service.ts
-  - src/loop/types/turno.type.ts
-  - tests/despliegue/contrato-despliegue.test.ts
-  - tests/http/chat.test.ts
-  - tests/http/topes.test.ts
   - tests/loop/compuerta-casos.test.ts
-  - tests/loop/compuerta.test.ts
-  - tests/loop/listar-casos.test.ts
-  - tests/unit/cierre-turno.builder.test.ts
   - tests/unit/compuerta.policy.test.ts
-  - tests/unit/despacho-llamada.service.test.ts
-  - tests/unit/health-report.decorator.test.ts
   - tests/unit/rate-limiter.service.test.ts
-  - tests/unit/vista-sesion.service.test.ts
-  - tests/web/acciones-rapidas.test.ts
-  - tests/web/archivos.test.ts
   - tests/web/conversacion.test.ts
-  - tests/web/estado-del-modelo.test.ts
-  - tests/web/flujo-chat.test.ts
-  - tests/web/progreso.test.ts
   - tests/web/seguimiento.test.ts
-  - web/src/api/flujo-chat.ts
-  - web/src/app.tsx
-  - web/src/components/acciones-rapidas.module.css
-  - web/src/components/acciones-rapidas.tsx
-  - web/src/components/aviso-modelo.module.css
-  - web/src/components/aviso-modelo.tsx
-  - web/src/components/compositor.tsx
-  - web/src/components/dialogo-vista-previa.module.css
-  - web/src/components/dialogo-vista-previa.tsx
-  - web/src/components/encabezado.module.css
-  - web/src/components/encabezado.tsx
-  - web/src/components/linea-de-tiempo.module.css
   - web/src/components/linea-de-tiempo.tsx
-  - web/src/components/panel-casos.tsx
-  - web/src/components/tarjeta-confirmacion.tsx
   - web/src/config/constants/ui.constants.ts
-  - web/src/config/strings.ts
   - web/src/hooks/usar-chat.ts
-  - web/src/hooks/usar-salud.ts
-  - web/src/state/casos.ts
   - web/src/state/conversacion.ts
-  - web/src/state/modelo.ts
   - web/src/state/seguimiento.ts
-  - web/src/state/vista-previa.ts
-  - web/src/types/chat.type.ts
   - web/src/types/ui.type.ts
 findings:
-  critical: 0
-  warning: 3
+  critical: 1
+  warning: 4
   info: 5
-  total: 8
+  total: 10
 status: issues_found
 ---
 
-# Fase 3: Informe de revisión de código (re-revisión incremental, planes 03-28..03-39)
+# Phase 03: Code Review Report
 
-**Revisado:** 2026-10-15T18:21:57Z
-**Profundidad:** standard
-**Archivos revisados:** 63
-**Estado:** issues_found
+**Reviewed:** 2026-10-15T20:35:04Z
+**Depth:** standard
+**Files Reviewed:** 17
+**Status:** issues_found
 
-## Resumen
+## Summary
 
-Esta re-revisión cubre lo que cambiaron los planes de cierre de brechas de la UAT (03-28 a 03-39) desde `3a9f0fc`. Revisé los hunks de `git diff 3a9f0fc..HEAD` y leí completos los archivos de producción del alcance. Para verificar D-76 seguí la cadena entre módulos `despacharLlamada → turno.eventosCompuerta/llamadas → cerrarCompuerta → desenlacesDeEnvio → cierreDelTurno → emitirCierre / respuestaDeTurno`. `bun test` pasa (2234 pass, 1 skip) y `bun run check` también (tsc, Biome y `bun audit`). No se hizo ninguna llamada real al LLM.
+Revisión incremental del segundo cierre de brechas (planes 03-40 a 03-43) desde `e64e87b`. Abarca D-76.1 (aviso del `simular_envio` truncado), D-77 (el limitador no suelta claves bloqueadas, más el cupo de desalojos que el ejecutor agregó como desvío Rule 2), D-73.5.2 (nueva sesión olvida el `sessionId` guardado) y D-78 (el seguimiento del final se despega según la dirección del scroll).
 
-**Decisiones humanas verificadas:**
+Las 259 pruebas de los cinco archivos de prueba del alcance pasan, y la lógica de pliegue de la compuerta es coherente. Los problemas están en tres lugares:
 
-- **G-03-15, opción C+ (D-70, D-71.1):**
-  - La UI ya no menciona `demo.ts` ni ningún comando. Lo comprobé con un grep sobre `web/src`.
-  - El envío se pausa solo en `sin_clave` y `tope_diario` (`ESTADOS_LLM_SIN_ENVIO`). La pausa llega a todos los controles: el compositor, los chips, el chip de reproceso (`AvisoDiscoEfimero`) y los botones de las tarjetas.
-  - "Comprobar de nuevo" solo relee `/api/health`.
-  - Un 401/403 se publica como `sin_clave`.
-  - Health se refresca al cargar, en `visibilitychange` y al terminar cada pedido de chat (`enviarTurno … finally`). No se refresca por intervalo.
-  - El servidor sigue siendo la compuerta, porque `chat.route.ts` solo corta con `agente === null` y `TOPE_DIARIO`.
-- **G-03-26 (D-76):**
-  - `cierreDelTurno` agrega el aviso determinista después del texto del modelo y antes de la pregunta del servidor.
-  - No reemplaza la prosa del modelo: solo quita la pregunta final, y solo cuando hay pendientes, como ya hacía D-44.
-  - Los avisos se deduplican por texto y `SIN_CASO` sale una sola vez.
-  - Un turno abortado no produce avisos.
-  - `gate_blocked` y `gate_permit` registran el caso cuando cumple `PATRON_CASO`.
-  - El aviso llega igual por SSE y por el respaldo JSON (`tests/http/chat.test.ts`).
+1. **El cupo de desalojos del limitador (desvío de 03-41)** cambia en silencio la premisa con que se aceptó la falla cerrada de D-77. Antes, saturar un limitador exigía tener las K claves bloqueadas (K × L golpes). Ahora alcanzan K + L golpes de una sola petición por clave. Lo verifiqué con un script temporal: con K = 100 y L = 5, el limitador queda saturado para toda IP nueva tras 105 peticiones, no 500. La tabla de `docs/limites-del-demo.md` describe un costo de ataque que no es el real.
+2. **La cota de "50 005 intentos evaluados por ventana"** que documenta D-77 no se cumple con peticiones concurrentes. `isLocked` y `hit` están separados por `await` en las rutas de acceso.
+3. **Los textos de D-76.1 afirman cosas falsas** en dos caminos que el plan exige y las pruebas fijan. Además, **el umbral de 96 px de D-78** anula las subidas cortas de la usuaria cuando hay crecimiento entre ellas.
 
-No encontré defectos BLOCKER. Quedan tres WARNING:
+Los scripts de verificación se escribieron en `tests/` de forma temporal y se borraron. No se modificó ningún archivo fuente.
 
-1. El desalojo del limitador de tasa falla abierto y levanta bloqueos de fuerza bruta.
-2. "Nueva sesión" ya no olvida el `sessionId` en `localStorage`, así que al recargar vuelve la sesión anterior con sus tarjetas de confirmación activas. Eso contradice el diálogo.
-3. El seguimiento del scroll ignora desplazamientos legítimos de la usuaria que ocurren fuera de la ventana de 600 ms, y el `ResizeObserver` la devuelve al final mientras lee.
+## Narrative Findings (AI reviewer)
 
-## Hallazgos narrativos (revisor IA)
+## Critical Issues
 
-## Warnings
+### CR-01: El cupo de desalojos permite saturar cualquier limitador con K + L peticiones de un golpe y no con K × L, y la documentación subestima ese costo cinco veces
 
-### WR-01: El desalojo por `maxKeys` levanta bloqueos activos (falla abierto), también el anti fuerza bruta de `/api/acceso`
+**File:** `src/http/services/rate-limiter.service.ts:32-52` (también `docs/limites-del-demo.md:62-72`)
 
-**Archivo:** `src/http/services/rate-limiter.service.ts:15-18,29` (y `tests/unit/rate-limiter.service.test.ts:115-125`, que fija este comportamiento)
+**Issue:** `fitsEvictionBudget` suma los golpes de todas las claves desalojadas en un único `evicted` global, con un máximo de `options.limit`. Cuando el siguiente desalojo superaría ese cupo, `evictableEntry()` devuelve `undefined`, `isSaturated()` da `true` y toda clave nueva queda bloqueada (`isLocked` → `true`, `hit` → `false`). Un atacante no necesita bloquear ninguna clave para llegar ahí:
 
-**Problema:** cuando el mapa llega a `MAX_CLAVES_LIMITADOR` (10 000), cada clave nueva desaloja la más antigua con `evictOldest()`, sin mirar si esa clave está bloqueada. La clave más antigua es justamente la que primero agotó sus intentos. El test lo hace explícito:
+- K peticiones, una por IP o prefijo /64, llenan la tabla con claves de `count = 1`;
+- L peticiones más, desde L claves nuevas, gastan el cupo (`1 + 1 + … = L`);
+- desde ese momento, toda IP no rastreada recibe 429 durante hasta una ventana completa.
+
+Con los valores de producción, eso son 10 005 peticiones contra el limitador de acceso: toda IP nueva queda fuera de `/api/acceso` durante 15 minutos, aun con el código correcto. Mantener el ataque cuesta unas K + L peticiones por ventana, frente a las K × L = 50 000 que suponía D-77 ("nunca una bloqueada"). El script temporal lo confirma: con `maxKeys = 100` y `limit = 5`, `isLocked("legit")` es `true` tras 105 peticiones, y `retryAfterMs` da la ventana entera. El propio documento reconoce que un /48 da 65 536 prefijos /64, y un /48 se consigue gratis en un tunnel broker.
+
+La tabla de `docs/limites-del-demo.md:71` dice que el limitador de mensajes se satura "con 10 000 IP o prefijos /64 que agotan su tope en el mismo minuto", y eso es falso: basta un mensaje por IP más L. La línea 64 menciona el cupo agotado, pero no dice que se agota sin bloquear ninguna clave. Por eso la usuaria aceptó el riesgo con un costo de ataque que no es el real. En la defensa, cualquiera sin el código puede dejar fuera de la pantalla de acceso a quien evalúa y todavía no tiene la cookie.
+
+**Fix:** no fallar cerrado por el cupo, sino trasladar los golpes desalojados a la clave que entra. Así la rotación no reinicia contadores y la saturación vuelve a exigir K claves bloqueadas:
 
 ```ts
-golpear(limitador, CLAVE, LIMITE);
-...
-limitador.hit(TERCERA_CLAVE);
-expect(limitador.isLocked(CLAVE)).toBe(false);
-```
-
-El mismo limitador protege `failedAttempts` (`server.wiring.ts:112-117`, 5 intentos cada 15 min). Las IPv6 se agrupan por `/64` (`GRUPOS_PREFIJO_IPV6 = 4`), y un atacante con un bloque `/48` dispone de 65 536 claves. Si rota más de 10 000 claves, desaloja sus propias claves bloqueadas y vuelve a tener 5 intentos en cada una, en cada vuelta. El tope deja de ser de 5 × N intentos por ventana y pasa a no tener límite, salvo el throughput. El código de acceso mide al menos 12 caracteres, así que no es una explotación inmediata, pero es una defensa en profundidad que falla abierta en silencio. `docs/limites-del-demo.md` tampoco lo documenta: solo menciona el reinicio.
-
-**Arreglo:** que el desalojo nunca suelte una clave bloqueada. Hay dos formas: desalojar la clave no bloqueada más antigua, o, si todas están bloqueadas, no admitir la clave nueva y tratarla como bloqueada (falla cerrado):
-
-```ts
-function evictOldestUnlocked(): boolean {
-  for (const [key, window] of windows) {
-    if (window.count < options.limit) {
-      windows.delete(key);
-      return true;
-    }
-  }
-  return false;
+function evictOldestUnlocked(): number | null {
+  const entry = oldestUnlocked();
+  if (entry === undefined) return null;
+  windows.delete(entry[0]);
+  return entry[1].count;
 }
 
 hit(key) {
   const now = options.now();
   sweep(now);
   const existing = windows.get(key);
-  if (existing === undefined && windows.size >= options.maxKeys && !evictOldestUnlocked()) return false;
-  ...
+  let inherited = 0;
+  if (existing === undefined && isFull()) {
+    const carried = evictOldestUnlocked();
+    if (carried === null) return false;
+    inherited = carried;
+  }
+  const window = existing ?? { count: inherited, start: now };
+  window.count += 1;
+  windows.set(key, window);
+  return window.count <= options.limit;
 }
 ```
 
-Además, cambiar el test para que exija `isLocked(CLAVE) === true` después del desalojo, y agregar una fila en `docs/limites-del-demo.md`.
+`isSaturated()` vuelve a ser `isFull() && oldestUnlocked() === undefined`, y desaparecen `evicted`, `fitsEvictionBudget` y la rama del cupo en `msUntilAdmission`. Cada golpe evaluado sigue contado en una ventana viva, así que la cota vuelve a K × L. Hay que corregir la tabla del documento y agregar una prueba que rote K + L claves de un golpe y compruebe que una IP nueva sigue entrando.
 
-### WR-02: "Nueva sesión" ya no olvida el `sessionId` guardado: al recargar vuelve la sesión anterior con sus confirmaciones activas, contra lo que promete el diálogo
+## Warnings
 
-**Archivos:** `web/src/hooks/usar-chat.ts:113-116`, `web/src/state/conversacion.ts:274-282` y `web/src/config/strings.ts:114`
+### WR-01: La cota documentada de intentos evaluados no se cumple con concurrencia, porque `isLocked` y `hit` están separados por `await`
 
-**Problema:** el plan 03-38 quitó `olvidarSesion()` de `nuevaSesion()`. Ahora `localStorage` conserva el id viejo hasta el `turn_start` de la sesión nueva. Si la analista confirma "Nueva sesión" y recarga la página (o abre otra pestaña) antes de mandar un mensaje, `estadoAlCargar(leerSesionGuardada())` vuelve a hidratar la sesión anterior. `GET /api/sessions/:id` devuelve sus pendientes vigentes (D-69), así que reaparecen las tarjetas de confirmación con los botones Confirmar y Cancelar activos. El diálogo que la analista acaba de aceptar dice: *"La conversación actual sale de esta pantalla y las confirmaciones pendientes se descartan."* La analista cree que descartó un envío que en realidad sigue a un clic de distancia.
+**File:** `docs/limites-del-demo.md:62` (causa en `src/http/routes/access.route.ts:57-63` y `src/http/middlewares/access.middleware.ts:20-22`)
 
-El flujo de D-73.5.1 ("Volver a la sesión anterior" ante un 429) no necesita esa persistencia: usa `estado.sesionAnterior`, que vive en memoria.
+**Issue:** el documento y el SUMMARY de 03-41 afirman que el máximo es "unos 50 000 intentos evaluados por ventana (50 005 …)" y "(K + 1) × L en cualquier orden". En `/api/acceso` el flujo es `isLocked(ip)`, luego `await readCode(c)` (lee el cuerpo de la red), luego `await timingSafeEqual(...)` y recién después `hit(ip)`. Un cliente puede abrir N conexiones, pasar todas por `isLocked` mientras su `count` sigue en 0 y después mandar los N cuerpos: se evalúan N códigos y se registran N golpes cuando ya es tarde. El middleware Bearer tiene la misma ventana alrededor del `await timingSafeEqual`. La prueba "rotar claves en ronda … (K + 1) × L" usa un flujo secuencial y no cubre este caso. Lo mismo pasa entre claves: con la tabla llena, N claves nuevas pasan por `isLocked` (no saturado) y solo L de ellas se registran en `hit`, que devuelve `false` sin guardar las demás después de que ya se evaluaron. La entropía de un código de 12 o más caracteres mitiga el riesgo práctico, pero la garantía documentada es falsa.
 
-**Arreglo:** hay dos opciones.
+**Fix:** reservar el golpe antes del primer `await` y devolverlo si el código es correcto. Por ejemplo, agregar `release(key)` al `RateLimiter`: `if (!failedAttempts.hit(ip)) return 429;` antes de leer el cuerpo, y `failedAttempts.release(ip)` cuando el código es válido. Otra opción es ajustar el texto del documento para que diga que la cota es secuencial.
 
-- **Opción 1 (recomendada):** volver a olvidar el id guardado en `nuevaSesion()` y que "Volver a la sesión anterior" lo restaure solo cuando la hidratación funcione. `guardarSesionId` en `HIDRATAR` o en `volverASesionAnterior` basta, porque el id anterior sigue en memoria:
+### WR-02: SIN_CASO afirma "No se registró ningún envío simulado" en un turno que sí registró uno
 
-  ```ts
-  function nuevaSesion(): void {
-    if (estado.enCurso || turnoActivo.current !== null) return;
-    olvidarSesion();
-    despachar({ tipo: ACCION_UI.NUEVA_SESION });
-  }
-  function volverASesionAnterior(): void {
-    if (estado.enCurso || turnoActivo.current !== null || estado.sesionAnterior === null) return;
-    guardarSesionId(estado.sesionAnterior);
-    despachar({ tipo: ACCION_UI.VOLVER_SESION_ANTERIOR });
-  }
-  ```
+**File:** `src/domain/policies/compuerta.policy.ts:194-208` (texto en `src/config/strings.ts:257-258`; la prueba lo fija en `tests/unit/compuerta.policy.test.ts:575-576`)
 
-- **Opción 2:** si la persistencia es intencional, cambiar la copia de `TEXTO_NUEVA_SESION.cuerpo` para que no prometa que las confirmaciones se descartan, y agregar un test de recarga tras NUEVA_SESION.
+**Issue:** `hayEnvioSinCaso` agrega `SIN_CASO` siempre que hay un `TRUNCADO` con `caso: null`, aunque un reintento posterior del mismo turno termine en `ENVIADO`. La prueba `truncado(null), enviado(EC)` exige justamente `[SIN_CASO]`. El texto asociado es "No se registró ningún envío simulado: el pedido no indicó un caso válido.", así que el servidor afirma que no hubo ningún envío en un turno que escribió `ENVIO-SIMULADO.md` para EC, después de que el modelo dijo "Registré el envío simulado de EC". Es el mismo tipo de afirmación falsa que D-76 quería eliminar, pero esta vez la escribe el servidor (Core Value: nunca inventar un dato). El plan 03-40 lo exige (MUST NOT suprimir), pero lo que falla es el texto, no la regla.
 
-### WR-03: El seguimiento del scroll descarta desplazamientos reales de la usuaria fuera de la ventana de 600 ms y el `ResizeObserver` la devuelve al final mientras lee
+**Fix:** dejar la regla (el aviso no se suprime) y cambiar el texto para que no niegue lo que sí ocurrió, por ejemplo `"Un pedido de envío simulado no se registró: no indicó un caso válido."`. Si se quiere conservar el texto actual para el caso sin envíos, crear un desenlace distinto cuando `eventos` contiene un `ENVIADO`.
 
-**Archivos:** `web/src/state/seguimiento.ts:14-16,23-29` y `web/src/components/linea-de-tiempo.tsx:162-165,206-210`
+### WR-03: Un `simular_envio` truncado de un caso que la usuaria confirmó responde "falta tu confirmación explícita"
 
-**Problema:** `desplazar` solo despega la vista si hubo una "intención" en los últimos `VENTANA_INTENCION_USUARIA_MS = 600` ms. La intención solo se marca con `onWheel`, `onTouchStart`, `onPointerDown` y `onKeyDown` sobre la `<section>`. Hay desplazamientos legítimos que no renuevan la intención:
+**File:** `src/domain/policies/compuerta.policy.ts:135-144,160-162` (texto en `src/config/strings.ts:249-250`)
 
-- **Arrastrar la barra de scroll:** `pointerdown` ocurre una sola vez. Si en los primeros 600 ms el arrastre no supera `DISTANCIA_PEGADO_AL_FINAL` (96 px), todos los eventos de scroll siguientes se ignoran (`hayIntencionVigente` da false) y `pegado` sigue en `true`.
-- **Teclado sin foco dentro de la sección:** pasa al hacer clic en el texto de un mensaje (no enfocable) y pulsar PageUp un segundo después. El foco queda en `body`, así que el `keydown` no pasa por `.zona` y no hay intención, aunque el navegador desplaza el último scroller clicado.
-- **Inercia táctil:** los eventos de scroll siguen llegando más de 600 ms después de `touchstart`.
+**Issue:** `desenlaceDeEvento` trata el `TRUNCADO` legible igual que un `BLOQUEADO` y devuelve `REQUIERE_CONFIRMACION`. En el caso que describe el plan 03-40 (la usuaria escribe "Sí, envía X", el paso se corta por `FIN_LLM.LIMITE` y el modelo no reintenta), la autorización del turno queda sin usar y la respuesta termina con "No se registró el envío simulado de X: falta tu confirmación explícita." La usuaria sí confirmó. La causa real es que la respuesta del modelo se cortó, y el texto la lleva a pensar que su confirmación no se entendió. Es un dato falso sobre la causa.
 
-En todos esos casos el siguiente `CRECIMIENTO` del streaming ejecuta `if (seguimiento.current.pegado) bajarAlFinal(desplazable)` y arrastra a la analista al final mientras lee un turno anterior. Es justo el síntoma que el plan 03-36 buscaba cerrar. Los tests de `tests/web/seguimiento.test.ts` solo cubren el reductor con señales sintéticas y no estos orígenes.
+**Fix:** distinguir el truncado autorizado. Por ejemplo, agregar a `EntradaDesenlaces` el caso autorizado del turno y, cuando `evento.tipo === EVENTO_COMPUERTA.TRUNCADO && evento.caso === autorizado`, emitir un desenlace con un texto como "No se registró el envío simulado de X: la respuesta del modelo se cortó antes de ejecutarlo; confirma de nuevo para registrarlo."
 
-**Arreglo:** distinguir el scroll programático del de la usuaria por posición, no por tiempo. Hay que guardar en un ref el `scrollTop` que fijó `bajarAlFinal` y tratar como intención de la usuaria cualquier scroll que termine en otra posición. Como complemento, mantener la intención mientras el puntero esté presionado:
+### WR-04: Con crecimiento entre pulsaciones, una subida de menos de 96 px se deshace y la usuaria no logra despegarse con flechas, la rueda de Firefox o el trackpad lento
+
+**File:** `web/src/state/seguimiento.ts:30-36` (efecto en `web/src/components/linea-de-tiempo.tsx:149-167`; la prueba incompleta está en `tests/web/seguimiento.test.ts:154`)
+
+**Issue:** `desplazar` revisa primero `distancia <= DISTANCIA_PEGADO_AL_FINAL` y vuelve a pegar, sin importar la dirección. Si la usuaria sube 40 px con una flecha, la vista sigue pegada. Si llega un evento SSE que hace crecer el contenido, el `ResizeObserver` llama a `seguirAlFinal`, que la baja al fondo y anota una posición nueva con `AJUSTE_PROPIO`. La siguiente pulsación parte de nuevo del fondo. Lo verifiqué con el reductor: 10 pulsaciones de 40 px intercaladas con crecimientos de 50 px dejan `pegado === true`. La prueba "flechas: … la tercera despega" no intercala crecimientos, así que solo cubre el caso sin streaming. D-78 pide que cualquier subida de la usuaria despegue la vista, incluidas las flechas, y eso no se cumple justo mientras llegan eventos, que es cuando importa.
+
+**Fix:** dar prioridad a la dirección y dejar el umbral solo para volver a pegar al bajar. El encogimiento que deja la vista al fondo se cubre con una tolerancia mínima:
 
 ```ts
-const scrollProgramatico = useRef<number | null>(null);
-function bajarAlFinal(zona: HTMLElement): void {
-  zona.scrollTop = zona.scrollHeight;
-  scrollProgramatico.current = zona.scrollTop;
-}
-function alDesplazar(evento: SyntheticEvent<HTMLElement>): void {
-  const propio = scrollProgramatico.current === evento.currentTarget.scrollTop;
-  scrollProgramatico.current = null;
-  if (!propio) despachar({ tipo: SENAL_SEGUIMIENTO.INTENCION, ms: evento.timeStamp });
-  despachar({ tipo: SENAL_SEGUIMIENTO.DESPLAZAMIENTO, ms: evento.timeStamp, distancia: distanciaAlFinal(evento.currentTarget) });
+function desplazar(estado: EstadoSeguimiento, posicion: number, distancia: number): EstadoSeguimiento {
+  if (distancia <= TOLERANCIA_FONDO) return conCambios(estado, { pegado: true, contenidoNuevo: false, posicion });
+  if (subio(estado, posicion)) return conCambios(estado, { ...estado, pegado: false, posicion });
+  if (distancia <= DISTANCIA_PEGADO_AL_FINAL) return conCambios(estado, { pegado: true, contenidoNuevo: false, posicion });
+  return conCambios(estado, { ...estado, posicion });
 }
 ```
 
-También hay que agregar un test con un scroll que llega más de 600 ms después de `pointerdown` y no viene de `bajarAlFinal`.
+`TOLERANCIA_FONDO` (1 o 2 px) va en `ui.constants.ts`. Hay que agregar una prueba de flechas con `CRECIMIENTO` y `AJUSTE_PROPIO` entre cada pulsación.
 
 ## Info
 
-### IN-01: Un `proveedor_simular_envio` de un paso truncado no recibe el aviso de D-76
+### IN-01: El cupo de desalojos solo prueba la clave libre más antigua
 
-**Archivo:** `src/loop/services/paso-herramientas.service.ts:34-44` (y `src/loop/services/guardado-turno.service.ts:20-24`)
+**File:** `src/http/services/rate-limiter.service.ts:36-39`
 
-**Problema:** cuando el proveedor corta por `FIN_LLM.LIMITE`, `pasoTruncado` contesta las llamadas con `ARGUMENTOS_TRUNCADOS`. No las ejecuta, no las agrega a `turno.llamadas` y no genera eventos de compuerta. Un `simular_envio` truncado tampoco terminó `ENVIADO`, pero `desenlacesDeEnvio` no lo ve: no cuenta en `enviosSinCaso` ni produce `BLOQUEADO`. D-76 dice "por cada `proveedor_simular_envio` que no terminó `ENVIADO`". El riesgo es bajo porque el modelo suele reintentar, pero si el turno cierra por tope después del truncado, la prosa puede afirmar un envío sin aviso.
+**Issue:** `evictableEntry` toma `oldestUnlocked()` y, si esa clave no cabe en el cupo, declara la tabla saturada, aunque una clave libre más nueva con `count = 1` sí cabría. Basta una clave al frente con `count = L - 1` para que, con 2 golpes ya desalojados, se cierre el limitador para todos. Esto desaparece si se aplica el arreglo de CR-01.
 
-**Arreglo:** en `pasoTruncado`, contar como envío sin caso legible (o como `BLOQUEADO` del caso, si se puede leer) cada llamada truncada cuyo nombre sea `NOMBRE_VISIBLE[HERRAMIENTA.SIMULAR_ENVIO]`.
+**Fix:** con el diseño actual, buscar la primera clave libre que quepa en el cupo. Mejor aún, aplicar el traslado de CR-01.
 
-### IN-02: "Volver a la sesión anterior" se ofrece ante cualquier 429, aunque no tenga que ver con el tope de sesiones
+### IN-02: "Por ventana" es por ventana fija: en un intervalo móvil de la misma longitud caben unas dos veces K × L
 
-**Archivo:** `web/src/state/conversacion.ts:144-148`
+**File:** `docs/limites-del-demo.md:62`
 
-**Problema:** `accionDelRechazo` solo mira `status === 429`. El servidor también responde 429 con el tope diario (`chat.route.ts:63-66`) y con el límite de mensajes por minuto. En esos casos el botón aparece junto a un mensaje que no habla de sesiones. Es inofensivo, porque solo rehidrata, pero confunde.
+**Issue:** cada clave tiene una ventana fija que nace con su primer golpe. Si un atacante concentra L - 1 golpes al final de las ventanas de K claves y L golpes al inicio de las ventanas siguientes, consigue cerca de 2 × K × L evaluaciones en un intervalo de longitud W. El documento presenta la cifra como un máximo sin esa aclaración.
 
-**Arreglo:** distinguir el rechazo de sesiones (por ejemplo, con un código en el cuerpo del 429) o aceptar y documentar el comportamiento.
+**Fix:** aclarar en el documento que la cota es por ventana de cada clave y que en un intervalo móvil puede llegar al doble.
 
-### IN-03: El mensaje de bloqueo de acceso no usa singular ni el tiempo restante
+### IN-03: Una IP sin ningún intento ve "demasiados intentos" cuando el limitador está saturado
 
-**Archivo:** `src/config/strings.ts:361-363`
+**File:** `src/http/services/rate-limiter.service.ts:78-82`
 
-**Problema:** `esperarIntentos` arma `Espera ${minutos} minutos` sin pasar por `cantidadDeMinutos`, así que con `ACCESS_FAILED_WINDOW_MINUTES=1` dice "1 minutos". Además siempre informa la ventana completa, aunque ahora `retryAfterMs` permite decir lo que falta, como ya hace `demasiadasSesiones`.
+**Issue:** `isLocked` de una clave no rastreada devuelve `isSaturated()`, y `access.route.ts` responde con `access.lockedMessage` (`TEXTO_HTTP.demasiadosIntentos`). La usuaria legítima lee que hizo demasiados intentos cuando no hizo ninguno.
 
-**Arreglo:** `Espera ${cantidadDeMinutos(minutos)}`. Opcionalmente, calcular el mensaje con `retryAfterMs(clientIp)` en `access.route.ts` y en `access.middleware.ts`.
+**Fix:** exponer en el puerto un método `isSaturated()`, o un resultado que distinga los dos casos, y usar un texto propio como "El acceso está limitado temporalmente; intenta de nuevo en N minutos."
 
-### IN-04: `cierreConPregunta` quedó como código de producción que solo usan los tests
+### IN-04: La guarda de "turno en curso" de nueva sesión y volver está repetida en tres lugares
 
-**Archivo:** `src/domain/builders/cierre-turno.builder.ts:72-74`
+**File:** `web/src/hooks/usar-chat.ts:123-135`, `web/src/state/conversacion.ts:284-286,372-381`
 
-**Problema:** producción ahora llama a `cierreDelTurno`. `cierreConPregunta` sigue exportada solo para `tests/unit/cierre-turno.builder.test.ts`, `tests/loop/compuerta*.test.ts` y `tests/live/agente-en-vivo.test.ts`.
+**Issue:** `nuevaSesion` y `volverASesionAnterior` revisan `estado.enCurso`, y `sesionGuardadaTras` y `sesionAnteriorDisponible` lo vuelven a revisar, igual que el reductor. Por ahora coinciden, pero si una de las copias cambia, el id guardado en `localStorage` y el estado en memoria pueden divergir sin que ninguna prueba lo detecte.
 
-**Arreglo:** que los tests llamen a `cierreDelTurno(texto, [], pendientes)` y borrar el wrapper, o dejarlo con una justificación en `docs/`.
+**Fix:** derivar el id guardado del estado siguiente (`sesionGuardadaTras(guardada, estado, reducirConversacion(estado, accion))`) o que el hook solo consulte una función pura que decida si la acción aplica.
 
-### IN-05: `CRECIMIENTO` marca "contenido nuevo" también cuando el contenido se achica
+### IN-05: `aplicarEvento` no tiene comprobación de exhaustividad
 
-**Archivos:** `web/src/state/seguimiento.ts:31-34` y `web/src/components/linea-de-tiempo.tsx:162-165`
+**File:** `src/domain/policies/compuerta.policy.ts:93-115`
 
-**Problema:** el `ResizeObserver` despacha `CRECIMIENTO` con cualquier cambio de tamaño. Si la analista está despegada y pliega un grupo de herramientas, `crecer` enciende `contenidoNuevo` y aparece "Ir al final" sin que haya nada nuevo.
+**Issue:** el `switch` devuelve `void`, así que el compilador no habría avisado si el caso `TRUNCADO` se olvidaba. `desenlaceDeEvento` sí está protegido por su tipo de retorno. Una variante futura de `EventoCompuerta` caería en silencio en "no hacer nada" justo en el pliegue que decide si la compuerta queda pendiente.
 
-**Arreglo:** guardar la última altura observada y despachar `CRECIMIENTO` solo si `scrollHeight` aumentó.
+**Fix:** agregar al final `default: { const _sinCubrir: never = evento; return _sinCubrir; }`, o hacer que `aplicarEvento` devuelva un valor tipado.
 
 ---
 
-_Revisado: 2026-10-15T18:21:57Z_
-_Revisor: Claude (gsd-code-reviewer)_
-_Profundidad: standard_
+_Reviewed: 2026-10-15T20:35:04Z_
+_Reviewer: Claude (gsd-code-reviewer)_
+_Depth: standard_
