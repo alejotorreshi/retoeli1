@@ -97,7 +97,7 @@ Estado del front: un `useReducer` alimentado por los eventos SSE (`turn_start`, 
 |-------|----------------|
 | ≥ 1024 px | Dos columnas como arriba. |
 | 640–1023 px | El panel de casos sale de la grilla. Bajo el encabezado aparece una barra de pestañas de 40 px con "Chat" y "Casos y archivos" (`role="tablist"`). Un punto de 8 px de acento en la pestaña "Casos y archivos" indica cambios no vistos. |
-| < 640 px | Igual que arriba; el encabezado se parte en dos líneas (título arriba; fecha, estado del modelo y "Nueva sesión" abajo). Las burbujas ocupan el 100 % del ancho; los chips hacen scroll horizontal en una sola fila. |
+| < 640 px | Igual que arriba, con menos cromo fijo. El encabezado va en dos líneas: título arriba; fecha, estado del modelo y "Nueva sesión" abajo, en una sola fila sin partir (elipsis si no cabe). La fecha muestra solo el valor ("2026-09-03") y el estado del modelo solo su etiqueta ("Sin clave válida"): los prefijos "Fecha de ejecución " y "{modelo} · " quedan ocultos a la vista pero presentes para lectores de pantalla, que leen el texto completo. Las burbujas ocupan el 100 % del ancho. Los chips usan `flex-wrap` y **no** hacen scroll horizontal (decisión de la usuaria, 2026-10-14); en la franja compacta sobre el compositor (con historial) llevan las etiquetas cortas "Demo §11" y "Los {n} casos", con `aria-label` igual a la etiqueta completa y el mismo mensaje. "Ir al final" queda solo con ícono (ver LineaDeTiempo). |
 
 ### Pantalla de acceso
 
@@ -209,7 +209,10 @@ Ningún otro elemento usa el acento. Los botones secundarios ("Cancelar envío",
 
 ### LineaDeTiempo
 - Orden por turno: mensaje de la usuaria → `GrupoHerramientas` → `MensajeAgente` (eventos `text`) → `TarjetaResultado` (una por caso con herramientas en ese turno) → `TarjetaConfirmacion` (una por caso pendiente) → `AvisoError` si hubo `error`.
-- Auto-scroll: se pega al final mientras la usuaria está a ≤ 96 px del fondo. Si subió, no se mueve y aparece un botón flotante "Ir al final" (secundario, abajo a la derecha de la columna) cuando llega contenido nuevo.
+- Auto-scroll **por intención de la usuaria** (G-03-04, G-03-20): la línea de tiempo sigue el final mientras está pegada. Solo un desplazamiento que la usuaria inicia (rueda, toque, puntero o las teclas PageUp, PageDown, flechas arriba y abajo, Home, End y Espacio), medido dentro de una ventana corta tras esa intención, la despega o la vuelve a pegar (a ≤ 96 px del fondo). El scroll que hace la propia bajada al final y el del anclaje del navegador no apagan el seguimiento.
+- Re-anclaje al enviar: cada mensaje nuevo de la usuaria (y la hidratación) vuelve a pegar la vista al final.
+- Mientras sigue el final, el contenedor lleva `overflow-anchor: none`, para que el navegador no la mueva al insertar contenido arriba de lo visible.
+- Si la usuaria subió y llega contenido nuevo, aparece el botón flotante "Ir al final" (secundario, abajo a la derecha de la columna), con el ícono de chevron hacia abajo y el texto. En < 640 px queda solo con el ícono, de `--alto-control` × `--alto-control`, con `aria-label="Ir al final"`. Pulsarlo baja y vuelve a pegar la vista.
 - Región viva: un único `<div aria-live="polite" class="sr-only">` anuncia solo los cambios de estado ("Ejecutando Mapear campos de ec-corp-andina", "Respuesta lista", "Confirmación requerida para ec-corp-andina"), nunca cada fragmento de texto.
 
 ### IndicadorPensando (UI-01)
@@ -245,9 +248,10 @@ Etiquetas humanas de herramienta (en `web/src/config/strings.ts`):
 - Botones: "Confirmar envío simulado" (primario, acento) y "Cancelar envío" (secundario). Cada botón manda a `POST /api/chat` el texto visible **y** `accion: { tipo, caso }` (D-68). El texto visible queda como mensaje de la usuaria en la línea de tiempo.
 - Al hacer clic, los dos botones de **esa** tarjeta se deshabilitan y muestran "Enviando…" en el que se pulsó, hasta `turn_end`. La tarjeta **no** se cierra por la UI: se cierra o sigue abierta según los eventos del turno siguiente (D-69).
 - Mientras corre cualquier turno, los botones de todas las tarjetas abiertas están deshabilitados (`aria-disabled`, con el texto de ayuda "Espera a que termine la respuesta actual.").
+- Con el envío en pausa (`sin_clave` o `tope_diario`, ver AvisoModelo), Confirmar y Cancelar de todas las tarjetas abiertas quedan deshabilitados con la ayuda "Podrás confirmar o cancelar cuando el modelo vuelva a estar disponible.". Si además corre un turno, la ayuda es la de turno en curso. La pausa no cambia el estado de ninguna tarjeta (D-69).
 - Estados terminales (sin botones; la tarjeta se queda en el historial con opacidad normal y un badge): "Envío registrado" (éxito), "Envío cancelado" (información), "Reemplazada por una confirmación nueva" (información, cuando un turno posterior la vuelve a pedir).
 - Al recargar, las tarjetas de `pendientes` vigentes de `GET /api/sessions/:id` se vuelven a pintar con botones; las de turnos resueltos, sin botones (D-69).
-- El compositor sigue activo con tarjetas abiertas (D-69).
+- El compositor sigue activo con tarjetas abiertas (D-69), salvo con el envío en pausa.
 
 ### TarjetaResultado (UI-05, DF-04)
 - Se construye **solo** con datos de las herramientas (del evento `tool_end` o de la hidratación), nunca con el texto del modelo.
@@ -275,6 +279,8 @@ Estados de etapa: pendiente (círculo hueco, `--texto-tenue`), en curso (acento,
 
 ### PanelCasos y ListaArchivos (UI-06, D-64..D-67)
 - El panel lista los casos con alguna herramienta en la sesión, en orden de primera aparición. El caso con actividad más reciente queda primero y expandido; los demás, colapsados (`<details>`).
+- Solo entran **casos reales** (D-75): caso que cumple el patrón de caso, que está entre los casos de `/api/config` (si la config ya cargó) y cuya llamada no fue refutada por `CASO_NO_ENCONTRADO` o `CASO_INVALIDO`. El listado de casos ("¿Qué casos hay?") llega con caso `null` y no agrega bloque ni pide archivos. Un caso real con otro fallo sigue en el panel con su etapa en error. El mismo predicado decide las marcas de archivos, las tarjetas de resultado y el caso que nombran el indicador y la región viva.
+- El chip de reproceso del aviso de disco efímero se deshabilita durante un turno y con el envío en pausa.
 - Por caso: `ProgresoCaso` y `ListaArchivos`. La lista se pide al servidor al terminar cada turno que tocó el caso y al expandir el bloque, y refleja **lo que existe en disco en ese momento** (D-67).
 - Fila de archivo (40 px): nombre en monoespaciada (`formulario.xlsx`, `paquete/checklist.md`…), tipo en texto tenue ("Formulario", "Checklist", "Borrador de correo", "Envío simulado", "Valores para portal", "Soporte") y dos enlaces de acento: "Ver" (abre `DialogoVistaPrevia`) y "Descargar" (`<a href download>`, entrega el archivo real, D-64). Cada enlace lleva un nombre accesible con el archivo: `aria-label="Ver formulario.xlsx"` y `aria-label="Descargar formulario.xlsx"`. Los soportes copiados solo tienen "Descargar".
 - Nunca aparecen `mapeo.json` ni `log.jsonl` (D-66).
@@ -286,21 +292,29 @@ Estados de etapa: pendiente (círculo hueco, `--texto-tenue`), en curso (acento,
 - Título: el nombre del archivo. Botones en el pie: "Descargar archivo" (secundario) y "Cerrar vista previa" (secundario).
 - Formulario (xlsx, pdf o valores de portal): tabla con encabezado fijo y columnas "Etiqueta", "Valor (enmascarado)", "Estado" y "Nota". El estado va como badge semántico ("Lleno", "Faltante", "Por confirmar"). Un valor nulo se muestra "—". Encima de la tabla, la línea tenue "Los valores se muestran enmascarados. La descarga trae el archivo completo."
 - Archivo `.md`: texto plano en monoespaciada 14 px, `pre-wrap`, con scroll.
-- Estados: "Cargando la vista previa…" mientras llega; error con el mensaje de Copywriting.
+- Estados: "Cargando la vista previa…" mientras llega; error con el texto **según la causa** (G-03-10), pintado como nodo de texto con `pre-wrap`:
+  - 404 (archivo inexistente): la copia de error con la pista de reinicio, y además el aviso de disco efímero del caso. Solo el 404 lleva la pista y el aviso.
+  - 422 (sin vista previa) y cualquier otro rechazo del servidor (500, 503…): el `mensaje` del servidor tal como llega.
+  - Red caída: la copia de error sin conexión.
+  - Acceso vencido (401): el mensaje del acceso, y la UI vuelve a `PantallaAcceso`.
 
 ### Compositor y AccionesRapidas (UI-01, UI-07, D-73)
 - `textarea` con `aria-label="Mensaje para el agente"`, `maxlength` 2000. Enter manda; Shift+Enter hace salto de línea. Línea de ayuda tenue debajo: "Enter para enviar · Shift+Enter para nueva línea".
 - Contador "{n}/2000" visible desde 1800 caracteres; en 2000, color de error.
 - Línea de uso, en texto tenue a la derecha de la ayuda: "Uso de la sesión: {k} k de 300 k tokens" (del evento `usage`, `totalSesion`). El tope sale del servidor, no está escrito en el front.
 - Durante un turno: el botón primario "Enviar mensaje" se reemplaza por el secundario "Detener respuesta", que aborta el `fetch` (el servidor cierra el turno con `abortado`). El `textarea` sigue editable, pero Enter no manda.
+- Con el envío en pausa (`sin_clave` o `tope_diario`, ver AvisoModelo): el `textarea`, "Enviar mensaje" y el envío con Enter quedan deshabilitados, y la línea de ayuda (referenciada por `aria-describedby`) dice "El envío está en pausa mientras el modelo no esté disponible; el aviso de arriba explica qué hacer.". En los demás estados del modelo el compositor sigue habilitado. "Nueva sesión", "Detener respuesta", ver y descargar archivos y "Reintentar" de la lista no dependen de la pausa.
 - Chips (fila sobre el compositor, siempre visibles en sesión vacía; con historial, en una fila compacta sobre el compositor):
-  - "Demo §11: ec-corp-andina" → manda el prompt literal del PRD §11.
-  - "Procesar los 4 casos" → manda "Procesa estos casos: {lista}. Dime el estado de cada uno. No envíes nada todavía.", con `{lista}` desde los casos conocidos del servidor (sin ids escritos a mano en el front).
-  - "¿Qué casos hay?" → manda "¿Qué casos hay disponibles?".
-  - Los chips están deshabilitados durante un turno.
+  - "Demo §11: ec-corp-andina" → manda el prompt literal del PRD §11. En la franja compacta en < 640 px: "Demo §11".
+  - "Procesar los 4 casos" → manda "Procesa estos casos: {lista}. Dime el estado de cada uno. No envíes nada todavía.", con `{lista}` desde los casos conocidos del servidor (sin ids escritos a mano en el front). En la franja compacta en < 640 px: "Los 4 casos".
+  - "¿Qué casos hay?" → manda "¿Qué casos hay disponibles?". No tiene etiqueta corta.
+  - Las etiquetas cortas llevan `aria-label` igual a la etiqueta completa y mandan el mismo mensaje.
+  - Los chips están deshabilitados durante un turno y con el envío en pausa.
 
 ### DialogoNuevaSesion (UI-08, destructiva)
-- `<dialog>` modal. Botones: "Seguir en esta sesión" (secundario, con el foco inicial) y "Empezar sesión nueva" (destructivo). Al confirmar: nuevo `sessionId` en `localStorage`, la línea de tiempo y el panel se vacían y aparece el estado vacío.
+- `<dialog>` modal. Botones: "Seguir en esta sesión" (secundario, con el foco inicial) y "Empezar sesión nueva" (destructivo). Al confirmar, la línea de tiempo y el panel se vacían y aparece el estado vacío.
+- El `sessionId` anterior **se conserva** (en el estado y en `localStorage`) hasta que el servidor acepta la sesión nueva, es decir, hasta el `turn_start` del primer mensaje (D-73.5.1). Recargar antes de mandar ese mensaje vuelve a la sesión anterior. Pulsar "Empezar sesión nueva" dos veces seguidas sin mandar nada conserva la misma sesión a la que volver.
+- Si el primer mensaje de la sesión nueva recibe un 429, el `AvisoError` muestra el mensaje del servidor (con los minutos de espera) y el botón "Volver a la sesión anterior", que recarga esa sesión desde `GET /api/sessions/:id` sin mandar nada al chat. Sin sesión anterior, o con 413, 503 o red caída, el aviso no lleva ese botón.
 
 ### Persistencia y recarga (UI-08, DF-14, D-58)
 - El `sessionId` vive en `localStorage` (es un identificador, no un secreto). El código de acceso **no**.
@@ -343,7 +357,9 @@ Todo en español. Copia propia del front en `web/src/config/strings.ts`. Las fil
 | Disco efímero (D-67) | "El servidor se reinició y los archivos se borraron; vuelve a procesar el caso." · chip "Procesar {caso} de nuevo" |
 | Pie del panel | "Los archivos viven en el disco temporal del servidor y se borran si se reinicia." |
 | Vista previa: nota | "Los valores se muestran enmascarados. La descarga trae el archivo completo." |
-| Vista previa: error | "No se pudo cargar la vista previa. Si el servidor se reinició, vuelve a procesar el caso; si no, inténtalo de nuevo." |
+| Vista previa: error 404 (archivo inexistente) | "No se pudo cargar la vista previa. Si el servidor se reinició, vuelve a procesar el caso; si no, inténtalo de nuevo." (más el aviso de disco efímero del caso) |
+| Vista previa: error 422 (servidor, sin vista previa) | El `mensaje` del servidor tal cual: "Este archivo no tiene vista previa. Puedes descargarlo para revisarlo." Sin pista de reinicio. Cualquier otro rechazo (500, 503…) muestra también su `mensaje`. |
+| Vista previa: sin conexión (front) | "No se pudo cargar la vista previa por un problema de conexión. Inténtalo de nuevo." |
 | Confirmación: título | "Confirmación requerida · Envío simulado" |
 | Confirmación: nota | "Confirmar registra solo ENVIO-SIMULADO.md. No se envía ningún correo real." |
 | Confirmación con bloqueos | "Se registrará con {n} bloqueo(s)." |
@@ -371,12 +387,14 @@ Todo en español. Copia propia del front en `web/src/config/strings.ts`. Las fil
 | Error: rate limit del chat (servidor, 429) | "Enviaste muchos mensajes seguidos. Espera un minuto y vuelve a intentarlo." |
 | Error: turno activo (servidor, `SESION_OCUPADA`) | "Esta sesión todavía está procesando el mensaje anterior. Espera la respuesta y vuelve a escribir." (ya existe en `MENSAJE_AGENTE`) |
 | Error: servidor lleno (servidor, 3 turnos simultáneos) | "El servidor está atendiendo otras conversaciones. Vuelve a intentarlo en unos segundos." |
-| Error: sesiones por hora (servidor) | "Abriste demasiadas sesiones nuevas en la última hora. Sigue en la sesión actual o vuelve a intentarlo más tarde." |
+| Error: sesiones por hora (servidor, 429) | "Abriste demasiadas sesiones nuevas en la última hora. Podrás abrir otra en {m}.", donde {m} es "un minuto" o "{n} minutos" (techo, mínimo uno) · el `AvisoError` agrega el botón "Volver a la sesión anterior" cuando hay una sesión a la que volver |
+| Aviso de envío no registrado (servidor, D-76) | Va en el texto del agente, después de la prosa del modelo y antes de la pregunta del servidor: requiere confirmación "No se registró el envío simulado de {caso}: falta tu confirmación explícita." · sin paquete "No se registró el envío simulado de {caso}: su paquete no está armado en esta sesión; primero hay que armarlo y después confirmar el envío." · ya enviado "No se registró otro envío simulado de {caso}: ya tiene uno registrado en esta sesión (ENVIO-SIMULADO.md); para registrar otro hay que volver a armar el paquete." · fallido "No se registró el envío simulado de {caso}: la herramienta no pudo registrarlo." · sin caso "No se registró ningún envío simulado: el pedido no indicó un caso válido." |
+| Chips cortos (franja compacta, < 640 px) | "Demo §11" · "Los {n} casos" ("Los casos" si todavía no llegaron) · `aria-label` con la etiqueta completa |
 | Error: tope diario (servidor) | "Se alcanzó el tope diario de uso del modelo. Vuelve a intentarlo después de la medianoche ({zona})." |
 | Error: presupuesto de sesión (servidor, `PRESUPUESTO_AGOTADO`) | "Esta sesión agotó su presupuesto de tokens. Abre una sesión nueva para continuar." (ya existe) · el `AvisoError` agrega el botón "Empezar sesión nueva" |
 | Errores del agente (servidor, `MENSAJE_AGENTE`) | Se muestran tal cual en `AvisoError`: ya traen el problema y el paso siguiente ("La sesión sigue abierta; puedes volver a intentarlo."). |
 | Sesión expirada (servidor, `TEXTO_SESION.expirada`) | "La sesión anterior expiró; empezamos de cero." |
-| Ir al final | "Ir al final" |
+| Ir al final | "Ir al final" (en < 640 px solo el ícono, con `aria-label="Ir al final"`) |
 | Destructive confirmation | Nueva sesión: título "¿Empezar una sesión nueva?" · cuerpo "La conversación actual sale de esta pantalla y las confirmaciones pendientes se descartan. Los archivos generados siguen en el servidor mientras no se reinicie." · botones "Empezar sesión nueva" (destructivo) y "Seguir en esta sesión" |
 
 Confirmar o cancelar el envío simulado **no** es una acción destructiva con diálogo propio: la tarjeta ya es la confirmación explícita que exige CA3, y el servidor es la compuerta (D-68). No se agrega un segundo diálogo.
@@ -407,13 +425,13 @@ La UI no inventa datos; necesita estos campos del servidor. La forma exacta la d
 4. `GET /api/sessions/:id` devuelve historial redactado más `pendientes` vigentes (`{ caso, bloqueos }[]`, D-69), con lo necesario para rehidratar el progreso y las tarjetas.
 5. Un endpoint lista los archivos existentes de un caso (lista blanca, D-66) y otro sirve la vista previa enmascarada desde `mapeo.json` (D-65).
 6. Toda respuesta de error HTTP (401, 413, 429, 503…) trae un `mensaje` en español listo para mostrar.
-7. El chip "¿Qué casos hay?" exige que el agente pueda responder la lista. Hoy no existe `proveedor_listar_casos`; el planner decide si se agrega la herramienta o si alcanza con la respuesta de `leer_solicitud` ante un caso inexistente.
+7. El chip "¿Qué casos hay?" exige que el agente pueda responder la lista. No existe `proveedor_listar_casos`: el modelo llama `proveedor_leer_solicitud` con caso vacío, que responde con los casos disponibles (D-14). El servidor publica esa llamada con **caso `null`** en `tool_start`, `tool_end` y la vista de sesión, porque el caso vacío no cumple el patrón de caso (D-75), así que el listado no agrega un bloque al panel.
 
 ---
 
 ## UI Considerations
 
-Applicable state considerations resolved: 25 covered, 4 backstop, 0 unresolved
+Applicable state considerations resolved: 27 covered, 4 backstop, 0 unresolved (el error de `DialogoVistaPrevia` se separó por causa en el cierre de brechas, 2026-10-15)
 
 Sonda `ui-consideration-probe` (2026-10-14): 11 superficies y 67 categorías propuestas. Las que no figuran en la tabla se descartaron por no aplicar, por ejemplo "loading" en `DialogoNuevaSesion` (acción local, sin red) o "zero-one-many" en `PantallaAcceso`. `AvisoModelo` quedó sin clasificar y se revisó a mano: sus cinco estados están en la fila "Estado del LLM".
 
@@ -428,12 +446,14 @@ Sonda `ui-consideration-probe` (2026-10-14): 11 superficies y 67 categorías pro
 | loading | TarjetaHerramienta | ✅ covered | Entre `tool_start` y `tool_end` la tarjeta muestra el badge "En curso" con el ícono girando (o el reloj con movimiento reducido) |
 | loading | DialogoVistaPrevia | ✅ covered | Mientras llega la vista previa, el cuerpo dice "Cargando la vista previa…" |
 | loading | PantallaAcceso | ✅ covered | Durante `POST /api/acceso` el botón dice "Verificando…" y está deshabilitado |
-| error | Turno (evento `error`) | ✅ covered | El `mensaje` del servidor se muestra en `AvisoError` con `role="alert"`, la sesión sigue usable y el compositor queda habilitado (CA5) |
+| error | Turno (evento `error`) | ✅ covered | El `mensaje` del servidor se muestra en `AvisoError` con `role="alert"`, la sesión sigue usable y el compositor queda habilitado (CA5), salvo con el envío en pausa (`sin_clave` o `tope_diario`, D-70 reescrita). Al terminar el pedido se vuelve a pedir `/api/health` |
 | error | Stream cortado sin `turn_end` | ✅ covered | Se muestra la copia de stream cortado con el botón "Recargar conversación", que rehidrata desde `GET /api/sessions/:id` |
 | error | Respuestas HTTP 401 | ✅ covered | Cualquier 401 lleva a `PantallaAcceso` con la copia "Tu acceso venció…" y conserva el `sessionId` |
-| error | Respuestas HTTP 413 / 429 / 503 | ✅ covered | El `mensaje` del servidor aparece en `AvisoError` bajo el mensaje de la usuaria; el texto escrito no se pierde del compositor |
-| error | DialogoVistaPrevia y Descargar | ✅ covered | Un 404 de archivo muestra la copia de error de vista previa y dispara el aviso de disco efímero del caso |
-| error | Estado del LLM | ✅ covered | `llm ≠ disponible` pinta el banner de su estado con la copia de Copywriting |
+| error | Respuestas HTTP 413 / 429 / 503 | ✅ covered | El `mensaje` del servidor aparece en `AvisoError` bajo el mensaje de la usuaria; el texto escrito no se pierde del compositor. Un 429 con una sesión anterior guardada agrega "Volver a la sesión anterior" (D-73.5.1) |
+| error | DialogoVistaPrevia y Descargar (404) | ✅ covered | Un 404 de archivo muestra la copia de error de vista previa con la pista de reinicio y dispara el aviso de disco efímero del caso |
+| error | DialogoVistaPrevia (422 y otros rechazos) | ✅ covered | Un 422 muestra el `mensaje` del servidor ("Este archivo no tiene vista previa. Puedes descargarlo para revisarlo."), sin pista de reinicio y sin aviso de disco efímero; 500 y 503 muestran también su `mensaje` (G-03-10) |
+| error | DialogoVistaPrevia (red caída) | ✅ covered | Sin conexión muestra "No se pudo cargar la vista previa por un problema de conexión. Inténtalo de nuevo.", sin pista de reinicio |
+| error | Estado del LLM | ✅ covered | `llm ≠ disponible` pinta el banner de su estado con título, detalle y "Comprobar de nuevo" (Copywriting). Health se pide al cargar, en `visibilitychange`, al terminar cada pedido de chat y con el botón, nunca por intervalo. En `sin_clave` y `tope_diario` el envío queda en pausa; en `saldo_agotado` y `no_disponible` sigue habilitado |
 | populated | LineaDeTiempo (demo §11) | ✅ covered | Turno con 4 tool calls: mensaje → grupo abierto con 4 tarjetas → texto del agente → `TarjetaResultado` de ec-corp-andina → `TarjetaConfirmacion` |
 | populated | PanelCasos | ✅ covered | Cada caso procesado muestra `ProgresoCaso` con sus etapas y `ListaArchivos` con Ver y Descargar |
 | partial | TarjetaResultado | ✅ covered | Si el turno no llegó a armar el paquete, los contadores se muestran si hubo mapeo, el badge dice "Paquete sin armar" y la ruta y los bloqueos muestran "—" |
@@ -441,11 +461,11 @@ Sonda `ui-consideration-probe` (2026-10-14): 11 superficies y 67 categorías pro
 | partial | ListaArchivos (disco efímero) | ✅ covered | Un archivo esperado por el progreso pero ausente en disco muestra el aviso D-67 con el chip "Procesar {caso} de nuevo" |
 | zero-one-many | GrupoHerramientas | ✅ covered | Copia en singular y plural; con más de 6 tarjetas el grupo se cierra al terminar el turno y deja el resumen visible |
 | zero-one-many | TarjetaConfirmacion | ✅ covered | Una tarjeta por caso pendiente (0 = ninguna; varios casos = varias tarjetas apiladas con 8 px de separación, cada una con sus botones) |
-| overflow | LineaDeTiempo, PanelCasos, DialogoVistaPrevia | 🧪 backstop | Cada contenedor hace scroll propio; encabezado y compositor quedan fijos; la tabla de vista previa fija su encabezado. Verificar con la demo de 4 casos a 1280 × 720 y a 375 × 667 |
+| overflow | LineaDeTiempo, PanelCasos, DialogoVistaPrevia | 🧪 backstop | Cada contenedor hace scroll propio; encabezado y compositor quedan fijos; la tabla de vista previa fija su encabezado. La línea de tiempo sigue el final por intención de la usuaria, se re-ancla al enviar y lleva `overflow-anchor: none` mientras sigue el final, así que con más de 6 llamadas a 375 × 667 no queda un mensaje viejo a la vista; "Ir al final" es solo ícono en < 640 px y no tapa texto (G-03-04, G-03-20). Verificar con la demo de 4 casos a 1280 × 720 y a 375 × 667 |
 | overflow | `<pre>` de argumentos y vista previa `.md` | 🧪 backstop | Alto máximo 240 px (60 vh en el diálogo) con scroll vertical y horizontal; sin desborde del ancho de la tarjeta |
 | long-text | Texto del agente, ids de caso, rutas, bloqueos | 🧪 backstop | `pre-wrap` más `overflow-wrap: anywhere`; ningún texto rompe el ancho de 768 px ni el panel de 384 px |
 | long-text | Resumen en la tarjeta colapsada | 🧪 backstop | Una línea con elipsis (`text-overflow: ellipsis`); el texto completo solo en el cuerpo expandido |
-| overflow | AccionesRapidas en < 640 px | ✅ covered | `flex-wrap: wrap`, con 8 px entre chips: se apilan en varias filas (2 como máximo con 3 chips) y no hay scroll horizontal (decisión de la usuaria, 2026-10-14) |
+| overflow | AccionesRapidas en < 640 px | ✅ covered | `flex-wrap: wrap`, con 8 px entre chips: se apilan en varias filas (2 como máximo con 3 chips) y no hay scroll horizontal (decisión de la usuaria, 2026-10-14). En la franja compacta sobre el compositor las etiquetas son cortas ("Demo §11", "Los {n} casos"), con `aria-label` completo, para reducir el cromo fijo a 375 px |
 | loading | ListaArchivos | ✅ covered | Mientras llega la lista se muestra "Cargando archivos…" en texto tenue; la lista se vuelve a pedir al terminar cada turno |
 | error | ListaArchivos (fallo al listar) | ✅ covered | "No pudimos traer los archivos de este caso." con el botón secundario "Reintentar"; no se confunde con el 404 de un archivo (D-67) |
 
