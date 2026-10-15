@@ -1,5 +1,7 @@
 import { DIRECTORIO_PAQUETE } from "@/config/constants/files.constants.ts";
 
+export const METODO_POST = "POST";
+
 export const PUERTO_API_POR_DEFECTO = 3000;
 
 export const PUERTO_MAXIMO = 65_535;

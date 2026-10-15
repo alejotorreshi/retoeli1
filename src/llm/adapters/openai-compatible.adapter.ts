@@ -1,7 +1,7 @@
 import { z } from "zod";
+import { METODO_POST } from "@/config/constants/http.constants.ts";
 import {
   CABECERA_HTTP,
-  METODO_POST,
   PREFIJO_BEARER,
   RUTA_CHAT_COMPLETIONS,
   TIPO_CONTENIDO_JSON,

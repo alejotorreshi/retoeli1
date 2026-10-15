@@ -1,10 +1,6 @@
 import { TIPO_ARCHIVO_CASO } from "@/config/constants/files.constants.ts";
-import {
-  CABECERA_HTTP,
-  ESTADO_LLM,
-  METODO_POST,
-  TIPO_CONTENIDO_JSON,
-} from "@/config/constants/llm.constants.ts";
+import { METODO_POST } from "@/config/constants/http.constants.ts";
+import { CABECERA_HTTP, ESTADO_LLM, TIPO_CONTENIDO_JSON } from "@/config/constants/llm.constants.ts";
 import { HERRAMIENTA } from "@/config/constants/tools.constants.ts";
 import type { ValorDe } from "@/config/types/valor-de.type.ts";
 

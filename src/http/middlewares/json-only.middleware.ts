@@ -1,6 +1,5 @@
 import type { MiddlewareHandler } from "hono";
-import { CABECERA, RESPUESTA_HTTP, TIPO_CONTENIDO } from "@/config/constants/http.constants.ts";
-import { METODO_POST } from "@/config/constants/llm.constants.ts";
+import { CABECERA, METODO_POST, RESPUESTA_HTTP, TIPO_CONTENIDO } from "@/config/constants/http.constants.ts";
 import { MENSAJE_HTTP } from "@/config/strings.ts";
 import type { ErrorResponse } from "@/http/types/api.type.ts";
 import type { HttpEnv } from "@/http/types/server.type.ts";

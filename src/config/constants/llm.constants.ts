@@ -128,7 +128,6 @@ export const CABECERA_HTTP = {
 
 export const PREFIJO_BEARER = "Bearer ";
 export const TIPO_CONTENIDO_JSON = "application/json";
-export const METODO_POST = "POST";
 
 export const VALOR_OMITIR = "omit";
 export const HOSTS_LOOPBACK: ReadonlySet<string> = new Set(["localhost", "127.0.0.1", "[::1]"]);
