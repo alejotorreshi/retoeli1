@@ -33,3 +33,10 @@ export type PropsTurno = {
 export type PropsMensaje = {
   readonly texto: string;
 };
+
+export type PropsCompositor = {
+  readonly valor: string;
+  readonly enCurso: boolean;
+  readonly alCambiar: (valor: string) => void;
+  readonly alEnviar: () => void;
+};
