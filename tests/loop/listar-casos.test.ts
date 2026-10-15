@@ -11,7 +11,12 @@ import { ROL_MENSAJE } from "@/config/constants/llm.constants.ts";
 import { HERRAMIENTA, NOMBRE_VISIBLE } from "@/config/constants/tools.constants.ts";
 import { pinExecutionDate } from "@/config/env.ts";
 import type { Mensaje, MensajeHerramienta } from "@/llm/types/llm.type.ts";
-import type { EventoAgente, EventoFinHerramienta, EventoTexto } from "@/loop/types/evento.type.ts";
+import type {
+  EventoAgente,
+  EventoFinHerramienta,
+  EventoInicioHerramienta,
+  EventoTexto,
+} from "@/loop/types/evento.type.ts";
 
 const PREGUNTA = "¿Qué casos hay disponibles?";
 const ID_LLAMADA = "listar-1";
@@ -40,6 +45,14 @@ function finDelListado(): EventoFinHerramienta {
   );
   if (fin === undefined) throw new Error("falta el tool_end del listado");
   return fin;
+}
+
+function inicioDelListado(): EventoInicioHerramienta {
+  const inicio = eventos.find(
+    (evento): evento is EventoInicioHerramienta => evento.tipo === TIPO_EVENTO.INICIO_HERRAMIENTA,
+  );
+  if (inicio === undefined) throw new Error("falta el tool_start del listado");
+  return inicio;
 }
 
 function respuestaFinal(): string {
@@ -78,6 +91,11 @@ describe("listar los casos con las cinco herramientas (UI-07, HERR-01)", () => {
     expect(fin.herramienta).toBe(NOMBRE_VISIBLE[HERRAMIENTA.LEER_SOLICITUD]);
     expect(fin.ok).toBe(false);
     expect(fin.codigo).toBe(CODIGO_ERROR.CASO_NO_ENCONTRADO);
+  });
+
+  test("el tool_start y el tool_end del listado salen con caso null, nunca con el caso vacío (G-03-17)", () => {
+    expect(inicioDelListado().caso).toBeNull();
+    expect(finDelListado().caso).toBeNull();
   });
 
   test("el modelo recibe casos_disponibles con los cuatro casos y la respuesta los lista", () => {

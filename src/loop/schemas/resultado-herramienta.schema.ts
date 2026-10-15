@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { FORMATO } from "@/config/constants/forms.constants.ts";
 import { ESTADO_CAMPO } from "@/config/constants/mapping.constants.ts";
+import { PATRON_CASO } from "@/config/constants/patterns.constants.ts";
 import { HERRAMIENTA } from "@/config/constants/tools.constants.ts";
 import type {
   ArgumentosConCaso,
@@ -21,7 +22,7 @@ export const resultadoHerramientaSchema = z.object({
 }) satisfies z.ZodType<LecturaResultadoHerramienta>;
 
 export const argumentosConCasoSchema = z.object({
-  caso: z.string(),
+  caso: z.string().regex(PATRON_CASO),
 }) satisfies z.ZodType<ArgumentosConCaso>;
 
 const datosPaqueteSchema = z.object({

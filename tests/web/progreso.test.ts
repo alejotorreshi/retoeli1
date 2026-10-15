@@ -7,7 +7,7 @@ import {
   ORDEN_ETAPAS,
 } from "@web/config/constants/ui.constants.ts";
 import { TEXTO_PANEL, TEXTO_PROGRESO } from "@web/config/strings.ts";
-import { firmaDelProgreso, progresoPorCaso } from "@web/state/casos.ts";
+import { firmaDelProgreso, marcasDeArchivos, progresoPorCaso } from "@web/state/casos.ts";
 import { estadoInicialConversacion, reducirConversacion } from "@web/state/conversacion.ts";
 import type { AccionUi, EstadoConversacion, EstadoEtapa, ProgresoDeCaso } from "@web/types/chat.type.ts";
 import { ACCION, MOTIVO_FIN, TIPO_EVENTO } from "@/config/constants/agent.constants.ts";
@@ -47,7 +47,7 @@ function turno(mensaje: string): readonly AccionUi[] {
   ];
 }
 
-function inicio(herramienta: string, caso: string): AccionUi {
+function inicio(herramienta: string, caso: string | null): AccionUi {
   secuencia += 1;
   return evento({
     tipo: TIPO_EVENTO.INICIO_HERRAMIENTA,
@@ -67,10 +67,27 @@ function fin(herramienta: string, caso: string, ok: boolean): AccionUi {
     herramienta,
     caso,
     ok,
-    codigo: ok ? null : CODIGO_ERROR.CASO_NO_ENCONTRADO,
+    codigo: ok ? null : CODIGO_ERROR.ERROR_INTERNO,
     resumen: null,
     resultado: null,
   });
+}
+
+function listado(caso: string | null): readonly AccionUi[] {
+  return [
+    inicio(LEER, caso),
+    evento({
+      tipo: TIPO_EVENTO.FIN_HERRAMIENTA,
+      turnoId: TURNO,
+      llamadaId: `call_${secuencia}`,
+      herramienta: LEER,
+      caso,
+      ok: false,
+      codigo: CODIGO_ERROR.CASO_NO_ENCONTRADO,
+      resumen: null,
+      resultado: null,
+    }),
+  ];
 }
 
 function llamada(herramienta: string, caso: string, ok = true): readonly AccionUi[] {
@@ -280,21 +297,38 @@ describe("las seis etapas del progreso por caso (UI-08)", () => {
     ];
     expect(estadosDe(acciones, EC)).toEqual([HECHA, PENDIENTE, PENDIENTE, PENDIENTE, PENDIENTE, PENDIENTE]);
   });
+});
 
-  test("una herramienta sin caso no agrega bloques al panel", () => {
-    secuencia += 1;
-    const sinCaso = evento({
-      tipo: TIPO_EVENTO.FIN_HERRAMIENTA,
-      turnoId: TURNO,
-      llamadaId: `call_${secuencia}`,
-      herramienta: LEER,
-      caso: null,
-      ok: true,
-      codigo: null,
-      resumen: null,
-      resultado: null,
-    });
-    expect(progreso([...turno("¿Qué casos hay disponibles?"), sinCaso, finDeTurno])).toEqual([]);
+describe("el listado de casos no agrega bloques al panel ni pide archivos (G-03-17)", () => {
+  const pregunta = turno("¿Qué casos hay disponibles?");
+
+  test("con la forma real del cable (caso vacío, CASO_NO_ENCONTRADO), en vivo y al cerrar el turno", () => {
+    const eventos = listado("");
+    expect(progreso([...pregunta, ...eventos.slice(0, 1)])).toEqual([]);
+    const enVivo = aplicar([...pregunta, ...eventos]);
+    expect(progresoPorCaso(enVivo)).toEqual([]);
+    const cerrado = reducirConversacion(enVivo, finDeTurno);
+    expect(progresoPorCaso(cerrado)).toEqual([]);
+    expect(marcasDeArchivos(cerrado).size).toBe(0);
+  });
+
+  test("con caso null, como lo publica el servidor nuevo", () => {
+    const cerrado = aplicar([...pregunta, ...listado(null), finDeTurno]);
+    expect(progresoPorCaso(cerrado)).toEqual([]);
+    expect(marcasDeArchivos(cerrado).size).toBe(0);
+  });
+
+  test("tras el listado, el caso real que se procesa es el único bloque y la única marca", () => {
+    const cerrado = aplicar([
+      ...pregunta,
+      ...listado(""),
+      finDeTurno,
+      ...turno(`procesa ${EC}`),
+      ...llamada(LEER, EC),
+      finDeTurno,
+    ]);
+    expect(progresoPorCaso(cerrado).map((elemento) => elemento.caso)).toEqual([EC]);
+    expect([...marcasDeArchivos(cerrado)]).toEqual([[EC, 1]]);
   });
 });
 

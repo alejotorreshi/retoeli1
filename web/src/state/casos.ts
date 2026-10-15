@@ -35,6 +35,7 @@ import type {
 import { OUT_DIR } from "@/config/constants/files.constants.ts";
 import { RESPUESTA_HTTP } from "@/config/constants/http.constants.ts";
 import { ESTADO_CAMPO } from "@/config/constants/mapping.constants.ts";
+import { PATRON_CASO } from "@/config/constants/patterns.constants.ts";
 import { HERRAMIENTA, HERRAMIENTA_POR_NOMBRE_VISIBLE } from "@/config/constants/tools.constants.ts";
 
 const ORDEN_DE_CONTADORES = [
@@ -42,6 +43,15 @@ const ORDEN_DE_CONTADORES = [
   ESTADO_CAMPO.FALTANTE,
   ESTADO_CAMPO.REQUIERE_CONFIRMACION,
 ] as const;
+
+export function casoDelPanel(
+  llamada: LlamadaDelTurno,
+  casosConocidos: readonly string[] | null,
+): string | null {
+  const { caso } = llamada;
+  if (caso === null || !PATRON_CASO.test(caso)) return null;
+  return casosConocidos === null || casosConocidos.includes(caso) ? caso : null;
+}
 
 function resultadoVacio(caso: string): ResultadoDeCaso {
   return {
@@ -75,12 +85,15 @@ function sumarResultado(previo: ResultadoDeCaso, resultado: ResultadoVisibleUi):
   };
 }
 
+function resultadoConCaso(llamada: LlamadaDelTurno): readonly (readonly [string, ResultadoVisibleUi])[] {
+  const caso = casoDelPanel(llamada, null);
+  return caso === null || llamada.resultado === null ? [] : [[caso, llamada.resultado]];
+}
+
 function plegarPorCaso(turnos: readonly TurnoConversacion[]): ReadonlyMap<string, ResultadoDeCaso> {
   const porCaso = new Map<string, ResultadoDeCaso>();
-  for (const llamada of turnos.flatMap((turno) => turno.llamadas)) {
-    if (llamada.caso === null || llamada.resultado === null) continue;
-    const previo = porCaso.get(llamada.caso) ?? resultadoVacio(llamada.caso);
-    porCaso.set(llamada.caso, sumarResultado(previo, llamada.resultado));
+  for (const [caso, resultado] of turnos.flatMap((turno) => turno.llamadas).flatMap(resultadoConCaso)) {
+    porCaso.set(caso, sumarResultado(porCaso.get(caso) ?? resultadoVacio(caso), resultado));
   }
   return porCaso;
 }
@@ -170,8 +183,8 @@ class PlegadoDeProgreso {
   private readonly avances = new Map<string, AvanceDeCaso>();
   private actividad = 0;
 
-  registrar(caso: string, cambios: readonly (readonly [Etapa, EstadoEtapa])[]): void {
-    if (cambios.length === 0) return;
+  registrar(caso: string | null, cambios: readonly (readonly [Etapa, EstadoEtapa])[]): void {
+    if (caso === null || cambios.length === 0) return;
     this.actividad += 1;
     const previo = this.avances.get(caso);
     this.avances.set(caso, {
@@ -223,7 +236,7 @@ function plegarTurno(plegado: PlegadoDeProgreso, turno: TurnoConversacion, turno
   };
   turno.llamadas.forEach((llamada, indice) => {
     registrarConfirmaciones(indice);
-    if (llamada.caso !== null) plegado.registrar(llamada.caso, cambiosDeLlamada(llamada, turnoActivo));
+    plegado.registrar(casoDelPanel(llamada, null), cambiosDeLlamada(llamada, turnoActivo));
   });
   registrarConfirmaciones(turno.llamadas.length);
 }
@@ -263,7 +276,7 @@ export function firmaDelProgreso(progresos: readonly ProgresoDeCaso[]): string {
 }
 
 function casosDelTurno(turno: TurnoConversacion): ReadonlySet<string> {
-  return new Set(turno.llamadas.flatMap((llamada) => (llamada.caso === null ? [] : [llamada.caso])));
+  return new Set(turno.llamadas.flatMap((llamada) => casoDelPanel(llamada, null) ?? []));
 }
 
 export function marcasDeArchivos({ turnos, enCurso }: VistaTurnos): ReadonlyMap<string, number> {
