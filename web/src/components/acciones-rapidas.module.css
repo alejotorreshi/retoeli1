@@ -39,3 +39,7 @@
   color: var(--texto-tenue);
   cursor: not-allowed;
 }
+
+:global([data-diseno="angosto"]) .franja .chip {
+  padding-inline: var(--espacio-sm);
+}

@@ -99,6 +99,7 @@ export type PropsAccionesRapidas = {
   readonly casos: readonly string[];
   readonly deshabilitadas: boolean;
   readonly compactas: boolean;
+  readonly angosto: boolean;
   readonly alEnviar: (mensaje: string) => void;
 };
 

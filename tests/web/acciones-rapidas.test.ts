@@ -40,6 +40,25 @@ describe("acciones rápidas (UI-07)", () => {
     expect(TEXTO_ACCIONES.mensajeListar).toBe("¿Qué casos hay disponibles?");
   });
 
+  test("las etiquetas cortas de la franja angosta salen de su nombre completo", () => {
+    expect(TEXTO_ACCIONES.demoCorto).toBe("Demo §11");
+    expect(TEXTO_ACCIONES.todosCorto(CASOS_FIXTURE.length)).toBe("Los 4 casos");
+    expect(TEXTO_ACCIONES.todosCorto(0)).toBe("Los casos");
+    expect(TEXTO_ACCIONES.demo.toLowerCase()).toContain(TEXTO_ACCIONES.demoCorto.toLowerCase());
+    for (const cantidad of [0, 1, CASOS_FIXTURE.length]) {
+      expect(TEXTO_ACCIONES.todos(cantidad).toLowerCase()).toContain(
+        TEXTO_ACCIONES.todosCorto(cantidad).toLowerCase(),
+      );
+    }
+  });
+
+  test("el chip corto manda el mismo mensaje y conserva el nombre completo como aria-label", () => {
+    expect(COMPONENTE).toContain("aria-label={corta ? TEXTO_ACCIONES.demo : undefined}");
+    expect(COMPONENTE).toContain("aria-label={corta ? TEXTO_ACCIONES.todos(casos.length) : undefined}");
+    expect(COMPONENTE.split("alEnviar(TEXTO_ACCIONES.mensajeDemo)")).toHaveLength(2);
+    expect(COMPONENTE.split("alEnviar(TEXTO_ACCIONES.mensajeTodos(casos))")).toHaveLength(2);
+  });
+
   test("el componente no escribe ningún id de caso", () => {
     expect(CASOS_FIXTURE).toHaveLength(4);
     expect(CASOS_FIXTURE.filter((caso) => COMPONENTE.includes(caso))).toEqual([]);

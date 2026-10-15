@@ -268,11 +268,19 @@ export const TEXTO_RESULTADO = {
   etiqueta: (caso: string) => `Resultado de ${caso}`,
 } as const;
 
+const DEMO_CORTO = "Demo §11";
+
+function losCasos(cantidad: number): string {
+  return cantidad === 0 ? "Los casos" : `Los ${cantidad} casos`;
+}
+
 export const TEXTO_ACCIONES = {
   grupo: "Acciones rápidas",
-  demo: `Demo §11: ${CASO_DEMO_PRD}`,
+  demo: `${DEMO_CORTO}: ${CASO_DEMO_PRD}`,
+  demoCorto: DEMO_CORTO,
   mensajeDemo: `Procesa el caso "${CASO_DEMO_PRD}". Dime qué campos quedaron llenos, cuáles faltan, si el paquete está listo para firma y qué soportes debo actualizar. No envíes nada todavía.`,
-  todos: (cantidad: number) => (cantidad === 0 ? "Procesar los casos" : `Procesar los ${cantidad} casos`),
+  todos: (cantidad: number) => `Procesar ${losCasos(cantidad).toLowerCase()}`,
+  todosCorto: losCasos,
   mensajeTodos: (casos: readonly string[]) =>
     `Procesa estos casos: ${casos.join(SEPARADOR_LISTA_CASOS)}. Dime el estado de cada uno. No envíes nada todavía.`,
   listar: "¿Qué casos hay?",

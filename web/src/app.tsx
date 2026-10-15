@@ -214,6 +214,7 @@ export function App() {
                   casos={casos}
                   deshabilitadas={envioDeshabilitado}
                   compactas={false}
+                  angosto={false}
                   alEnviar={enviarTexto}
                 />
               }
@@ -227,6 +228,7 @@ export function App() {
                 casos={casos}
                 deshabilitadas={envioDeshabilitado}
                 compactas={true}
+                angosto={diseno === DISENO.ANGOSTO}
                 alEnviar={enviarTexto}
               />
             ) : null}

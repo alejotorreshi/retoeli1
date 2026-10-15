@@ -2,24 +2,33 @@ import estilos from "@web/components/acciones-rapidas.module.css";
 import { TEXTO_ACCIONES } from "@web/config/strings.ts";
 import type { PropsAccionesRapidas } from "@web/types/ui.type.ts";
 
-export function AccionesRapidas({ casos, deshabilitadas, compactas, alEnviar }: PropsAccionesRapidas) {
+export function AccionesRapidas({
+  casos,
+  deshabilitadas,
+  compactas,
+  angosto,
+  alEnviar,
+}: PropsAccionesRapidas) {
+  const corta = compactas && angosto;
   const grupo = (
     <fieldset aria-label={TEXTO_ACCIONES.grupo} className={estilos.grupo}>
       <button
         type="button"
         className={estilos.chip}
         disabled={deshabilitadas}
+        aria-label={corta ? TEXTO_ACCIONES.demo : undefined}
         onClick={() => alEnviar(TEXTO_ACCIONES.mensajeDemo)}
       >
-        {TEXTO_ACCIONES.demo}
+        {corta ? TEXTO_ACCIONES.demoCorto : TEXTO_ACCIONES.demo}
       </button>
       <button
         type="button"
         className={estilos.chip}
         disabled={deshabilitadas || casos.length === 0}
+        aria-label={corta ? TEXTO_ACCIONES.todos(casos.length) : undefined}
         onClick={() => alEnviar(TEXTO_ACCIONES.mensajeTodos(casos))}
       >
-        {TEXTO_ACCIONES.todos(casos.length)}
+        {corta ? TEXTO_ACCIONES.todosCorto(casos.length) : TEXTO_ACCIONES.todos(casos.length)}
       </button>
       <button
         type="button"
