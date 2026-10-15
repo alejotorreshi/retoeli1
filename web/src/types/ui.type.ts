@@ -1,4 +1,10 @@
-import type { DISENO, PESTANA, TAMANO_ICONO, TONO } from "@web/config/constants/ui.constants.ts";
+import type {
+  DISENO,
+  PESTANA,
+  SENAL_SEGUIMIENTO,
+  TAMANO_ICONO,
+  TONO,
+} from "@web/config/constants/ui.constants.ts";
 import type {
   AccionDeAviso,
   AccionDeTarjeta,
@@ -52,6 +58,23 @@ export type PropsLineaDeTiempo = {
   readonly acciones: ReactNode;
   readonly children?: ReactNode;
 };
+
+export type EstadoSeguimiento = {
+  readonly pegado: boolean;
+  readonly contenidoNuevo: boolean;
+  readonly intencionMs: number | null;
+};
+
+export type SenalSeguimiento =
+  | { readonly tipo: typeof SENAL_SEGUIMIENTO.INTENCION; readonly ms: number }
+  | {
+      readonly tipo: typeof SENAL_SEGUIMIENTO.DESPLAZAMIENTO;
+      readonly ms: number;
+      readonly distancia: number;
+    }
+  | { readonly tipo: typeof SENAL_SEGUIMIENTO.CRECIMIENTO }
+  | { readonly tipo: typeof SENAL_SEGUIMIENTO.ENVIO }
+  | { readonly tipo: typeof SENAL_SEGUIMIENTO.IR_AL_FINAL };
 
 export type PropsAvisoInicial = {
   readonly aviso: AvisoDeSesion;

@@ -5,11 +5,17 @@ import estilos from "@web/components/linea-de-tiempo.module.css";
 import { MensajeAgente, MensajeUsuaria } from "@web/components/mensaje.tsx";
 import { PilaConfirmaciones } from "@web/components/tarjeta-confirmacion.tsx";
 import { TarjetaResultado } from "@web/components/tarjeta-resultado.tsx";
-import { AVISO_SESION, CLASE_GLOBAL, DISTANCIA_PEGADO_AL_FINAL } from "@web/config/constants/ui.constants.ts";
+import {
+  AVISO_SESION,
+  CLASE_GLOBAL,
+  SENAL_SEGUIMIENTO,
+  TECLAS_DE_DESPLAZAMIENTO,
+} from "@web/config/constants/ui.constants.ts";
 import { TEXTO_AVISO, TEXTO_CHAT } from "@web/config/strings.ts";
 import { resultadosDelTurno } from "@web/state/casos.ts";
 import { tarjetasDelTurno } from "@web/state/confirmaciones.ts";
 import { anuncioDeEstado } from "@web/state/conversacion.ts";
+import { reducirSeguimiento, seguimientoInicial } from "@web/state/seguimiento.ts";
 import type {
   PropsAvisoInicial,
   PropsCuerpoLinea,
@@ -17,8 +23,10 @@ import type {
   PropsEstadoVacio,
   PropsLineaDeTiempo,
   PropsTurno,
+  SenalSeguimiento,
 } from "@web/types/ui.type.ts";
-import { useEffect, useRef, useState } from "react";
+import type { KeyboardEvent, SyntheticEvent } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 
 function ErrorDelTurno({ error, alAccionDeAviso }: PropsErrorDelTurno) {
   const { accion } = error;
@@ -111,8 +119,8 @@ function CuerpoLinea({
   );
 }
 
-function estaCercaDelFinal(zona: HTMLElement): boolean {
-  return zona.scrollHeight - zona.scrollTop - zona.clientHeight <= DISTANCIA_PEGADO_AL_FINAL;
+function distanciaAlFinal(zona: HTMLElement): number {
+  return zona.scrollHeight - zona.scrollTop - zona.clientHeight;
 }
 
 function bajarAlFinal(zona: HTMLElement): void {
@@ -133,31 +141,58 @@ export function LineaDeTiempo({
 }: PropsLineaDeTiempo) {
   const zona = useRef<HTMLElement>(null);
   const contenido = useRef<HTMLDivElement>(null);
-  const pegadoAlFinal = useRef(true);
-  const [hayContenidoNuevo, setHayContenidoNuevo] = useState(false);
+  const seguimiento = useRef(seguimientoInicial);
+  const [vista, setVista] = useState(seguimientoInicial);
+  const turnosVistos = useRef(turnos.length);
+
+  const despachar = useCallback((senal: SenalSeguimiento) => {
+    const anterior = seguimiento.current;
+    const siguiente = reducirSeguimiento(anterior, senal);
+    seguimiento.current = siguiente;
+    if (siguiente.pegado !== anterior.pegado || siguiente.contenidoNuevo !== anterior.contenidoNuevo) {
+      setVista(siguiente);
+    }
+  }, []);
 
   useEffect(() => {
     const desplazable = zona.current;
     const cuerpo = contenido.current;
     if (desplazable === null || cuerpo === null) return;
     const observador = new ResizeObserver(() => {
-      if (pegadoAlFinal.current) bajarAlFinal(desplazable);
-      else setHayContenidoNuevo(true);
+      despachar({ tipo: SENAL_SEGUIMIENTO.CRECIMIENTO });
+      if (seguimiento.current.pegado) bajarAlFinal(desplazable);
     });
     observador.observe(cuerpo);
     return () => observador.disconnect();
-  }, []);
+  }, [despachar]);
 
-  function alDesplazar(): void {
-    if (zona.current === null) return;
-    pegadoAlFinal.current = estaCercaDelFinal(zona.current);
-    if (pegadoAlFinal.current) setHayContenidoNuevo(false);
+  useLayoutEffect(() => {
+    const crecio = turnos.length > turnosVistos.current;
+    turnosVistos.current = turnos.length;
+    if (!crecio || zona.current === null) return;
+    despachar({ tipo: SENAL_SEGUIMIENTO.ENVIO });
+    bajarAlFinal(zona.current);
+  }, [turnos.length, despachar]);
+
+  function alIntentarDesplazar(evento: SyntheticEvent): void {
+    despachar({ tipo: SENAL_SEGUIMIENTO.INTENCION, ms: evento.timeStamp });
+  }
+
+  function alPulsarTecla(evento: KeyboardEvent): void {
+    if (TECLAS_DE_DESPLAZAMIENTO.has(evento.key)) alIntentarDesplazar(evento);
+  }
+
+  function alDesplazar(evento: SyntheticEvent<HTMLElement>): void {
+    despachar({
+      tipo: SENAL_SEGUIMIENTO.DESPLAZAMIENTO,
+      ms: evento.timeStamp,
+      distancia: distanciaAlFinal(evento.currentTarget),
+    });
   }
 
   function irAlFinal(): void {
     if (zona.current === null) return;
-    pegadoAlFinal.current = true;
-    setHayContenidoNuevo(false);
+    despachar({ tipo: SENAL_SEGUIMIENTO.IR_AL_FINAL });
     bajarAlFinal(zona.current);
   }
 
@@ -168,6 +203,10 @@ export function LineaDeTiempo({
         aria-label={TEXTO_CHAT.lineaDeTiempo}
         className={estilos.zona}
         onScroll={alDesplazar}
+        onWheel={alIntentarDesplazar}
+        onTouchStart={alIntentarDesplazar}
+        onPointerDown={alIntentarDesplazar}
+        onKeyDown={alPulsarTecla}
       >
         <div ref={contenido} className={estilos.contenido}>
           {aviso === null ? null : <AvisoInicial aviso={aviso} />}
@@ -184,7 +223,7 @@ export function LineaDeTiempo({
           {children}
         </div>
       </section>
-      {hayContenidoNuevo ? (
+      {vista.contenidoNuevo ? (
         <button type="button" className={estilos.irAlFinal} onClick={irAlFinal}>
           {TEXTO_CHAT.irAlFinal}
         </button>
