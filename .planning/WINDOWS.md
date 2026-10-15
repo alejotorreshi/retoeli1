@@ -1,10 +1,10 @@
 ---
 schema_version: 1
-open_count: 1
+open_count: 2
 waived_count: 0
 fixed_count: 1
-total_count: 2
-last_updated: 2026-10-15T01:48:24.925Z
+total_count: 3
+last_updated: 2026-10-15T16:53:45.200Z
 ---
 
 # Broken Windows Ledger
@@ -17,6 +17,7 @@ last_updated: 2026-10-15T01:48:24.925Z
 |----|-------|------|------|------|-------------|--------|--------|-------------|-------------|
 | 1 | 01 | stub | src/application/generar-formulario.ts |  | generar_formulario pdf and portal arms return ERROR_INTERNO until plan 01-08 | fixed |  | 2026-10-12T22:41:13.736Z | 2026-10-12T22:49:40.868Z |
 | 2 | 03 | unmet-truth | render.yaml |  | 03-11: el limitador de acceso en Render cuenta por una IP de proxy compartida con TRUSTED_PROXY_HOPS=1; falta medir entradasXff y ajustar el valor | open |  | 2026-10-15T01:48:24.925Z |  |
+| 3 | 03 | unrun-verify | .qa/suites/03.suite.json |  | 03-28: receta T12 en navegador (sin bloque nuevo ni GET /api/casos//archivos tras ¿Qué casos hay?) no ejecutada por el ejecutor | open |  | 2026-10-15T16:53:45.200Z |  |
 
 ````json
 [
@@ -43,6 +44,19 @@ last_updated: 2026-10-15T01:48:24.925Z
     "status": "open",
     "reason": "",
     "recorded_at": "2026-10-15T01:48:24.925Z",
+    "resolved_at": null,
+    "milestone": null
+  },
+  {
+    "id": 3,
+    "kind": "unrun-verify",
+    "phase": "03",
+    "file": ".qa/suites/03.suite.json",
+    "line": null,
+    "description": "03-28: receta T12 en navegador (sin bloque nuevo ni GET /api/casos//archivos tras ¿Qué casos hay?) no ejecutada por el ejecutor",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-10-15T16:53:45.200Z",
     "resolved_at": null,
     "milestone": null
   }
