@@ -367,6 +367,8 @@ export const MENSAJE_HTTP = {
   casoNoEncontrado: "El caso pedido no existe. Revisa el nombre del caso.",
   archivoNoEncontrado:
     "El archivo pedido no existe en este caso. Si el servidor se reinició, vuelve a procesar el caso.",
+  vistaPreviaNoDisponible:
+    "Este archivo no tiene vista previa en este caso. Si el servidor se reinició, vuelve a procesar el caso.",
 } as const;
 
 export const TEXTO_SESION = {

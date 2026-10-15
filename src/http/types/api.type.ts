@@ -1,4 +1,4 @@
-import type { ArchivoCaso } from "@/application/types/artefactos.type.ts";
+import type { ArchivoCaso, VistaPrevia } from "@/application/types/artefactos.type.ts";
 import type { LlmHealthState } from "@/llm/types/resilience.type.ts";
 import type { EventoAgente } from "@/loop/types/evento.type.ts";
 import type { AccionEstructurada } from "@/loop/types/turno.type.ts";
@@ -60,3 +60,5 @@ export type SessionViewResponse = VistaSesion;
 export type FileListResponse = {
   readonly archivos: readonly ArchivoCaso[];
 };
+
+export type PreviewResponse = VistaPrevia;

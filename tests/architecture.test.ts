@@ -21,7 +21,12 @@ import {
   TIPO_ACCION,
 } from "@/config/constants/confirmation.constants.ts";
 import { CODIGO_ERROR, CODIGO_FS } from "@/config/constants/errors.constants.ts";
-import { ARCHIVOS_PAQUETE, ARCHIVOS_SALIDA, TIPO_ARCHIVO_CASO } from "@/config/constants/files.constants.ts";
+import {
+  ARCHIVOS_PAQUETE,
+  ARCHIVOS_SALIDA,
+  TIPO_ARCHIVO_CASO,
+  TIPO_VISTA_PREVIA,
+} from "@/config/constants/files.constants.ts";
 import { FORMATO, TIPO_PLANTILLA } from "@/config/constants/forms.constants.ts";
 import { ENTORNO_APP, RESULTADO_BEARER } from "@/config/constants/http.constants.ts";
 import { ESTADO_LECTURA, ORIGEN_COPIA } from "@/config/constants/io.constants.ts";
@@ -138,6 +143,7 @@ const FAMILIAS_DE_CODIGOS: readonly Readonly<Record<string, string>>[] = [
   ARCHIVOS_SALIDA,
   ARCHIVOS_PAQUETE,
   TIPO_ARCHIVO_CASO,
+  TIPO_VISTA_PREVIA,
   TIPO_MASCARA,
   COLOR_TRAZO,
   HERRAMIENTA,

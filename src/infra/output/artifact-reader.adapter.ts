@@ -16,12 +16,15 @@ import {
   TIPO_ARCHIVO_CASO,
   TIPO_CONTENIDO_BINARIO,
   TIPO_CONTENIDO_POR_EXTENSION,
+  TIPO_VISTA_PREVIA,
 } from "@/config/constants/files.constants.ts";
 import { PATRON_CASO } from "@/config/constants/patterns.constants.ts";
+import { parsearJson } from "@/domain/utils/json.util.ts";
 import { listCases } from "@/infra/fixtures/case-resolver.adapter.ts";
-import { isNotFound } from "@/infra/fs/fs.util.ts";
+import { isNotFound, readOwnRegularText } from "@/infra/fs/fs.util.ts";
 import { existingRealCaseDirectory, isInside, realPackageDirectory } from "@/infra/fs/safe-paths.util.ts";
 import { esCopiaDeSoporte } from "@/infra/output/package-copy.adapter.ts";
+import { mapeoGuardadoSchema } from "@/infra/output/schemas/mapeo-guardado.schema.ts";
 import type {
   ArtifactDirectories,
   ArtifactEntry,
@@ -45,8 +48,19 @@ const FIXED_ENTRIES: readonly ArtifactEntry[] = [
   caseEntry(ARCHIVOS_SALIDA.ENVIO_SIMULADO, TIPO_ARCHIVO_CASO.ENVIO_SIMULADO),
 ];
 
+const TABLE_PREVIEW: ReadonlySet<TipoArchivo> = new Set([
+  TIPO_ARCHIVO_CASO.FORMULARIO,
+  TIPO_ARCHIVO_CASO.VALORES_PORTAL,
+]);
+
+const TEXT_PREVIEW: ReadonlySet<TipoArchivo> = new Set([
+  TIPO_ARCHIVO_CASO.CHECKLIST,
+  TIPO_ARCHIVO_CASO.BORRADOR,
+  TIPO_ARCHIVO_CASO.ENVIO_SIMULADO,
+]);
+
 function isPreviewable(tipo: TipoArchivo): boolean {
-  return tipo !== TIPO_ARCHIVO_CASO.SOPORTE;
+  return TABLE_PREVIEW.has(tipo) || TEXT_PREVIEW.has(tipo);
 }
 
 function contentTypeOf(file: string): string {
@@ -124,6 +138,39 @@ async function findArtifact(root: string, caso: string, nombre: string): Promise
   return artifacts?.find((artifact) => artifact.entry.name === nombre) ?? null;
 }
 
+async function tablePreview(root: string, caso: string): Promise<VistaPrevia | null> {
+  const caseDirectory = await existingRealCaseDirectory(root, caso);
+  if (caseDirectory === null) return null;
+  const text = await readOwnRegularText(join(caseDirectory, ARCHIVOS_SALIDA.MAPEO));
+  if (text === null) return null;
+  const json = parsearJson(text);
+  if (!json.ok) return null;
+  const mapeo = mapeoGuardadoSchema.safeParse(json.valor);
+  if (!mapeo.success) return null;
+  const filas = mapeo.data.campos.map(({ etiqueta, valor_enmascarado, estado, nota }) => ({
+    etiqueta,
+    valor_enmascarado,
+    estado,
+    nota,
+  }));
+  return { tipo: TIPO_VISTA_PREVIA.TABLA, filas };
+}
+
+async function textPreview(realPath: string): Promise<VistaPrevia | null> {
+  const texto = await readOwnRegularText(realPath);
+  return texto === null ? null : { tipo: TIPO_VISTA_PREVIA.TEXTO, texto };
+}
+
+async function previewOf(
+  root: string,
+  caso: string,
+  artifact: ServableArtifact,
+): Promise<VistaPrevia | null> {
+  if (TABLE_PREVIEW.has(artifact.entry.tipo)) return tablePreview(root, caso);
+  if (TEXT_PREVIEW.has(artifact.entry.tipo)) return textPreview(artifact.realPath);
+  return null;
+}
+
 export function createArtifactReader(root: string): LectorArtefactos {
   return {
     async listar(caso: string): Promise<readonly ArchivoCaso[] | null> {
@@ -136,8 +183,9 @@ export function createArtifactReader(root: string): LectorArtefactos {
       const tipoContenido = contentTypeOf(artifact.entry.file);
       return { nombre: artifact.entry.file, tipoContenido, cuerpo: Bun.file(artifact.realPath) };
     },
-    async vistaPrevia(_caso: string, _nombre: string): Promise<VistaPrevia | null> {
-      return null;
+    async vistaPrevia(caso: string, nombre: string): Promise<VistaPrevia | null> {
+      const artifact = await findArtifact(root, caso, nombre);
+      return artifact === null ? null : previewOf(root, caso, artifact);
     },
   };
 }

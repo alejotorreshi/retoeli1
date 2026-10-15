@@ -178,7 +178,8 @@ describe("vistaPrevia del formulario y del portal: tabla desde mapeo.json (D-65,
   ])("%s %s da las filas de mapeo.json, en orden", async (caso, nombre) => {
     const filas = await filasDelMapeo(caso);
     expect(filas.length).toBeGreaterThan(0);
-    expect(await lector.vistaPrevia(caso, nombre)).toEqual({ tipo: TIPO_VISTA_PREVIA.TABLA, filas });
+    const vista: unknown = await lector.vistaPrevia(caso, nombre);
+    expect(vista).toEqual({ tipo: TIPO_VISTA_PREVIA.TABLA, filas });
   });
 
   test("la vista previa de valores-portal.md no trae la cuenta, el SWIFT, los correos ni los teléfonos", async () => {

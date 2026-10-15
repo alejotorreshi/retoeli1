@@ -11,7 +11,7 @@ import {
   VALOR_CABECERA,
 } from "@/config/constants/http.constants.ts";
 import { MENSAJE_HTTP } from "@/config/strings.ts";
-import type { ErrorResponse, FileListResponse } from "@/http/types/api.type.ts";
+import type { ErrorResponse, FileListResponse, PreviewResponse } from "@/http/types/api.type.ts";
 import type { HttpEnv } from "@/http/types/server.type.ts";
 
 type ArtifactDeps = {
@@ -42,6 +42,18 @@ async function download(
   });
 }
 
+async function preview(
+  c: Context<HttpEnv>,
+  deps: ArtifactDeps,
+  caso: string,
+  nombre: string,
+): Promise<Response> {
+  const vista = await deps.lector.vistaPrevia(caso, nombre);
+  if (vista === null) return notFound(c, MENSAJE_HTTP.vistaPreviaNoDisponible);
+  const body: PreviewResponse = vista;
+  return c.json(body, RESPUESTA_HTTP.OK);
+}
+
 export function registerArtifactRoutes(app: Hono<HttpEnv>, deps: ArtifactDeps): void {
   app.get(RUTA_API.ARCHIVOS, async (c) => {
     const archivos = await deps.lector.listar(c.req.param(PARAMETRO_CASO));
@@ -54,5 +66,11 @@ export function registerArtifactRoutes(app: Hono<HttpEnv>, deps: ArtifactDeps): 
   );
   app.get(RUTA_API.ARCHIVO_PAQUETE, (c) =>
     download(c, deps, c.req.param(PARAMETRO_CASO), `${PREFIJO_PAQUETE}${c.req.param(PARAMETRO_ARCHIVO)}`),
+  );
+  app.get(RUTA_API.VISTA_PREVIA, (c) =>
+    preview(c, deps, c.req.param(PARAMETRO_CASO), c.req.param(PARAMETRO_ARCHIVO)),
+  );
+  app.get(RUTA_API.VISTA_PREVIA_PAQUETE, (c) =>
+    preview(c, deps, c.req.param(PARAMETRO_CASO), `${PREFIJO_PAQUETE}${c.req.param(PARAMETRO_ARCHIVO)}`),
   );
 }
