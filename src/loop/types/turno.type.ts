@@ -109,6 +109,7 @@ export type HerramientaAnotada = {
 export type EntradaCierreTurno = EntradaCierreCompuerta & {
   readonly turnoId: string;
   readonly texto: string;
+  readonly enviosSinCaso: number;
 };
 
 export type CierreTurnoCompuerta = {

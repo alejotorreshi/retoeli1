@@ -1,6 +1,7 @@
 import { EVENTO_BITACORA, MOTIVO_FIN } from "@/config/constants/agent.constants.ts";
 import { ROL_MENSAJE } from "@/config/constants/llm.constants.ts";
 import { SEPARADOR_PARRAFOS } from "@/config/constants/text.constants.ts";
+import { HERRAMIENTA } from "@/config/constants/tools.constants.ts";
 import { enviadosTrasEventos, recuperarAutorizado } from "@/domain/policies/compuerta.policy.ts";
 import type { MensajeAsistente } from "@/llm/types/llm.type.ts";
 import { interrumpido } from "@/loop/services/cierre-error.service.ts";
@@ -16,6 +17,12 @@ function mensajeAsistente(cierre: Cierre): MensajeAsistente {
   };
 }
 
+function enviosSinCaso(turno: Turno): number {
+  return turno.llamadas.filter(
+    ({ herramienta, caso, ok }) => herramienta === HERRAMIENTA.SIMULAR_ENVIO && caso === null && !ok,
+  ).length;
+}
+
 export function cerrarCompuerta(turno: Turno, cierre: Cierre): CierreTurnoCompuerta {
   return cerrarTurnoConCompuerta({
     turnoId: turno.turnoId,
@@ -28,6 +35,7 @@ export function cerrarCompuerta(turno: Turno, cierre: Cierre): CierreTurnoCompue
     conocidos: turno.conocidos,
     enviados: turno.sesion.casosEnviados,
     abortado: cierre.motivo === MOTIVO_FIN.ABORTADO,
+    enviosSinCaso: enviosSinCaso(turno),
   });
 }
 

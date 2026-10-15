@@ -50,7 +50,7 @@ import {
 import { TIPO_ERROR_LLM } from "@/config/constants/llm.constants.ts";
 import { NIVELES_LOG } from "@/config/constants/logging.constants.ts";
 import { ESTADO_SOPORTE } from "@/config/constants/supports.constants.ts";
-import { SEPARADOR_PARRAFOS } from "@/config/constants/text.constants.ts";
+import { SALTO_DE_LINEA, SEPARADOR_PARRAFOS } from "@/config/constants/text.constants.ts";
 import { HERRAMIENTA, NOMBRE_VISIBLE } from "@/config/constants/tools.constants.ts";
 import { pinExecutionDate } from "@/config/env.ts";
 import {
@@ -262,6 +262,63 @@ describe("G-03-26: un envío que no ocurrió deja el aviso del servidor en la mi
     const aviso = TEXTO_ENVIO_NO_REGISTRADO[DESENLACE_ENVIO.SIN_PAQUETE](CO);
     expect(textoFinal(eventos)).toBe(`${afirmacion}${SEPARADOR_PARRAFOS}${aviso}`);
     expect(ultimoParrafo(textoFinal(eventos))).toBe(aviso);
+    historialSano(prueba);
+  });
+
+  test.each([{}, { caso: 7 }, { caso: "" }, { caso: "../x" }, { confirmado: true }])(
+    "escenario D: simular_envio con %j no indica un caso legible y la afirmación del modelo sale seguida del aviso SIN_CASO",
+    async (argumentos) => {
+      const afirmacion = "Registré el envío simulado.";
+      const prueba = agente([
+        respuestaHerramientas(simular("simular-1", argumentos)),
+        respuestaTexto(afirmacion),
+      ]);
+      const eventos = await prueba.turno("Sí, envíalo");
+      expect(finesDeHerramienta(eventos)).toEqual([bloqueada()]);
+      expect(await casosConEnvioSimulado(proyecto.raiz)).toEqual([]);
+      expect(confirmaciones(eventos)).toEqual([]);
+      expect(finDeTurno(eventos).needsConfirmation).toBe(false);
+      const aviso = TEXTO_ENVIO_NO_REGISTRADO[DESENLACE_ENVIO.SIN_CASO]();
+      expect(textoFinal(eventos)).toBe(`${afirmacion}${SEPARADOR_PARRAFOS}${aviso}`);
+      historialSano(prueba);
+    },
+  );
+
+  test("escenario D: dos simular_envio sin caso legible en el mismo turno dejan el aviso SIN_CASO una sola vez", async () => {
+    const afirmacion = "Registré los envíos simulados.";
+    const prueba = agente([
+      respuestaHerramientas(simular("simular-1", {}), simular("simular-2", { caso: "../x" })),
+      respuestaTexto(afirmacion),
+    ]);
+    const eventos = await prueba.turno("Sí, envía todo");
+    expect(finesDeHerramienta(eventos)).toEqual([bloqueada(), bloqueada()]);
+    expect(finDeTurno(eventos).needsConfirmation).toBe(false);
+    expect(textoFinal(eventos)).toBe(
+      `${afirmacion}${SEPARADOR_PARRAFOS}${TEXTO_ENVIO_NO_REGISTRADO[DESENLACE_ENVIO.SIN_CASO]()}`,
+    );
+    historialSano(prueba);
+  });
+
+  test("escenario D: el aviso SIN_CASO va después de los avisos de los casos legibles y antes de la pregunta del servidor", async () => {
+    const afirmacion = `Registré el envío simulado de ${EC}.`;
+    const prueba = agente([
+      ...prepararCaso(EC),
+      respuestaHerramientas(
+        simular("simular-0", {}),
+        llamar("armar-1", HERRAMIENTA.ARMAR_PAQUETE, { caso: EC }),
+        simular("simular-1", { caso: EC, confirmado: true }),
+      ),
+      respuestaTexto(afirmacion),
+    ]);
+    const eventos = await prueba.turno(`procesa ${EC}`);
+    expect(finDeTurno(eventos).needsConfirmation).toBe(true);
+    const avisos = [
+      avisoDe(DESENLACE_ENVIO.REQUIERE_CONFIRMACION, EC),
+      TEXTO_ENVIO_NO_REGISTRADO[DESENLACE_ENVIO.SIN_CASO](),
+    ].join(SALTO_DE_LINEA);
+    expect(textoFinal(eventos)).toBe(
+      `${afirmacion}${SEPARADOR_PARRAFOS}${avisos}${SEPARADOR_PARRAFOS}${PREGUNTA_EC}`,
+    );
     historialSano(prueba);
   });
 

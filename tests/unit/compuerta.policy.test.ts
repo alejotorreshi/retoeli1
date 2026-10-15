@@ -25,6 +25,7 @@ import type {
   CasoPendiente,
   DesenlaceEnvio,
   EntradaCierreCompuerta,
+  EntradaDesenlaces,
   EstadoCompuerta,
   EventoCompuerta,
 } from "@/domain/types/compuerta.type.ts";
@@ -59,8 +60,16 @@ const bloqueado = (caso: string): EventoCompuerta => ({ tipo: EVENTO_COMPUERTA.B
 const enviado = (caso: string): EventoCompuerta => ({ tipo: EVENTO_COMPUERTA.ENVIADO, caso });
 const fallido = (caso: string): EventoCompuerta => ({ tipo: EVENTO_COMPUERTA.FALLIDO, caso });
 
-function cierre(entrada: Partial<EntradaCierreCompuerta>): EntradaCierreCompuerta {
-  return { arrastrados: [], eventos: [], conocidos: {}, enviados: [], abortado: false, ...entrada };
+function cierre(entrada: Partial<EntradaDesenlaces>): EntradaDesenlaces {
+  return {
+    arrastrados: [],
+    eventos: [],
+    conocidos: {},
+    enviados: [],
+    abortado: false,
+    enviosSinCaso: 0,
+    ...entrada,
+  };
 }
 
 describe("estado inicial y casos pendientes", () => {
@@ -419,7 +428,8 @@ describe("desenlacesDeEnvio (G-03-26, D-44, D-63.4, D-63.7)", () => {
     tipo: Exclude<DesenlaceEnvio["tipo"], typeof DESENLACE_ENVIO.SIN_CASO>,
     caso: string,
   ): DesenlaceEnvio => ({ tipo, caso });
-  const filas: readonly (readonly [string, Partial<EntradaCierreCompuerta>, readonly DesenlaceEnvio[]])[] = [
+  const SIN_CASO: DesenlaceEnvio = { tipo: DESENLACE_ENVIO.SIN_CASO, caso: null };
+  const filas: readonly (readonly [string, Partial<EntradaDesenlaces>, readonly DesenlaceEnvio[]])[] = [
     [
       "un bloqueado de un caso ya enviado en la sesión da YA_ENVIADO",
       { eventos: [bloqueado(EC)], conocidos: CONOCIDOS, enviados: [EC] },
@@ -476,6 +486,18 @@ describe("desenlacesDeEnvio (G-03-26, D-44, D-63.4, D-63.7)", () => {
       { eventos: [bloqueado(CO), fallido(EC)], conocidos: CONOCIDOS, abortado: true },
       [],
     ],
+    [
+      "sin envíos sin caso los desenlaces son los de los casos legibles",
+      { eventos: [bloqueado(CO)], conocidos: CONOCIDOS, enviosSinCaso: 0 },
+      [desenlace(DESENLACE_ENVIO.SIN_PAQUETE, CO)],
+    ],
+    ["un envío sin caso legible da SIN_CASO", { enviosSinCaso: 1 }, [SIN_CASO]],
+    [
+      "dos envíos sin caso legible dan un solo SIN_CASO, después de los casos legibles",
+      { eventos: [bloqueado(CO), fallido(EC)], conocidos: CONOCIDOS, enviosSinCaso: 2 },
+      [desenlace(DESENLACE_ENVIO.SIN_PAQUETE, CO), desenlace(DESENLACE_ENVIO.FALLIDO, EC), SIN_CASO],
+    ],
+    ["un turno abortado no da SIN_CASO", { enviosSinCaso: 2, abortado: true }, []],
   ];
 
   for (const [nombre, entrada, esperado] of filas) {

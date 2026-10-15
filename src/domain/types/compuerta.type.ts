@@ -48,6 +48,8 @@ export type EntradaCierreCompuerta = {
   readonly abortado: boolean;
 };
 
+export type EntradaDesenlaces = EntradaCierreCompuerta & { readonly enviosSinCaso: number };
+
 export type DesenlaceEnvio =
   | { readonly tipo: typeof DESENLACE_ENVIO.SIN_CASO; readonly caso: null }
   | {

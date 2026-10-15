@@ -13,6 +13,7 @@ import type {
   CasosEnviados,
   DesenlaceEnvio,
   EntradaCierreCompuerta,
+  EntradaDesenlaces,
   EstadoCompuerta,
   EvaluacionEnvio,
   EventoCompuerta,
@@ -149,8 +150,7 @@ function desenlaceDeEvento(
   }
 }
 
-export function desenlacesDeEnvio(entrada: EntradaCierreCompuerta): readonly DesenlaceEnvio[] {
-  if (entrada.abortado) return [];
+function desenlacesDeCasos(entrada: EntradaCierreCompuerta): readonly DesenlaceEnvio[] {
   const pendientes = new Map(entrada.arrastrados.map((pendiente) => [pendiente.caso, pendiente] as const));
   const enviados = new Set(entrada.enviados);
   const desenlaces: DesenlaceEnvio[] = [];
@@ -160,6 +160,13 @@ export function desenlacesDeEnvio(entrada: EntradaCierreCompuerta): readonly Des
     aplicarEvento(pendientes, enviados, evento, entrada.conocidos);
   }
   return desenlaces;
+}
+
+export function desenlacesDeEnvio(entrada: EntradaDesenlaces): readonly DesenlaceEnvio[] {
+  if (entrada.abortado) return [];
+  const sinCaso: readonly DesenlaceEnvio[] =
+    entrada.enviosSinCaso > 0 ? [{ tipo: DESENLACE_ENVIO.SIN_CASO, caso: null }] : [];
+  return [...desenlacesDeCasos(entrada), ...sinCaso];
 }
 
 export function enviadosTrasEventos(
