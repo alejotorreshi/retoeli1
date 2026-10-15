@@ -16,7 +16,7 @@ import { redactar } from "@/domain/policies/redaccion.policy.ts";
 import { chatBodySchema } from "@/http/schemas/chat-body.schema.ts";
 import { startHeartbeat, toSseFrame } from "@/http/services/sse.service.ts";
 import type { ChatBody, ChatJsonResponse, ErrorResponse } from "@/http/types/api.type.ts";
-import type { HttpEnv, RateLimiter, TurnSlots } from "@/http/types/server.type.ts";
+import type { HttpEnv, RateLimiter, ReleaseSlot, TurnSlots } from "@/http/types/server.type.ts";
 import { respuestaDeTurno } from "@/loop/services/respuesta-turno.service.ts";
 import type { Agente } from "@/loop/types/agente.type.ts";
 import type { EventoAgente } from "@/loop/types/evento.type.ts";
@@ -33,7 +33,7 @@ type ChatDeps = {
   businessZone(): string;
 };
 
-type TurnDeps = ChatDeps & { readonly agente: Agente };
+type TurnDeps = ChatDeps & { readonly agente: Agente; readonly releaseSlot: ReleaseSlot };
 
 async function readBody(c: Context<HttpEnv>): Promise<ChatBody | null> {
   try {
@@ -113,7 +113,7 @@ function streamTurn(c: Context<HttpEnv>, body: ChatBody, deps: TurnDeps): Respon
         await stream.writeSSE(toSseFrame(evento, deps.secrets));
     } finally {
       stopHeartbeat();
-      deps.turnSlots.release();
+      deps.releaseSlot();
     }
   });
   response.headers.set(CABECERA.CACHE_CONTROL, VALOR_CABECERA.SIN_CACHE_NI_TRANSFORMACION);
@@ -137,7 +137,7 @@ async function foldTurn(c: Context<HttpEnv>, body: ChatBody, deps: TurnDeps): Pr
   try {
     for await (const evento of turn) eventos.push(evento);
   } finally {
-    deps.turnSlots.release();
+    deps.releaseSlot();
   }
   return eventos;
 }
@@ -160,9 +160,10 @@ export function registerChatRoute(app: Hono<HttpEnv>, deps: ChatDeps): void {
     const clientIp = c.get("clientIp");
     const isNewSession = opensSession(agente, body.sessionId);
     if (isNewSession && deps.newSessions.isLocked(clientIp)) return tooManyNewSessions(c);
-    if (!deps.turnSlots.tryAcquire()) return serverBusy(c);
+    const releaseSlot = deps.turnSlots.tryAcquire();
+    if (releaseSlot === null) return serverBusy(c);
     if (isNewSession) deps.newSessions.hit(clientIp);
-    const turnDeps: TurnDeps = { ...deps, agente };
+    const turnDeps: TurnDeps = { ...deps, agente, releaseSlot };
     return wantsJson(c) ? jsonTurn(c, body, turnDeps) : streamTurn(c, body, turnDeps);
   });
 }

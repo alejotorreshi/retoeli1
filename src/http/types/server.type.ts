@@ -27,12 +27,19 @@ export type RateLimiterOptions = {
 export type RateLimiter = {
   hit(key: string): boolean;
   isLocked(key: string): boolean;
+};
+
+export type ObservableRateLimiter = RateLimiter & {
   trackedKeys(): number;
 };
 
+export type ReleaseSlot = () => void;
+
 export type TurnSlots = {
-  tryAcquire(): boolean;
-  release(): void;
+  tryAcquire(): ReleaseSlot | null;
+};
+
+export type ObservableTurnSlots = TurnSlots & {
   inUse(): number;
 };
 

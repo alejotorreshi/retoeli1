@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import { MAX_CLAVES_LIMITADOR } from "@/config/constants/http.constants.ts";
 import { createRateLimiter } from "@/http/services/rate-limiter.service.ts";
-import type { RateLimiter } from "@/http/types/server.type.ts";
+import type { ObservableRateLimiter } from "@/http/types/server.type.ts";
 
 const LIMITE = 5;
 const VENTANA_MS = 900_000;
@@ -10,7 +10,7 @@ const OTRA_CLAVE = "203.0.113.9";
 const TERCERA_CLAVE = "192.0.2.33";
 
 type Banco = {
-  readonly limitador: RateLimiter;
+  readonly limitador: ObservableRateLimiter;
   avanzar(ms: number): void;
 };
 
@@ -30,7 +30,7 @@ function crearBanco(maxClaves: number = MAX_CLAVES_LIMITADOR): Banco {
   };
 }
 
-function golpear(limitador: RateLimiter, clave: string, veces: number): boolean[] {
+function golpear(limitador: ObservableRateLimiter, clave: string, veces: number): boolean[] {
   return Array.from({ length: veces }, () => limitador.hit(clave));
 }
 

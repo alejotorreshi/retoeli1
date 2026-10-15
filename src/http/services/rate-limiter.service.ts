@@ -1,8 +1,8 @@
-import type { RateLimiter, RateLimiterOptions } from "@/http/types/server.type.ts";
+import type { ObservableRateLimiter, RateLimiterOptions } from "@/http/types/server.type.ts";
 
 type Window = { count: number; readonly start: number };
 
-export function createRateLimiter(options: RateLimiterOptions): RateLimiter {
+export function createRateLimiter(options: RateLimiterOptions): ObservableRateLimiter {
   const windows = new Map<string, Window>();
 
   function sweep(now: number): void {
