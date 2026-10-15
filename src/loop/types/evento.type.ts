@@ -1,5 +1,6 @@
 import type { ACCION, CODIGO_AGENTE, MOTIVO_FIN, TIPO_EVENTO } from "@/config/constants/agent.constants.ts";
 import type { ValorDe } from "@/config/types/valor-de.type.ts";
+import type { ResultadoVisible } from "@/loop/types/resultado-visible.type.ts";
 
 export type MotivoFin = ValorDe<typeof MOTIVO_FIN>;
 
@@ -18,6 +19,7 @@ export type EventoInicioHerramienta = {
   readonly turnoId: string;
   readonly llamadaId: string;
   readonly herramienta: string;
+  readonly caso: string | null;
   readonly argumentos: unknown;
 };
 
@@ -26,9 +28,11 @@ export type EventoFinHerramienta = {
   readonly turnoId: string;
   readonly llamadaId: string;
   readonly herramienta: string;
+  readonly caso: string | null;
   readonly ok: boolean;
   readonly codigo: string | null;
   readonly resumen: string | null;
+  readonly resultado: ResultadoVisible | null;
 };
 
 export type EventoTexto = {

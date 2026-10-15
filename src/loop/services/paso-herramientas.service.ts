@@ -7,8 +7,13 @@ import type { LlamadaResumida } from "@/domain/types/cierre-turno.type.ts";
 import { cuerpoDeFallo } from "@/domain/utils/respuesta-herramienta.util.ts";
 import type { LlamadaHerramienta, Mensaje, MensajeAsistente, RespuestaLlm } from "@/llm/types/llm.type.ts";
 import { anotarHerramienta } from "@/loop/services/bitacora-turno.service.ts";
-import { casoDeLlamada, despacharLlamada } from "@/loop/services/despacho-llamada.service.ts";
+import {
+  casoDeArgumentos,
+  casoDeLlamada,
+  despacharLlamada,
+} from "@/loop/services/despacho-llamada.service.ts";
 import { argumentosDeLlamada } from "@/loop/services/registro-herramientas.service.ts";
+import { redactarResultadoVisible, resultadoVisible } from "@/loop/services/resultado-visible.service.ts";
 import type { Ejecucion, ResultadoLlamada, Turno } from "@/loop/types/turno.type.ts";
 
 function resumida(llamada: LlamadaHerramienta, resultado: ResultadoLlamada): readonly LlamadaResumida[] {
@@ -41,12 +46,14 @@ function pasoTruncado(respuesta: RespuestaLlm): readonly Mensaje[] {
 async function* ejecutarPaso(turno: Turno, respuesta: RespuestaLlm): Ejecucion<readonly Mensaje[] | null> {
   const respuestasHerramienta: Mensaje[] = [];
   for (const llamada of respuesta.llamadas) {
-    const base = { turnoId: turno.turnoId, llamadaId: llamada.id, herramienta: llamada.nombre };
-    yield {
-      tipo: TIPO_EVENTO.INICIO_HERRAMIENTA,
-      ...base,
-      argumentos: redactar(argumentosDeLlamada(llamada.argumentos), turno.deps.secretos),
+    const argumentos = redactar(argumentosDeLlamada(llamada.argumentos), turno.deps.secretos);
+    const base = {
+      turnoId: turno.turnoId,
+      llamadaId: llamada.id,
+      herramienta: llamada.nombre,
+      caso: casoDeArgumentos(argumentos),
     };
+    yield { tipo: TIPO_EVENTO.INICIO_HERRAMIENTA, ...base, argumentos };
     if (turno.signal.aborted) return null;
     const desde = Date.now();
     const despacho = await despacharLlamada(llamada, {
@@ -74,6 +81,10 @@ async function* ejecutarPaso(turno: Turno, respuesta: RespuestaLlm): Ejecucion<r
       ok: resultado.ok,
       codigo: resultado.codigo,
       resumen: resultado.resumen,
+      resultado: redactarResultadoVisible(
+        resultadoVisible(llamada.nombre, resultado.respuesta),
+        turno.deps.secretos,
+      ),
     };
     respuestasHerramienta.push({
       rol: ROL_MENSAJE.HERRAMIENTA,

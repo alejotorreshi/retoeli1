@@ -18,9 +18,13 @@ const ARMAR_PAQUETE = NOMBRE_VISIBLE[HERRAMIENTA.ARMAR_PAQUETE];
 const SIN_CONFIRMACION = CODIGO_ERROR.CONFIRMACION_REQUERIDA;
 const RESUMEN_SIN_CONFIRMACION = RESUMEN_HERRAMIENTA.fallo(HERRAMIENTA.SIMULAR_ENVIO, SIN_CONFIRMACION);
 
-export function casoDeLlamada(llamada: LlamadaHerramienta): string | null {
-  const args = argumentosConCasoSchema.safeParse(argumentosDeLlamada(llamada.argumentos));
+export function casoDeArgumentos(argumentos: unknown): string | null {
+  const args = argumentosConCasoSchema.safeParse(argumentos);
   return args.success ? args.data.caso : null;
+}
+
+export function casoDeLlamada(llamada: LlamadaHerramienta): string | null {
+  return casoDeArgumentos(argumentosDeLlamada(llamada.argumentos));
 }
 
 function ejecutar(llamada: LlamadaHerramienta, contexto: ContextoDespacho): Promise<ResultadoLlamada> {
@@ -90,11 +94,15 @@ function motivoDe(soporte: SoporteArmado): readonly MotivoBloqueo[] {
   return [];
 }
 
+export function motivosDeSoportes(soportes: readonly SoporteArmado[]): readonly MotivoBloqueo[] {
+  return soportes.flatMap(motivoDe);
+}
+
 function paqueteArmado(caso: string, resultado: ResultadoLlamada): CasoPendiente | null {
   const armado = armarPaqueteSchema.safeParse(resultado.respuesta);
   if (!armado.success) return null;
   const { bloqueos, checklist } = armado.data.data;
-  return { caso, bloqueos, motivos: checklist.soportes.flatMap(motivoDe) };
+  return { caso, bloqueos, motivos: motivosDeSoportes(checklist.soportes) };
 }
 
 function sinCompuerta(resultado: ResultadoLlamada, contexto: ContextoDespacho): ResultadoDespacho {
