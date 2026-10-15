@@ -9,10 +9,12 @@ import {
   estadoAlCargar,
   reducirConversacion,
   sesionDelEvento,
+  sesionGuardadaTras,
 } from "@web/state/conversacion.ts";
 import { accionDeSesion, olvidaLaSesion } from "@web/state/hidratacion.ts";
 import type {
   AccionDeTarjeta,
+  AccionUi,
   ControlChat,
   Despachar,
   EstadoConversacion,
@@ -110,14 +112,26 @@ export function useChat(alTerminarTurno: () => void): ControlChat {
     despachar({ tipo: ACCION_UI.RECARGAR });
   }
 
+  function sincronizarSesionGuardada(accion: AccionUi): void {
+    const guardada = leerSesionGuardada();
+    const siguiente = sesionGuardadaTras(guardada, estado, accion);
+    if (siguiente === guardada) return;
+    if (siguiente === null) olvidarSesion();
+    else guardarSesionId(siguiente);
+  }
+
   function nuevaSesion(): void {
     if (estado.enCurso || turnoActivo.current !== null) return;
-    despachar({ tipo: ACCION_UI.NUEVA_SESION });
+    const accion: AccionUi = { tipo: ACCION_UI.NUEVA_SESION };
+    sincronizarSesionGuardada(accion);
+    despachar(accion);
   }
 
   function volverASesionAnterior(): void {
     if (estado.enCurso || turnoActivo.current !== null) return;
-    despachar({ tipo: ACCION_UI.VOLVER_SESION_ANTERIOR });
+    const accion: AccionUi = { tipo: ACCION_UI.VOLVER_SESION_ANTERIOR };
+    sincronizarSesionGuardada(accion);
+    despachar(accion);
   }
 
   return {

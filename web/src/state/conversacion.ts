@@ -281,10 +281,15 @@ function empezarSesionNueva(estado: EstadoConversacion): EstadoConversacion {
   };
 }
 
+function sesionAnteriorDisponible(estado: EstadoConversacion): string | null {
+  return estado.enCurso ? null : estado.sesionAnterior;
+}
+
 function volverASesionAnterior(estado: EstadoConversacion): EstadoConversacion {
-  if (estado.sesionAnterior === null || estado.enCurso) return estado;
+  const anterior = sesionAnteriorDisponible(estado);
+  if (anterior === null) return estado;
   return {
-    ...estadoAlCargar(estado.sesionAnterior),
+    ...estadoAlCargar(anterior),
     acceso: estado.acceso,
     config: estado.config,
     borrador: estado.borrador,
@@ -362,6 +367,17 @@ function aplicarEvento(estado: EstadoConversacion, evento: SseEvent): EstadoConv
     default:
       return estado;
   }
+}
+
+export function sesionGuardadaTras(
+  guardada: string | null,
+  estado: EstadoConversacion,
+  accion: AccionUi,
+): string | null {
+  if (estado.enCurso) return guardada;
+  if (accion.tipo === ACCION_UI.NUEVA_SESION) return null;
+  if (accion.tipo === ACCION_UI.VOLVER_SESION_ANTERIOR) return sesionAnteriorDisponible(estado) ?? guardada;
+  return guardada;
 }
 
 export function reducirConversacion(estado: EstadoConversacion, accion: AccionUi): EstadoConversacion {

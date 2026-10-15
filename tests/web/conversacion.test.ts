@@ -11,9 +11,11 @@ import { TEXTO_ERROR } from "@web/config/strings.ts";
 import {
   accionDeConfig,
   configResuelta,
+  estadoAlCargar,
   estadoInicialConversacion,
   faltaConfig,
   reducirConversacion,
+  sesionGuardadaTras,
   usoDeSesion,
 } from "@web/state/conversacion.ts";
 import type { AccionUi, EstadoConversacion, EstadoHidratado } from "@web/types/chat.type.ts";
@@ -711,5 +713,69 @@ describe("volver a la sesión anterior tras un 429 de sesión nueva (G-03-04)", 
       ]);
       expect(estado.turnos.at(-1)?.error).toEqual({ codigo: null, mensaje: TOPE_DIARIO, accion: null });
     }
+  });
+});
+
+describe("D-73.5.2: Empezar sesión nueva olvida el id guardado", () => {
+  const enSesion = aplicar(estadoInicialConversacion, [
+    { tipo: ACCION_UI.CONFIG_RECIBIDA, config: CONFIG },
+    ...turnoCompleto,
+  ]);
+  const nuevaSesion: AccionUi = { tipo: ACCION_UI.NUEVA_SESION };
+  const volver: AccionUi = { tipo: ACCION_UI.VOLVER_SESION_ANTERIOR };
+  const nueva = reducirConversacion(enSesion, nuevaSesion);
+  const enviarMensaje: AccionUi = { tipo: ACCION_UI.ENVIAR, mensaje: MENSAJE };
+  const tope: AccionUi = {
+    tipo: ACCION_UI.ERROR_HTTP,
+    status: RESPUESTA_HTTP.DEMASIADOS_PEDIDOS,
+    mensaje: TOPE_SESIONES,
+  };
+  const rechazada = aplicar(nueva, [enviarMensaje, tope]);
+
+  test("NUEVA_SESION sin turno en curso olvida el id guardado", () => {
+    expect(sesionGuardadaTras(SESION, enSesion, nuevaSesion)).toBeNull();
+  });
+
+  test("con un turno en curso NUEVA_SESION conserva el id guardado", () => {
+    const enCurso = reducirConversacion(enSesion, enviarMensaje);
+    expect(sesionGuardadaTras(SESION, enCurso, nuevaSesion)).toBe(SESION);
+  });
+
+  test("VOLVER_SESION_ANTERIOR vuelve a guardar la sesión anterior", () => {
+    expect(sesionGuardadaTras(null, rechazada, volver)).toBe(SESION);
+  });
+
+  test("VOLVER_SESION_ANTERIOR sin sesión anterior o con turno en curso deja el guardado como estaba", () => {
+    expect(sesionGuardadaTras(SESION, enSesion, volver)).toBe(SESION);
+    const enCurso = reducirConversacion(nueva, enviarMensaje);
+    expect(sesionGuardadaTras(null, enCurso, volver)).toBeNull();
+  });
+
+  test("las demás acciones dejan el guardado como estaba", () => {
+    const acciones: readonly AccionUi[] = [
+      { tipo: ACCION_UI.CAMBIAR_BORRADOR, borrador: MENSAJE },
+      enviarMensaje,
+      tope,
+    ];
+    for (const accion of acciones) {
+      expect(sesionGuardadaTras(SESION, enSesion, accion)).toBe(SESION);
+      expect(sesionGuardadaTras(null, nueva, accion)).toBeNull();
+    }
+  });
+
+  test("recargar tras el 429 empieza sin sesión y ya no ofrece volver", () => {
+    const guardada = sesionGuardadaTras(SESION, enSesion, nuevaSesion);
+    const recargada = estadoAlCargar(guardada);
+    expect(recargada.sesionId).toBeNull();
+    expect(recargada.hidratando).toBe(false);
+    expect(recargada.sesionAnterior).toBeNull();
+    expect(recargada.tarjetasConfirmacion).toEqual([]);
+  });
+
+  test("recargar después de volver hidrata la sesión anterior", () => {
+    const guardada = sesionGuardadaTras(null, rechazada, volver);
+    const recargada = estadoAlCargar(guardada);
+    expect(recargada.sesionId).toBe(SESION);
+    expect(recargada.hidratando).toBe(true);
   });
 });
