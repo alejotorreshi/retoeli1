@@ -3,16 +3,16 @@ gsd_state_version: "1.0"
 current_phase: 03
 current_phase_name: Chat web, API SSE y despliegue
 status: executing
-stopped_at: Completed 03-06-PLAN.md
-last_updated: "2026-10-15T00:29:04.272Z"
+stopped_at: Completed 03-07-PLAN.md
+last_updated: "2026-10-15T00:35:59.422Z"
 last_activity: 2026-10-14
 last_activity_desc: Phase 03 execution started
-state_head: fb04bb29cfdb19ed8d1fccdab490faa2e3fe15c5
+state_head: 7eeedece05fbad367c2357b08d79bc3dd8bba740
 progress:
   total_phases: 4
   completed_phases: 2
   total_plans: 66
-  completed_plans: 45
+  completed_plans: 46
   percent: 50
 ---
 
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-10-14)
 ## Current Position
 
 Phase: 03 (Chat web, API SSE y despliegue) — EXECUTING
-Plan: 7 of 27
+Plan: 8 of 27
 Status: Ready to execute
 Last activity: 2026-10-14 — Phase 03 execution started
 
@@ -102,6 +102,7 @@ Progress: [█████░░░░░] 50%
 | Phase 03 P04 | 8min | 2 tasks | 15 files |
 | Phase 03 P05 | 9 min | 2 tasks | 18 files |
 | Phase 03 P06 | 6min | 2 tasks | 18 files |
+| Phase 03 P07 | 5min | 2 tasks | 19 files |
 
 ## Accumulated Context
 
@@ -228,6 +229,9 @@ Recent decisions affecting current work:
 - [Phase 03]: Bloqueada la IP del cliente, también el código o el Bearer correctos responden 429
 - [Phase 03]: Solo un Bearer presente y errado suma al tope de fallos; un pedido sin credenciales responde 401 sin sumar
 - [Phase 03]: El texto del 429 se deriva de ACCESS_FAILED_WINDOW_MINUTES (TEXTO_HTTP.demasiadosIntentos)
+- [Phase 03]: 03-07: el hook de chat se exporta como useChat (archivo usar-chat.ts) porque Biome y React reconocen hooks solo por el prefijo use
+- [Phase 03]: 03-07: el envío solo sale del submit del Compositor; doble guarda con estado.enCurso y el ref del AbortController contra turnos pagados duplicados
+- [Phase 03]: 03-07: main es columna flex sin scroll; la LineaDeTiempo tiene scroll propio y el compositor queda fijo
 
 ### Pending Todos
 
@@ -262,6 +266,6 @@ Items acknowledged and deferred at milestone close, most recent first:
 
 ## Session Continuity
 
-Last session: 2026-10-15T00:29:04.192Z
-Stopped at: Completed 03-06-PLAN.md
+Last session: 2026-10-15T00:35:59.335Z
+Stopped at: Completed 03-07-PLAN.md
 Resume file: None
