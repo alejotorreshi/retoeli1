@@ -67,14 +67,14 @@ Fuente vinculante: `reto-01/PRD.md`, sin modificar. Fixtures: `reto-01/fixtures/
 - [x] **LLM-03**: Hay timeout al proveedor con mensaje claro. Se reintenta con backoff y jitter solo ante errores transitorios (429, 500, 503 y red). Los errores 400, 401 y 422 no se reintentan, y el 402 se informa como "saldo agotado".
 - [x] **LLM-04**: Un decorador de fallback pasa a la segunda ranura (`LLM_FALLBACK_*`, `deepseek-v4-pro` por defecto) solo cuando el primario agotó sus reintentos ante errores transitorios. La ranura de respaldo hereda la clave del primario solo si la URL base es idéntica.
 - [x] **LLM-05**: El tope de tokens por sesión y el tope de iteraciones por turno son configurables. Al superarlos, el usuario recibe un mensaje claro, no un 500.
-- [ ] **LLM-06**: Existe un modo degradado sin LLM. Si no hay clave, se agotó el saldo o el proveedor cayó, `/api/health` lo reporta y la UI permite correr el flujo determinista de un caso con las mismas herramientas que `demo.ts`.
+- [x] **LLM-06**: Existe un modo degradado sin LLM. Si no hay clave, se agotó el saldo o el proveedor cayó, `/api/health` lo reporta y la UI permite correr el flujo determinista de un caso con las mismas herramientas que `demo.ts`.
 
 ### API HTTP (§6.4)
 
 - [ ] **API-01**: `POST /api/chat` recibe `{ sessionId, message }` y emite un stream SSE de eventos por paso (`turn_start`, `tool_start`, `tool_end`, `text`, `confirmation_required`, `usage`, `error`, `turn_end`) con heartbeat. También hay un fallback JSON `{ reply, toolCalls[], needsConfirmation }`.
 - [ ] **API-02**: `GET /api/sessions/:id` devuelve el historial completo de la sesión, con la PII redactada.
 - [ ] **API-03**: `GET /api/health` devuelve `{ ok: true, provider, model }` sin exponer claves y sin pedir código de acceso.
-- [ ] **API-04**: El link público exige un código de acceso, comparado en tiempo constante. Hay rate limit por IP, límite de tamaño de mensaje y headers de seguridad.
+- [x] **API-04**: El link público exige un código de acceso, comparado en tiempo constante. Hay rate limit por IP, límite de tamaño de mensaje y headers de seguridad.
 - [ ] **API-05**: Una ruta de descarga de artefactos sirve `out/<caso>/` con lista blanca de nombres de archivo, detrás del código de acceso.
 
 ### Front de chat (§6.1)
@@ -212,11 +212,11 @@ Cada requisito v1 está asignado a exactamente una fase del roadmap (`.planning/
 | LLM-03 | Phase 2 | Complete |
 | LLM-04 | Phase 2 | Complete |
 | LLM-05 | Phase 2 | Complete |
-| LLM-06 | Phase 3 | Pending |
+| LLM-06 | Phase 3 | Complete |
 | API-01 | Phase 3 | Pending |
 | API-02 | Phase 3 | Pending |
 | API-03 | Phase 3 | Pending |
-| API-04 | Phase 3 | Pending |
+| API-04 | Phase 3 | Complete |
 | API-05 | Phase 3 | Pending |
 | UI-01 | Phase 3 | Complete |
 | UI-02 | Phase 3 | Pending |

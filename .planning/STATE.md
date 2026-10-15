@@ -3,16 +3,16 @@ gsd_state_version: "1.0"
 current_phase: 03
 current_phase_name: Chat web, API SSE y despliegue
 status: executing
-stopped_at: Completed 03-12-PLAN.md
-last_updated: "2026-10-15T01:56:38.060Z"
+stopped_at: Completed 03-13-PLAN.md
+last_updated: "2026-10-15T02:04:38.483Z"
 last_activity: 2026-10-14
 last_activity_desc: Phase 03 execution started
-state_head: 6c4411e38c8b5d5a2bb11d21ccd1091f18ce6267
+state_head: 9121d7d4bf8598e4ea6ff5e233003090981b0dc0
 progress:
   total_phases: 4
   completed_phases: 2
   total_plans: 66
-  completed_plans: 51
+  completed_plans: 52
   percent: 50
 ---
 
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-10-14)
 ## Current Position
 
 Phase: 03 (Chat web, API SSE y despliegue) — EXECUTING
-Plan: 13 of 27
+Plan: 14 of 27
 Status: Ready to execute
 Last activity: 2026-10-14 — Phase 03 execution started
 
@@ -108,6 +108,7 @@ Progress: [█████░░░░░] 50%
 | Phase 03 P10 | 9 min | 2 tasks | 19 files |
 | Phase 03 P11 | 70min | 3 tasks | 5 files |
 | Phase 03 P12 | 5min | 2 tasks | 14 files |
+| Phase 03 P13 | 5 min | 2 tasks | 14 files |
 
 ## Accumulated Context
 
@@ -244,6 +245,8 @@ Recent decisions affecting current work:
 - [Phase 03]: TRUSTED_PROXY_HOPS=1 es incorrecto en Render: la clave del limitador es una IP de proxy compartida; el valor final lo mide la usuaria (entradasXff en logs debug) antes de cambiar render.yaml
 - [Phase 03]: 03-12: withHealthReport ignora llamadas con la señal abortada además de los tipos nulos de ESTADO_LLM_TRAS_ERROR
 - [Phase 03]: 03-12: sin LLM_API_KEY el servidor arranca (agente null): health sin_clave con provider/model de la config, chat 503 tras acceso y cuerpo
+- [Phase 03]: 03-13: el tope diario global (AGENT_DAILY_TOKEN_BUDGET, 2 M) vive en memoria y se reinicia en cada reinicio de Render; se acepta (D-73.6) y debe constar en SOLUCION.md
+- [Phase 03]: 03-13: la clave de día del tope sale de systemClock(TZ_NEGOCIO) leída en cada uso, nunca de FECHA_EJECUCION; withDailyBudget va por fuera de withHealthReport(withFallback(...))
 
 ### Pending Todos
 
@@ -279,6 +282,6 @@ Items acknowledged and deferred at milestone close, most recent first:
 
 ## Session Continuity
 
-Last session: 2026-10-15T01:56:37.977Z
-Stopped at: Completed 03-12-PLAN.md
+Last session: 2026-10-15T02:04:38.390Z
+Stopped at: Completed 03-13-PLAN.md
 Resume file: None
