@@ -71,7 +71,7 @@ Fuente vinculante: `reto-01/PRD.md`, sin modificar. Fixtures: `reto-01/fixtures/
 
 ### API HTTP (§6.4)
 
-- [ ] **API-01**: `POST /api/chat` recibe `{ sessionId, message }` y emite un stream SSE de eventos por paso (`turn_start`, `tool_start`, `tool_end`, `text`, `confirmation_required`, `usage`, `error`, `turn_end`) con heartbeat. También hay un fallback JSON `{ reply, toolCalls[], needsConfirmation }`.
+- [x] **API-01**: `POST /api/chat` recibe `{ sessionId, message }` y emite un stream SSE de eventos por paso (`turn_start`, `tool_start`, `tool_end`, `text`, `confirmation_required`, `usage`, `error`, `turn_end`) con heartbeat. También hay un fallback JSON `{ reply, toolCalls[], needsConfirmation }`.
 - [ ] **API-02**: `GET /api/sessions/:id` devuelve el historial completo de la sesión, con la PII redactada.
 - [x] **API-03**: `GET /api/health` devuelve `{ ok: true, provider, model, llm }` sin exponer claves y sin pedir código de acceso.
 - [x] **API-04**: El link público exige un código de acceso, comparado en tiempo constante. Hay rate limit por IP, límite de tamaño de mensaje y headers de seguridad.
@@ -213,7 +213,7 @@ Cada requisito v1 está asignado a exactamente una fase del roadmap (`.planning/
 | LLM-04 | Phase 2 | Complete |
 | LLM-05 | Phase 2 | Complete |
 | LLM-06 | Phase 3 | Complete |
-| API-01 | Phase 3 | Pending |
+| API-01 | Phase 3 | Complete |
 | API-02 | Phase 3 | Pending |
 | API-03 | Phase 3 | Complete |
 | API-04 | Phase 3 | Complete |
