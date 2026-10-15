@@ -51,6 +51,7 @@ describe("reducirConversacion", () => {
       enCurso: false,
       acceso: { tipo: ESTADO_ACCESO.VERIFICANDO },
       config: null,
+      borrador: "",
     });
   });
 
@@ -221,6 +222,79 @@ describe("reducirConversacion", () => {
     ]);
     expect(estado.acceso).toEqual({ tipo: ESTADO_ACCESO.CONCEDIDO });
     expect(estado.config).toEqual(CONFIG);
+  });
+});
+
+describe("el borrador del compositor", () => {
+  const escrito: readonly AccionUi[] = [
+    { tipo: ACCION_UI.CAMBIAR_BORRADOR, borrador: MENSAJE },
+    { tipo: ACCION_UI.ENVIAR, mensaje: MENSAJE },
+  ];
+
+  test("CAMBIAR_BORRADOR guarda lo que la usuaria escribe", () => {
+    const estado = reducirConversacion(estadoInicialConversacion, {
+      tipo: ACCION_UI.CAMBIAR_BORRADOR,
+      borrador: MENSAJE,
+    });
+    expect(estado.borrador).toBe(MENSAJE);
+  });
+
+  test("ENVIAR no vacía el borrador mientras el servidor no acepta el pedido", () => {
+    expect(aplicar(estadoInicialConversacion, escrito).borrador).toBe(MENSAJE);
+  });
+
+  test("ACEPTADO vacía el borrador que se envió", () => {
+    const estado = aplicar(estadoInicialConversacion, [
+      ...escrito,
+      { tipo: ACCION_UI.ACEPTADO, mensaje: MENSAJE },
+    ]);
+    expect(estado.borrador).toBe("");
+  });
+
+  test("ACEPTADO conserva lo que la usuaria escribió después de enviar", () => {
+    const estado = aplicar(estadoInicialConversacion, [
+      ...escrito,
+      { tipo: ACCION_UI.CAMBIAR_BORRADOR, borrador: `${MENSAJE} y el siguiente` },
+      { tipo: ACCION_UI.ACEPTADO, mensaje: MENSAJE },
+    ]);
+    expect(estado.borrador).toBe(`${MENSAJE} y el siguiente`);
+  });
+
+  test("ERROR_HTTP 413 deja el texto en el compositor y el mensaje del servidor bajo la burbuja", () => {
+    const estado = aplicar(estadoInicialConversacion, [
+      ...escrito,
+      {
+        tipo: ACCION_UI.ERROR_HTTP,
+        status: RESPUESTA_HTTP.CUERPO_DEMASIADO_GRANDE,
+        mensaje: MENSAJE_MUY_LARGO,
+      },
+    ]);
+    expect(estado.borrador).toBe(MENSAJE);
+    expect(estado.enCurso).toBe(false);
+    expect(estado.turnos.at(-1)?.error).toEqual({ codigo: null, mensaje: MENSAJE_MUY_LARGO });
+  });
+
+  test("ERROR_HTTP 429 y ERROR_RED dejan el texto en el compositor", () => {
+    const limitado = aplicar(estadoInicialConversacion, [
+      ...escrito,
+      {
+        tipo: ACCION_UI.ERROR_HTTP,
+        status: RESPUESTA_HTTP.DEMASIADOS_PEDIDOS,
+        mensaje: MENSAJE_ERROR_AGENTE,
+      },
+    ]);
+    const sinRed = aplicar(estadoInicialConversacion, [...escrito, { tipo: ACCION_UI.ERROR_RED }]);
+    expect(limitado.borrador).toBe(MENSAJE);
+    expect(sinRed.borrador).toBe(MENSAJE);
+  });
+
+  test("un 401 deja el texto en el compositor para cuando vuelva el acceso", () => {
+    const estado = aplicar(estadoInicialConversacion, [
+      ...escrito,
+      { tipo: ACCION_UI.ERROR_HTTP, status: RESPUESTA_HTTP.NO_AUTORIZADO, mensaje: ACCESO_VENCIDO },
+      { tipo: ACCION_UI.CONFIG_RECIBIDA, config: CONFIG },
+    ]);
+    expect(estado.borrador).toBe(MENSAJE);
   });
 });
 

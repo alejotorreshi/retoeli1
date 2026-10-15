@@ -79,16 +79,27 @@ describe("enviarMensaje", () => {
     expect(JSON.parse(String(init?.body))).toEqual(PEDIDO);
   });
 
-  test("un turno completo despacha sus eventos y no despacha FIN_STREAM", async () => {
+  test("un turno completo despacha ACEPTADO, sus eventos y no despacha FIN_STREAM", async () => {
     simularFetch(async () => respuestaSse(marcos([inicio, texto, fin])));
     const acciones = await despachosDe();
-    expect(tipos(acciones)).toEqual([ACCION_UI.EVENTO, ACCION_UI.EVENTO, ACCION_UI.EVENTO]);
+    expect(acciones[0]).toEqual({ tipo: ACCION_UI.ACEPTADO, mensaje: PEDIDO.message });
+    expect(tipos(acciones)).toEqual([
+      ACCION_UI.ACEPTADO,
+      ACCION_UI.EVENTO,
+      ACCION_UI.EVENTO,
+      ACCION_UI.EVENTO,
+    ]);
   });
 
   test("un stream que termina sin turn_end despacha FIN_STREAM", async () => {
     simularFetch(async () => respuestaSse(marcos([inicio, texto])));
     const acciones = await despachosDe();
-    expect(tipos(acciones)).toEqual([ACCION_UI.EVENTO, ACCION_UI.EVENTO, ACCION_UI.FIN_STREAM]);
+    expect(tipos(acciones)).toEqual([
+      ACCION_UI.ACEPTADO,
+      ACCION_UI.EVENTO,
+      ACCION_UI.EVENTO,
+      ACCION_UI.FIN_STREAM,
+    ]);
   });
 
   test("un stream que se corta con error despacha FIN_STREAM", async () => {
