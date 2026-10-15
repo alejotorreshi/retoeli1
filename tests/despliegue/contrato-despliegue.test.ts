@@ -199,9 +199,12 @@ describe("Dockerfile (DEP-02)", () => {
     for (const origen of copiados) expect(existsSync(join(RAIZ, origen))).toBe(true);
   });
 
-  test("out/ queda del usuario bun y el proceso corre como bun en el puerto de Render", () => {
+  test("solo out/ queda del usuario bun y el proceso corre como bun en el puerto de Render", () => {
     if (ejecucion === undefined) throw new Error("falta la etapa de ejecución");
-    expect(argumentosDe(ejecucion, "RUN")).toContain("mkdir -p out && chown -R bun:bun /app");
+    const ejecuciones = argumentosDe(ejecucion, "RUN");
+    expect(ejecuciones).toContain("mkdir -p out && chown bun:bun out");
+    expect(ejecuciones.filter((argumentos) => argumentos.includes("chown -R"))).toEqual([]);
+    expect(ejecuciones.filter((argumentos) => argumentos.includes("/app"))).toEqual([]);
     expect(ejecucion.instrucciones.slice(-3)).toEqual([
       { comando: "USER", argumentos: "bun" },
       { comando: "EXPOSE", argumentos: PUERTO_RENDER },

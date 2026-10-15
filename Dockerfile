@@ -16,7 +16,7 @@ COPY src ./src
 COPY agent ./agent
 COPY reto-01/fixtures ./reto-01/fixtures
 COPY --from=build /app/web/dist ./web/dist
-RUN mkdir -p out && chown -R bun:bun /app
+RUN mkdir -p out && chown bun:bun out
 USER bun
 EXPOSE 10000
 CMD ["bun", "src/server.ts"]
