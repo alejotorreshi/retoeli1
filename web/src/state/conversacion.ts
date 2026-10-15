@@ -8,6 +8,7 @@ import {
   RESULTADO_API,
   SANGRIA_JSON,
   SEPARADOR_ANUNCIOS,
+  TOKENS_POR_MILES,
 } from "@web/config/constants/ui.constants.ts";
 import { TEXTO_CHAT, TEXTO_CONFIRMACION, TEXTO_ERROR, TEXTO_HERRAMIENTA } from "@web/config/strings.ts";
 import {
@@ -17,6 +18,7 @@ import {
   soltarEnvios,
 } from "@web/state/confirmaciones.ts";
 import type {
+  AccionDeAviso,
   AccionEnviar,
   AccionUi,
   ConfirmacionDelTurno,
@@ -48,6 +50,8 @@ export const estadoInicialConversacion: EstadoConversacion = {
   borrador: "",
   hidratando: false,
   avisoSesion: null,
+  tokensSesion: 0,
+  esperandoAvisoExpirada: false,
 };
 
 export function estadoAlCargar(sesionGuardada: string | null): EstadoConversacion {
@@ -224,7 +228,57 @@ function contarEvento(estado: EstadoConversacion): EstadoConversacion {
 }
 
 function hidratar(estado: EstadoConversacion, hidratado: EstadoHidratado): EstadoConversacion {
-  return { ...estado, ...hidratado, enCurso: false, hidratando: false, avisoSesion: null };
+  return {
+    ...estado,
+    sesionId: hidratado.sesionId,
+    turnos: hidratado.turnos,
+    tarjetasConfirmacion: hidratado.tarjetasConfirmacion,
+    tokensSesion: hidratado.tokensUsados,
+    enCurso: false,
+    hidratando: false,
+    avisoSesion: null,
+    esperandoAvisoExpirada: false,
+  };
+}
+
+function empezarSesionNueva(estado: EstadoConversacion): EstadoConversacion {
+  return {
+    ...estadoInicialConversacion,
+    acceso: estado.acceso,
+    config: estado.config,
+    borrador: estado.borrador,
+  };
+}
+
+function seguirTrasExpirar(estado: EstadoConversacion, sesionId: string): EstadoConversacion {
+  const actual = estado.turnos.at(-1);
+  return {
+    ...estado,
+    sesionId,
+    turnos: actual === undefined ? [] : [{ ...actual, clave: 0 }],
+    tarjetasConfirmacion: [],
+    avisoSesion: null,
+    tokensSesion: 0,
+    esperandoAvisoExpirada: true,
+  };
+}
+
+function recibirTexto(estado: EstadoConversacion, texto: string): EstadoConversacion {
+  if (estado.esperandoAvisoExpirada) {
+    return {
+      ...estado,
+      esperandoAvisoExpirada: false,
+      avisoSesion: { tipo: AVISO_SESION.EXPIRADA, mensaje: texto },
+    };
+  }
+  return conUltimoTurno(estado, (turno) => ({
+    ...turno,
+    textos: [...turno.textos, { clave: turno.textos.length, texto }],
+  }));
+}
+
+function accionDelError(codigo: string): AccionDeAviso | null {
+  return codigo === CODIGO_AGENTE.PRESUPUESTO_AGOTADO ? ACCION_AVISO.NUEVA_SESION : null;
 }
 
 function sesionExpirada(estado: EstadoConversacion, mensaje: string): EstadoConversacion {
@@ -243,20 +297,25 @@ function sesionNoCargada(estado: EstadoConversacion, mensaje: string): EstadoCon
 function aplicarEvento(estado: EstadoConversacion, evento: SseEvent): EstadoConversacion {
   switch (evento.tipo) {
     case TIPO_EVENTO.INICIO_TURNO:
-      return { ...estado, sesionId: evento.sesionId };
+      return evento.sesionExpirada
+        ? seguirTrasExpirar(estado, evento.sesionId)
+        : { ...estado, sesionId: evento.sesionId };
     case TIPO_EVENTO.INICIO_HERRAMIENTA:
       return conUltimoTurno(estado, (turno) => abrirLlamada(turno, evento));
     case TIPO_EVENTO.FIN_HERRAMIENTA:
       return conUltimoTurno(estado, (turno) => cerrarLlamada(turno, evento));
     case TIPO_EVENTO.TEXTO:
-      return conUltimoTurno(estado, (turno) => ({
-        ...turno,
-        textos: [...turno.textos, { clave: turno.textos.length, texto: evento.texto }],
-      }));
+      return recibirTexto(estado, evento.texto);
     case TIPO_EVENTO.CONFIRMACION_REQUERIDA:
       return conUltimoTurno(estado, (turno) => registrarConfirmacion(turno, evento));
     case TIPO_EVENTO.ERROR:
-      return registrarError(estado, { codigo: evento.codigo, mensaje: evento.mensaje, accion: null });
+      return registrarError(estado, {
+        codigo: evento.codigo,
+        mensaje: evento.mensaje,
+        accion: accionDelError(evento.codigo),
+      });
+    case TIPO_EVENTO.USO:
+      return { ...estado, tokensSesion: evento.totalSesion };
     case TIPO_EVENTO.FIN_TURNO:
       return terminarTurno(estado, !turnoRechazadoPorOcupada(estado));
     default:
@@ -310,6 +369,8 @@ export function reducirConversacion(estado: EstadoConversacion, accion: AccionUi
       return detenerTurno(estado);
     case ACCION_UI.RECARGAR:
       return recargarSesion(estado);
+    case ACCION_UI.NUEVA_SESION:
+      return empezarSesionNueva(estado);
     default:
       return estado;
   }
@@ -363,6 +424,13 @@ export function eventosDelTurno({ turnos }: VistaTurnos): number {
   return turnos.at(-1)?.eventos ?? 0;
 }
 
-export function usoDeSesion(_estado: EstadoConversacion): UsoDeSesion | null {
-  return null;
+export function usoDeSesion({
+  tokensSesion,
+  config,
+}: Pick<EstadoConversacion, "tokensSesion" | "config">): UsoDeSesion | null {
+  if (config === null) return null;
+  return {
+    usados: Math.floor(tokensSesion / TOKENS_POR_MILES),
+    tope: Math.floor(config.presupuestoSesion / TOKENS_POR_MILES),
+  };
 }

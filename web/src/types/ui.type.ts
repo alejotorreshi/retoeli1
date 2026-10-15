@@ -13,6 +13,7 @@ import type {
   SaludModelo,
   TarjetaDeConfirmacion,
   TurnoConversacion,
+  UsoDeSesion,
 } from "@web/types/chat.type.ts";
 import type { ReactNode } from "react";
 import type { ESTADO_LLM } from "@/config/constants/llm.constants.ts";
@@ -134,6 +135,7 @@ export type PropsCompositor = {
   readonly maximo: number | null;
   readonly enCurso: boolean;
   readonly bloqueado: boolean;
+  readonly uso: UsoDeSesion | null;
   readonly alCambiar: (valor: string) => void;
   readonly alEnviar: () => void;
   readonly alDetener: () => void;
@@ -142,6 +144,14 @@ export type PropsCompositor = {
 export type PropsEncabezado = {
   readonly fechaEjecucion: string | null;
   readonly salud: SaludModelo | null;
+  readonly nuevaSesionDeshabilitada: boolean;
+  readonly alNuevaSesion: () => void;
+};
+
+export type PropsDialogoNuevaSesion = {
+  readonly abierto: boolean;
+  readonly alCerrar: () => void;
+  readonly alConfirmar: () => void;
 };
 
 export type Tono = ValorDe<typeof TONO>;

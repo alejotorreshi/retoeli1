@@ -2,6 +2,7 @@ import { obtenerConfig } from "@web/api/cliente-api.ts";
 import { AccionesRapidas } from "@web/components/acciones-rapidas.tsx";
 import { AvisoModelo } from "@web/components/aviso-modelo.tsx";
 import { Compositor } from "@web/components/compositor.tsx";
+import { DialogoNuevaSesion } from "@web/components/dialogo-nueva-sesion.tsx";
 import { Encabezado } from "@web/components/encabezado.tsx";
 import { IndicadorPensando } from "@web/components/indicador-pensando.tsx";
 import { LineaDeTiempo } from "@web/components/linea-de-tiempo.tsx";
@@ -23,10 +24,10 @@ import { useDiseno } from "@web/hooks/usar-diseno.ts";
 import { usePestanas } from "@web/hooks/usar-pestanas.ts";
 import { useSalud } from "@web/hooks/usar-salud.ts";
 import { firmaDelProgreso, progresoPorCaso } from "@web/state/casos.ts";
-import { etiquetaPensando, eventosDelTurno } from "@web/state/conversacion.ts";
+import { etiquetaPensando, eventosDelTurno, usoDeSesion } from "@web/state/conversacion.ts";
 import type { AccionDeAviso } from "@web/types/chat.type.ts";
 import type { ControlPestanas, IdsDePestanas, Pestana, PropsBarraDePestanas } from "@web/types/ui.type.ts";
-import { type HTMLAttributes, type KeyboardEvent, useEffect, useId, useRef } from "react";
+import { type HTMLAttributes, type KeyboardEvent, useEffect, useId, useRef, useState } from "react";
 
 function pestanaPorTecla(tecla: string, actual: Pestana): Pestana | null {
   const indice = ORDEN_PESTANAS.indexOf(actual);
@@ -123,7 +124,9 @@ export function App() {
     recibirConfig,
     detener,
     recargar,
+    nuevaSesion,
   } = useChat(refrescar);
+  const [nuevaSesionAbierta, setNuevaSesionAbierta] = useState(false);
   const diseno = useDiseno();
   const conPestanas = diseno !== DISENO.ANCHO;
   const progresos = progresoPorCaso(estado);
@@ -144,6 +147,7 @@ export function App() {
 
   function alAccionDeAviso(accion: AccionDeAviso): void {
     if (accion === ACCION_AVISO.RECARGAR) recargar();
+    if (accion === ACCION_AVISO.NUEVA_SESION) setNuevaSesionAbierta(true);
   }
 
   async function alEntrar(): Promise<void> {
@@ -169,7 +173,12 @@ export function App() {
 
   return (
     <div className={CLASE_GLOBAL.APP} data-diseno={diseno}>
-      <Encabezado fechaEjecucion={estado.config?.fechaEjecucion ?? null} salud={salud} />
+      <Encabezado
+        fechaEjecucion={estado.config?.fechaEjecucion ?? null}
+        salud={salud}
+        nuevaSesionDeshabilitada={estado.enCurso}
+        alNuevaSesion={() => setNuevaSesionAbierta(true)}
+      />
       <AvisoModelo estado={salud?.llm ?? null} zona={estado.config?.zona ?? null} />
       {conPestanas ? <BarraDePestanas control={pestanas} ids={ids} /> : null}
       <div className={CLASE_GLOBAL.COLUMNAS}>
@@ -212,6 +221,7 @@ export function App() {
               maximo={estado.config?.mensajeMaximo ?? null}
               enCurso={estado.enCurso}
               bloqueado={estado.hidratando}
+              uso={usoDeSesion(estado)}
               alCambiar={cambiarBorrador}
               alEnviar={enviar}
               alDetener={detener}
@@ -225,6 +235,11 @@ export function App() {
           <PanelCasos progresos={progresos} />
         </div>
       </div>
+      <DialogoNuevaSesion
+        abierto={nuevaSesionAbierta}
+        alCerrar={() => setNuevaSesionAbierta(false)}
+        alConfirmar={nuevaSesion}
+      />
     </div>
   );
 }

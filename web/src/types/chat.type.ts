@@ -176,6 +176,8 @@ export type EstadoConversacion = {
   readonly borrador: string;
   readonly hidratando: boolean;
   readonly avisoSesion: AvisoDeSesion | null;
+  readonly tokensSesion: number;
+  readonly esperandoAvisoExpirada: boolean;
 };
 
 export type UsoDeSesion = {
@@ -195,6 +197,7 @@ export type EstadoHidratado = {
   readonly sesionId: string;
   readonly turnos: readonly TurnoConversacion[];
   readonly tarjetasConfirmacion: readonly TarjetaDeConfirmacion[];
+  readonly tokensUsados: number;
 };
 
 export type AccionEnviar = {
@@ -265,6 +268,10 @@ export type AccionRecargar = {
   readonly tipo: typeof ACCION_UI.RECARGAR;
 };
 
+export type AccionNuevaSesion = {
+  readonly tipo: typeof ACCION_UI.NUEVA_SESION;
+};
+
 export type AccionUi =
   | AccionEnviar
   | AccionEvento
@@ -279,7 +286,8 @@ export type AccionUi =
   | AccionSesionExpirada
   | AccionSesionNoCargada
   | AccionDetener
-  | AccionRecargar;
+  | AccionRecargar
+  | AccionNuevaSesion;
 
 export type Despachar = (accion: AccionUi) => void;
 
@@ -293,6 +301,7 @@ export type ControlChat = {
   readonly recibirConfig: (resultado: ResultadoApi<ConfigResponse>) => void;
   readonly detener: () => void;
   readonly recargar: () => void;
+  readonly nuevaSesion: () => void;
 };
 
 export type EstadoModelo = HealthResponse["llm"];

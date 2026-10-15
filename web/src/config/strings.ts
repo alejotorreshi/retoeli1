@@ -78,6 +78,7 @@ export const TEXTO_CHAT = {
   enviar: "Enviar mensaje",
   detener: "Detener respuesta",
   contador: (caracteres: number, maximo: number) => `${caracteres}/${maximo}`,
+  uso: (usados: number, tope: number) => `Uso de la sesión: ${usados} k de ${tope} k tokens`,
 } as const;
 
 export const TEXTO_ERROR = {
@@ -93,6 +94,15 @@ const ACCION_DEL_AVISO = {
 
 export const TEXTO_AVISO = {
   accion: (accion: AccionDeAviso) => ACCION_DEL_AVISO[accion],
+} as const;
+
+export const TEXTO_NUEVA_SESION = {
+  abrir: "Nueva sesión",
+  titulo: "¿Empezar una sesión nueva?",
+  cuerpo:
+    "La conversación actual sale de esta pantalla y las confirmaciones pendientes se descartan. Los archivos generados siguen en el servidor mientras no se reinicie.",
+  seguir: "Seguir en esta sesión",
+  empezar: ACCION_DEL_AVISO[ACCION_AVISO.NUEVA_SESION],
 } as const;
 
 function avisoSinComando(texto: string): PartesAvisoModelo {

@@ -1,0 +1,55 @@
+.dialogo {
+  box-sizing: border-box;
+  width: min(var(--ancho-acceso), calc(100% - 2 * var(--espacio-md)));
+  max-width: none;
+  padding: var(--espacio-lg);
+  color: var(--texto);
+  background: var(--dominante);
+  border: var(--borde-ancho) solid var(--borde);
+  border-radius: var(--radio);
+}
+
+.titulo {
+  margin: 0 0 var(--espacio-sm);
+  font-size: var(--titulo-tamano);
+  font-weight: var(--titulo-peso);
+  line-height: var(--titulo-interlinea);
+}
+
+.cuerpo {
+  margin: 0;
+  font-size: var(--cuerpo-tamano);
+  line-height: var(--cuerpo-interlinea);
+}
+
+.acciones {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--espacio-sm);
+  margin-block-start: var(--espacio-lg);
+}
+
+.seguir,
+.empezar {
+  min-height: var(--alto-control);
+  padding-inline: var(--espacio-md);
+  font-size: var(--etiqueta-tamano);
+  font-weight: var(--etiqueta-peso-fuerte);
+  line-height: var(--etiqueta-interlinea);
+  border: var(--borde-ancho) solid;
+  border-radius: var(--radio-chico);
+  cursor: pointer;
+}
+
+.seguir {
+  color: var(--texto);
+  background: var(--dominante);
+  border-color: var(--borde);
+}
+
+.empezar {
+  color: var(--sobre-acento);
+  background: var(--destructivo);
+  border-color: var(--destructivo);
+}

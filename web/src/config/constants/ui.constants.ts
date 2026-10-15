@@ -22,6 +22,7 @@ export const ACCION_UI = {
   SESION_NO_CARGADA: "sesion_no_cargada",
   DETENER: "detener",
   RECARGAR: "recargar",
+  NUEVA_SESION: "nueva_sesion",
 } as const;
 
 export const ACCION_AVISO = {
@@ -30,6 +31,8 @@ export const ACCION_AVISO = {
 } as const;
 
 export const REINTENTO_OCUPADA_MS = 1_000;
+
+export const TOKENS_POR_MILES = 1_000;
 
 export const AVISO_SESION = {
   EXPIRADA: "expirada",

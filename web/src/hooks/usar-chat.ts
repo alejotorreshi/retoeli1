@@ -108,6 +108,12 @@ export function useChat(alFallarTurno: () => void): ControlChat {
     despachar({ tipo: ACCION_UI.RECARGAR });
   }
 
+  function nuevaSesion(): void {
+    if (estado.enCurso || turnoActivo.current !== null) return;
+    olvidarSesion();
+    despachar({ tipo: ACCION_UI.NUEVA_SESION });
+  }
+
   return {
     estado,
     borrador: estado.borrador,
@@ -118,5 +124,6 @@ export function useChat(alFallarTurno: () => void): ControlChat {
     recibirConfig,
     detener,
     recargar,
+    nuevaSesion,
   };
 }

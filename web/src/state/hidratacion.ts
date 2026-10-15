@@ -91,7 +91,12 @@ export function estadoDesdeVista(vista: VistaSesionUi): EstadoHidratado {
     turnos.push(conPendientes);
     tarjetas = reducirConfirmaciones(tarjetas, { turno: conPendientes, completo: true });
   });
-  return { sesionId: vista.sesionId, turnos, tarjetasConfirmacion: tarjetas };
+  return {
+    sesionId: vista.sesionId,
+    turnos,
+    tarjetasConfirmacion: tarjetas,
+    tokensUsados: vista.tokensUsados,
+  };
 }
 
 export function accionDeSesion(resultado: ResultadoApi<VistaSesionUi>): AccionUi {

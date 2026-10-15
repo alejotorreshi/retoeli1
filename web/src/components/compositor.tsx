@@ -17,6 +17,7 @@ export function Compositor({
   maximo,
   enCurso,
   bloqueado,
+  uso,
   alCambiar,
   alEnviar,
   alDetener,
@@ -64,6 +65,7 @@ export function Compositor({
               {TEXTO_CHAT.contador(caracteres, maximo)}
             </p>
           ) : null}
+          {uso === null ? null : <p className={estilos.uso}>{TEXTO_CHAT.uso(uso.usados, uso.tope)}</p>}
           {enCurso ? (
             <button type="button" className={estilos.detener} onClick={alDetener}>
               {TEXTO_CHAT.detener}

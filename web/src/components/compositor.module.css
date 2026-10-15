@@ -37,9 +37,10 @@
 
 .pie {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: var(--espacio-md);
+  gap: var(--espacio-sm) var(--espacio-md);
 }
 
 .ayuda {
@@ -56,6 +57,19 @@
   line-height: var(--etiqueta-interlinea);
   font-variant-numeric: tabular-nums;
   color: var(--texto-tenue);
+}
+
+.uso {
+  margin: 0;
+  margin-inline-start: auto;
+  font-size: var(--etiqueta-tamano);
+  line-height: var(--etiqueta-interlinea);
+  font-variant-numeric: tabular-nums;
+  color: var(--texto-tenue);
+}
+
+.contador + .uso {
+  margin-inline-start: 0;
 }
 
 .limite {
