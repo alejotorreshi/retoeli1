@@ -6,10 +6,15 @@
 }
 
 .zona {
+  position: relative;
   flex: 1;
   min-width: 0;
   overflow-y: auto;
   padding: var(--espacio-lg) var(--espacio-md);
+}
+
+.siguiendo {
+  overflow-anchor: none;
 }
 
 .contenido {
@@ -54,6 +59,10 @@
   position: absolute;
   inset-block-end: var(--espacio-md);
   inset-inline-end: var(--espacio-md);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--espacio-sm);
   min-height: var(--alto-control);
   padding-inline: var(--espacio-md);
   font-size: var(--etiqueta-tamano);
@@ -63,6 +72,22 @@
   border: var(--borde-ancho) solid var(--borde);
   border-radius: var(--radio-chico);
   cursor: pointer;
+}
+
+.iconoIrAlFinal {
+  display: inline-flex;
+  flex: none;
+  transform: rotate(90deg);
+}
+
+:global([data-diseno="angosto"]) .irAlFinal {
+  inline-size: var(--alto-control);
+  block-size: var(--alto-control);
+  padding: 0;
+}
+
+:global([data-diseno="angosto"]) .textoIrAlFinal {
+  display: none;
 }
 
 .accionAviso {

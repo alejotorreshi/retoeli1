@@ -1,5 +1,6 @@
 import { AvisoError, AvisoSistema } from "@web/components/aviso.tsx";
 import { GrupoHerramientas } from "@web/components/grupo-herramientas.tsx";
+import { IconoChevron } from "@web/components/icons/iconos.tsx";
 import { IndicadorPensando } from "@web/components/indicador-pensando.tsx";
 import estilos from "@web/components/linea-de-tiempo.module.css";
 import { MensajeAgente, MensajeUsuaria } from "@web/components/mensaje.tsx";
@@ -201,7 +202,7 @@ export function LineaDeTiempo({
       <section
         ref={zona}
         aria-label={TEXTO_CHAT.lineaDeTiempo}
-        className={estilos.zona}
+        className={vista.pegado ? `${estilos.zona} ${estilos.siguiendo}` : estilos.zona}
         onScroll={alDesplazar}
         onWheel={alIntentarDesplazar}
         onTouchStart={alIntentarDesplazar}
@@ -224,8 +225,16 @@ export function LineaDeTiempo({
         </div>
       </section>
       {vista.contenidoNuevo ? (
-        <button type="button" className={estilos.irAlFinal} onClick={irAlFinal}>
-          {TEXTO_CHAT.irAlFinal}
+        <button
+          type="button"
+          className={estilos.irAlFinal}
+          aria-label={TEXTO_CHAT.irAlFinal}
+          onClick={irAlFinal}
+        >
+          <span className={estilos.iconoIrAlFinal}>
+            <IconoChevron />
+          </span>
+          <span className={estilos.textoIrAlFinal}>{TEXTO_CHAT.irAlFinal}</span>
         </button>
       ) : null}
       <div aria-live="polite" className={CLASE_GLOBAL.OCULTO}>
