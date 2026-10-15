@@ -3,16 +3,16 @@ gsd_state_version: "1.0"
 current_phase: 03
 current_phase_name: Chat web, API SSE y despliegue
 status: executing
-stopped_at: Completed 03-13-PLAN.md
-last_updated: "2026-10-15T02:04:38.483Z"
+stopped_at: Completed 03-14-PLAN.md
+last_updated: "2026-10-15T02:15:09.304Z"
 last_activity: 2026-10-14
 last_activity_desc: Phase 03 execution started
-state_head: 9121d7d4bf8598e4ea6ff5e233003090981b0dc0
+state_head: "0bcbdd38991d28e90af274fcd761623f5e02c05a"
 progress:
   total_phases: 4
   completed_phases: 2
   total_plans: 66
-  completed_plans: 52
+  completed_plans: 53
   percent: 50
 ---
 
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-10-14)
 ## Current Position
 
 Phase: 03 (Chat web, API SSE y despliegue) — EXECUTING
-Plan: 14 of 27
+Plan: 15 of 27
 Status: Ready to execute
 Last activity: 2026-10-14 — Phase 03 execution started
 
@@ -109,6 +109,7 @@ Progress: [█████░░░░░] 50%
 | Phase 03 P11 | 70min | 3 tasks | 5 files |
 | Phase 03 P12 | 5min | 2 tasks | 14 files |
 | Phase 03 P13 | 5 min | 2 tasks | 14 files |
+| Phase 03 P14 | 9 min | 2 tasks | 15 files |
 
 ## Accumulated Context
 
@@ -247,6 +248,9 @@ Recent decisions affecting current work:
 - [Phase 03]: 03-12: sin LLM_API_KEY el servidor arranca (agente null): health sin_clave con provider/model de la config, chat 503 tras acceso y cuerpo
 - [Phase 03]: 03-13: el tope diario global (AGENT_DAILY_TOKEN_BUDGET, 2 M) vive en memoria y se reinicia en cada reinicio de Render; se acepta (D-73.6) y debe constar en SOLUCION.md
 - [Phase 03]: 03-13: la clave de día del tope sale de systemClock(TZ_NEGOCIO) leída en cada uso, nunca de FECHA_EJECUCION; withDailyBudget va por fuera de withHealthReport(withFallback(...))
+- [Phase 03]: 03-14: el tope de 10 mensajes por minuto por IP cuenta todo POST /api/chat autenticado, válido o no; los Bearer errados solo suman al tope de acceso
+- [Phase 03]: 03-14: el cupo de turno se adquiere después de los rechazos baratos (cuerpo, clave, tope diario) y se libera en el finally SSE y en el del pliegue JSON
+- [Phase 03]: 03-14: limitador de mensajes y cupos de turno viven en memoria por instancia y se pierden en reinicios (D-73.6), documentar en SOLUCION.md
 
 ### Pending Todos
 
@@ -282,6 +286,6 @@ Items acknowledged and deferred at milestone close, most recent first:
 
 ## Session Continuity
 
-Last session: 2026-10-15T02:04:38.390Z
-Stopped at: Completed 03-13-PLAN.md
+Last session: 2026-10-15T02:15:09.221Z
+Stopped at: Completed 03-14-PLAN.md
 Resume file: None
