@@ -24,6 +24,7 @@ import {
   RUTA_API,
   SEPARADOR_TOKEN,
   TIPO_CONTENIDO,
+  VENTANA_FALLOS_ACCESO_MINUTOS_POR_DEFECTO,
 } from "@/config/constants/http.constants.ts";
 import { NIVELES_LOG } from "@/config/constants/logging.constants.ts";
 import { pinExecutionDate } from "@/config/env.ts";
@@ -386,7 +387,9 @@ describe("tope de intentos fallidos por IP del cliente (D-73.2)", () => {
     expect(estados).toEqual(Array(FALLOS_PERMITIDOS).fill(RESPUESTA_HTTP.NO_AUTORIZADO));
     const sexto = await pedirDesde(app, IP_CLIENTE, RUTA_API.ACCESO, pedidoAcceso(CODIGO_ERRADO));
     expect(sexto.status).toBe(RESPUESTA_HTTP.DEMASIADOS_PEDIDOS);
-    expect(await sexto.json()).toEqual({ mensaje: MENSAJE_HTTP.demasiadosIntentos });
+    expect(await sexto.json()).toEqual({
+      mensaje: TEXTO_HTTP.demasiadosIntentos(VENTANA_FALLOS_ACCESO_MINUTOS_POR_DEFECTO),
+    });
     const otro = await pedirDesde(app, IP_OTRO_CLIENTE, RUTA_API.ACCESO, pedidoAcceso(CODIGO_PRUEBA));
     expect(otro.status).toBe(RESPUESTA_HTTP.SIN_CONTENIDO);
   });
@@ -459,7 +462,9 @@ describe("X-Forwarded-For falsificado, Bearer errados y vencimiento de la ventan
     expect(estados).toEqual(Array(FALLOS_PERMITIDOS).fill(RESPUESTA_HTTP.NO_AUTORIZADO));
     const sexto = await pedirDesde(app, IP_CLIENTE, RUTA_API.CHAT, pedidoChat(bearer(CODIGO_ERRADO)));
     expect(sexto.status).toBe(RESPUESTA_HTTP.DEMASIADOS_PEDIDOS);
-    expect(await sexto.json()).toEqual({ mensaje: MENSAJE_HTTP.demasiadosIntentos });
+    expect(await sexto.json()).toEqual({
+      mensaje: TEXTO_HTTP.demasiadosIntentos(VENTANA_FALLOS_ACCESO_MINUTOS_POR_DEFECTO),
+    });
     const codigo = await pedirDesde(app, IP_CLIENTE, RUTA_API.ACCESO, pedidoAcceso(CODIGO_PRUEBA));
     expect(codigo.status).toBe(RESPUESTA_HTTP.DEMASIADOS_PEDIDOS);
     const correcto = await pedirDesde(app, IP_CLIENTE, RUTA_API.CHAT, chatInvalido(bearer(CODIGO_PRUEBA)));

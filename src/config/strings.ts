@@ -6,7 +6,8 @@ import {
   LONGITUD_MINIMA_CODIGO_ACCESO,
   LONGITUD_MINIMA_SECRETO_TOKEN,
   TIPO_CONTENIDO,
-  VENTANA_FALLOS_ACCESO_MINUTOS_POR_DEFECTO,
+  VENTANA_MENSAJES_CHAT_MINUTOS,
+  VENTANA_SESIONES_NUEVAS_HORAS,
 } from "@/config/constants/http.constants.ts";
 import { LONGITUD_MAXIMA_CASO } from "@/config/constants/limits.constants.ts";
 import { ESQUEMA_LOOPBACK, ESQUEMA_SEGURO, HOSTS_LOOPBACK } from "@/config/constants/llm.constants.ts";
@@ -338,6 +339,14 @@ export const TEXTO_CONTEXTO = {
   fecha: (fecha: string): string => `Contexto de la sesión: la fecha de ejecución efectiva es ${fecha}.`,
 } as const;
 
+function cantidadDeMinutos(minutos: number): string {
+  return minutos === 1 ? "un minuto" : `${minutos} minutos`;
+}
+
+function ultimasHoras(horas: number): string {
+  return horas === 1 ? "la última hora" : `las últimas ${horas} horas`;
+}
+
 function esperarIntentos(minutos: number): string {
   return `Demasiados intentos fallidos. Espera ${minutos} minutos y vuelve a intentarlo.`;
 }
@@ -354,16 +363,14 @@ export const MENSAJE_HTTP = {
   cuerpoAccesoInvalido: "El pedido no es válido: envía un JSON con codigo (texto), sin otros campos.",
   codigoInvalido: "El código no es válido. Revísalo y vuelve a intentarlo.",
   accesoVencido: "Tu acceso venció. Escribe el código de nuevo para seguir.",
-  demasiadosIntentos: esperarIntentos(VENTANA_FALLOS_ACCESO_MINUTOS_POR_DEFECTO),
   tipoNoSoportado: `El pedido no es válido: envíalo como JSON, con Content-Type ${TIPO_CONTENIDO.JSON}.`,
   cuerpoDemasiadoGrande: "El pedido es demasiado grande. Acorta el mensaje y vuelve a enviarlo.",
   mensajeDemasiadoLargo: (maximo: number): string =>
     `El mensaje supera los ${maximo} caracteres. Acórtalo y vuelve a enviarlo.`,
   topeDiario: (zona: string): string => `${TOPE_DIARIO_ALCANZADO} (${zona}).`,
-  demasiadosMensajes: "Enviaste muchos mensajes seguidos. Espera un minuto y vuelve a intentarlo.",
+  demasiadosMensajes: `Enviaste muchos mensajes seguidos. Espera ${cantidadDeMinutos(VENTANA_MENSAJES_CHAT_MINUTOS)} y vuelve a intentarlo.`,
   servidorOcupado: "El servidor está atendiendo otras conversaciones. Vuelve a intentarlo en unos segundos.",
-  demasiadasSesiones:
-    "Abriste demasiadas sesiones nuevas en la última hora. Sigue en la sesión actual o vuelve a intentarlo más tarde.",
+  demasiadasSesiones: `Abriste demasiadas sesiones nuevas en ${ultimasHoras(VENTANA_SESIONES_NUEVAS_HORAS)}. Sigue en la sesión actual o vuelve a intentarlo más tarde.`,
   casoNoEncontrado: "El caso pedido no existe. Revisa el nombre del caso.",
   archivoNoEncontrado:
     "El archivo pedido no existe en este caso. Si el servidor se reinició, vuelve a procesar el caso.",
