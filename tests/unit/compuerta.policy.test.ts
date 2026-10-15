@@ -60,6 +60,10 @@ const bloqueado = (caso: string): EventoCompuerta => ({ tipo: EVENTO_COMPUERTA.B
 const enviado = (caso: string): EventoCompuerta => ({ tipo: EVENTO_COMPUERTA.ENVIADO, caso });
 const fallido = (caso: string): EventoCompuerta => ({ tipo: EVENTO_COMPUERTA.FALLIDO, caso });
 const truncado = (caso: string | null): EventoCompuerta => ({ tipo: EVENTO_COMPUERTA.TRUNCADO, caso });
+const truncadoConfirmado = (caso: string): EventoCompuerta => ({
+  tipo: EVENTO_COMPUERTA.TRUNCADO_CONFIRMADO,
+  caso,
+});
 
 function cierre(entrada: Partial<EntradaDesenlaces>): EntradaDesenlaces {
   return {
@@ -214,6 +218,28 @@ describe("cerrarTurno (D-37, D-63.1, D-63.2)", () => {
     );
   });
 
+  test("un truncado de un caso confirmado con paquete conocido lo deja pendiente (D-76.2)", () => {
+    expect(
+      cerrarTurno(cierre({ eventos: [truncadoConfirmado(EC)], conocidos: { [EC]: PENDIENTE_EC } })),
+    ).toEqual(pendiente(PENDIENTE_EC));
+  });
+
+  test("un truncado confirmado y luego el envío del mismo caso cierra LIBRE (D-76.2)", () => {
+    expect(
+      cerrarTurno(
+        cierre({ eventos: [truncadoConfirmado(EC), enviado(EC)], conocidos: { [EC]: PENDIENTE_EC } }),
+      ),
+    ).toEqual(LIBRE);
+  });
+
+  test("un turno abortado con un truncado confirmado cierra LIBRE (D-76.2)", () => {
+    expect(
+      cerrarTurno(
+        cierre({ eventos: [truncadoConfirmado(EC)], conocidos: { [EC]: PENDIENTE_EC }, abortado: true }),
+      ),
+    ).toEqual(LIBRE);
+  });
+
   test("un turno abortado con un truncado cierra LIBRE", () => {
     expect(
       cerrarTurno(cierre({ eventos: [truncado(EC)], conocidos: { [EC]: PENDIENTE_EC }, abortado: true })),
@@ -351,6 +377,12 @@ describe("enviadosTrasEventos (G-02-3, D-63.4)", () => {
     ["conserva el orden del primer envío", [], [enviado(CO), enviado(EC), enviado(CO)], [CO, EC]],
     ["un truncado de un caso legible no cambia los enviados", [EC], [truncado(EC)], [EC]],
     ["un truncado sin caso legible no cambia los enviados", [], [truncado(null)], []],
+    [
+      "un truncado confirmado no cambia los enviados",
+      [EC],
+      [truncadoConfirmado(EC), truncadoConfirmado(CO)],
+      [EC],
+    ],
   ] as const)("%s", (_nombre, enviados, eventos, esperado) => {
     expect(enviadosTrasEventos(enviados, eventos)).toEqual(esperado);
   });
@@ -589,6 +621,56 @@ describe("desenlacesDeEnvio (G-03-26, D-44, D-63.4, D-63.7)", () => {
     [
       "un turno abortado con truncados no da desenlaces",
       { eventos: [truncado(EC), truncado(null)], conocidos: CONOCIDOS, abortado: true },
+      [],
+    ],
+    [
+      "un truncado de un caso confirmado da TRUNCADO_CONFIRMADO (D-76.2)",
+      { eventos: [truncadoConfirmado(EC)], conocidos: CONOCIDOS },
+      [desenlace(DESENLACE_ENVIO.TRUNCADO_CONFIRMADO, EC)],
+    ],
+    [
+      "un truncado confirmado de un caso ya enviado en la sesión da YA_ENVIADO",
+      { eventos: [truncadoConfirmado(EC)], conocidos: CONOCIDOS, enviados: [EC] },
+      [desenlace(DESENLACE_ENVIO.YA_ENVIADO, EC)],
+    ],
+    [
+      "un truncado confirmado tras el envío del mismo turno da YA_ENVIADO",
+      { eventos: [enviado(EC), truncadoConfirmado(EC)], conocidos: CONOCIDOS },
+      [desenlace(DESENLACE_ENVIO.YA_ENVIADO, EC)],
+    ],
+    [
+      "un truncado confirmado de un caso desconocido da SIN_PAQUETE",
+      { eventos: [truncadoConfirmado(CO)], conocidos: CONOCIDOS },
+      [desenlace(DESENLACE_ENVIO.SIN_PAQUETE, CO)],
+    ],
+    [
+      "un reintento enviado del mismo caso manda sobre su truncado confirmado",
+      { eventos: [truncadoConfirmado(EC), enviado(EC)], conocidos: CONOCIDOS },
+      [],
+    ],
+    [
+      "un reintento bloqueado del mismo caso da su propio desenlace y no el del truncado confirmado",
+      { eventos: [truncadoConfirmado(EC), bloqueado(EC)], conocidos: CONOCIDOS },
+      [desenlace(DESENLACE_ENVIO.REQUIERE_CONFIRMACION, EC)],
+    ],
+    [
+      "dos truncados confirmados del mismo caso dan un solo TRUNCADO_CONFIRMADO",
+      { eventos: [truncadoConfirmado(EC), truncadoConfirmado(EC)], conocidos: CONOCIDOS },
+      [desenlace(DESENLACE_ENVIO.TRUNCADO_CONFIRMADO, EC)],
+    ],
+    [
+      "un intento de otro caso no reemplaza el aviso del truncado confirmado",
+      { eventos: [truncadoConfirmado(EC), enviado(CO)], conocidos: CONOCIDOS },
+      [desenlace(DESENLACE_ENVIO.TRUNCADO_CONFIRMADO, EC)],
+    ],
+    [
+      "un truncado confirmado y un truncado sin caso legible dan su aviso y después un SIN_CASO",
+      { eventos: [truncadoConfirmado(EC), truncado(null)], conocidos: CONOCIDOS },
+      [desenlace(DESENLACE_ENVIO.TRUNCADO_CONFIRMADO, EC), SIN_CASO],
+    ],
+    [
+      "un turno abortado con un truncado confirmado no da desenlaces",
+      { eventos: [truncadoConfirmado(EC), truncado(null)], conocidos: CONOCIDOS, abortado: true },
       [],
     ],
   ];

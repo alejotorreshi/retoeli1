@@ -112,6 +112,10 @@ function aplicarEvento(
       return;
     case EVENTO_COMPUERTA.TRUNCADO:
       if (evento.caso !== null) reabrirConocido(pendientes, enviados, evento.caso, conocidos);
+      return;
+    default: {
+      const _sinCubrir: never = evento;
+    }
   }
 }
 
