@@ -5,6 +5,7 @@ import type { FetchLike } from "@/llm/types/provider.type.ts";
 import type { RetryOptions } from "@/llm/types/resilience.type.ts";
 import type { CodigoAgente, EventoAgente } from "@/loop/types/evento.type.ts";
 import type { EntradaTurno } from "@/loop/types/turno.type.ts";
+import type { VistaSesion } from "@/loop/types/vista-sesion.type.ts";
 
 export type OpcionesAgente = {
   readonly directorio: string;
@@ -22,6 +23,7 @@ export type Agente = {
   readonly modelo: string;
   estadoLlm(): ValorDe<typeof ESTADO_LLM>;
   existeSesion(id: string): boolean;
+  consultarSesion(id: string): VistaSesion | null;
   turno(entrada: EntradaTurno): AsyncGenerator<EventoAgente, void, undefined>;
 };
 

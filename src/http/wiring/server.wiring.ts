@@ -46,6 +46,7 @@ import { registerAccessRoute } from "@/http/routes/access.route.ts";
 import { registerChatRoute } from "@/http/routes/chat.route.ts";
 import { registerConfigRoute } from "@/http/routes/config.route.ts";
 import { registerHealthRoute } from "@/http/routes/health.route.ts";
+import { registerSessionsRoute } from "@/http/routes/sessions.route.ts";
 import { registerStaticRoutes } from "@/http/routes/static.route.ts";
 import { createRateLimiter } from "@/http/services/rate-limiter.service.ts";
 import { createTurnSlots } from "@/http/services/turn-slots.service.ts";
@@ -235,6 +236,7 @@ export function createServer(options: ServerOptions): ServerCreation {
   registerAccessRoute(app, access);
   app.use(RUTA_API_PROTEGIDA, requireAccess(access));
   registerConfigRoute(app, configSource(options.rootDirectory, config.data, env.data));
+  registerSessionsRoute(app, { agente });
   app.post(
     RUTA_API.CHAT,
     limitByClientIp(chatMessagesLimiter(env.data, options), MENSAJE_HTTP.demasiadosMensajes),

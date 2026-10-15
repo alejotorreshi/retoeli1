@@ -35,8 +35,10 @@ import type { AdaptadorLlm, ErrorLlm, OpcionesEnvio } from "@/llm/types/llm.type
 import type { DailyBudget, LlmHealthMonitor } from "@/llm/types/resilience.type.ts";
 import { ejecutarTurno, sesionVacia } from "@/loop/services/ejecutar-turno.service.ts";
 import { crearRegistroHerramientas } from "@/loop/services/registro-herramientas.service.ts";
+import { vistaDeSesion } from "@/loop/services/vista-sesion.service.ts";
 import type { CreacionAgente, OpcionesAgente } from "@/loop/types/agente.type.ts";
 import type { DependenciasTurno, Sesion } from "@/loop/types/turno.type.ts";
+import type { VistaSesion } from "@/loop/types/vista-sesion.type.ts";
 import * as proveedor from "@/tools/proveedor.ts";
 
 function nuevoId(): string {
@@ -165,6 +167,11 @@ function dependencias(
   };
 }
 
+function consultarSesion(deps: DependenciasTurno, id: string): VistaSesion | null {
+  const leida = deps.sesiones.leer(id);
+  return leida === null ? null : vistaDeSesion(leida.sesion, leida.ocupada, deps.secretos);
+}
+
 export function crearAgente(opciones: OpcionesAgente): CreacionAgente {
   const config = leerConfiguracion(opciones);
   if (!config.success) {
@@ -186,6 +193,7 @@ export function crearAgente(opciones: OpcionesAgente): CreacionAgente {
       modelo: primary.model,
       estadoLlm: () => estadoDelModelo(control),
       existeSesion: (id) => deps.sesiones.leer(id) !== null,
+      consultarSesion: (id) => consultarSesion(deps, id),
       turno: (entrada) => ejecutarTurno(entrada, deps),
     },
   };

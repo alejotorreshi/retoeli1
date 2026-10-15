@@ -263,6 +263,7 @@ describe("POST /api/chat: cuerpos inválidos y errores contenidos", () => {
       modelo: "falso",
       estadoLlm: () => ESTADO_LLM.DISPONIBLE,
       existeSesion: () => false,
+      consultarSesion: () => null,
       async *turno() {
         yield {
           tipo: TIPO_EVENTO.INICIO_TURNO,

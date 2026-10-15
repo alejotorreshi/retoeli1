@@ -1,6 +1,7 @@
 import type { LlmHealthState } from "@/llm/types/resilience.type.ts";
 import type { EventoAgente } from "@/loop/types/evento.type.ts";
 import type { AccionEstructurada } from "@/loop/types/turno.type.ts";
+import type { VistaSesion } from "@/loop/types/vista-sesion.type.ts";
 
 export type HealthResponse = {
   readonly ok: true;
@@ -52,3 +53,5 @@ export type SseFrame = {
   readonly event: string;
   readonly data: string;
 };
+
+export type SessionViewResponse = VistaSesion;

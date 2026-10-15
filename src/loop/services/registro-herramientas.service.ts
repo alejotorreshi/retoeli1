@@ -56,7 +56,7 @@ export function argumentosDeLlamada(argumentos: string): unknown {
   return jsonO(argumentos, argumentos);
 }
 
-function resultadoDe(contenido: string): ResultadoLlamada {
+export function resultadoDeContenido(contenido: string): ResultadoLlamada {
   const respuesta = jsonO(contenido, null);
   const resultado = resultadoHerramientaSchema.safeParse(respuesta);
   if (!resultado.success) return { contenido, ok: false, codigo: null, resumen: null, respuesta };
@@ -95,7 +95,9 @@ export function crearRegistroHerramientas(modulo: ModuloHerramientas): RegistroH
     async ejecutar(llamada, ctx) {
       const registrada = porNombre.get(llamada.nombre);
       if (registrada === undefined) return herramientaDesconocida();
-      return resultadoDe(await registrada.herramienta.execute(argumentosDeLlamada(llamada.argumentos), ctx));
+      return resultadoDeContenido(
+        await registrada.herramienta.execute(argumentosDeLlamada(llamada.argumentos), ctx),
+      );
     },
   };
 }

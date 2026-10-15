@@ -12,11 +12,14 @@ export const HOST_SERVIDOR = "0.0.0.0";
 
 export const PREFIJO_API = "/api";
 
+export const PARAMETRO_SESION = "id";
+
 export const RUTA_API = {
   SALUD: `${PREFIJO_API}/health`,
   CHAT: `${PREFIJO_API}/chat`,
   ACCESO: `${PREFIJO_API}/acceso`,
   CONFIG: `${PREFIJO_API}/config`,
+  SESION: `${PREFIJO_API}/sessions/:${PARAMETRO_SESION}`,
 } as const;
 
 export const RUTA_API_PROTEGIDA = `${PREFIJO_API}/*`;
