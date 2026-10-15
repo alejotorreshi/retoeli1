@@ -386,6 +386,65 @@ describe("estadoDeVistaPreviaFallida: el texto del diálogo según la causa (G-0
       }),
     ).toEqual({ tipo: ESTADO_VISTA_PREVIA.ERROR, texto: TEXTO_VISTA_PREVIA.error });
   });
+
+  test("un fallo de red muestra su propio texto, sin la pista de reinicio", () => {
+    expect(estadoDeVistaPreviaFallida({ tipo: RESULTADO_API.SIN_RED })).toEqual({
+      tipo: ESTADO_VISTA_PREVIA.ERROR,
+      texto: TEXTO_VISTA_PREVIA.errorSinConexion,
+    });
+  });
+
+  test("un 500 o un 503 muestran el mensaje del servidor", () => {
+    expect(
+      estadoDeVistaPreviaFallida({
+        tipo: RESULTADO_API.RECHAZO,
+        status: RESPUESTA_HTTP.ERROR_INTERNO,
+        mensaje: MENSAJE_HTTP.errorInterno,
+      }),
+    ).toEqual({ tipo: ESTADO_VISTA_PREVIA.ERROR, texto: MENSAJE_HTTP.errorInterno });
+    expect(
+      estadoDeVistaPreviaFallida({
+        tipo: RESULTADO_API.RECHAZO,
+        status: RESPUESTA_HTTP.NO_DISPONIBLE,
+        mensaje: MENSAJE_HTTP.servidorOcupado,
+      }),
+    ).toEqual({ tipo: ESTADO_VISTA_PREVIA.ERROR, texto: MENSAJE_HTTP.servidorOcupado });
+  });
+
+  test("un acceso vencido muestra el mensaje del acceso", () => {
+    expect(
+      estadoDeVistaPreviaFallida({ tipo: RESULTADO_API.ACCESO_VENCIDO, mensaje: MENSAJE_HTTP.accesoVencido }),
+    ).toEqual({ tipo: ESTADO_VISTA_PREVIA.ERROR, texto: MENSAJE_HTTP.accesoVencido });
+  });
+
+  test("ninguna causa distinta del 404 acusa un reinicio ni marca el disco como borrado", () => {
+    const fallidos = [
+      {
+        tipo: RESULTADO_API.RECHAZO,
+        status: RESPUESTA_HTTP.NO_PROCESABLE,
+        mensaje: MENSAJE_HTTP.vistaPreviaNoDisponible,
+      },
+      {
+        tipo: RESULTADO_API.RECHAZO,
+        status: RESPUESTA_HTTP.ERROR_INTERNO,
+        mensaje: MENSAJE_HTTP.errorInterno,
+      },
+      {
+        tipo: RESULTADO_API.RECHAZO,
+        status: RESPUESTA_HTTP.NO_DISPONIBLE,
+        mensaje: MENSAJE_HTTP.servidorOcupado,
+      },
+      { tipo: RESULTADO_API.ACCESO_VENCIDO, mensaje: MENSAJE_HTTP.accesoVencido },
+      { tipo: RESULTADO_API.SIN_RED },
+    ] as const;
+    for (const resultado of fallidos) {
+      const estado = estadoDeVistaPreviaFallida(resultado);
+      expect(estado.tipo === ESTADO_VISTA_PREVIA.ERROR && estado.texto).not.toContain(
+        "Si el servidor se reinició",
+      );
+      expect(esArchivoNoEncontrado(resultado)).toBe(false);
+    }
+  });
 });
 
 describe("textos de archivos, vista previa y disco efímero (UI-SPEC)", () => {
@@ -427,6 +486,9 @@ describe("textos de archivos, vista previa y disco efímero (UI-SPEC)", () => {
     expect(TEXTO_VISTA_PREVIA.cargando).toBe("Cargando la vista previa…");
     expect(TEXTO_VISTA_PREVIA.error).toBe(
       "No se pudo cargar la vista previa. Si el servidor se reinició, vuelve a procesar el caso; si no, inténtalo de nuevo.",
+    );
+    expect(TEXTO_VISTA_PREVIA.errorSinConexion).toBe(
+      "No se pudo cargar la vista previa por un problema de conexión. Inténtalo de nuevo.",
     );
     expect(TEXTO_VISTA_PREVIA.descargar).toBe("Descargar archivo");
     expect(TEXTO_VISTA_PREVIA.cerrar).toBe("Cerrar vista previa");
