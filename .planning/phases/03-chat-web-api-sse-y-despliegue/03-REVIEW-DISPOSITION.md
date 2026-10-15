@@ -3,50 +3,60 @@ phase: 03
 review: 03-REVIEW.md
 titles: json
 findings:
+  - id: CR-01
+    severity: critical
+    disposition: open
+    title: "El cupo de desalojos permite saturar cualquier limitador con K + L peticiones de un golpe y no con K × L, y la documentación subestima ese costo cinco veces"
   - id: WR-01
     severity: warning
     disposition: open
-    title: "El desalojo por `maxKeys` levanta bloqueos activos (falla abierto), también el anti fuerza bruta de `/api/acceso`"
+    title: "La cota documentada de intentos evaluados no se cumple con concurrencia, porque `isLocked` y `hit` están separados por `await`"
   - id: WR-02
     severity: warning
     disposition: open
-    title: "\"Nueva sesión\" ya no olvida el `sessionId` guardado: al recargar vuelve la sesión anterior con sus confirmaciones activas, contra lo que promete el diálogo"
+    title: "SIN_CASO afirma \"No se registró ningún envío simulado\" en un turno que sí registró uno"
   - id: WR-03
     severity: warning
     disposition: open
-    title: "El seguimiento del scroll descarta desplazamientos reales de la usuaria fuera de la ventana de 600 ms y el `ResizeObserver` la devuelve al final mientras lee"
+    title: "Un `simular_envio` truncado de un caso que la usuaria confirmó responde \"falta tu confirmación explícita\""
+  - id: WR-04
+    severity: warning
+    disposition: open
+    title: "Con crecimiento entre pulsaciones, una subida de menos de 96 px se deshace y la usuaria no logra despegarse con flechas, la rueda de Firefox o el trackpad lento"
   - id: IN-01
     severity: info
     disposition: open
-    title: "Un `proveedor_simular_envio` de un paso truncado no recibe el aviso de D-76"
+    title: "El cupo de desalojos solo prueba la clave libre más antigua"
   - id: IN-02
     severity: info
     disposition: open
-    title: "\"Volver a la sesión anterior\" se ofrece ante cualquier 429, aunque no tenga que ver con el tope de sesiones"
+    title: "\"Por ventana\" es por ventana fija: en un intervalo móvil de la misma longitud caben unas dos veces K × L"
   - id: IN-03
     severity: info
     disposition: open
-    title: "El mensaje de bloqueo de acceso no usa singular ni el tiempo restante"
+    title: "Una IP sin ningún intento ve \"demasiados intentos\" cuando el limitador está saturado"
   - id: IN-04
     severity: info
     disposition: open
-    title: "`cierreConPregunta` quedó como código de producción que solo usan los tests"
+    title: "La guarda de \"turno en curso\" de nueva sesión y volver está repetida en tres lugares"
   - id: IN-05
     severity: info
     disposition: open
-    title: "`CRECIMIENTO` marca \"contenido nuevo\" también cuando el contenido se achica"
-open: 8
-total: 8
-recorded: 2026-10-15T18:23:36.828Z
+    title: "`aplicarEvento` no tiene comprobación de exhaustividad"
+open: 10
+total: 10
+recorded: 2026-10-15T20:36:48.144Z
 ---
 
 # Phase 03: Code Review Disposition
 
 | Finding | Severity | Disposition | Source |
 |---------|----------|-------------|--------|
+| CR-01 | critical | open | - |
 | WR-01 | warning | open | - |
 | WR-02 | warning | open | - |
 | WR-03 | warning | open | - |
+| WR-04 | warning | open | - |
 | IN-01 | info | open | - |
 | IN-02 | info | open | - |
 | IN-03 | info | open | - |
