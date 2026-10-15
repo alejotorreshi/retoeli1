@@ -17,6 +17,7 @@ export function Compositor({
   maximo,
   enCurso,
   bloqueado,
+  pausado,
   uso,
   alCambiar,
   alEnviar,
@@ -27,6 +28,7 @@ export function Compositor({
   const caracteres = valor.length;
   const conContador = contadorVisible(caracteres, maximo);
   const enElLimite = conContador && caracteres >= maximo;
+  const deshabilitado = bloqueado || pausado;
 
   function alEnviarFormulario(evento: FormEvent<HTMLFormElement>): void {
     evento.preventDefault();
@@ -36,7 +38,7 @@ export function Compositor({
   function alPresionarTecla(evento: KeyboardEvent<HTMLTextAreaElement>): void {
     if (!esEnvioPorTeclado(evento)) return;
     evento.preventDefault();
-    if (!enCurso) evento.currentTarget.form?.requestSubmit();
+    if (!enCurso && !deshabilitado) evento.currentTarget.form?.requestSubmit();
   }
 
   return (
@@ -49,13 +51,13 @@ export function Compositor({
           maxLength={maximo ?? undefined}
           placeholder={TEXTO_CHAT.placeholder}
           value={valor}
-          disabled={bloqueado}
+          disabled={deshabilitado}
           onChange={(evento) => alCambiar(evento.target.value)}
           onKeyDown={alPresionarTecla}
         />
         <div className={estilos.pie}>
           <p id={idAyuda} className={estilos.ayuda}>
-            {TEXTO_CHAT.ayuda}
+            {pausado ? TEXTO_CHAT.enPausa : TEXTO_CHAT.ayuda}
           </p>
           {conContador ? (
             <p
@@ -71,7 +73,7 @@ export function Compositor({
               {TEXTO_CHAT.detener}
             </button>
           ) : (
-            <button type="submit" className={estilos.enviar} disabled={bloqueado}>
+            <button type="submit" className={estilos.enviar} disabled={deshabilitado}>
               {TEXTO_CHAT.enviar}
             </button>
           )}

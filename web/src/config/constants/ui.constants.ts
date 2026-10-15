@@ -113,6 +113,11 @@ export const TONO_DEL_MODELO = {
   [ESTADO_LLM.TOPE_DIARIO]: TONO.ATENCION,
 } as const satisfies Record<ValorDe<typeof ESTADO_LLM>, ValorDe<typeof TONO>>;
 
+export const ESTADOS_LLM_SIN_ENVIO: ReadonlySet<ValorDe<typeof ESTADO_LLM>> = new Set([
+  ESTADO_LLM.SIN_CLAVE,
+  ESTADO_LLM.TOPE_DIARIO,
+]);
+
 export const ESTADO_HERRAMIENTA = {
   EN_CURSO: "en_curso",
   CORRECTA: "correcta",

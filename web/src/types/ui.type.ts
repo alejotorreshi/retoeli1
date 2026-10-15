@@ -139,6 +139,7 @@ export type PropsCompositor = {
   readonly maximo: number | null;
   readonly enCurso: boolean;
   readonly bloqueado: boolean;
+  readonly pausado: boolean;
   readonly uso: UsoDeSesion | null;
   readonly alCambiar: (valor: string) => void;
   readonly alEnviar: () => void;

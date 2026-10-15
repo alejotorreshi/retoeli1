@@ -76,6 +76,8 @@ export const TEXTO_CHAT = {
   etiquetaMensaje: "Mensaje para el agente",
   placeholder: "Escribe una instrucción, por ejemplo: procesa el caso ec-corp-andina",
   ayuda: `Enter para enviar ${SEPARADOR} Shift+Enter para nueva línea`,
+  enPausa:
+    "El envío está en pausa mientras el modelo no esté disponible; el aviso de arriba explica qué hacer.",
   enviar: "Enviar mensaje",
   detener: "Detener respuesta",
   contador: (caracteres: number, maximo: number) => `${caracteres}/${maximo}`,

@@ -26,6 +26,7 @@ import { useReintentoConfig } from "@web/hooks/usar-reintento-config.ts";
 import { useSalud } from "@web/hooks/usar-salud.ts";
 import { firmaDelProgreso, marcasDeArchivos, progresoPorCaso } from "@web/state/casos.ts";
 import { etiquetaPensando, eventosDelTurno, faltaConfig, usoDeSesion } from "@web/state/conversacion.ts";
+import { envioEnPausa } from "@web/state/modelo.ts";
 import type { AccionDeAviso } from "@web/types/chat.type.ts";
 import type { ControlPestanas, IdsDePestanas, Pestana, PropsBarraDePestanas } from "@web/types/ui.type.ts";
 import { type HTMLAttributes, type KeyboardEvent, useEffect, useId, useRef, useState } from "react";
@@ -174,6 +175,7 @@ export function App() {
 
   const casos = estado.config?.casos ?? [];
   const conHistorial = estado.turnos.length > 0;
+  const enPausa = envioEnPausa(salud?.llm ?? null);
 
   return (
     <div className={CLASE_GLOBAL.APP} data-diseno={diseno}>
@@ -230,6 +232,7 @@ export function App() {
               maximo={estado.config?.mensajeMaximo ?? null}
               enCurso={estado.enCurso}
               bloqueado={estado.hidratando}
+              pausado={enPausa}
               uso={usoDeSesion(estado)}
               alCambiar={cambiarBorrador}
               alEnviar={enviar}
