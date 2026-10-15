@@ -42,6 +42,10 @@ const VENTANA_FALLOS_MS = 900_000;
 const IP_PROXY = "10.0.0.1";
 const IP_REAL = "198.51.100.7";
 const IP_REAL_OTRA = "198.51.100.8";
+const FECHA_CONFIG = "2026-09-03";
+const ZONA_CONFIG = "America/Guayaquil";
+const PRESUPUESTO_CONFIG = 123_456;
+const CASOS_FIXTURE = ["co-industrias-delta", "ec-corp-andina", "hn-agroexport-sula", "pa-logistica-istmo"];
 
 type Armado = {
   readonly entorno?: Readonly<Record<string, string>>;
@@ -538,5 +542,44 @@ describe("X-Forwarded-For falsificado, Bearer errados y vencimiento de la ventan
     expect(sondeo).toMatchObject({ entradasXff: 2, saltosConfiables: 1 });
     const crudo = captura.crudas.join("");
     for (const ip of ["203.0.113.1", IP_REAL, IP_PROXY]) expect(crudo).not.toContain(ip);
+  });
+});
+
+async function conVariables<T>(
+  variables: Readonly<Record<string, string>>,
+  accion: () => Promise<T>,
+): Promise<T> {
+  const previas = Object.fromEntries(Object.keys(variables).map((clave) => [clave, process.env[clave]]));
+  Object.assign(process.env, variables);
+  try {
+    return await accion();
+  } finally {
+    for (const [clave, valor] of Object.entries(previas)) {
+      if (valor === undefined) delete process.env[clave];
+      else process.env[clave] = valor;
+    }
+  }
+}
+
+describe("GET /api/config con los datos que la SPA no inventa (UI-09)", () => {
+  test("la cookie sola abre /api/config con la fecha efectiva, la zona, los casos y el presupuesto", async () => {
+    const app = appDe(crear({ entorno: { AGENT_SESSION_TOKEN_BUDGET: String(PRESUPUESTO_CONFIG) } }));
+    const cookie = await entrar(app);
+    const respuesta = await conVariables({ FECHA_EJECUCION: FECHA_CONFIG, TZ_NEGOCIO: ZONA_CONFIG }, () =>
+      pedir(app, RUTA_API.CONFIG, { headers: { Cookie: cookie } }),
+    );
+    expect(respuesta.status).toBe(RESPUESTA_HTTP.OK);
+    expect(await respuesta.json()).toEqual({
+      fechaEjecucion: FECHA_CONFIG,
+      zona: ZONA_CONFIG,
+      casos: CASOS_FIXTURE,
+      presupuestoSesion: PRESUPUESTO_CONFIG,
+    });
+  });
+
+  test("sin acceso /api/config responde 401 con el mensaje de acceso vencido", async () => {
+    const respuesta = await pedir(appCon(), RUTA_API.CONFIG);
+    expect(respuesta.status).toBe(RESPUESTA_HTTP.NO_AUTORIZADO);
+    expect(await respuesta.json()).toEqual({ mensaje: MENSAJE_HTTP.accesoVencido });
   });
 });

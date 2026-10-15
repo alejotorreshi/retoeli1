@@ -2,6 +2,7 @@ import type { Hono } from "hono";
 import type { BitacoraEstructurada, DestinoBitacora } from "@/application/types/puertos-agente.type.ts";
 import type { RESULTADO_BEARER } from "@/config/constants/http.constants.ts";
 import type { ValorDe } from "@/config/types/valor-de.type.ts";
+import type { ConfigResponse } from "@/http/types/api.type.ts";
 import type { FetchLike } from "@/llm/types/provider.type.ts";
 import type { RetryOptions } from "@/llm/types/resilience.type.ts";
 
@@ -58,6 +59,8 @@ export type AccessSettings = {
   readonly failedAttempts: RateLimiter;
   readonly lockedMessage: string;
 };
+
+export type ConfigSource = () => Promise<ConfigResponse>;
 
 export type ServerCreation =
   | { readonly ok: true; readonly app: Hono<HttpEnv>; readonly port: number }

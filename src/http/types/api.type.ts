@@ -15,6 +15,13 @@ export type AccessBody = {
   readonly codigo: string;
 };
 
+export type ConfigResponse = {
+  readonly fechaEjecucion: string;
+  readonly zona: string;
+  readonly casos: readonly string[];
+  readonly presupuestoSesion: number;
+};
+
 export type ErrorResponse = {
   readonly mensaje: string;
 };

@@ -12,13 +12,18 @@ import {
   VARIABLE_SECRETO_TOKEN,
 } from "@/config/constants/http.constants.ts";
 import { MAX_ISSUES_ARGS } from "@/config/constants/limits.constants.ts";
-import { MS_POR_HORA, MS_POR_MINUTO } from "@/config/constants/runtime.constants.ts";
+import {
+  MS_POR_HORA,
+  MS_POR_MINUTO,
+  ZONA_HORARIA_POR_DEFECTO,
+} from "@/config/constants/runtime.constants.ts";
 import {
   type AgentEnv,
   parseAgentEnv,
   parseServerEnv,
   readAgentEnv,
   readServerEnv,
+  readToolEnv,
   type ServerEnv,
 } from "@/config/env.ts";
 import { MENSAJE_HTTP, TEXTO_ENV, TEXTO_HTTP } from "@/config/strings.ts";
@@ -27,16 +32,21 @@ import { requireAccess } from "@/http/middlewares/access.middleware.ts";
 import { resolveClientIp } from "@/http/middlewares/client-ip.middleware.ts";
 import { registerAccessRoute } from "@/http/routes/access.route.ts";
 import { registerChatRoute } from "@/http/routes/chat.route.ts";
+import { registerConfigRoute } from "@/http/routes/config.route.ts";
 import { registerHealthRoute } from "@/http/routes/health.route.ts";
 import { createRateLimiter } from "@/http/services/rate-limiter.service.ts";
 import type { ErrorResponse } from "@/http/types/api.type.ts";
 import type {
   AccessSettings,
+  ConfigSource,
   HttpEnv,
   ServerCreation,
   ServerOptions,
   ServerStart,
 } from "@/http/types/server.type.ts";
+import { clockFromToolEnv, systemClock } from "@/infra/clock/clock.adapter.ts";
+import { listCases } from "@/infra/fixtures/case-resolver.adapter.ts";
+import { resolveRoot } from "@/infra/fixtures/fixtures-reader.adapter.ts";
 import { createLogger } from "@/infra/logging/logger.adapter.ts";
 import type { OpcionesAgente } from "@/loop/types/agente.type.ts";
 import { crearAgente, secretosDelAgente } from "@/loop/wiring/agente.wiring.ts";
@@ -93,6 +103,27 @@ function httpLogger(options: ServerOptions, config: AgentEnv, secrets: readonly 
   return createLogger({ level: config.logLevel, secrets, ...destination });
 }
 
+function businessCalendar() {
+  const toolEnv = readToolEnv();
+  if (!toolEnv.success) {
+    return { clock: systemClock(ZONA_HORARIA_POR_DEFECTO), zone: ZONA_HORARIA_POR_DEFECTO };
+  }
+  return { clock: clockFromToolEnv(toolEnv.data), zone: toolEnv.data.TZ_NEGOCIO };
+}
+
+function configSource(rootDirectory: string, config: AgentEnv): ConfigSource {
+  const root = resolveRoot(rootDirectory);
+  return async () => {
+    const { clock, zone } = businessCalendar();
+    return {
+      fechaEjecucion: clock.hoy(),
+      zona: zone,
+      casos: await listCases(root),
+      presupuestoSesion: config.sessionTokenBudget,
+    };
+  };
+}
+
 function registerFallbackHandlers(app: Hono<HttpEnv>, logger: BitacoraEstructurada): void {
   app.notFound((c) => {
     const body: ErrorResponse = { mensaje: MENSAJE_HTTP.rutaNoEncontrada };
@@ -123,6 +154,7 @@ export function createServer(options: ServerOptions): ServerCreation {
   registerHealthRoute(app, { provider: creation.agente.proveedor, model: creation.agente.modelo });
   registerAccessRoute(app, access);
   app.use(RUTA_API_PROTEGIDA, requireAccess(access));
+  registerConfigRoute(app, configSource(options.rootDirectory, config.data));
   registerChatRoute(app, {
     agente: creation.agente,
     secrets,
