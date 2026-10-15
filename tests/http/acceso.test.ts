@@ -652,6 +652,45 @@ describe("D-77.2: el intento se reserva antes del primer await", () => {
     );
     expect(await fallar(app, IP_CLIENTE, 1)).toEqual([RESPUESTA_HTTP.DEMASIADOS_PEDIDOS]);
   });
+
+  test("50 Bearer errados simultáneos desde un cliente evalúan exactamente cinco y el resto responde 429; después el Bearer correcto da 429 y otro cliente pasa", async () => {
+    const app = appCon();
+    const respuestas = await lanzarJuntos(
+      app,
+      IP_CLIENTE,
+      RUTA_API.CHAT,
+      () => pedidoChat(bearer(CODIGO_ERRADO)),
+      PEDIDOS_SIMULTANEOS,
+    );
+    expect(conEstado(respuestas, RESPUESTA_HTTP.NO_AUTORIZADO).length).toBe(FALLOS_PERMITIDOS);
+    const bloqueadas = conEstado(respuestas, RESPUESTA_HTTP.DEMASIADOS_PEDIDOS);
+    expect(bloqueadas.length).toBe(PEDIDOS_SIMULTANEOS - FALLOS_PERMITIDOS);
+    await esperarBloqueos(bloqueadas);
+    const correcto = await pedirDesde(app, IP_CLIENTE, RUTA_API.CHAT, chatInvalido(bearer(CODIGO_PRUEBA)));
+    expect(correcto.status).toBe(RESPUESTA_HTTP.DEMASIADOS_PEDIDOS);
+    const otro = await pedirDesde(app, IP_OTRO_CLIENTE, RUTA_API.CHAT, chatInvalido(bearer(CODIGO_PRUEBA)));
+    expect(otro.status).toBe(RESPUESTA_HTTP.PEDIDO_INVALIDO);
+  });
+
+  test("tras cuatro fallos, diez Bearer correctos simultáneos pasan al menos una vez y el cliente conserva su último intento", async () => {
+    const app = appCon();
+    expect(await fallar(app, IP_CLIENTE, FALLOS_PERMITIDOS - 1)).toEqual(
+      Array(FALLOS_PERMITIDOS - 1).fill(RESPUESTA_HTTP.NO_AUTORIZADO),
+    );
+    const respuestas = await lanzarJuntos(
+      app,
+      IP_CLIENTE,
+      RUTA_API.CHAT,
+      () => chatInvalido(bearer(CODIGO_PRUEBA)),
+      PEDIDOS_CORRECTOS_SIMULTANEOS,
+    );
+    const pasaron = conEstado(respuestas, RESPUESTA_HTTP.PEDIDO_INVALIDO).length;
+    const bloqueadas = conEstado(respuestas, RESPUESTA_HTTP.DEMASIADOS_PEDIDOS).length;
+    expect(pasaron).toBeGreaterThanOrEqual(1);
+    expect(pasaron + bloqueadas).toBe(PEDIDOS_CORRECTOS_SIMULTANEOS);
+    expect(await fallar(app, IP_CLIENTE, 1)).toEqual([RESPUESTA_HTTP.NO_AUTORIZADO]);
+    expect(await fallar(app, IP_CLIENTE, 1)).toEqual([RESPUESTA_HTTP.DEMASIADOS_PEDIDOS]);
+  });
 });
 
 async function conVariables<T>(

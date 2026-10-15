@@ -17,10 +17,11 @@ async function checkBearer(c: Context<HttpEnv>, access: AccessSettings): Promise
   const header = c.req.header(CABECERA.AUTORIZACION);
   if (header === undefined || !header.startsWith(PREFIJO_BEARER)) return RESULTADO_BEARER.AUSENTE;
   const clientIp = c.get("clientIp");
-  if (access.failedAttempts.isLocked(clientIp)) return RESULTADO_BEARER.BLOQUEADO;
-  if (await timingSafeEqual(header.slice(PREFIJO_BEARER.length), access.code)) return RESULTADO_BEARER.VALIDO;
-  access.failedAttempts.hit(clientIp);
-  return RESULTADO_BEARER.INVALIDO;
+  if (!access.failedAttempts.hit(clientIp)) return RESULTADO_BEARER.BLOQUEADO;
+  const presented = header.slice(PREFIJO_BEARER.length);
+  if (!(await timingSafeEqual(presented, access.code))) return RESULTADO_BEARER.INVALIDO;
+  access.failedAttempts.release(clientIp);
+  return RESULTADO_BEARER.VALIDO;
 }
 
 export function requireAccess(access: AccessSettings): MiddlewareHandler<HttpEnv> {
