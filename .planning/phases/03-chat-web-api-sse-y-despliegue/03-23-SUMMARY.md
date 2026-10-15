@@ -174,7 +174,7 @@ status: complete
 - `web/src/config/strings.ts`: `TEXTO_CONFIRMACION`. La nota toma el nombre del archivo de `ARCHIVOS_SALIDA.ENVIO_SIMULADO`.
 - `web/src/config/constants/ui.constants.ts`: `ESTADO_TARJETA_CONFIRMACION` y `SEPARADOR_ANUNCIOS`.
 - `web/src/types/chat.type.ts` y `ui.type.ts`: `AccionDeTarjeta`, `TipoAccion`, `TarjetaDeConfirmacion`, `TurnoTerminado`, `VistaConConfirmaciones` y las props.
-- `tests/web/confirmaciones.test.ts` (31 pruebas), `tests/web/progreso.test.ts` (6 pruebas nuevas) y `tests/web/conversacion.test.ts` (estado inicial).
+- `tests/web/confirmaciones.test.ts` (29 pruebas), `tests/web/progreso.test.ts` (6 pruebas nuevas) y `tests/web/conversacion.test.ts` (estado inicial).
 
 ## Cómo ver la tarjeta y los dos botones sin un proveedor real
 

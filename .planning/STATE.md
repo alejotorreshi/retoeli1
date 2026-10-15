@@ -3,16 +3,16 @@ gsd_state_version: "1.0"
 current_phase: 03
 current_phase_name: Chat web, API SSE y despliegue
 status: executing
-stopped_at: Completed 03-22-PLAN.md
-last_updated: "2026-10-15T04:51:05.187Z"
+stopped_at: Completed 03-23-PLAN.md
+last_updated: "2026-10-15T05:07:21.078Z"
 last_activity: 2026-10-14
 last_activity_desc: Phase 03 execution started
-state_head: c6f7c5c0afa0914f5e3e1d65ae92708c358832f2
+state_head: 697bbf147c984ed128e7ea969377503cc331c3cd
 progress:
   total_phases: 4
   completed_phases: 2
   total_plans: 66
-  completed_plans: 62
+  completed_plans: 63
   percent: 50
 ---
 
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-10-14)
 ## Current Position
 
 Phase: 03 (Chat web, API SSE y despliegue) — EXECUTING
-Plan: 23 of 27
+Plan: 24 of 27
 Status: Ready to execute
 Last activity: 2026-10-14 — Phase 03 execution started
 
@@ -119,6 +119,7 @@ Progress: [█████░░░░░] 50%
 | Phase 03 P21 | 25min | 2 tasks | 19 files |
 | Phase 03 P24 | 9 min | 2 tasks | 16 files |
 | Phase 03 P22 | 12 min | 2 tasks | 21 files |
+| Phase 03 P23 | 10 min | 2 tasks | 16 files |
 
 ## Accumulated Context
 
@@ -283,6 +284,9 @@ Recent decisions affecting current work:
 - [Phase 03]: 03-22: los puntos de quiebre viven solo en ui.constants.ts (PUNTO_DE_QUIEBRE_PX); useDiseno marca data-diseno y el CSS responde con :global([data-diseno]) sin media queries en px
 - [Phase 03]: 03-22: progresoPorCaso pliega solo tool_start/tool_end y confirmation_required por posición en el turno; la confirmación que el servidor repite al cerrar cada turno no cuenta como actividad
 - [Phase 03]: 03-22: simular_envio ok marca hechas las etapas 5 y 6; un turno cortado no deja etapas en curso; 03-23 completa la etapa 5 desde las tarjetas
+- [Phase 03]: 03-23: la tarjeta de confirmación solo cambia con los eventos del turno terminado; 'Envío cancelado' se decide solo en un turno completo (el servidor repite todos los pendientes en cada cierre), y un corte, un error de red o HTTP o SESION_OCUPADA dejan la tarjeta abierta
+- [Phase 03]: 03-23: la tarjeta vive en el turno que la abrió; si se repite la confirmación sigue abierta y refresca sus bloqueos, y solo se abre otra tras un paquete nuevo ('Reemplazada') o si el caso vuelve a quedar pendiente; las resueltas quedan sin botones, así que la UI no manda acciones viejas
+- [Phase 03]: 03-23: la etapa 5 del progreso queda cancelada al cierre del turno en que la tarjeta se canceló; esperando y hecha siguen saliendo de confirmation_required y de simular_envio ok, que coinciden con la tarjeta abierta y la registrada
 
 ### Pending Todos
 
@@ -318,6 +322,6 @@ Items acknowledged and deferred at milestone close, most recent first:
 
 ## Session Continuity
 
-Last session: 2026-10-15T04:51:05.104Z
-Stopped at: Completed 03-22-PLAN.md
+Last session: 2026-10-15T05:07:16.364Z
+Stopped at: Completed 03-23-PLAN.md
 Resume file: None
