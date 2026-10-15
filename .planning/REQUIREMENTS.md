@@ -75,7 +75,7 @@ Fuente vinculante: `reto-01/PRD.md`, sin modificar. Fixtures: `reto-01/fixtures/
 - [x] **API-02**: `GET /api/sessions/:id` devuelve el historial completo de la sesión, con la PII redactada.
 - [x] **API-03**: `GET /api/health` devuelve `{ ok: true, provider, model, llm }` sin exponer claves y sin pedir código de acceso.
 - [x] **API-04**: El link público exige un código de acceso, comparado en tiempo constante. Hay rate limit por IP, límite de tamaño de mensaje y headers de seguridad.
-- [ ] **API-05**: Una ruta de descarga de artefactos sirve `out/<caso>/` con lista blanca de nombres de archivo, detrás del código de acceso.
+- [x] **API-05**: Una ruta de descarga de artefactos sirve `out/<caso>/` con lista blanca de nombres de archivo, detrás del código de acceso.
 
 ### Front de chat (§6.1)
 
@@ -217,7 +217,7 @@ Cada requisito v1 está asignado a exactamente una fase del roadmap (`.planning/
 | API-02 | Phase 3 | Complete |
 | API-03 | Phase 3 | Complete |
 | API-04 | Phase 3 | Complete |
-| API-05 | Phase 3 | Pending |
+| API-05 | Phase 3 | Complete |
 | UI-01 | Phase 3 | Complete |
 | UI-02 | Phase 3 | Complete |
 | UI-03 | Phase 3 | Pending |
