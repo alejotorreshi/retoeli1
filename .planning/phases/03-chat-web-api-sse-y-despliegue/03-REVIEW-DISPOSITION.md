@@ -1,30 +1,58 @@
 ---
-phase: 03-chat-web-api-sse-y-despliegue
-source: 03-REVIEW.md
-reviewed: 2026-10-15T05:59:52Z
-critical: 0
-warning: 7
-info: 8
+phase: 03
+review: 03-REVIEW.md
+titles: json
+findings:
+  - id: WR-01
+    severity: warning
+    disposition: open
+    title: "El desalojo por `maxKeys` levanta bloqueos activos (falla abierto), también el anti fuerza bruta de `/api/acceso`"
+  - id: WR-02
+    severity: warning
+    disposition: open
+    title: "\"Nueva sesión\" ya no olvida el `sessionId` guardado: al recargar vuelve la sesión anterior con sus confirmaciones activas, contra lo que promete el diálogo"
+  - id: WR-03
+    severity: warning
+    disposition: open
+    title: "El seguimiento del scroll descarta desplazamientos reales de la usuaria fuera de la ventana de 600 ms y el `ResizeObserver` la devuelve al final mientras lee"
+  - id: IN-01
+    severity: info
+    disposition: open
+    title: "Un `proveedor_simular_envio` de un paso truncado no recibe el aviso de D-76"
+  - id: IN-02
+    severity: info
+    disposition: open
+    title: "\"Volver a la sesión anterior\" se ofrece ante cualquier 429, aunque no tenga que ver con el tope de sesiones"
+  - id: IN-03
+    severity: info
+    disposition: open
+    title: "El mensaje de bloqueo de acceso no usa singular ni el tiempo restante"
+  - id: IN-04
+    severity: info
+    disposition: open
+    title: "`cierreConPregunta` quedó como código de producción que solo usan los tests"
+  - id: IN-05
+    severity: info
+    disposition: open
+    title: "`CRECIMIENTO` marca \"contenido nuevo\" también cuando el contenido se achica"
+open: 8
+total: 8
+recorded: 2026-10-15T18:23:36.828Z
 ---
 
-# Disposición de hallazgos del code review — Fase 03
+# Phase 03: Code Review Disposition
 
-Una fila por hallazgo de `03-REVIEW.md`. Todas empiezan en `open`; se actualizan cuando se corrigen (`fixed`), se aceptan (`accepted`) o se descartan con motivo (`wontfix`).
+| Finding | Severity | Disposition | Source |
+|---------|----------|-------------|--------|
+| WR-01 | warning | open | - |
+| WR-02 | warning | open | - |
+| WR-03 | warning | open | - |
+| IN-01 | info | open | - |
+| IN-02 | info | open | - |
+| IN-03 | info | open | - |
+| IN-04 | info | open | - |
+| IN-05 | info | open | - |
 
-| Id | Severidad | Hallazgo | Disposición | Nota |
-|---|---|---|---|---|
-| WR-01 | Warning | El frame SSE de error interno no cumple el contrato y el cliente lo descarta en silencio | fixed | 8607c6d (ver 03-REVIEW-FIX.md) |
-| WR-02 | Warning | El token de acceso no está ligado al código, así que rotar `ACCESS_CODE` no revoca las cookies emitidas | fixed | 6c81270 (ver 03-REVIEW-FIX.md) |
-| WR-03 | Warning | El tope diario de tokens vive en memoria y se reinicia con cada reinicio o spin-down de Render | accepted | Aceptado para el demo por decisión de la usuaria; documentado en docs/limites-del-demo.md (c730d17). Debe pasar a SOLUCION.md en la Fase 4. |
-| WR-04 | Warning | El limitador previo a la autenticación no tiene cota de claves y se evade rotando direcciones IPv6 | fixed | a654bfe (ver 03-REVIEW-FIX.md) |
-| WR-05 | Warning | `TRUSTED_PROXY_HOPS=3` solo es correcto para un camino de entrada; por otro camino la IP del cliente se puede falsificar | fixed | cf526b7 (ver 03-REVIEW-FIX.md) |
-| WR-06 | Warning | Un 404 de vista previa se confunde con "archivo borrado" y dispara un falso aviso de disco efímero | fixed | 8526c8a (ver 03-REVIEW-FIX.md) |
-| WR-07 | Warning | El Dockerfile deja el código y `node_modules` escribibles por el usuario del proceso y duplica la capa | fixed | ce8f1b1 (ver 03-REVIEW-FIX.md) |
-| IN-01 | Info | Los errores registrados pierden la pila | fixed | 18518df (ver 03-REVIEW-FIX.md) |
-| IN-02 | Info | Textos que repiten un dato sin derivarlo de su constante, y un texto muerto | fixed | cfa0301 (ver 03-REVIEW-FIX.md) |
-| IN-03 | Info | `businessCalendar()` ignora el entorno inyectado | fixed | 3d56706 (ver 03-REVIEW-FIX.md) |
-| IN-04 | Info | `release()` con `Math.max(0, …)` oculta una doble liberación, e `inUse` y `trackedKeys` solo existen para las pruebas | fixed | 0c4e025 (ver 03-REVIEW-FIX.md) |
-| IN-05 | Info | En las pruebas, la demora del proveedor falso empieza al armar el guion, no al recibir el pedido | fixed | e1de609 (ver 03-REVIEW-FIX.md) |
-| IN-06 | Info | La etapa de build del Dockerfile depende de que los imports de `api.type.ts` sean solo de tipos | fixed | 579bffa (ver 03-REVIEW-FIX.md) |
-| IN-07 | Info | Una constante de otro ámbito en el middleware HTTP | fixed | db7e710 (ver 03-REVIEW-FIX.md) |
-| IN-08 | Info | Si `/api/config` falla justo después de entrar, la UI queda sin configuración y no reintenta | fixed | 99b2510 (ver 03-REVIEW-FIX.md) |
+Dispositions: `open` (recorded, not yet triaged), `fixed`, `skipped`, `deferred`.
+Set `deferred` by hand and put the reason in the Source cell; both are preserved. A `|` in the reason is kept as prose and escaped on the next run.
+Re-running the gate keeps every row it can. A row the current review no longer reports is kept and its Source cell flagged, so a finding does not leave this record silently. ONE exception: when a finding id is REUSED by a different finding, the earlier decision cannot keep a row — the id is taken — and it is dropped. A RECORDED decision (anything but `open`) is named on the console when that happens; a row still at `open` is replaced silently, because `open` records no decision to lose.
