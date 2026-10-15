@@ -166,7 +166,7 @@ Plans:
   4. Desde el panel de artefactos, la analista descarga o previsualiza los archivos generados del caso; solo se sirven nombres en lista blanca y detrás del código de acceso. Si no hay clave, se agotó el saldo, el proveedor cayó o se alcanzó el tope diario, `/api/health` lo reporta y la UI explica en lenguaje claro qué pasa, qué sigue funcionando, qué hacer y cuándo vuelve, sin pedirle a la analista correr comandos; `demo.ts` queda como la verificación sin modelo documentada en el README.
   5. Sin código de acceso, la API rechaza toda petición salvo `/api/health`. El rate limit por IP y el límite de tamaño de mensaje responden con un mensaje claro. Un test verifica que la clave del LLM no aparece en `web/dist`, en las respuestas de la API ni en el stream SSE.
 
-**Plans:** 38/39 plans executed
+**Plans:** 39/39 plans executed
 
 Plans:
 **Wave 1**
@@ -262,7 +262,7 @@ Plans:
 - [x] 03-38-PLAN.md — Nueva sesión conserva el id anterior hasta que el servidor la acepta y el 429 ofrece "Volver a la sesión anterior" (G-03-04)
 
 **Cierre de brechas de la UAT, Wave 7** *(blocked on 03-28 to 03-38)*
-- [ ] 03-39-PLAN.md — D-70, LLM-06, el criterio 4 y la UI-SPEC reescritos con la opción C+ y las decisiones D-71.1, D-73.5.1, D-75 y D-76 (G-03-15, G-03-14, G-03-10, G-03-04, G-03-20, G-03-17, G-03-26)
+- [x] 03-39-PLAN.md — D-70, LLM-06, el criterio 4 y la UI-SPEC reescritos con la opción C+ y las decisiones D-71.1, D-73.5.1, D-75 y D-76 (G-03-15, G-03-14, G-03-10, G-03-04, G-03-20, G-03-17, G-03-26)
 
 **UI hint**: yes
 **Research flag**: SSE a través del proxy de Render (los reportes de la comunidad se contradicen) y comportamiento de Bun cuando el cliente se desconecta. Desplegar apenas exista el endpoint SSE y probar con `curl -N`. Si bufferiza, usar el fallback JSON y luego Koyeb o Fly con el mismo Dockerfile.
@@ -291,5 +291,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 |-------|----------------|--------|-----------|
 | 1. Núcleo determinista | 15/15 | Complete    | 2026-10-13 |
 | 2. Agente y compuerta de confirmación | 24/24 | Complete    | 2026-10-14 |
-| 3. Chat web, API SSE y despliegue | 38/39 | In Progress | - |
+| 3. Chat web, API SSE y despliegue | 39/39 | In Progress | - |
 | 4. Módulo, documentación y defensa | 0/TBD | Not started | - |

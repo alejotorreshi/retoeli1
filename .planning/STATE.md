@@ -3,16 +3,16 @@ gsd_state_version: "1.0"
 current_phase: 03
 current_phase_name: Chat web, API SSE y despliegue
 status: executing
-stopped_at: Completed 03-38-PLAN.md
-last_updated: "2026-10-15T17:51:26.152Z"
+stopped_at: Completed 03-39-PLAN.md
+last_updated: "2026-10-15T17:58:35.866Z"
 last_activity: 2026-10-15
 last_activity_desc: Phase 03 execution started
-state_head: ed290a6ebdad7cf7355a357eaeba999da4122438
+state_head: a8b7501f4fa517f6405a11a1ead31f6d9e9de227
 progress:
   total_phases: 4
   completed_phases: 2
   total_plans: 78
-  completed_plans: 77
+  completed_plans: 78
   percent: 50
 ---
 
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-10-14)
 ## Current Position
 
 Phase: 03 (Chat web, API SSE y despliegue) — EXECUTING
-Plan: 12 of 39
+Plan: 13 of 39
 Status: Ready to execute
 Last activity: 2026-10-15 — Phase 03 execution started
 
@@ -134,6 +134,7 @@ Progress: [█████░░░░░] 50%
 | Phase 03 P36 | 3 min | 2 tasks | 6 files |
 | Phase 03 P37 | 3min | 2 tasks | 9 files |
 | Phase 03 P38 | 2 min | 2 tasks | 7 files |
+| Phase 03 P39 | 5min | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -328,6 +329,8 @@ Recent decisions affecting current work:
 - [Phase 03]: 03-37: la franja compacta en angosto usa etiquetas cortas (Demo §11, Los {n} casos) con aria-label completo y flex-wrap sin scroll horizontal; todos(n) se deriva de todosCorto(n)
 - [Phase 03]: 03-38: Nueva sesión ya no borra el sessionId guardado; el id anterior vive en localStorage y en sesionAnterior hasta el turn_start de la sesión nueva (G-03-04, causa 3b)
 - [Phase 03]: 03-38: solo un 429 con sesión anterior y sin sesión vigente ofrece Volver a la sesión anterior; VOLVER_SESION_ANTERIOR reutiliza estadoAlCargar y el efecto de carga existente, sin POST a /api/chat
+- [Phase 03]: 03-39: D-70 reescrita (opción C+, G-03-15): demo.ts es la verificación sin modelo del evaluador (README y SOLUCION.md); la UI explica por estado qué pasa, qué sigue funcionando, qué hacer y cuándo vuelve, con "Comprobar de nuevo", y pausa el envío solo en sin_clave y tope_diario; la opción A queda diferida
+- [Phase 03]: 03-39: D-71.1, D-73.5.1, D-75 y D-76 registradas en 03-CONTEXT.md (AUTENTICACION como sin_clave y health por evento; 20 sesiones nuevas por hora en Render con volver a la sesión anterior; solo casos reales; aviso de envío no registrado sin reescribir la prosa del modelo)
 
 ### Pending Todos
 
@@ -363,6 +366,6 @@ Items acknowledged and deferred at milestone close, most recent first:
 
 ## Session Continuity
 
-Last session: 2026-10-15T17:51:20.400Z
-Stopped at: Completed 03-38-PLAN.md
+Last session: 2026-10-15T17:58:23.589Z
+Stopped at: Completed 03-39-PLAN.md
 Resume file: None
