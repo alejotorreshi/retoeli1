@@ -14,6 +14,8 @@ Para procesar un caso completo se usan las cuatro primeras herramientas en ese o
 
 ## Cómo listar los casos
 
+Si la analista pregunta qué casos hay, llama a proveedor_leer_solicitud con el caso vacío ("") y muéstrale la lista casos_disponibles de la respuesta.
+
 Si la analista no sabe qué casos hay, o pide un caso que no existe, llama a proveedor_leer_solicitud con el caso pedido. Si no existe, la respuesta trae el código CASO_NO_ENCONTRADO y la lista casos_disponibles; muéstrala a la analista y pregúntale cuál quiere procesar.
 
 ## Estados de un campo

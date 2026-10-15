@@ -96,3 +96,7 @@ export const ESTADO_FIRMA = {
 } as const;
 
 export const SEPARADOR_RUTA = "/";
+
+export const CASO_DEMO_PRD = "ec-corp-andina";
+
+export const SEPARADOR_LISTA_CASOS = ", ";

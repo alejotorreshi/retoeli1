@@ -1,4 +1,9 @@
-import { ESTADO_FIRMA, ESTADO_HERRAMIENTA } from "@web/config/constants/ui.constants.ts";
+import {
+  CASO_DEMO_PRD,
+  ESTADO_FIRMA,
+  ESTADO_HERRAMIENTA,
+  SEPARADOR_LISTA_CASOS,
+} from "@web/config/constants/ui.constants.ts";
 import type {
   EstadoCampoUi,
   EstadoFirma,
@@ -195,4 +200,15 @@ export const TEXTO_RESULTADO = {
   ruta: "Ruta de salida",
   portal: "Formato no soportado: se generaron los valores para cargar a mano en el portal.",
   etiqueta: (caso: string) => `Resultado de ${caso}`,
+} as const;
+
+export const TEXTO_ACCIONES = {
+  grupo: "Acciones rápidas",
+  demo: `Demo §11: ${CASO_DEMO_PRD}`,
+  mensajeDemo: `Procesa el caso "${CASO_DEMO_PRD}". Dime qué campos quedaron llenos, cuáles faltan, si el paquete está listo para firma y qué soportes debo actualizar. No envíes nada todavía.`,
+  todos: (cantidad: number) => (cantidad === 0 ? "Procesar los casos" : `Procesar los ${cantidad} casos`),
+  mensajeTodos: (casos: readonly string[]) =>
+    `Procesa estos casos: ${casos.join(SEPARADOR_LISTA_CASOS)}. Dime el estado de cada uno. No envíes nada todavía.`,
+  listar: "¿Qué casos hay?",
+  mensajeListar: "¿Qué casos hay disponibles?",
 } as const;

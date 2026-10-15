@@ -166,6 +166,7 @@ export type ControlChat = {
   readonly borrador: string;
   readonly cambiarBorrador: (borrador: string) => void;
   readonly enviar: () => void;
+  readonly enviarTexto: (mensaje: string) => void;
   readonly recibirConfig: (resultado: ResultadoApi<ConfigResponse>) => void;
 };
 

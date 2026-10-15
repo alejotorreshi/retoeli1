@@ -7,7 +7,7 @@ import { CLASE_GLOBAL, DISTANCIA_PEGADO_AL_FINAL } from "@web/config/constants/u
 import { TEXTO_CHAT } from "@web/config/strings.ts";
 import { resultadosDelTurno } from "@web/state/casos.ts";
 import { anuncioDeEstado } from "@web/state/conversacion.ts";
-import type { PropsLineaDeTiempo, PropsTurno } from "@web/types/ui.type.ts";
+import type { PropsEstadoVacio, PropsLineaDeTiempo, PropsTurno } from "@web/types/ui.type.ts";
 import { useEffect, useRef, useState } from "react";
 
 function Turno({ turno, enCurso, resultados }: PropsTurno) {
@@ -30,11 +30,12 @@ function Turno({ turno, enCurso, resultados }: PropsTurno) {
   );
 }
 
-function EstadoVacio() {
+function EstadoVacio({ acciones }: PropsEstadoVacio) {
   return (
     <div className={estilos.vacio}>
       <h2 className={estilos.vacioTitulo}>{TEXTO_CHAT.vacioTitulo}</h2>
       <p className={estilos.vacioCuerpo}>{TEXTO_CHAT.vacioCuerpo}</p>
+      <div className={estilos.vacioAcciones}>{acciones}</div>
     </div>
   );
 }
@@ -47,7 +48,7 @@ function bajarAlFinal(zona: HTMLElement): void {
   zona.scrollTop = zona.scrollHeight;
 }
 
-export function LineaDeTiempo({ turnos, enCurso, children }: PropsLineaDeTiempo) {
+export function LineaDeTiempo({ turnos, enCurso, acciones, children }: PropsLineaDeTiempo) {
   const zona = useRef<HTMLElement>(null);
   const contenido = useRef<HTMLDivElement>(null);
   const pegadoAlFinal = useRef(true);
@@ -88,7 +89,7 @@ export function LineaDeTiempo({ turnos, enCurso, children }: PropsLineaDeTiempo)
       >
         <div ref={contenido} className={estilos.contenido}>
           {turnos.length === 0 ? (
-            <EstadoVacio />
+            <EstadoVacio acciones={acciones} />
           ) : (
             <ol className={estilos.lista}>
               {turnos.map((turno, indice) => (

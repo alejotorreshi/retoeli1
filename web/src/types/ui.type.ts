@@ -31,7 +31,19 @@ export type PropsAviso = {
 export type PropsLineaDeTiempo = {
   readonly turnos: readonly TurnoConversacion[];
   readonly enCurso: boolean;
+  readonly acciones: ReactNode;
   readonly children?: ReactNode;
+};
+
+export type PropsEstadoVacio = {
+  readonly acciones: ReactNode;
+};
+
+export type PropsAccionesRapidas = {
+  readonly casos: readonly string[];
+  readonly enCurso: boolean;
+  readonly compactas: boolean;
+  readonly alEnviar: (mensaje: string) => void;
 };
 
 export type PropsTurno = {

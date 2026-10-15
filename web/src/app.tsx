@@ -1,4 +1,5 @@
 import { obtenerConfig } from "@web/api/cliente-api.ts";
+import { AccionesRapidas } from "@web/components/acciones-rapidas.tsx";
 import { AvisoModelo } from "@web/components/aviso-modelo.tsx";
 import { Compositor } from "@web/components/compositor.tsx";
 import { Encabezado } from "@web/components/encabezado.tsx";
@@ -14,7 +15,7 @@ import { useEffect } from "react";
 
 export function App() {
   const { salud, refrescar } = useSalud();
-  const { estado, borrador, cambiarBorrador, enviar, recibirConfig } = useChat(refrescar);
+  const { estado, borrador, cambiarBorrador, enviar, enviarTexto, recibirConfig } = useChat(refrescar);
 
   useEffect(() => {
     const controlador = new AbortController();
@@ -42,16 +43,33 @@ export function App() {
     return <PantallaAcceso aviso={estado.acceso.aviso} alEntrar={alEntrar} />;
   }
 
+  const casos = estado.config?.casos ?? [];
+  const conHistorial = estado.turnos.length > 0;
+
   return (
     <>
       <Encabezado fechaEjecucion={estado.config?.fechaEjecucion ?? null} salud={salud} />
       <AvisoModelo estado={salud?.llm ?? null} zona={estado.config?.zona ?? null} />
       <main>
-        <LineaDeTiempo turnos={estado.turnos} enCurso={estado.enCurso}>
+        <LineaDeTiempo
+          turnos={estado.turnos}
+          enCurso={estado.enCurso}
+          acciones={
+            <AccionesRapidas
+              casos={casos}
+              enCurso={estado.enCurso}
+              compactas={false}
+              alEnviar={enviarTexto}
+            />
+          }
+        >
           {estado.enCurso ? (
             <IndicadorPensando etiqueta={etiquetaPensando(estado)} marca={eventosDelTurno(estado)} />
           ) : null}
         </LineaDeTiempo>
+        {conHistorial ? (
+          <AccionesRapidas casos={casos} enCurso={estado.enCurso} compactas={true} alEnviar={enviarTexto} />
+        ) : null}
         <Compositor
           valor={borrador}
           maximo={estado.config?.mensajeMaximo ?? null}

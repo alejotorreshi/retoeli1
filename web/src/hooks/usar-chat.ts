@@ -22,8 +22,8 @@ export function useChat(alFallarTurno: () => void): ControlChat {
     despachar({ tipo: ACCION_UI.CAMBIAR_BORRADOR, borrador });
   }
 
-  function enviar(): void {
-    const mensaje = estado.borrador.trim();
+  function enviarTexto(texto: string): void {
+    const mensaje = texto.trim();
     if (mensaje.length === 0 || estado.enCurso || turnoActivo.current !== null) return;
     const controlador = new AbortController();
     turnoActivo.current = controlador;
@@ -43,5 +43,9 @@ export function useChat(alFallarTurno: () => void): ControlChat {
     });
   }
 
-  return { estado, borrador: estado.borrador, cambiarBorrador, enviar, recibirConfig };
+  function enviar(): void {
+    enviarTexto(estado.borrador);
+  }
+
+  return { estado, borrador: estado.borrador, cambiarBorrador, enviar, enviarTexto, recibirConfig };
 }

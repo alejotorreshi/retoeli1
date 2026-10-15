@@ -46,6 +46,10 @@
   color: var(--texto-tenue);
 }
 
+.vacioAcciones {
+  margin-block-start: var(--espacio-lg);
+}
+
 .irAlFinal {
   position: absolute;
   inset-block-end: var(--espacio-md);
