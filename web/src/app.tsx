@@ -45,7 +45,13 @@ export function App() {
         <LineaDeTiempo turnos={estado.turnos} enCurso={estado.enCurso}>
           {estado.enCurso ? <IndicadorPensando /> : null}
         </LineaDeTiempo>
-        <Compositor valor={borrador} enCurso={estado.enCurso} alCambiar={cambiarBorrador} alEnviar={enviar} />
+        <Compositor
+          valor={borrador}
+          maximo={estado.config?.mensajeMaximo ?? null}
+          enCurso={estado.enCurso}
+          alCambiar={cambiarBorrador}
+          alEnviar={enviar}
+        />
       </main>
     </>
   );

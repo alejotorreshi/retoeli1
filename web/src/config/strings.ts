@@ -39,6 +39,7 @@ export const TEXTO_CHAT = {
   placeholder: "Escribe una instrucción, por ejemplo: procesa el caso ec-corp-andina",
   ayuda: `Enter para enviar ${SEPARADOR} Shift+Enter para nueva línea`,
   enviar: "Enviar mensaje",
+  contador: (caracteres: number, maximo: number) => `${caracteres}/${maximo}`,
 } as const;
 
 export const TEXTO_ERROR = {

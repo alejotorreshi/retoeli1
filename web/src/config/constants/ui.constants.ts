@@ -8,6 +8,8 @@ export const ACCION_UI = {
   FIN_STREAM: "fin_stream",
   CONFIG_RECIBIDA: "config_recibida",
   ACCESO_PEDIDO: "acceso_pedido",
+  CAMBIAR_BORRADOR: "cambiar_borrador",
+  ACEPTADO: "aceptado",
 } as const;
 
 export const ESTADO_ACCESO = {
@@ -23,16 +25,13 @@ export const RESULTADO_API = {
   SIN_RED: "sin_red",
 } as const;
 
-export const ACCIONES_QUE_DEVUELVEN_EL_BORRADOR: ReadonlySet<string> = new Set([
-  ACCION_UI.ERROR_HTTP,
-  ACCION_UI.ERROR_RED,
-]);
-
 export const ID_RAIZ = "root";
 
 export const TECLA_ENVIAR = "Enter";
 
 export const DISTANCIA_PEGADO_AL_FINAL = 96;
+
+export const MARGEN_AVISO_CONTADOR = 200;
 
 export const PEDIDO_JSON = {
   method: METODO_POST,

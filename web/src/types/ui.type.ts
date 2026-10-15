@@ -36,6 +36,7 @@ export type PropsMensaje = {
 
 export type PropsCompositor = {
   readonly valor: string;
+  readonly maximo: number | null;
   readonly enCurso: boolean;
   readonly alCambiar: (valor: string) => void;
   readonly alEnviar: () => void;

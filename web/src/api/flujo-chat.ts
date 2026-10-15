@@ -78,6 +78,7 @@ export async function enviarMensaje(
     await informarRechazo(respuesta, despachar);
     return;
   }
+  despachar({ tipo: ACCION_UI.ACEPTADO, mensaje: pedido.message });
   const turnoTerminado = respuesta.body === null ? false : await leerEventos(respuesta.body, despachar);
   if (!turnoTerminado && !signal.aborted) despachar({ tipo: ACCION_UI.FIN_STREAM });
 }

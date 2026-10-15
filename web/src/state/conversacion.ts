@@ -17,6 +17,7 @@ export const estadoInicialConversacion: EstadoConversacion = {
   enCurso: false,
   acceso: { tipo: ESTADO_ACCESO.VERIFICANDO },
   config: null,
+  borrador: "",
 };
 
 export function accionDeConfig(resultado: ResultadoApi<ConfigResponse>): AccionUi {
@@ -61,6 +62,10 @@ function recibirConfig(estado: EstadoConversacion, config: ConfigResponse | null
   return { ...estado, acceso: { tipo: ESTADO_ACCESO.CONCEDIDO }, config: config ?? estado.config };
 }
 
+function vaciarBorradorEnviado(estado: EstadoConversacion, mensaje: string): EstadoConversacion {
+  return estado.borrador.trim() === mensaje ? { ...estado, borrador: "" } : estado;
+}
+
 function aplicarEvento(estado: EstadoConversacion, evento: SseEvent): EstadoConversacion {
   switch (evento.tipo) {
     case TIPO_EVENTO.INICIO_TURNO:
@@ -97,6 +102,10 @@ export function reducirConversacion(estado: EstadoConversacion, accion: AccionUi
       return recibirConfig(estado, accion.config);
     case ACCION_UI.ACCESO_PEDIDO:
       return pedirAcceso(estado, accion.aviso);
+    case ACCION_UI.CAMBIAR_BORRADOR:
+      return { ...estado, borrador: accion.borrador };
+    case ACCION_UI.ACEPTADO:
+      return vaciarBorradorEnviado(estado, accion.mensaje);
     default:
       return estado;
   }

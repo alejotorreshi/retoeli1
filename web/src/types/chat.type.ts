@@ -37,6 +37,7 @@ export type EstadoConversacion = {
   readonly enCurso: boolean;
   readonly acceso: EstadoAcceso;
   readonly config: ConfigResponse | null;
+  readonly borrador: string;
 };
 
 export type AccionEnviar = {
@@ -73,6 +74,16 @@ export type AccionAccesoPedido = {
   readonly aviso: string | null;
 };
 
+export type AccionCambiarBorrador = {
+  readonly tipo: typeof ACCION_UI.CAMBIAR_BORRADOR;
+  readonly borrador: string;
+};
+
+export type AccionAceptado = {
+  readonly tipo: typeof ACCION_UI.ACEPTADO;
+  readonly mensaje: string;
+};
+
 export type AccionUi =
   | AccionEnviar
   | AccionEvento
@@ -80,7 +91,9 @@ export type AccionUi =
   | AccionErrorRed
   | AccionFinStream
   | AccionConfigRecibida
-  | AccionAccesoPedido;
+  | AccionAccesoPedido
+  | AccionCambiarBorrador
+  | AccionAceptado;
 
 export type Despachar = (accion: AccionUi) => void;
 

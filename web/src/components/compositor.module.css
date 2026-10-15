@@ -49,6 +49,20 @@
   color: var(--texto-tenue);
 }
 
+.contador {
+  margin: 0;
+  margin-inline-start: auto;
+  font-size: var(--etiqueta-tamano);
+  line-height: var(--etiqueta-interlinea);
+  font-variant-numeric: tabular-nums;
+  color: var(--texto-tenue);
+}
+
+.limite {
+  color: var(--error-texto);
+  font-weight: var(--etiqueta-peso-fuerte);
+}
+
 .enviar {
   flex: none;
   min-height: var(--alto-control);
