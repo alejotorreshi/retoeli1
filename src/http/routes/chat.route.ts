@@ -11,6 +11,7 @@ import {
   VALOR_CABECERA,
 } from "@/config/constants/http.constants.ts";
 import { ESTADO_LLM } from "@/config/constants/llm.constants.ts";
+import { MS_POR_MINUTO } from "@/config/constants/runtime.constants.ts";
 import { MENSAJE_AGENTE, MENSAJE_HTTP } from "@/config/strings.ts";
 import { redactar } from "@/domain/policies/redaccion.policy.ts";
 import { chatBodySchema } from "@/http/schemas/chat-body.schema.ts";
@@ -69,8 +70,12 @@ function serverBusy(c: Context<HttpEnv>): Response {
   return c.json(body, RESPUESTA_HTTP.NO_DISPONIBLE);
 }
 
-function tooManyNewSessions(c: Context<HttpEnv>): Response {
-  const body: ErrorResponse = { mensaje: MENSAJE_HTTP.demasiadasSesiones };
+function minutesUntilRetry(retryAfterMs: number): number {
+  return Math.max(1, Math.ceil(retryAfterMs / MS_POR_MINUTO));
+}
+
+function tooManyNewSessions(c: Context<HttpEnv>, minutes: number): Response {
+  const body: ErrorResponse = { mensaje: MENSAJE_HTTP.demasiadasSesiones(minutes) };
   return c.json(body, RESPUESTA_HTTP.DEMASIADOS_PEDIDOS);
 }
 
@@ -159,7 +164,8 @@ export function registerChatRoute(app: Hono<HttpEnv>, deps: ChatDeps): void {
     if (agente.estadoLlm() === ESTADO_LLM.TOPE_DIARIO) return dailyCapReached(c, deps.businessZone());
     const clientIp = c.get("clientIp");
     const isNewSession = opensSession(agente, body.sessionId);
-    if (isNewSession && deps.newSessions.isLocked(clientIp)) return tooManyNewSessions(c);
+    if (isNewSession && deps.newSessions.isLocked(clientIp))
+      return tooManyNewSessions(c, minutesUntilRetry(deps.newSessions.retryAfterMs(clientIp)));
     const releaseSlot = deps.turnSlots.tryAcquire();
     if (releaseSlot === null) return serverBusy(c);
     if (isNewSession) deps.newSessions.hit(clientIp);

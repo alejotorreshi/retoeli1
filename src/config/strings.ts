@@ -381,7 +381,8 @@ export const MENSAJE_HTTP = {
   topeDiario: (zona: string): string => `${TOPE_DIARIO_ALCANZADO} (${zona}).`,
   demasiadosMensajes: `Enviaste muchos mensajes seguidos. Espera ${cantidadDeMinutos(VENTANA_MENSAJES_CHAT_MINUTOS)} y vuelve a intentarlo.`,
   servidorOcupado: "El servidor está atendiendo otras conversaciones. Vuelve a intentarlo en unos segundos.",
-  demasiadasSesiones: `Abriste demasiadas sesiones nuevas en ${ultimasHoras(VENTANA_SESIONES_NUEVAS_HORAS)}. Sigue en la sesión actual o vuelve a intentarlo más tarde.`,
+  demasiadasSesiones: (minutos: number): string =>
+    `Abriste demasiadas sesiones nuevas en ${ultimasHoras(VENTANA_SESIONES_NUEVAS_HORAS)}. Podrás abrir otra en ${cantidadDeMinutos(minutos)}.`,
   casoNoEncontrado: "El caso pedido no existe. Revisa el nombre del caso.",
   archivoNoEncontrado:
     "El archivo pedido no existe en este caso. Si el servidor se reinició, vuelve a procesar el caso.",

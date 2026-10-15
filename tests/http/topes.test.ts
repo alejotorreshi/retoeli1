@@ -478,7 +478,9 @@ describe("sesiones nuevas", () => {
       ahora: () => ahora,
     });
 
-    const primera = await sesionDe(await servidor.pedirDesde(IP_CLIENTE, RUTA_API.CHAT, pedidoDeTurno("uno")));
+    const primera = await sesionDe(
+      await servidor.pedirDesde(IP_CLIENTE, RUTA_API.CHAT, pedidoDeTurno("uno")),
+    );
     await sesionDe(await servidor.pedirDesde(IP_CLIENTE, RUTA_API.CHAT, pedidoDeTurno("dos")));
     await esRechazoDeSesiones(
       await servidor.pedirDesde(IP_CLIENTE, RUTA_API.CHAT, pedidoDeTurno("tres")),

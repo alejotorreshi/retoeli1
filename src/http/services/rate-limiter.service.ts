@@ -36,6 +36,13 @@ export function createRateLimiter(options: RateLimiterOptions): ObservableRateLi
       sweep(options.now());
       return countOf(key) >= options.limit;
     },
+    retryAfterMs(key) {
+      const now = options.now();
+      sweep(now);
+      const window = windows.get(key);
+      if (window === undefined || window.count < options.limit) return 0;
+      return Math.max(0, window.start + options.windowMs - now);
+    },
     trackedKeys() {
       return windows.size;
     },
