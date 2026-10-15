@@ -111,17 +111,128 @@ describe("createRateLimiter", () => {
     expect(limitador.trackedKeys()).toBe(1);
     expect(limitador.isLocked(OTRA_CLAVE)).toBe(false);
   });
+});
 
-  test("con el tope de claves lleno, una clave nueva desaloja la más antigua y no crece la memoria", () => {
+describe("D-77: el tope de claves nunca libera una clave bloqueada", () => {
+  const CLAVES_RASTREADAS = 3;
+  const CLAVES_ROTADAS = 40;
+
+  function claveRotada(indice: number): string {
+    return `2001:db8:${indice.toString(16)}::`;
+  }
+
+  function contarEvaluados(limitador: ObservableRateLimiter, orden: readonly string[]): number {
+    let evaluados = 0;
+    for (const clave of orden) {
+      if (limitador.isLocked(clave)) continue;
+      limitador.hit(clave);
+      evaluados += 1;
+    }
+    return evaluados;
+  }
+
+  const claves = Array.from({ length: CLAVES_ROTADAS }, (_, indice) => claveRotada(indice));
+
+  test("con el tope lleno, la clave nueva desaloja la libre más antigua y la bloqueada sigue bloqueada", () => {
     const { limitador, avanzar } = crearBanco(2);
     golpear(limitador, CLAVE, LIMITE);
     avanzar(1);
     limitador.hit(OTRA_CLAVE);
     avanzar(1);
-    limitador.hit(TERCERA_CLAVE);
+    expect(limitador.hit(TERCERA_CLAVE)).toBe(true);
     expect(limitador.trackedKeys()).toBe(2);
-    expect(limitador.isLocked(CLAVE)).toBe(false);
+    expect(limitador.isLocked(CLAVE)).toBe(true);
+    expect(limitador.retryAfterMs(CLAVE)).toBeGreaterThan(0);
+    expect(limitador.isLocked(OTRA_CLAVE)).toBe(false);
+    expect(limitador.isLocked(TERCERA_CLAVE)).toBe(false);
+  });
+
+  test("con una clave menos que el tope, la clave nueva entra sin desalojar", () => {
+    const { limitador } = crearBanco(2);
+    golpear(limitador, CLAVE, LIMITE);
     expect(limitador.hit(OTRA_CLAVE)).toBe(true);
+    expect(limitador.trackedKeys()).toBe(2);
+    expect(limitador.isLocked(CLAVE)).toBe(true);
+  });
+
+  test("con el tope lleno de claves bloqueadas, la clave nueva no entra y queda bloqueada (falla cerrado)", () => {
+    const { limitador, avanzar } = crearBanco(2);
+    golpear(limitador, CLAVE, LIMITE);
+    avanzar(1);
+    golpear(limitador, OTRA_CLAVE, LIMITE);
+    avanzar(1);
+    expect(limitador.hit(TERCERA_CLAVE)).toBe(false);
+    expect(limitador.isLocked(TERCERA_CLAVE)).toBe(true);
+    expect(limitador.trackedKeys()).toBe(2);
+    expect(limitador.isLocked(CLAVE)).toBe(true);
+    expect(limitador.isLocked(OTRA_CLAVE)).toBe(true);
+    expect(limitador.retryAfterMs(TERCERA_CLAVE)).toBe(VENTANA_MS - 2);
+    expect(limitador.retryAfterMs(TERCERA_CLAVE)).toBe(limitador.retryAfterMs(CLAVE));
+  });
+
+  test("saturado, 1 ms antes de que venza la ventana más antigua sigue bloqueada y al vencer entra", () => {
+    const { limitador, avanzar } = crearBanco(2);
+    golpear(limitador, CLAVE, LIMITE);
+    avanzar(1);
+    golpear(limitador, OTRA_CLAVE, LIMITE);
+    avanzar(VENTANA_MS - 2);
+    expect(limitador.isLocked(TERCERA_CLAVE)).toBe(true);
+    expect(limitador.retryAfterMs(TERCERA_CLAVE)).toBe(1);
+    expect(limitador.hit(TERCERA_CLAVE)).toBe(false);
+    avanzar(1);
+    expect(limitador.hit(TERCERA_CLAVE)).toBe(true);
+    expect(limitador.isLocked(TERCERA_CLAVE)).toBe(false);
+    expect(limitador.retryAfterMs(TERCERA_CLAVE)).toBe(0);
+    expect(limitador.trackedKeys()).toBe(2);
+    expect(limitador.isLocked(OTRA_CLAVE)).toBe(true);
+  });
+
+  test("rotar claves de a una con el flujo de /api/acceso deja K × L intentos evaluados", () => {
+    const { limitador } = crearBanco(CLAVES_RASTREADAS);
+    const orden = claves.flatMap((clave) => Array<string>(LIMITE + 1).fill(clave));
+    expect(contarEvaluados(limitador, orden)).toBe(CLAVES_RASTREADAS * LIMITE);
+    expect(limitador.trackedKeys()).toBe(CLAVES_RASTREADAS);
+  });
+
+  test("rotar claves en ronda con el flujo de /api/acceso queda acotado: los golpes desalojados no pasan de L por ventana", () => {
+    const { limitador } = crearBanco(CLAVES_RASTREADAS);
+    const orden = Array.from({ length: LIMITE + 1 }, () => claves).flat();
+    expect(contarEvaluados(limitador, orden)).toBe((CLAVES_RASTREADAS + 1) * LIMITE);
+    expect(limitador.trackedKeys()).toBe(CLAVES_RASTREADAS);
+  });
+
+  test("con los golpes desalojados en el tope, la clave nueva espera lo que falta para el primer desalojo o la ventana más antigua", () => {
+    const { limitador, avanzar } = crearBanco(1);
+    limitador.hit(claves[0] ?? CLAVE);
+    for (let indice = 1; indice <= LIMITE; indice += 1) {
+      avanzar(1);
+      expect(limitador.hit(claves[indice] ?? CLAVE)).toBe(true);
+    }
+    avanzar(1);
+    const nueva = claves[LIMITE + 1] ?? CLAVE;
+    expect(limitador.hit(nueva)).toBe(false);
+    expect(limitador.isLocked(nueva)).toBe(true);
+    expect(limitador.retryAfterMs(nueva)).toBe(VENTANA_MS - LIMITE);
+    avanzar(VENTANA_MS - LIMITE - 1);
+    expect(limitador.isLocked(nueva)).toBe(true);
+    avanzar(1);
+    expect(limitador.isLocked(nueva)).toBe(false);
+    expect(limitador.hit(nueva)).toBe(true);
+    expect(limitador.trackedKeys()).toBe(1);
+  });
+
+  test("retryAfterMs de una clave nueva no es negativo ni mayor que la ventana", () => {
+    const { limitador, avanzar } = crearBanco(2);
+    golpear(limitador, CLAVE, LIMITE);
+    golpear(limitador, OTRA_CLAVE, LIMITE);
+    for (const paso of [0, VENTANA_MS / 2, VENTANA_MS / 2 - 1]) {
+      avanzar(paso);
+      const espera = limitador.retryAfterMs(TERCERA_CLAVE);
+      expect(espera).toBeGreaterThanOrEqual(0);
+      expect(espera).toBeLessThanOrEqual(VENTANA_MS);
+    }
+    avanzar(1);
+    expect(limitador.retryAfterMs(TERCERA_CLAVE)).toBe(0);
   });
 });
 
