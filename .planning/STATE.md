@@ -3,16 +3,16 @@ gsd_state_version: "1.0"
 current_phase: 03
 current_phase_name: Chat web, API SSE y despliegue
 status: executing
-stopped_at: Completed 03-26-PLAN.md
-last_updated: "2026-10-15T05:32:33.575Z"
+stopped_at: Completed 03-27-PLAN.md
+last_updated: "2026-10-15T05:46:25.608Z"
 last_activity: 2026-10-14
 last_activity_desc: Phase 03 execution started
-state_head: 6071c283973372e8a59d858f7ca9f788f1fd0825
+state_head: f35bb081e34ec64779299625b7fa0c49a1c7ae62
 progress:
   total_phases: 4
   completed_phases: 2
   total_plans: 66
-  completed_plans: 65
+  completed_plans: 66
   percent: 50
 ---
 
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-10-14)
 ## Current Position
 
 Phase: 03 (Chat web, API SSE y despliegue) — EXECUTING
-Plan: 26 of 27
+Plan: 27 of 27
 Status: Ready to execute
 Last activity: 2026-10-14 — Phase 03 execution started
 
@@ -122,6 +122,7 @@ Progress: [█████░░░░░] 50%
 | Phase 03 P23 | 10 min | 2 tasks | 16 files |
 | Phase 03 P25 | 6 min | 2 tasks | 15 files |
 | Phase 03 P26 | 9min | 2 tasks | 21 files |
+| Phase 03 P27 | 10 min | 2 tasks | 19 files |
 
 ## Accumulated Context
 
@@ -294,6 +295,9 @@ Recent decisions affecting current work:
 - [Phase 03]: 03-26: la carga de la sesión vive en useChat; DETENER y RECARGAR solo marcan hidratando y el mismo efecto pide la vista asentada (un reintento tras REINTENTO_OCUPADA_MS si sigue ocupada) y despacha HIDRATAR
 - [Phase 03]: 03-26: turn_start con sesionExpirada deja solo el turno actual y su texto siguiente pasa a AvisoSistema; las tarjetas de la sesión vencida se descartan
 - [Phase 03]: 03-26: ErrorVisible.accion (RECARGAR o NUEVA_SESION) decide el botón del AvisoError; NUEVA_SESION conserva acceso, config y borrador y olvidarSesion lo llama useChat
+- [Phase 03]: 03-27: archivosFaltantes devuelve las etapas hechas sin su archivo en disco (Generado: formulario o valores-portal.md; Paquete: checklist; Envío: ENVIO-SIMULADO.md); con lista cargando o fallida no se acusa reinicio
+- [Phase 03]: 03-27: un 404 al ver o descargar marca el caso como borrado hasta que un turno nuevo lo toca; nada se regenera solo, la analista reprocesa con el chip
+- [Phase 03]: 03-27: Descargar es un <a href download> interceptado que pide con fetch para ver el 404 y guarda con una URL de objeto (descarga-local.ts); un 401 en archivos vuelve a la pantalla de acceso
 
 ### Pending Todos
 
@@ -329,6 +333,6 @@ Items acknowledged and deferred at milestone close, most recent first:
 
 ## Session Continuity
 
-Last session: 2026-10-15T05:32:33.484Z
-Stopped at: Completed 03-26-PLAN.md
+Last session: 2026-10-15T05:46:25.523Z
+Stopped at: Completed 03-27-PLAN.md
 Resume file: None

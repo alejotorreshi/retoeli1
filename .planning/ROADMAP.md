@@ -166,7 +166,7 @@ Plans:
   4. Desde el panel de artefactos, la analista descarga o previsualiza los archivos generados del caso; solo se sirven nombres en lista blanca y detrás del código de acceso. Si no hay clave, se agotó el saldo, el proveedor cayó o se alcanzó el tope diario, `/api/health` lo reporta y la UI muestra un aviso claro; el flujo sin modelo sigue disponible con `demo.ts`.
   5. Sin código de acceso, la API rechaza toda petición salvo `/api/health`. El rate limit por IP y el límite de tamaño de mensaje responden con un mensaje claro. Un test verifica que la clave del LLM no aparece en `web/dist`, en las respuestas de la API ni en el stream SSE.
 
-**Plans:** 26/27 plans executed
+**Plans:** 27/27 plans executed
 
 Plans:
 **Wave 1**
@@ -236,7 +236,7 @@ Plans:
 - [x] 03-26-PLAN.md — Nueva sesión, Detener, recuperación de cortes, sesión expirada y uso de la sesión
 
 **Wave 21** *(blocked on Wave 20 completion)*
-- [ ] 03-27-PLAN.md — Panel de archivos con descarga, vista previa y aviso de disco efímero (D-64 a D-67, D-74)
+- [x] 03-27-PLAN.md — Panel de archivos con descarga, vista previa y aviso de disco efímero (D-64 a D-67, D-74)
 
 **UI hint**: yes
 **Research flag**: SSE a través del proxy de Render (los reportes de la comunidad se contradicen) y comportamiento de Bun cuando el cliente se desconecta. Desplegar apenas exista el endpoint SSE y probar con `curl -N`. Si bufferiza, usar el fallback JSON y luego Koyeb o Fly con el mismo Dockerfile.
@@ -265,5 +265,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 |-------|----------------|--------|-----------|
 | 1. Núcleo determinista | 15/15 | Complete    | 2026-10-13 |
 | 2. Agente y compuerta de confirmación | 24/24 | Complete    | 2026-10-14 |
-| 3. Chat web, API SSE y despliegue | 26/27 | In Progress | - |
+| 3. Chat web, API SSE y despliegue | 27/27 | In Progress | - |
 | 4. Módulo, documentación y defensa | 0/TBD | Not started | - |
