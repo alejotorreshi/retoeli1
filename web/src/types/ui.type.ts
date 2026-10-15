@@ -1,5 +1,11 @@
 import type { TAMANO_ICONO, TONO } from "@web/config/constants/ui.constants.ts";
-import type { EstadoModelo, SaludModelo, TurnoConversacion } from "@web/types/chat.type.ts";
+import type {
+  EstadoHerramienta,
+  EstadoModelo,
+  LlamadaDelTurno,
+  SaludModelo,
+  TurnoConversacion,
+} from "@web/types/chat.type.ts";
 import type { ReactNode } from "react";
 import type { ESTADO_LLM } from "@/config/constants/llm.constants.ts";
 import type { ValorDe } from "@/config/types/valor-de.type.ts";
@@ -29,6 +35,20 @@ export type PropsLineaDeTiempo = {
 
 export type PropsTurno = {
   readonly turno: TurnoConversacion;
+  readonly enCurso: boolean;
+};
+
+export type PropsGrupoHerramientas = {
+  readonly llamadas: readonly LlamadaDelTurno[];
+  readonly enCurso: boolean;
+};
+
+export type PropsTarjetaHerramienta = {
+  readonly llamada: LlamadaDelTurno;
+};
+
+export type PropsIconoDeEstado = {
+  readonly estado: EstadoHerramienta;
 };
 
 export type PropsMensaje = {

@@ -1,11 +1,23 @@
-import { ACCION_UI, ESTADO_ACCESO, RESULTADO_API } from "@web/config/constants/ui.constants.ts";
-import { TEXTO_ERROR } from "@web/config/strings.ts";
+import {
+  ACCION_UI,
+  ESTADO_ACCESO,
+  ESTADO_HERRAMIENTA,
+  MAXIMO_TARJETAS_ABIERTAS,
+  RESULTADO_API,
+  SANGRIA_JSON,
+} from "@web/config/constants/ui.constants.ts";
+import { TEXTO_CHAT, TEXTO_ERROR, TEXTO_HERRAMIENTA } from "@web/config/strings.ts";
 import type {
   AccionUi,
   ErrorVisible,
   EstadoConversacion,
+  EventoFinHerramientaUi,
+  EventoInicioHerramientaUi,
+  LlamadaDelTurno,
   ResultadoApi,
+  ResumenLlamadas,
   TurnoConversacion,
+  VistaTurnos,
 } from "@web/types/chat.type.ts";
 import { TIPO_EVENTO } from "@/config/constants/agent.constants.ts";
 import { RESPUESTA_HTTP } from "@/config/constants/http.constants.ts";
@@ -41,7 +53,13 @@ function conUltimoTurno(
 }
 
 function agregarTurno(estado: EstadoConversacion, mensaje: string): EstadoConversacion {
-  const turno: TurnoConversacion = { clave: estado.turnos.length, mensaje, textos: [], error: null };
+  const turno: TurnoConversacion = {
+    clave: estado.turnos.length,
+    mensaje,
+    llamadas: [],
+    textos: [],
+    error: null,
+  };
   return { ...estado, turnos: [...estado.turnos, turno], enCurso: true };
 }
 
@@ -66,10 +84,59 @@ function vaciarBorradorEnviado(estado: EstadoConversacion, mensaje: string): Est
   return estado.borrador.trim() === mensaje ? { ...estado, borrador: "" } : estado;
 }
 
+function abrirLlamada(turno: TurnoConversacion, evento: EventoInicioHerramientaUi): TurnoConversacion {
+  if (turno.llamadas.some((llamada) => llamada.llamadaId === evento.llamadaId)) return turno;
+  const llamada: LlamadaDelTurno = {
+    llamadaId: evento.llamadaId,
+    herramienta: evento.herramienta,
+    caso: evento.caso,
+    argumentos: evento.argumentos,
+    estado: ESTADO_HERRAMIENTA.EN_CURSO,
+    resumen: null,
+    codigo: null,
+  };
+  return { ...turno, llamadas: [...turno.llamadas, llamada] };
+}
+
+function llamadaCerrada(llamada: LlamadaDelTurno, evento: EventoFinHerramientaUi): LlamadaDelTurno {
+  return {
+    ...llamada,
+    herramienta: evento.herramienta,
+    caso: evento.caso ?? llamada.caso,
+    estado: evento.ok ? ESTADO_HERRAMIENTA.CORRECTA : ESTADO_HERRAMIENTA.ERROR,
+    resumen: evento.resumen,
+    codigo: evento.ok ? null : evento.codigo,
+  };
+}
+
+function cerrarLlamada(turno: TurnoConversacion, evento: EventoFinHerramientaUi): TurnoConversacion {
+  const abierta = turno.llamadas.some((llamada) => llamada.llamadaId === evento.llamadaId);
+  const sinInicio: LlamadaDelTurno = {
+    llamadaId: evento.llamadaId,
+    herramienta: evento.herramienta,
+    caso: evento.caso,
+    argumentos: null,
+    estado: ESTADO_HERRAMIENTA.EN_CURSO,
+    resumen: null,
+    codigo: null,
+  };
+  const llamadas = abierta ? turno.llamadas : [...turno.llamadas, sinInicio];
+  return {
+    ...turno,
+    llamadas: llamadas.map((llamada) =>
+      llamada.llamadaId === evento.llamadaId ? llamadaCerrada(llamada, evento) : llamada,
+    ),
+  };
+}
+
 function aplicarEvento(estado: EstadoConversacion, evento: SseEvent): EstadoConversacion {
   switch (evento.tipo) {
     case TIPO_EVENTO.INICIO_TURNO:
       return { ...estado, sesionId: evento.sesionId };
+    case TIPO_EVENTO.INICIO_HERRAMIENTA:
+      return conUltimoTurno(estado, (turno) => abrirLlamada(turno, evento));
+    case TIPO_EVENTO.FIN_HERRAMIENTA:
+      return conUltimoTurno(estado, (turno) => cerrarLlamada(turno, evento));
     case TIPO_EVENTO.TEXTO:
       return conUltimoTurno(estado, (turno) => ({
         ...turno,
@@ -123,4 +190,37 @@ export function reducirConversacion(estado: EstadoConversacion, accion: AccionUi
     default:
       return estado;
   }
+}
+
+export function resumenDeLlamadas(llamadas: readonly LlamadaDelTurno[]): ResumenLlamadas {
+  return {
+    total: llamadas.length,
+    correctas: llamadas.filter((llamada) => llamada.estado === ESTADO_HERRAMIENTA.CORRECTA).length,
+    conError: llamadas.filter((llamada) => llamada.estado === ESTADO_HERRAMIENTA.ERROR).length,
+  };
+}
+
+export function grupoSeCierraAlTerminar(cantidad: number): boolean {
+  return cantidad > MAXIMO_TARJETAS_ABIERTAS;
+}
+
+export function argumentosLegibles(argumentos: unknown): string {
+  return JSON.stringify(argumentos ?? null, null, SANGRIA_JSON);
+}
+
+export function llamadaEnCurso({ turnos, enCurso }: VistaTurnos): LlamadaDelTurno | null {
+  if (!enCurso) return null;
+  const abiertas = (turnos.at(-1)?.llamadas ?? []).filter(
+    (llamada) => llamada.estado === ESTADO_HERRAMIENTA.EN_CURSO,
+  );
+  return abiertas.at(-1) ?? null;
+}
+
+export function anuncioDeEstado(vista: VistaTurnos): string {
+  if (vista.enCurso) {
+    const llamada = llamadaEnCurso(vista);
+    return llamada === null ? "" : TEXTO_HERRAMIENTA.anuncio(llamada.herramienta, llamada.caso);
+  }
+  const ultimo = vista.turnos.at(-1);
+  return ultimo !== undefined && ultimo.error === null ? TEXTO_CHAT.respuestaLista : "";
 }

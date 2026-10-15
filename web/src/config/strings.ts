@@ -1,7 +1,10 @@
-import type { EstadoModelo } from "@web/types/chat.type.ts";
+import { ESTADO_HERRAMIENTA } from "@web/config/constants/ui.constants.ts";
+import type { EstadoHerramienta, EstadoModelo, ResumenLlamadas } from "@web/types/chat.type.ts";
 import type { EstadoModeloConAviso, PartesAvisoModelo } from "@web/types/ui.type.ts";
 import { VIGENCIA_ACCESO_HORAS_POR_DEFECTO } from "@/config/constants/http.constants.ts";
 import { ESTADO_LLM } from "@/config/constants/llm.constants.ts";
+import { HERRAMIENTA, HERRAMIENTA_POR_NOMBRE_VISIBLE } from "@/config/constants/tools.constants.ts";
+import type { ValorDe } from "@/config/types/valor-de.type.ts";
 
 const TITULO_APP = "Registro como proveedor";
 const SUBTITULO_APP = "Periferia IT Group";
@@ -89,4 +92,49 @@ export const TEXTO_MODELO = {
   estado: (modelo: string, estado: EstadoModelo) => `${modelo} ${SEPARADOR} ${ETIQUETA_DEL_MODELO[estado]}`,
   aviso: (estado: EstadoModeloConAviso, zona: string | null): PartesAvisoModelo =>
     AVISO_DEL_MODELO[estado](zona),
+} as const;
+
+const ETIQUETA_DE_HERRAMIENTA = {
+  [HERRAMIENTA.LEER_SOLICITUD]: "Leer solicitud",
+  [HERRAMIENTA.MAPEAR_CAMPOS]: "Mapear campos",
+  [HERRAMIENTA.GENERAR_FORMULARIO]: "Generar formulario",
+  [HERRAMIENTA.ARMAR_PAQUETE]: "Armar paquete",
+  [HERRAMIENTA.SIMULAR_ENVIO]: "Simular envío",
+} as const satisfies Record<ValorDe<typeof HERRAMIENTA>, string>;
+
+const ESTADO_DE_HERRAMIENTA = {
+  [ESTADO_HERRAMIENTA.EN_CURSO]: "En curso",
+  [ESTADO_HERRAMIENTA.CORRECTA]: "Correcta",
+  [ESTADO_HERRAMIENTA.ERROR]: "Error",
+} as const satisfies Record<EstadoHerramienta, string>;
+
+function etiquetaDeHerramienta(nombre: string): string {
+  const herramienta = HERRAMIENTA_POR_NOMBRE_VISIBLE.get(nombre);
+  return herramienta === undefined ? nombre : ETIQUETA_DE_HERRAMIENTA[herramienta];
+}
+
+function llamadas(total: number): string {
+  return total === 1 ? `${total} llamada a herramienta` : `${total} llamadas a herramientas`;
+}
+
+function correctas(cantidad: number): string {
+  return cantidad === 1 ? `${cantidad} correcta` : `${cantidad} correctas`;
+}
+
+export const TEXTO_HERRAMIENTA = {
+  etiqueta: etiquetaDeHerramienta,
+  estado: (estado: EstadoHerramienta) => ESTADO_DE_HERRAMIENTA[estado],
+  grupo: ({ total, correctas: buenas, conError }: ResumenLlamadas) =>
+    total === 1
+      ? llamadas(total)
+      : `${llamadas(total)} ${SEPARADOR} ${correctas(buenas)} ${SEPARADOR} ${conError} con error`,
+  herramienta: "Herramienta",
+  argumentos: "Argumentos",
+  resultado: "Resultado",
+  sinResultado: SIN_DATO,
+  codigo: (codigo: string) => `Código: ${codigo}`,
+  anuncio: (nombre: string, caso: string | null) =>
+    caso === null
+      ? `Ejecutando ${etiquetaDeHerramienta(nombre)}`
+      : `Ejecutando ${etiquetaDeHerramienta(nombre)} de ${caso}`,
 } as const;

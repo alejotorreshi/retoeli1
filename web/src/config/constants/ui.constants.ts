@@ -76,3 +76,13 @@ export const TONO_DEL_MODELO = {
   [ESTADO_LLM.NO_DISPONIBLE]: TONO.ATENCION,
   [ESTADO_LLM.TOPE_DIARIO]: TONO.ATENCION,
 } as const satisfies Record<ValorDe<typeof ESTADO_LLM>, ValorDe<typeof TONO>>;
+
+export const ESTADO_HERRAMIENTA = {
+  EN_CURSO: "en_curso",
+  CORRECTA: "correcta",
+  ERROR: "error",
+} as const;
+
+export const MAXIMO_TARJETAS_ABIERTAS = 6;
+
+export const SANGRIA_JSON = 2;

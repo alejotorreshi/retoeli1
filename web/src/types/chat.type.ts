@@ -1,4 +1,11 @@
-import type { ACCION_UI, ESTADO_ACCESO, RESULTADO_API } from "@web/config/constants/ui.constants.ts";
+import type {
+  ACCION_UI,
+  ESTADO_ACCESO,
+  ESTADO_HERRAMIENTA,
+  RESULTADO_API,
+} from "@web/config/constants/ui.constants.ts";
+import type { TIPO_EVENTO } from "@/config/constants/agent.constants.ts";
+import type { ValorDe } from "@/config/types/valor-de.type.ts";
 import type { ConfigResponse, ErrorResponse, HealthResponse, SseEvent } from "@/http/types/api.type.ts";
 
 export type ErrorVisible = {
@@ -11,12 +18,40 @@ export type TextoAgente = {
   readonly texto: string;
 };
 
+export type EstadoHerramienta = ValorDe<typeof ESTADO_HERRAMIENTA>;
+
+export type LlamadaDelTurno = {
+  readonly llamadaId: string;
+  readonly herramienta: string;
+  readonly caso: string | null;
+  readonly argumentos: unknown;
+  readonly estado: EstadoHerramienta;
+  readonly resumen: string | null;
+  readonly codigo: string | null;
+};
+
+export type ResumenLlamadas = {
+  readonly total: number;
+  readonly correctas: number;
+  readonly conError: number;
+};
+
+export type EventoInicioHerramientaUi = Extract<
+  SseEvent,
+  { readonly tipo: typeof TIPO_EVENTO.INICIO_HERRAMIENTA }
+>;
+
+export type EventoFinHerramientaUi = Extract<SseEvent, { readonly tipo: typeof TIPO_EVENTO.FIN_HERRAMIENTA }>;
+
 export type TurnoConversacion = {
   readonly clave: number;
   readonly mensaje: string;
+  readonly llamadas: readonly LlamadaDelTurno[];
   readonly textos: readonly TextoAgente[];
   readonly error: ErrorVisible | null;
 };
+
+export type VistaTurnos = Pick<EstadoConversacion, "turnos" | "enCurso">;
 
 export type EstadoAcceso =
   | { readonly tipo: typeof ESTADO_ACCESO.VERIFICANDO }

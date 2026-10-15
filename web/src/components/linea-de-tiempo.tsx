@@ -1,16 +1,18 @@
 import { AvisoError } from "@web/components/aviso.tsx";
+import { GrupoHerramientas } from "@web/components/grupo-herramientas.tsx";
 import estilos from "@web/components/linea-de-tiempo.module.css";
 import { MensajeAgente, MensajeUsuaria } from "@web/components/mensaje.tsx";
 import { CLASE_GLOBAL, DISTANCIA_PEGADO_AL_FINAL } from "@web/config/constants/ui.constants.ts";
 import { TEXTO_CHAT } from "@web/config/strings.ts";
-import type { TurnoConversacion } from "@web/types/chat.type.ts";
+import { anuncioDeEstado } from "@web/state/conversacion.ts";
 import type { PropsLineaDeTiempo, PropsTurno } from "@web/types/ui.type.ts";
 import { useEffect, useRef, useState } from "react";
 
-function Turno({ turno }: PropsTurno) {
+function Turno({ turno, enCurso }: PropsTurno) {
   return (
     <>
       <MensajeUsuaria texto={turno.mensaje} />
+      {turno.llamadas.length === 0 ? null : <GrupoHerramientas llamadas={turno.llamadas} enCurso={enCurso} />}
       {turno.textos.map((texto) => (
         <MensajeAgente key={texto.clave} texto={texto.texto} />
       ))}
@@ -30,11 +32,6 @@ function EstadoVacio() {
       <p className={estilos.vacioCuerpo}>{TEXTO_CHAT.vacioCuerpo}</p>
     </div>
   );
-}
-
-function anuncioDeEstado(turnos: readonly TurnoConversacion[], enCurso: boolean): string {
-  const ultimo = turnos.at(-1);
-  return !enCurso && ultimo !== undefined && ultimo.error === null ? TEXTO_CHAT.respuestaLista : "";
 }
 
 function estaCercaDelFinal(zona: HTMLElement): boolean {
@@ -89,8 +86,8 @@ export function LineaDeTiempo({ turnos, enCurso, children }: PropsLineaDeTiempo)
             <EstadoVacio />
           ) : (
             <ol className={estilos.lista}>
-              {turnos.map((turno) => (
-                <Turno key={turno.clave} turno={turno} />
+              {turnos.map((turno, indice) => (
+                <Turno key={turno.clave} turno={turno} enCurso={enCurso && indice === turnos.length - 1} />
               ))}
             </ol>
           )}
@@ -103,7 +100,7 @@ export function LineaDeTiempo({ turnos, enCurso, children }: PropsLineaDeTiempo)
         </button>
       ) : null}
       <div aria-live="polite" className={CLASE_GLOBAL.OCULTO}>
-        {anuncioDeEstado(turnos, enCurso)}
+        {anuncioDeEstado({ turnos, enCurso })}
       </div>
     </div>
   );
