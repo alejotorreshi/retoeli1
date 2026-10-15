@@ -84,6 +84,19 @@ describe("redactar: secretos dentro del texto", () => {
     expect(redactar(null)).toBeNull();
   });
 
+  test("con conPila la copia del error trae la pila limpia; sin la opción no la trae", () => {
+    const secreto = "clave-de-prueba-Zq9X";
+    const fallo = new TypeError(`sin red ${secreto}`);
+    const conPila = redactar({ fallo }, [secreto], { conPila: true });
+    const pila = JSON.stringify(conPila);
+    expect(pila).toContain('"stack"');
+    expect(pila).toContain("redaccion.policy.test");
+    expect(pila).not.toContain(secreto);
+    expect(redactar({ fallo }, [secreto])).toEqual({
+      fallo: { name: "TypeError", message: `sin red ${OCULTO}` },
+    });
+  });
+
   test("el mensaje de un error se limpia y no se pierde", () => {
     const secreto = "clave-de-prueba-Zq9X";
     expect(redactar({ fallo: new TypeError(`sin red ${secreto}`) }, [secreto])).toEqual({

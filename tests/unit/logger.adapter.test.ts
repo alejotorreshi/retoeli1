@@ -161,3 +161,15 @@ describe("createLogger: rutas de redacción de pino (IN-19)", () => {
     expect(RUTAS_REDACCION_LOG).toHaveLength(CLAVES_SENSIBLES.size * 4);
   });
 });
+
+describe("createLogger: errores con pila (IN-01)", () => {
+  test("un error en los campos se registra con su pila y sin el secreto", () => {
+    const { captura, logger } = bitacora();
+    logger.error("http_unhandled_error", { error: new Error(`falló con ${SECRETO}`) });
+    const [linea] = captura.objetos();
+    const error = linea?.error;
+    expect(typeof error === "object" && error !== null && "stack" in error).toBe(true);
+    expect(captura.lineas.join("")).toContain("logger.adapter.test");
+    expect(captura.lineas.join("")).not.toContain(SECRETO);
+  });
+});

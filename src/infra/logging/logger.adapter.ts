@@ -3,14 +3,17 @@ import type { BitacoraEstructurada, CamposBitacora } from "@/application/types/p
 import { RUTAS_REDACCION_LOG } from "@/config/constants/logging.constants.ts";
 import { TEXTO_MASCARA } from "@/config/strings.ts";
 import { redactar } from "@/domain/policies/redaccion.policy.ts";
+import type { OpcionesRedaccion } from "@/domain/types/redaccion.type.ts";
 import { esRegistro } from "@/domain/utils/json.util.ts";
 import type { LoggerOptions } from "@/infra/types/logger.type.ts";
+
+const WITH_STACK: OpcionesRedaccion = { conPila: true };
 
 function cleanFields(
   fields: CamposBitacora | undefined,
   secrets: readonly string[],
 ): Record<string, unknown> {
-  const clean = redactar(fields ?? {}, secrets);
+  const clean = redactar(fields ?? {}, secrets, WITH_STACK);
   return esRegistro(clean) ? clean : {};
 }
 
