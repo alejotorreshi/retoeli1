@@ -8,13 +8,16 @@ import {
   rutaVistaPrevia,
 } from "@tests/helpers/artefactos.helper.ts";
 import { crearFetchFalso } from "@tests/helpers/fetch-falso.helper.ts";
+import { sensiblesDelProyecto } from "@tests/helpers/pii.helper.ts";
 import { crearProyectoTemporal } from "@tests/helpers/proyecto-temporal.helper.ts";
 import { BINDINGS_PRUEBA, crearServidorPrueba } from "@tests/helpers/servidor-prueba.helper.ts";
+import type { HojaMaestro } from "@tests/helpers/types/pii.type.ts";
 import type { ProyectoTemporal } from "@tests/helpers/types/proyecto-temporal.type.ts";
 import type { ServidorPrueba } from "@tests/helpers/types/servidor-prueba.type.ts";
 import { z } from "zod";
 import { OUT_DIR } from "@/config/constants/files.constants.ts";
 import { CABECERA, RESPUESTA_HTTP, TIPO_CONTENIDO } from "@/config/constants/http.constants.ts";
+import { RUTA_MAESTRO, RUTAS_BORRADOR } from "@/config/constants/maestro.constants.ts";
 import { MENSAJE_HTTP } from "@/config/strings.ts";
 
 const CO = "co-industrias-delta";
@@ -118,4 +121,96 @@ describe("descarga del archivo real (D-64)", () => {
       expect(await respuesta.json()).toEqual({ mensaje: expect.any(String) });
     },
   );
+});
+
+const CASOS = [CO, CASO_CONFIRMADO, "hn-agroexport-sula", "pa-logistica-istmo"];
+const BORRADOR = "paquete/borrador-correo.md";
+const RUTAS_EN_BORRADOR: ReadonlySet<string> = new Set(RUTAS_BORRADOR);
+
+const vistaSchema = z.union([
+  z.object({
+    tipo: z.literal("tabla"),
+    filas: z.array(
+      z.object({
+        etiqueta: z.string(),
+        valor_enmascarado: z.string().nullable(),
+        estado: z.string(),
+        nota: z.string().nullable(),
+      }),
+    ),
+  }),
+  z.object({ tipo: z.literal("texto"), texto: z.string() }),
+]);
+
+type VistaServida = { readonly caso: string; readonly nombre: string; readonly textos: readonly string[] };
+
+function permitidaEn(nombre: string, hoja: HojaMaestro): boolean {
+  return nombre === BORRADOR && RUTAS_EN_BORRADOR.has(hoja.ruta);
+}
+
+async function vistasDeCaso(caso: string): Promise<VistaServida[]> {
+  const lista = await servidor.pedir(rutaArchivos(caso));
+  const archivos = z
+    .object({ archivos: z.array(z.object({ nombre: z.string(), previsualizable: z.boolean() })) })
+    .parse(await lista.json()).archivos;
+  const vistas: VistaServida[] = [];
+  for (const archivo of archivos.filter((candidato) => candidato.previsualizable)) {
+    const respuesta = await servidor.pedir(rutaVistaPrevia(caso, archivo.nombre));
+    expect(respuesta.status).toBe(RESPUESTA_HTTP.OK);
+    const crudo = await respuesta.text();
+    const vista = vistaSchema.parse(JSON.parse(crudo));
+    const textos =
+      vista.tipo === "texto"
+        ? [vista.texto]
+        : vista.filas.flatMap((fila) => [fila.etiqueta, fila.valor_enmascarado ?? "", fila.nota ?? ""]);
+    vistas.push({ caso, nombre: archivo.nombre, textos: [crudo, ...textos] });
+  }
+  return vistas;
+}
+
+describe("GET /api/casos/:caso/vista-previa/:nombre (D-64, D-65, D-74)", () => {
+  test("ninguna vista previa de los cuatro casos trae un valor sensible del maestro, salvo el firmante en el borrador", async () => {
+    const sensibles = await sensiblesDelProyecto(proyecto.raiz);
+    const vistas = (await Promise.all(CASOS.map(vistasDeCaso))).flat();
+    expect(vistas.length).toBe(13);
+    expect(new Set(vistas.map((vista) => vista.caso))).toEqual(new Set(CASOS));
+    const fugas = vistas.flatMap(({ caso, nombre, textos }) =>
+      sensibles
+        .filter((hoja) => textos.some((texto) => texto.includes(hoja.valor)) && !permitidaEn(nombre, hoja))
+        .map((hoja) => `${caso}/${nombre}: ${hoja.ruta}`),
+    );
+    expect(fugas).toEqual([]);
+  });
+
+  test("control positivo: el borrador muestra completo el nombre del firmante (D-74)", async () => {
+    const firmante = (await sensiblesDelProyecto(proyecto.raiz)).find(
+      (hoja) => hoja.ruta === RUTA_MAESTRO.CONTACTO_FINANCIERO_NOMBRE,
+    );
+    const respuesta = await servidor.pedir(rutaVistaPrevia(CO, BORRADOR));
+    expect(respuesta.status).toBe(RESPUESTA_HTTP.OK);
+    expect(firmante).toBeDefined();
+    expect(await respuesta.text()).toContain(firmante?.valor ?? "sin firmante");
+  });
+
+  test("la vista previa del formulario es la tabla enmascarada de mapeo.json", async () => {
+    const respuesta = await servidor.pedir(rutaVistaPrevia(CO, "formulario.xlsx"));
+    expect(respuesta.status).toBe(RESPUESTA_HTTP.OK);
+    expect(respuesta.headers.get(CABECERA.TIPO_CONTENIDO)).toStartWith(TIPO_CONTENIDO.JSON);
+    const vista = vistaSchema.parse(await respuesta.json());
+    expect(vista.tipo).toBe("tabla");
+    const filas = vista.tipo === "tabla" ? vista.filas : [];
+    expect(filas.some((fila) => fila.valor_enmascarado?.includes("•") ?? false)).toBe(true);
+    expect(JSON.stringify(filas)).not.toContain("03100012345");
+  });
+
+  test.each([
+    rutaVistaPrevia(CO, "mapeo.json"),
+    rutaVistaPrevia(CO, "log.jsonl"),
+    rutaVistaPrevia(CO, "paquete/rut-2026.txt"),
+    rutaVistaPrevia(CO, "formulario.pdf"),
+    rutaVistaPrevia(CO, "..%2Fmapeo.json"),
+    rutaVistaPrevia("zz-no-existe", "formulario.xlsx"),
+  ])("%s responde 404 { mensaje }", async (ruta) => {
+    await esperar404(await servidor.pedir(ruta), MENSAJE_HTTP.vistaPreviaNoDisponible);
+  });
 });
