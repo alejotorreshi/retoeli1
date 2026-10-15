@@ -3,16 +3,16 @@ gsd_state_version: "1.0"
 current_phase: 03
 current_phase_name: Chat web, API SSE y despliegue
 status: executing
-stopped_at: Completed 03-03-PLAN.md
-last_updated: "2026-10-14T23:57:25.353Z"
+stopped_at: Completed 03-04-PLAN.md
+last_updated: "2026-10-15T00:08:15.355Z"
 last_activity: 2026-10-14
 last_activity_desc: Phase 03 execution started
-state_head: 5b05e6c49c9f842e8f649d9bf5fb4919961a23bb
+state_head: c14dd555421395b9a773ba7cd255e5a853a462b5
 progress:
   total_phases: 4
   completed_phases: 2
   total_plans: 66
-  completed_plans: 42
+  completed_plans: 43
   percent: 50
 ---
 
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-10-14)
 ## Current Position
 
 Phase: 03 (Chat web, API SSE y despliegue) — EXECUTING
-Plan: 4 of 27
+Plan: 5 of 27
 Status: Ready to execute
 Last activity: 2026-10-14 — Phase 03 execution started
 
@@ -99,6 +99,7 @@ Progress: [█████░░░░░] 50%
 | Phase 03 P01 | 4 min | 2 tasks | 14 files |
 | Phase 03 P02 | 9 min | 2 tasks | 14 files |
 | Phase 03 P03 | 29min | 2 tasks | 15 files |
+| Phase 03 P04 | 8min | 2 tasks | 15 files |
 
 ## Accumulated Context
 
@@ -217,6 +218,9 @@ Recent decisions affecting current work:
 - [Phase 03]: 03-02: notFound y onError globales viven en server.wiring y responden { mensaje } de MENSAJE_HTTP; el detalle solo va a pino
 - [Phase 03]: 03-03: un rechazo HTTP sin { mensaje } legible se trata como ERROR_RED (copia de red caída); un stream cortado con error equivale a FIN_STREAM
 - [Phase 03]: 03-03: enviarMensaje nunca rechaza; el reductor ignora FIN_STREAM si el turno ya cerró, y el evento error no cierra enCurso
+- [Phase 03]: 03-04: ACCESS_CODE obligatorio en todo entorno y NODE_ENV=production por defecto; ACCESS_TOKEN_SECRET obligatorio en producción y efímero (256 bits) en desarrollo
+- [Phase 03]: 03-04: ACCESS_TOKEN_SECRET no puede repetir ACCESS_CODE ni la clave del modelo; el servidor no arranca
+- [Phase 03]: 03-04: token de acceso v1.<vence en ms> firmado con setSignedCookie; vencimiento entero canónico comparado en el servidor; guardia app.use(/api/*) registrada después de health y acceso
 
 ### Pending Todos
 
@@ -251,6 +255,6 @@ Items acknowledged and deferred at milestone close, most recent first:
 
 ## Session Continuity
 
-Last session: 2026-10-14T23:57:25.274Z
-Stopped at: Completed 03-03-PLAN.md
+Last session: 2026-10-15T00:08:02.006Z
+Stopped at: Completed 03-04-PLAN.md
 Resume file: None
