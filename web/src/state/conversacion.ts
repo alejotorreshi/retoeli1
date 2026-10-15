@@ -11,6 +11,7 @@ import {
   TOKENS_POR_MILES,
 } from "@web/config/constants/ui.constants.ts";
 import { TEXTO_CHAT, TEXTO_CONFIRMACION, TEXTO_ERROR, TEXTO_HERRAMIENTA } from "@web/config/strings.ts";
+import { casoDelPanel } from "@web/state/casos.ts";
 import {
   casosAbiertosEnTurno,
   marcarEnviando,
@@ -411,7 +412,9 @@ export function llamadaEnCurso({ turnos, enCurso }: VistaTurnos): LlamadaDelTurn
 export function anuncioDeEstado(vista: VistaConConfirmaciones): string {
   if (vista.enCurso) {
     const llamada = llamadaEnCurso(vista);
-    return llamada === null ? "" : TEXTO_HERRAMIENTA.anuncio(llamada.herramienta, llamada.caso);
+    return llamada === null
+      ? ""
+      : TEXTO_HERRAMIENTA.anuncio(llamada.herramienta, casoDelPanel(llamada, null));
   }
   const ultimo = vista.turnos.at(-1);
   if (ultimo === undefined || ultimo.error !== null) return "";
@@ -425,7 +428,7 @@ export function etiquetaPensando(vista: VistaTurnos): string {
   const llamada = llamadaEnCurso(vista);
   return llamada === null
     ? TEXTO_CHAT.pensando
-    : TEXTO_CHAT.pensandoEn(TEXTO_HERRAMIENTA.gerundio(llamada.herramienta), llamada.caso);
+    : TEXTO_CHAT.pensandoEn(TEXTO_HERRAMIENTA.gerundio(llamada.herramienta), casoDelPanel(llamada, null));
 }
 
 export function eventosDelTurno({ turnos }: VistaTurnos): number {

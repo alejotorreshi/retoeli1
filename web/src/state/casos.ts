@@ -1,5 +1,6 @@
 import {
   ARCHIVOS_ESPERADOS_POR_ETAPA,
+  CODIGOS_DE_CASO_REFUTADO,
   ESTADO_ETAPA,
   ESTADO_FIRMA,
   ESTADO_HERRAMIENTA,
@@ -17,6 +18,7 @@ import type {
   ArchivoUi,
   ConfirmacionDelTurno,
   ContadorDeCaso,
+  EstadoConversacion,
   EstadoEtapa,
   EstadoFirma,
   EstadoListaArchivos,
@@ -48,8 +50,9 @@ export function casoDelPanel(
   llamada: LlamadaDelTurno,
   casosConocidos: readonly string[] | null,
 ): string | null {
-  const { caso } = llamada;
+  const { caso, codigo } = llamada;
   if (caso === null || !PATRON_CASO.test(caso)) return null;
+  if (codigo !== null && CODIGOS_DE_CASO_REFUTADO.has(codigo)) return null;
   return casosConocidos === null || casosConocidos.includes(caso) ? caso : null;
 }
 
@@ -228,7 +231,12 @@ function confirmacionesTras(
   return confirmaciones.filter((confirmacion) => confirmacion.trasLlamadas === llamadas);
 }
 
-function plegarTurno(plegado: PlegadoDeProgreso, turno: TurnoConversacion, turnoActivo: boolean): void {
+function plegarTurno(
+  plegado: PlegadoDeProgreso,
+  turno: TurnoConversacion,
+  turnoActivo: boolean,
+  casosConocidos: readonly string[] | null,
+): void {
   const registrarConfirmaciones = (llamadas: number) => {
     for (const confirmacion of confirmacionesTras(turno.confirmaciones, llamadas)) {
       plegado.registrarConfirmacion(confirmacion.caso);
@@ -236,7 +244,7 @@ function plegarTurno(plegado: PlegadoDeProgreso, turno: TurnoConversacion, turno
   };
   turno.llamadas.forEach((llamada, indice) => {
     registrarConfirmaciones(indice);
-    plegado.registrar(casoDelPanel(llamada, null), cambiosDeLlamada(llamada, turnoActivo));
+    plegado.registrar(casoDelPanel(llamada, casosConocidos), cambiosDeLlamada(llamada, turnoActivo));
   });
   registrarConfirmaciones(turno.llamadas.length);
 }
@@ -257,10 +265,12 @@ export function progresoPorCaso({
   turnos,
   enCurso,
   tarjetasConfirmacion,
-}: VistaConConfirmaciones): readonly ProgresoDeCaso[] {
+  config,
+}: VistaConConfirmaciones & Partial<Pick<EstadoConversacion, "config">>): readonly ProgresoDeCaso[] {
   const plegado = new PlegadoDeProgreso();
+  const casosConocidos = config?.casos ?? null;
   turnos.forEach((turno, indice) => {
-    plegarTurno(plegado, turno, enCurso && indice === turnos.length - 1);
+    plegarTurno(plegado, turno, enCurso && indice === turnos.length - 1, casosConocidos);
     for (const caso of cancelacionesDelTurno(tarjetasConfirmacion, turno)) {
       plegado.registrar(caso, [[ETAPA.CONFIRMACION, ESTADO_ETAPA.CANCELADA]]);
     }
@@ -275,14 +285,22 @@ export function firmaDelProgreso(progresos: readonly ProgresoDeCaso[]): string {
     .join(SEPARADOR_FIRMA);
 }
 
-function casosDelTurno(turno: TurnoConversacion): ReadonlySet<string> {
-  return new Set(turno.llamadas.flatMap((llamada) => casoDelPanel(llamada, null) ?? []));
+function casosDelTurno(
+  turno: TurnoConversacion,
+  casosConocidos: readonly string[] | null,
+): ReadonlySet<string> {
+  return new Set(turno.llamadas.flatMap((llamada) => casoDelPanel(llamada, casosConocidos) ?? []));
 }
 
-export function marcasDeArchivos({ turnos, enCurso }: VistaTurnos): ReadonlyMap<string, number> {
+export function marcasDeArchivos({
+  turnos,
+  enCurso,
+  config,
+}: VistaTurnos & Partial<Pick<EstadoConversacion, "config">>): ReadonlyMap<string, number> {
   const terminados = enCurso ? turnos.slice(0, -1) : turnos;
+  const casosConocidos = config?.casos ?? null;
   const marcas = new Map<string, number>();
-  for (const caso of terminados.flatMap((turno) => [...casosDelTurno(turno)])) {
+  for (const caso of terminados.flatMap((turno) => [...casosDelTurno(turno, casosConocidos)])) {
     marcas.set(caso, (marcas.get(caso) ?? 0) + 1);
   }
   return marcas;

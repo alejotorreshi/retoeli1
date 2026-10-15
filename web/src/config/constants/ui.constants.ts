@@ -1,3 +1,4 @@
+import { CODIGO_ERROR } from "@/config/constants/errors.constants.ts";
 import { TIPO_ARCHIVO_CASO } from "@/config/constants/files.constants.ts";
 import { METODO_POST } from "@/config/constants/http.constants.ts";
 import { CABECERA_HTTP, ESTADO_LLM, TIPO_CONTENIDO_JSON } from "@/config/constants/llm.constants.ts";
@@ -52,6 +53,11 @@ export const RESULTADO_API = {
   RECHAZO: "rechazo",
   SIN_RED: "sin_red",
 } as const;
+
+export const CODIGOS_DE_CASO_REFUTADO: ReadonlySet<string> = new Set([
+  CODIGO_ERROR.CASO_NO_ENCONTRADO,
+  CODIGO_ERROR.CASO_INVALIDO,
+]);
 
 export const ID_RAIZ = "root";
 
