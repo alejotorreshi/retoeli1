@@ -1,11 +1,11 @@
-import { FINES_DE_ORACION } from "@/config/constants/confirmation.constants.ts";
+import { DESENLACE_ENVIO, FINES_DE_ORACION } from "@/config/constants/confirmation.constants.ts";
 import { PATRON_PREGUNTA } from "@/config/constants/patterns.constants.ts";
 import { SALTO_DE_LINEA, SEPARADOR_PARRAFOS } from "@/config/constants/text.constants.ts";
 import { ORDEN_FLUJO_HERRAMIENTAS } from "@/config/constants/tools.constants.ts";
-import { TEXTO_CIERRE, TEXTO_CONFIRMACION } from "@/config/strings.ts";
+import { TEXTO_CIERRE, TEXTO_CONFIRMACION, TEXTO_ENVIO_NO_REGISTRADO } from "@/config/strings.ts";
 import { motivosDeBloqueo } from "@/domain/builders/checklist.builder.ts";
 import type { LlamadaResumida } from "@/domain/types/cierre-turno.type.ts";
-import type { CasoPendiente } from "@/domain/types/compuerta.type.ts";
+import type { CasoPendiente, DesenlaceEnvio } from "@/domain/types/compuerta.type.ts";
 
 function preguntaConfirmacion(pendientes: readonly CasoPendiente[]): string {
   const legibles = pendientes.map(({ caso, motivos }) => ({
@@ -45,11 +45,32 @@ function sinPreguntaFinal(texto: string): string {
   return lineas.join(SALTO_DE_LINEA).trimEnd();
 }
 
+function avisoDeDesenlace(desenlace: DesenlaceEnvio): string {
+  if (desenlace.tipo === DESENLACE_ENVIO.SIN_CASO) return TEXTO_ENVIO_NO_REGISTRADO[desenlace.tipo]();
+  return TEXTO_ENVIO_NO_REGISTRADO[desenlace.tipo](desenlace.caso);
+}
+
+function avisoDeEnvios(desenlaces: readonly DesenlaceEnvio[]): string {
+  return [...new Set(desenlaces.map(avisoDeDesenlace))].join(SALTO_DE_LINEA);
+}
+
+export function cierreDelTurno(
+  texto: string,
+  desenlaces: readonly DesenlaceEnvio[],
+  pendientes: readonly CasoPendiente[],
+): string {
+  if (desenlaces.length === 0 && pendientes.length === 0) return texto;
+  const conPregunta = pendientes.length > 0;
+  const partes = [
+    conPregunta ? sinPreguntaFinal(texto) : texto.trimEnd(),
+    avisoDeEnvios(desenlaces),
+    conPregunta ? preguntaConfirmacion(pendientes) : "",
+  ];
+  return partes.filter((parte) => parte !== "").join(SEPARADOR_PARRAFOS);
+}
+
 export function cierreConPregunta(texto: string, pendientes: readonly CasoPendiente[]): string {
-  if (pendientes.length === 0) return texto;
-  const pregunta = preguntaConfirmacion(pendientes);
-  const previo = sinPreguntaFinal(texto);
-  return previo === "" ? pregunta : `${previo}${SEPARADOR_PARRAFOS}${pregunta}`;
+  return cierreDelTurno(texto, [], pendientes);
 }
 
 function exitosas(llamadas: readonly LlamadaResumida[]): readonly LlamadaResumida[] {

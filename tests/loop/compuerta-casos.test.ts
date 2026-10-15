@@ -33,6 +33,7 @@ import {
 } from "@/config/constants/agent.constants.ts";
 import {
   DECISION_CONFIRMACION,
+  DESENLACE_ENVIO,
   ESTADO_COMPUERTA,
   TIPO_ACCION,
 } from "@/config/constants/confirmation.constants.ts";
@@ -52,7 +53,12 @@ import { ESTADO_SOPORTE } from "@/config/constants/supports.constants.ts";
 import { SEPARADOR_PARRAFOS } from "@/config/constants/text.constants.ts";
 import { HERRAMIENTA, NOMBRE_VISIBLE } from "@/config/constants/tools.constants.ts";
 import { pinExecutionDate } from "@/config/env.ts";
-import { MENSAJE_AGENTE, MENSAJE_ERROR, RESUMEN_HERRAMIENTA } from "@/config/strings.ts";
+import {
+  MENSAJE_AGENTE,
+  MENSAJE_ERROR,
+  RESUMEN_HERRAMIENTA,
+  TEXTO_ENVIO_NO_REGISTRADO,
+} from "@/config/strings.ts";
 import { cierreConPregunta } from "@/domain/builders/cierre-turno.builder.ts";
 import { clasificarConfirmacion } from "@/domain/policies/confirmacion.policy.ts";
 import type { CasoPendiente } from "@/domain/types/compuerta.type.ts";
@@ -223,11 +229,40 @@ describe("D-63.1: un intento bloqueado sin paquete armado en la sesión no deja 
     expect(finesDeHerramienta(eventos)).toEqual([bloqueada()]);
     expect(confirmaciones(eventos)).toEqual([]);
     expect(finDeTurno(eventos).needsConfirmation).toBe(false);
-    expect(textoFinal(eventos)).toBe("Hecho.");
+    expect(textoFinal(eventos)).toBe(
+      `Hecho.${SEPARADOR_PARRAFOS}${TEXTO_ENVIO_NO_REGISTRADO[DESENLACE_ENVIO.SIN_PAQUETE](EC)}`,
+    );
     expect(await lineasDeEnvio(proyecto.raiz)).toEqual([
       expect.objectContaining({ ok: false, codigo: CODIGO_ERROR.CONFIRMACION_REQUERIDA, caso: EC }),
     ]);
     historialSano(prueba);
+  });
+});
+
+describe("G-03-26: un envío que no ocurrió deja el aviso del servidor en la misma respuesta", () => {
+  test("escenario A: 'Sí, envía co' en una sesión nueva queda bloqueado y la afirmación del modelo sale seguida del aviso", async () => {
+    const afirmacion = `Registré el envío simulado de ${CO}.`;
+    const prueba = agente([
+      respuestaHerramientas(simular("simular-1", { caso: CO, confirmado: true })),
+      respuestaTexto(afirmacion),
+    ]);
+    const eventos = await prueba.turno(`Sí, envía ${CO}`);
+    expect(finesDeHerramienta(eventos)).toEqual([bloqueada()]);
+    expect(await casosConEnvioSimulado(proyecto.raiz)).toEqual([]);
+    expect(confirmaciones(eventos)).toEqual([]);
+    expect(finDeTurno(eventos).needsConfirmation).toBe(false);
+    const aviso = TEXTO_ENVIO_NO_REGISTRADO[DESENLACE_ENVIO.SIN_PAQUETE](CO);
+    expect(textoFinal(eventos)).toBe(`${afirmacion}${SEPARADOR_PARRAFOS}${aviso}`);
+    expect(ultimoParrafo(textoFinal(eventos))).toBe(aviso);
+    historialSano(prueba);
+  });
+
+  test("ningún aviso pregunta: los cinco desenlaces se dicen sin signos de pregunta", () => {
+    for (const desenlace of Object.values(DESENLACE_ENVIO)) {
+      const aviso = TEXTO_ENVIO_NO_REGISTRADO[desenlace](CO);
+      expect(aviso).not.toContain("?");
+      expect(aviso).not.toContain("¿");
+    }
   });
 });
 

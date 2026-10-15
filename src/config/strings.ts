@@ -1,4 +1,5 @@
 import { CODIGO_AGENTE } from "@/config/constants/agent.constants.ts";
+import { DESENLACE_ENVIO } from "@/config/constants/confirmation.constants.ts";
 import { CODIGO_ERROR } from "@/config/constants/errors.constants.ts";
 import { ARCHIVO_PROYECTO, ARCHIVOS_SALIDA, OUT_DIR } from "@/config/constants/files.constants.ts";
 import {
@@ -243,6 +244,19 @@ export const TEXTO_CONFIRMACION = {
       "¿Cuál caso confirmas para el envío simulado?",
     ].join(SALTO_DE_LINEA),
 } as const;
+
+export const TEXTO_ENVIO_NO_REGISTRADO = {
+  [DESENLACE_ENVIO.REQUIERE_CONFIRMACION]: (caso: string): string =>
+    `No se registró el envío simulado de ${caso}: falta tu confirmación explícita.`,
+  [DESENLACE_ENVIO.SIN_PAQUETE]: (caso: string): string =>
+    `No se registró el envío simulado de ${caso}: su paquete no está armado en esta sesión; primero hay que armarlo y después confirmar el envío.`,
+  [DESENLACE_ENVIO.YA_ENVIADO]: (caso: string): string =>
+    `No se registró otro envío simulado de ${caso}: ya tiene uno registrado en esta sesión (${ARCHIVOS_SALIDA.ENVIO_SIMULADO}); para registrar otro hay que volver a armar el paquete.`,
+  [DESENLACE_ENVIO.FALLIDO]: (caso: string): string =>
+    `No se registró el envío simulado de ${caso}: la herramienta no pudo registrarlo.`,
+  [DESENLACE_ENVIO.SIN_CASO]: (): string =>
+    "No se registró ningún envío simulado: el pedido no indicó un caso válido.",
+} as const satisfies Record<ValorDe<typeof DESENLACE_ENVIO>, (caso: string) => string>;
 
 const SIGUIENTE_PASO = {
   [HERRAMIENTA.LEER_SOLICITUD]: (caso: string): string =>

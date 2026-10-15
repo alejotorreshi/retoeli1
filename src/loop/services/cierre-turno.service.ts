@@ -1,7 +1,7 @@
 import { ACCION, TIPO_EVENTO } from "@/config/constants/agent.constants.ts";
 import { motivosDeBloqueo } from "@/domain/builders/checklist.builder.ts";
-import { cierreConPregunta } from "@/domain/builders/cierre-turno.builder.ts";
-import { cerrarTurno, pendientesDe } from "@/domain/policies/compuerta.policy.ts";
+import { cierreDelTurno } from "@/domain/builders/cierre-turno.builder.ts";
+import { cerrarTurno, desenlacesDeEnvio, pendientesDe } from "@/domain/policies/compuerta.policy.ts";
 import type { CasoPendiente } from "@/domain/types/compuerta.type.ts";
 import { limpiarMarkdown } from "@/domain/utils/texto-plano.util.ts";
 import type { EventoConfirmacionRequerida } from "@/loop/types/evento.type.ts";
@@ -24,7 +24,7 @@ export function cerrarTurnoConCompuerta(entrada: EntradaCierreTurno): CierreTurn
   return {
     estado,
     pendientes,
-    texto: cierreConPregunta(limpiarMarkdown(entrada.texto), pendientes),
+    texto: cierreDelTurno(limpiarMarkdown(entrada.texto), desenlacesDeEnvio(entrada), pendientes),
     eventosConfirmacion: pendientes.map((pendiente) => eventoConfirmacion(entrada.turnoId, pendiente)),
     needsConfirmation: pendientes.length > 0,
   };

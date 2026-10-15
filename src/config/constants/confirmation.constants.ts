@@ -282,3 +282,11 @@ export const EVENTO_COMPUERTA = {
   ENVIADO: "enviado",
   FALLIDO: "fallido",
 } as const;
+
+export const DESENLACE_ENVIO = {
+  REQUIERE_CONFIRMACION: "requiere_confirmacion",
+  SIN_PAQUETE: "sin_paquete",
+  YA_ENVIADO: "ya_enviado",
+  FALLIDO: "fallido",
+  SIN_CASO: "sin_caso",
+} as const;

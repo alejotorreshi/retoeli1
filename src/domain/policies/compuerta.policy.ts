@@ -1,6 +1,7 @@
 import { ACCION, MOTIVO_FIN } from "@/config/constants/agent.constants.ts";
 import {
   DECISION_CONFIRMACION,
+  DESENLACE_ENVIO,
   ESTADO_COMPUERTA,
   EVENTO_COMPUERTA,
 } from "@/config/constants/confirmation.constants.ts";
@@ -10,6 +11,7 @@ import type {
   AutorizacionTurno,
   CasoPendiente,
   CasosEnviados,
+  DesenlaceEnvio,
   EntradaCierreCompuerta,
   EstadoCompuerta,
   EvaluacionEnvio,
@@ -124,6 +126,31 @@ export function cerrarTurno(entrada: EntradaCierreCompuerta): EstadoCompuerta {
   const pendientes = new Map(entrada.arrastrados.map((pendiente) => [pendiente.caso, pendiente] as const));
   plegarEventos(pendientes, entrada.enviados, entrada.eventos, entrada.conocidos);
   return estadoCon([...pendientes.values()]);
+}
+
+function desenlaceDeEvento(
+  pendientes: ReadonlyMap<string, CasoPendiente>,
+  enviados: ReadonlySet<string>,
+  evento: EventoCompuerta,
+  conocidos: PaquetesConocidos,
+): DesenlaceEnvio | null {
+  if (evento.tipo !== EVENTO_COMPUERTA.BLOQUEADO) return null;
+  if (enviados.has(evento.caso)) return null;
+  if (conocido(evento.caso, conocidos, pendientes) !== undefined) return null;
+  return { tipo: DESENLACE_ENVIO.SIN_PAQUETE, caso: evento.caso };
+}
+
+export function desenlacesDeEnvio(entrada: EntradaCierreCompuerta): readonly DesenlaceEnvio[] {
+  if (entrada.abortado) return [];
+  const pendientes = new Map(entrada.arrastrados.map((pendiente) => [pendiente.caso, pendiente] as const));
+  const enviados = new Set(entrada.enviados);
+  const desenlaces: DesenlaceEnvio[] = [];
+  for (const evento of entrada.eventos) {
+    const desenlace = desenlaceDeEvento(pendientes, enviados, evento, entrada.conocidos);
+    if (desenlace !== null) desenlaces.push(desenlace);
+    aplicarEvento(pendientes, enviados, evento, entrada.conocidos);
+  }
+  return desenlaces;
 }
 
 export function enviadosTrasEventos(
