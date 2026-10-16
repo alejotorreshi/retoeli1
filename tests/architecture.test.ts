@@ -5,6 +5,7 @@ import {
   ENUM_DE_TS,
   EXPORTA_TIPO,
   extraerImportaciones,
+  extraerImportacionesConTipo,
   IMPORTA_VALOR,
   LITERAL_DE_REGEX,
   lineasQueCumplen,
@@ -110,6 +111,8 @@ const PERMITIDOS: Readonly<Record<string, readonly string[]>> = {
 };
 
 const CONFIG_PURA = /^src\/config\/(?:constants\/.+|types\/.+|strings)$/;
+
+const TIPOS_HTTP = /^src\/http\/types\//;
 
 const LECTURA_DE_ENTORNO = /\b(?:process|Bun)\s*\.\s*env\b/;
 
@@ -335,6 +338,19 @@ function violacionesDeCapas(ruta: string, codigo: string): string[] {
   return extraerImportaciones(codigo)
     .filter((especificador) => !permitidos.includes(capaDeDestino(ruta, especificador)))
     .map((especificador) => `${ruta}: la capa ${origen} no puede importar ${especificador}`);
+}
+
+function violacionesDeHttpEnCli(ruta: string, codigo: string): string[] {
+  if (capaDeRuta(ruta) !== "cli") return [];
+  return extraerImportacionesConTipo(codigo)
+    .filter(({ especificador, soloTipo }) => {
+      if (capaDeDestino(ruta, especificador) !== "http") return false;
+      return !soloTipo || !TIPOS_HTTP.test(rutaLocal(ruta, especificador) ?? "");
+    })
+    .map(
+      ({ especificador }) =>
+        `${ruta}: la capa cli solo importa tipos de http/types con import type: ${especificador}`,
+    );
 }
 
 function violacionesDePureza(ruta: string, codigo: string): string[] {
@@ -1245,6 +1261,89 @@ describe("el escáner muerde sobre fuentes de muestra", () => {
     expect(violacionesDeCapas("src/server.ts", permitido)).toEqual([]);
     expect(violacionesDeCapas("src/server.ts", prohibido)).toEqual([
       "src/server.ts: la capa servidor no puede importar @/http/routes/chat.route.ts",
+    ]);
+  });
+
+  test("la capa cli llega a dominio, config, env.ts, zod, node:, eventsource-parser y tipos de http", () => {
+    const codigo = [
+      'import { createParser } from "eventsource-parser";',
+      'import { z } from "zod";',
+      'import { join } from "node:path";',
+      'import { conFrontmatter } from "@/domain/builders/modulo.builder.ts";',
+      'import { readAgentEnv } from "@/config/env.ts";',
+      'import { TEXTO_MODULO } from "@/config/strings.ts";',
+      'import type { ArchivoModulo } from "@/cli/types/modulo.type.ts";',
+      'import type { HealthResponse } from "@/http/types/api.type.ts";',
+    ].join("\n");
+    expect(violacionesDeCapas("src/cli/runners/x.runner.ts", codigo)).toEqual([]);
+    expect(violacionesDeHttpEnCli("src/cli/runners/x.runner.ts", codigo)).toEqual([]);
+  });
+
+  test("la capa cli no importa infra, loop, llm, la herramienta exportada ni hono", () => {
+    const codigo = [
+      'import { createLogger } from "@/infra/logging/logger.adapter.ts";',
+      'import { ejecutarTurno } from "@/loop/services/ejecutar-turno.service.ts";',
+      'import { createOpenAICompatibleAdapter } from "@/llm/adapters/openai-compatible.adapter.ts";',
+      'import { leer_solicitud } from "@/tools/proveedor.ts";',
+      'import { Hono } from "hono";',
+    ].join("\n");
+    expect(violacionesDeCapas("src/cli/runners/x.runner.ts", codigo)).toEqual([
+      "src/cli/runners/x.runner.ts: la capa cli no puede importar @/infra/logging/logger.adapter.ts",
+      "src/cli/runners/x.runner.ts: la capa cli no puede importar @/loop/services/ejecutar-turno.service.ts",
+      "src/cli/runners/x.runner.ts: la capa cli no puede importar @/llm/adapters/openai-compatible.adapter.ts",
+      "src/cli/runners/x.runner.ts: la capa cli no puede importar @/tools/proveedor.ts",
+      "src/cli/runners/x.runner.ts: la capa cli no puede importar hono",
+    ]);
+  });
+
+  test("la capa cli solo toma tipos de http/types con import type", () => {
+    const codigo = [
+      'import { RUTA } from "@/http/types/api.type.ts";',
+      'import { formatearSse } from "@/http/services/sse.service.ts";',
+      'import type { ChatBody } from "@/http/schemas/chat.schema.ts";',
+      'import type { HealthResponse } from "@/http/types/api.type.ts";',
+    ].join("\n");
+    expect(violacionesDeHttpEnCli("src/cli/runners/x.runner.ts", codigo)).toEqual([
+      "src/cli/runners/x.runner.ts: la capa cli solo importa tipos de http/types con import type: @/http/types/api.type.ts",
+      "src/cli/runners/x.runner.ts: la capa cli solo importa tipos de http/types con import type: @/http/services/sse.service.ts",
+      "src/cli/runners/x.runner.ts: la capa cli solo importa tipos de http/types con import type: @/http/schemas/chat.schema.ts",
+    ]);
+    expect(violacionesDeHttpEnCli("src/http/routes/x.route.ts", codigo)).toEqual([]);
+  });
+
+  test("ninguna otra capa importa cli", () => {
+    const codigo = 'import { generarModulo } from "@/cli/runners/generar-modulo.runner.ts";\n';
+    expect(
+      [
+        "src/domain/builders/x.builder.ts",
+        "src/tools/factories/x.factory.ts",
+        "src/demo/runners/x.runner.ts",
+        "src/http/routes/x.route.ts",
+        "src/loop/services/x.service.ts",
+      ].flatMap((ruta) => violacionesDeCapas(ruta, codigo)),
+    ).toEqual([
+      "src/domain/builders/x.builder.ts: la capa domain no puede importar @/cli/runners/generar-modulo.runner.ts",
+      "src/tools/factories/x.factory.ts: la capa tools no puede importar @/cli/runners/generar-modulo.runner.ts",
+      "src/demo/runners/x.runner.ts: la capa demo no puede importar @/cli/runners/generar-modulo.runner.ts",
+      "src/http/routes/x.route.ts: la capa http no puede importar @/cli/runners/generar-modulo.runner.ts",
+      "src/loop/services/x.service.ts: la capa loop no puede importar @/cli/runners/generar-modulo.runner.ts",
+    ]);
+  });
+
+  test("G5 y G13: roles y sufijos de la capa cli", () => {
+    const rutas = [
+      "src/cli/runners/x.ts",
+      "src/cli/x.ts",
+      "src/cli/runners/x.runner.ts",
+      "src/cli/schemas/x.schema.ts",
+      "src/cli/types/x.type.ts",
+    ];
+    expect(rutas.flatMap(violacionesDeNombre)).toEqual([
+      "src/cli/runners/x.ts: el nombre no sigue la tabla de sufijos por carpeta",
+      "src/cli/x.ts: el nombre no sigue la tabla de sufijos por carpeta",
+    ]);
+    expect(rutas.flatMap(violacionesDeArchivoSuelto)).toEqual([
+      "src/cli/x.ts: archivo suelto en la raíz de su capa; va en una carpeta de rol",
     ]);
   });
 
