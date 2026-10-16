@@ -125,11 +125,15 @@ async function leerJson(respuesta: Response): Promise<unknown> {
   }
 }
 
+function esJson(respuesta: Response): boolean {
+  return (respuesta.headers.get(CABECERA.TIPO_CONTENIDO) ?? "").startsWith(TIPO_CONTENIDO.JSON);
+}
+
 async function sondearSalud(opciones: OpcionesPreflight): Promise<PasoPreflight<HealthResponse> | null> {
   const respuesta = await pedir(opciones, RUTA_API.SALUD, {
     signal: AbortSignal.timeout(opciones.plazos.sondeoMs),
   });
-  if (respuesta === null || respuesta.status !== RESPUESTA_HTTP.OK) {
+  if (respuesta === null || respuesta.status !== RESPUESTA_HTTP.OK || !esJson(respuesta)) {
     await descartar(respuesta);
     return null;
   }
@@ -140,15 +144,15 @@ async function sondearSalud(opciones: OpcionesPreflight): Promise<PasoPreflight<
 async function esperarSalud(opciones: OpcionesPreflight): Promise<PasoPreflight<SaludLista>> {
   const { despertarMs, pausaMs } = opciones.plazos;
   const inicio = opciones.ahora();
-  let ultimoFallo: FalloPreflight | null = null;
   for (;;) {
     const sondeo = await sondearSalud(opciones);
-    if (sondeo?.ok === true) return exito({ salud: sondeo.valor, ms: opciones.ahora() - inicio });
-    ultimoFallo = sondeo ?? ultimoFallo;
+    if (sondeo !== null) {
+      return sondeo.ok ? exito({ salud: sondeo.valor, ms: opciones.ahora() - inicio }) : sondeo;
+    }
     if (opciones.ahora() - inicio + pausaMs > despertarMs) break;
     await opciones.esperar(pausaMs);
   }
-  return ultimoFallo ?? fallido(TEXTO_PREFLIGHT.servicioDormido(segundos(despertarMs)));
+  return fallido(TEXTO_PREFLIGHT.servicioDormido(segundos(despertarMs)));
 }
 
 async function verificarSalud(opciones: OpcionesPreflight): Promise<PasoPreflight<HealthResponse>> {

@@ -49,6 +49,8 @@ const GENERAR = NOMBRE_VISIBLE[HERRAMIENTA.GENERAR_FORMULARIO];
 const ARMAR = NOMBRE_VISIBLE[HERRAMIENTA.ARMAR_PAQUETE];
 const SIMULAR = NOMBRE_VISIBLE[HERRAMIENTA.SIMULAR_ENVIO];
 const RUTA_ARCHIVOS_GUION = `/api/casos/${CASO_GUION_PRD}/archivos`;
+const PAGINA_DE_ESPERA = "<html><body>Service waking up</body></html>";
+const HTML = { "Content-Type": "text/html; charset=utf-8" };
 
 const PLAZOS_PRUEBA: PlazosPreflight = {
   despertarMs: 30_000,
@@ -211,6 +213,26 @@ describe("pre-flight por defecto contra un socket real de la app (D-92, D-97)", 
     expect(pedidosA(pedidos, RUTA_API.SALUD).length).toBeGreaterThan(1);
     expect(pedidosA(pedidos, RUTA_API.SALUD).length).toBeLessThanOrEqual(4);
     expect(pedidosA(pedidos, RUTA_API.CONFIG)).toEqual([]);
+  });
+
+  test("un 200 con un cuerpo de salud inválido falla en el acto con respuestaInvalida, sin seguir sondeando", async () => {
+    const real = Bun.serve({ port: 0, fetch: () => Response.json({ ok: false }) });
+    limpiezas.push(() => real.stop(true));
+    const { resultado, lineas, pedidos } = await correr(new URL(real.url));
+    expect(resultado.fallido).toBe(true);
+    expect(lineas).toContain(TEXTO_PREFLIGHT.respuestaInvalida(RUTA_API.SALUD));
+    expect(pedidosA(pedidos, RUTA_API.SALUD)).toHaveLength(1);
+    expect(pedidosA(pedidos, RUTA_API.CONFIG)).toEqual([]);
+  });
+
+  test("un 200 que no es JSON, como una página de espera del borde, sigue sondeando hasta el plazo", async () => {
+    const real = Bun.serve({ port: 0, fetch: () => new Response(PAGINA_DE_ESPERA, { headers: HTML }) });
+    limpiezas.push(() => real.stop(true));
+    const plazos = { ...PLAZOS_PRUEBA, despertarMs: 3_000, pausaMs: 1_000 };
+    const { resultado, lineas, pedidos } = await correr(new URL(real.url), { plazos });
+    expect(resultado.fallido).toBe(true);
+    expect(lineas).toContain(TEXTO_PREFLIGHT.servicioDormido(3));
+    expect(pedidosA(pedidos, RUTA_API.SALUD).length).toBeGreaterThan(1);
   });
 
   test("un servicio que no escucha también agota el plazo sin lanzar", async () => {
