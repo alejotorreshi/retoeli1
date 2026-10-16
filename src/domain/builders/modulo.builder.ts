@@ -31,6 +31,13 @@ export function frontmatterAgente(descripcion: string): string {
   ]);
 }
 
+export function frontmatterSkill(nombre: string, descripcion: string): string {
+  return bloqueFrontmatter([
+    par(CLAVE_FRONTMATTER.NOMBRE, nombre),
+    par(CLAVE_FRONTMATTER.DESCRIPCION, textoYaml(descripcion)),
+  ]);
+}
+
 export function conFrontmatter(frontmatter: string, cuerpo: Uint8Array): Uint8Array {
   const cabecera = new TextEncoder().encode(frontmatter);
   const contenido = new Uint8Array(cabecera.length + cuerpo.length);

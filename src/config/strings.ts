@@ -14,7 +14,7 @@ import { LONGITUD_MAXIMA_CASO } from "@/config/constants/limits.constants.ts";
 import { ESQUEMA_LOOPBACK, ESQUEMA_SEGURO, HOSTS_LOOPBACK } from "@/config/constants/llm.constants.ts";
 import { ESTADO_CAMPO } from "@/config/constants/mapping.constants.ts";
 import { FIN_DE_ORACION, SALTO_DE_LINEA } from "@/config/constants/text.constants.ts";
-import { HERRAMIENTA, NOMBRE_VISIBLE } from "@/config/constants/tools.constants.ts";
+import { HERRAMIENTA, NOMBRE_VISIBLE, ORDEN_FLUJO_HERRAMIENTAS } from "@/config/constants/tools.constants.ts";
 import type { ValorDe } from "@/config/types/valor-de.type.ts";
 
 export const MENSAJE_ERROR = {
@@ -454,6 +454,7 @@ export const TEXTO_DEMO = {
 export const TEXTO_MODULO = {
   descripcionAgente:
     "Agente que llena los formularios de registro como proveedor de Periferia IT Group ante sus clientes con los datos del repositorio maestro, arma el paquete para firma y nunca envía nada sin la confirmación explícita de la analista.",
+  descripcionSkill: `Conocimiento del proceso de registro como proveedor de Periferia IT Group: el orden de las herramientas (${ORDEN_FLUJO_HERRAMIENTAS.map((herramienta) => NOMBRE_VISIBLE[herramienta]).join(", ")}), los estados de cada campo, las reglas de negocio y el formato del resumen para la analista.`,
   generado: (ruta: string): string => `Generado: ${ruta}`,
   fuenteAusente: (ruta: string): string => `No existe la fuente del módulo: ${ruta}; no se escribió nada.`,
   fuenteVacia: (ruta: string): string => `La fuente del módulo está vacía: ${ruta}; no se escribió nada.`,

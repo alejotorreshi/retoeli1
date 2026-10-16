@@ -5,14 +5,24 @@ import type {
   OpcionesGeneracion,
   ResultadoGeneracion,
 } from "@/cli/types/modulo.type.ts";
-import { ARCHIVO_PROMPT, ARCHIVO_PROYECTO, DIRECTORIO_AGENTE } from "@/config/constants/files.constants.ts";
+import {
+  ARCHIVO_CONOCIMIENTO_PROCESO,
+  ARCHIVO_PROMPT,
+  ARCHIVO_PROYECTO,
+  DIRECTORIO_AGENTE,
+  DIRECTORIO_CONOCIMIENTO,
+} from "@/config/constants/files.constants.ts";
 import {
   ARCHIVO_AGENTE_MODULO,
+  ARCHIVO_SKILL,
   DIRECTORIO_MODULO,
+  DIRECTORIO_SKILLS_MODULO,
   MOTIVO_FUENTE_MODULO,
+  NOMBRE_SKILL,
 } from "@/config/constants/modulo.constants.ts";
+import { PATRON_TEXTO_NO_VACIO } from "@/config/constants/patterns.constants.ts";
 import { TEXTO_MODULO } from "@/config/strings.ts";
-import { conFrontmatter, frontmatterAgente } from "@/domain/builders/modulo.builder.ts";
+import { conFrontmatter, frontmatterAgente, frontmatterSkill } from "@/domain/builders/modulo.builder.ts";
 
 type Fuente =
   | { readonly ok: true; readonly bytes: Uint8Array }
@@ -26,18 +36,31 @@ const MENSAJE_POR_MOTIVO: Readonly<Record<MotivoFuenteModulo, (ruta: string) => 
 async function leerFuente(raiz: string, ruta: string): Promise<Fuente> {
   const archivo = Bun.file(join(raiz, ruta));
   if (!(await archivo.exists())) return { ok: false, ruta, motivo: MOTIVO_FUENTE_MODULO.AUSENTE };
-  return { ok: true, bytes: await archivo.bytes() };
+  const bytes = await archivo.bytes();
+  if (!PATRON_TEXTO_NO_VACIO.test(new TextDecoder().decode(bytes))) {
+    return { ok: false, ruta, motivo: MOTIVO_FUENTE_MODULO.VACIA };
+  }
+  return { ok: true, bytes };
 }
 
 export async function archivosDelModulo(raiz: string): Promise<LecturaModulo> {
   const prompt = await leerFuente(raiz, join(DIRECTORIO_AGENTE, ARCHIVO_PROMPT));
   if (!prompt.ok) return prompt;
+  const conocimiento = await leerFuente(raiz, join(DIRECTORIO_CONOCIMIENTO, ARCHIVO_CONOCIMIENTO_PROCESO));
+  if (!conocimiento.ok) return conocimiento;
   return {
     ok: true,
     archivos: [
       {
         ruta: join(DIRECTORIO_MODULO, ARCHIVO_AGENTE_MODULO),
         contenido: conFrontmatter(frontmatterAgente(TEXTO_MODULO.descripcionAgente), prompt.bytes),
+      },
+      {
+        ruta: join(DIRECTORIO_MODULO, DIRECTORIO_SKILLS_MODULO, NOMBRE_SKILL, ARCHIVO_SKILL),
+        contenido: conFrontmatter(
+          frontmatterSkill(NOMBRE_SKILL, TEXTO_MODULO.descripcionSkill),
+          conocimiento.bytes,
+        ),
       },
     ],
   };
