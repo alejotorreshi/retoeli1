@@ -26,9 +26,11 @@ export function usePantallaAcceso(): ControlPantallaAcceso {
   const [visible, cambiarVisible] = useState(false);
   const [pendiente, cambiarPendiente] = useState(false);
   const [error, cambiarError] = useState<string | null>(null);
+  const pedidoDeConfig = useRef<AbortController | null>(null);
 
   useEffect(() => {
     campo.current?.focus();
+    return () => pedidoDeConfig.current?.abort();
   }, []);
 
   async function enviar(): Promise<void> {
@@ -38,8 +40,10 @@ export function usePantallaAcceso(): ControlPantallaAcceso {
     if (fallo === null) {
       cambiarCodigo("");
       cambiarError(null);
-      await cargarConfig(new AbortController().signal);
-      cambiarPendiente(false);
+      const controlador = new AbortController();
+      pedidoDeConfig.current = controlador;
+      await cargarConfig(controlador.signal);
+      if (!controlador.signal.aborted) cambiarPendiente(false);
       return;
     }
     cambiarError(fallo);
