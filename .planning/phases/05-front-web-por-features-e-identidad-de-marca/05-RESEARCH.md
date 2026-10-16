@@ -605,18 +605,21 @@ Las dependencias entre los módulos de `estado` son acíclicas: `conversacion �
 | A4 | Que eli-qa compare conducta (no píxeles) entre antes y después, porque la marca cambia lo visual a propósito | Migración | Bajo |
 | A5 | Que el checkpoint de los paquetes SUS se resuelva automáticamente con evidencia (corrida nocturna D-104) | Package Audit | Medio: si la política exige humano, la instalación se detiene hasta la mañana |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **¿`bun test --isolate` como comando oficial?**
    - What we know: con el helper (`document` explícito + `within`) funciona sin `--isolate`; con `--isolate` todo pasa en 27.5 s (+11%).
    - What's unclear: si conviene la robustez extra a costa de cambiar `bun test` en la CI y en los criterios.
    - Recommendation: quedarse con `bun test` y el helper; documentar `--isolate` como diagnóstico.
+   - **RESOLVED:** el comando oficial sigue siendo `bun test`. Ningún plan toca el script `test` de `package.json` ni el paso `bun test` de `.github/workflows/ci.yml`. El aislamiento lo da el helper: `prepararDom()` expone `within(document.body)` y `userEvent.setup({ document })` (05-01 Task 1). `--isolate` no queda solo como diagnóstico: es una compuerta extra junto a `--parallel=2`. 05-01 Task 3 verifica `bun test && bun test --isolate && bun test --parallel=2`, y la compuerta final de 05-09 Task 3 corre `bun test`, `bun test --isolate` y `bun test --parallel=2` sobre el árbol final.
 2. **¿Dónde vive `nuevaSesionAbierta`?**
    - What we know: lo abren el Encabezado y `AvisoError` (acción `NUEVA_SESION`) y lo consume `DialogoNuevaSesion` (`app.tsx:133,156,190,263-267`).
    - Recommendation: un slice pequeño `dialogoSesion` en `features/sesion/estado/`, porque cruza tres features.
+   - **RESOLVED:** en el slice puro `dialogoSesion` de `web/src/features/sesion/estado/dialogo-sesion.ts`, con `estadoDialogoSesionInicial { abierto: false }`, `reducirDialogoSesion` y `ACCION_DIALOGO_SESION { ABRIR, CERRAR }` en `ui.constants.ts`. Lo agrega 05-02 Task 2 y lo combina en `reducirRaiz`. Las acciones `abrirNuevaSesion` y `cerrarNuevaSesion` las tipa 05-02 Task 1 y las implementa 05-02 Task 3. 05-03 Task 1 reemplaza el `useState` de `app.tsx` por el slice. En 05-03 Task 2, `useDialogoNuevaSesion()` lee el slice y `useEncabezado()` expone `abrirNuevaSesion`. 05-05 asigna `ACCION_AVISO.NUEVA_SESION` a `abrirNuevaSesion`.
 3. **¿`Mensaje` exporta dos componentes?**
    - What we know: la UI-SPEC pone `MensajeUsuaria` y `MensajeAgente` en `features/chat/mensaje`.
    - Recommendation: W14 exige un archivo `<c>.tsx` por carpeta, no un único export; se permiten varios exports de presentación en el mismo archivo.
+   - **RESOLVED:** un solo archivo con dos exports. 05-04 Task 2 mueve el componente a `web/src/features/chat/mensaje/mensaje.tsx` (más `mensaje.module.css`), que exporta `MensajeUsuaria` y `MensajeAgente`. No lleva hook porque no tiene lógica. Las interfaces de 05-04 fijan la regla: un `.tsx` puede exportar varios componentes de presentación (`MensajeUsuaria`/`MensajeAgente`, `AvisoError`/`AvisoSistema`, `TarjetaConfirmacion`/`PilaConfirmaciones`), y un `usar-<c>.ts` puede exportar varios hooks.
 
 ## Environment Availability
 
