@@ -6,24 +6,27 @@
   gap: var(--espacio-sm) var(--espacio-md);
   min-height: var(--alto-encabezado);
   padding: var(--espacio-sm) var(--espacio-md);
-  background: var(--secundario);
-  border-block-end: var(--borde-ancho) solid var(--borde);
+  color: var(--sobre-marca);
+  background: var(--marca);
+  --foco-color: var(--foco-color-marca);
 }
 
 .marca {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   align-items: center;
   gap: 0 var(--espacio-md);
   min-width: 0;
 }
 
 .titulo {
+  min-width: 0;
   margin: 0;
+  font-family: var(--titulo-fuente);
   font-size: var(--titulo-tamano);
   font-weight: var(--titulo-peso);
   line-height: var(--titulo-interlinea);
-  color: var(--texto);
+  color: var(--sobre-marca);
 }
 
 .divisor {
@@ -54,9 +57,9 @@
   font-size: var(--etiqueta-tamano);
   line-height: var(--etiqueta-interlinea);
   font-variant-numeric: tabular-nums;
-  color: var(--texto);
-  background: var(--dominante);
-  border: var(--borde-ancho) solid var(--borde);
+  color: var(--sobre-marca);
+  background: var(--marca-elevada);
+  border: 0;
   border-radius: var(--radio-chico);
 }
 
@@ -71,9 +74,9 @@
   padding-inline: var(--espacio-md);
   font-size: var(--etiqueta-tamano);
   line-height: var(--etiqueta-interlinea);
-  color: var(--texto);
-  background: var(--dominante);
-  border: var(--borde-ancho) solid var(--borde);
+  color: var(--sobre-marca);
+  background: var(--marca-elevada);
+  border: 0;
   border-radius: var(--radio-chico);
 }
 
@@ -89,15 +92,15 @@
 }
 
 .exito {
-  background: var(--exito-texto);
+  background: var(--encabezado-punto-exito);
 }
 
 .atencion {
-  background: var(--atencion-borde);
+  background: var(--encabezado-punto-atencion);
 }
 
 .error {
-  background: var(--error-texto);
+  background: var(--encabezado-punto-error);
 }
 
 .nuevaSesion {
@@ -107,20 +110,39 @@
   font-size: var(--etiqueta-tamano);
   font-weight: var(--etiqueta-peso-fuerte);
   line-height: var(--etiqueta-interlinea);
-  color: var(--texto);
-  background: var(--dominante);
-  border: var(--borde-ancho) solid var(--borde);
-  border-radius: var(--radio-chico);
+  color: var(--sobre-marca);
+  background: transparent;
+  border: var(--borde-ancho) solid var(--neon);
+  border-radius: var(--radio-pildora);
   cursor: pointer;
+  transition:
+    background-color var(--duracion-transicion) ease,
+    border-color var(--duracion-transicion) ease,
+    color var(--duracion-transicion) ease;
+}
+
+.nuevaSesion:active:not(:disabled) {
+  background: var(--marca-elevada);
 }
 
 .nuevaSesion:disabled {
-  color: var(--texto-tenue);
+  color: var(--sobre-marca-tenue);
+  border-color: var(--sobre-marca-tenue);
   cursor: not-allowed;
+}
+
+@media (hover: hover) {
+  .nuevaSesion:hover:not(:disabled):not(:active) {
+    background: var(--marca-hover);
+  }
 }
 
 :global([data-diseno="angosto"]) .marca {
   flex-basis: 100%;
+}
+
+:global([data-diseno="angosto"]) .titulo {
+  font-size: var(--titulo-angosto-tamano);
 }
 
 :global([data-diseno="angosto"]) .meta {

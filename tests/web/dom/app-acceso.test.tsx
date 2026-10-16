@@ -35,6 +35,18 @@ describe("App con el acceso pedido por la API", () => {
     expect(pantalla.queryByText(TEXTO_APP.cargando)).toBeNull();
   });
 
+  test("la pantalla de acceso muestra el logo y el nombre de la app sobre la tarjeta", async () => {
+    const red = crearRedWeb({ nativos: dom.nativos, codigoAcceso: CODIGO_CORRECTO });
+    const { pantalla } = await montarApp(dom, red);
+
+    const titulo = await pantalla.findByRole("heading", { name: TEXTO_ACCESO.titulo });
+    const logo = pantalla.getByRole("img", { name: TEXTO_APP.subtitulo });
+    const nombre = pantalla.getByText(TEXTO_APP.titulo);
+    expect(nombre.tagName).toBe("P");
+    expect(logo.compareDocumentPosition(nombre) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(nombre.compareDocumentPosition(titulo) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
   test("un 401 de /api/config muestra la pantalla de acceso con el campo enfocado y oculto", async () => {
     const red = crearRedWeb({ nativos: dom.nativos, codigoAcceso: CODIGO_CORRECTO });
     const { pantalla, usuario } = await montarApp(dom, red);

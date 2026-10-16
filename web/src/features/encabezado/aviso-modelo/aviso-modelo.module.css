@@ -58,12 +58,27 @@
   line-height: var(--etiqueta-interlinea);
   color: var(--texto);
   background: var(--dominante);
-  border: var(--borde-ancho) solid var(--borde);
-  border-radius: var(--radio-chico);
+  border: var(--borde-ancho) solid var(--borde-control);
+  border-radius: var(--radio-pildora);
   cursor: pointer;
+  transition:
+    background-color var(--duracion-transicion) ease,
+    border-color var(--duracion-transicion) ease,
+    color var(--duracion-transicion) ease;
+}
+
+.comprobar:active:not(:disabled) {
+  background: var(--acento-suave);
 }
 
 .comprobar:disabled {
   color: var(--texto-tenue);
+  border-color: var(--borde);
   cursor: not-allowed;
+}
+
+@media (hover: hover) {
+  .comprobar:hover:not(:disabled):not(:active) {
+    background: var(--secundario);
+  }
 }

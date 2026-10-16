@@ -1,5 +1,7 @@
 import { AvisoSistema } from "@web/compartido/aviso/aviso.tsx";
-import { TEXTO_ACCESO } from "@web/config/strings.ts";
+import { LogoMarca } from "@web/compartido/logo-marca/logo-marca.tsx";
+import { VARIANTE_LOGO } from "@web/config/constants/marca.constants.ts";
+import { TEXTO_ACCESO, TEXTO_APP } from "@web/config/strings.ts";
 import estilos from "@web/features/acceso/pantalla-acceso/pantalla-acceso.module.css";
 import { usePantallaAcceso } from "@web/features/acceso/pantalla-acceso/usar-pantalla-acceso.ts";
 import type { PropsPantallaAcceso } from "@web/types/ui.type.ts";
@@ -22,6 +24,10 @@ export function PantallaAcceso({ aviso }: PropsPantallaAcceso) {
 
   return (
     <main className={estilos.pantalla}>
+      <div className={estilos.marca}>
+        <LogoMarca variante={VARIANTE_LOGO.ACCESO} />
+        <p className={estilos.nombre}>{TEXTO_APP.titulo}</p>
+      </div>
       <form className={estilos.tarjeta} onSubmit={alEnviarFormulario} noValidate>
         <h1 className={estilos.titulo}>{TEXTO_ACCESO.titulo}</h1>
         <p className={estilos.ayuda}>{TEXTO_ACCESO.ayuda}</p>
