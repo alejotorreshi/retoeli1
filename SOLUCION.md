@@ -208,7 +208,7 @@ El `overrides` de `uuid` (`^11.1.1`) cierra un aviso moderado de una dependencia
 
 **Cómo se orientó el flujo hacia la calidad:**
 
-- **Guardianes de arquitectura:** G1–G16 en `tests/architecture.test.ts` y W1–W13 en `tests/arquitectura-web.test.ts`. Cada regla de capas, nombres, idioma y textos tiene una prueba que demuestra que detecta la violación.
+- **Guardianes de arquitectura:** G1–G16 en `tests/architecture.test.ts` y las reglas W del front en `tests/arquitectura-web.test.ts` (tabla en [docs/convenciones.md](docs/convenciones.md)). Cada regla de capas, nombres, idioma y textos tiene una prueba que demuestra que detecta la violación.
 - **Prueba sin comentarios:** `tests/sin-comentarios.test.ts` exige código que se explique por sus nombres y tipos.
 - **Revisión de código por fase:** cada hallazgo (CR, WR, IN) se corrigió o quedó aceptado por escrito.
 - **Auditoría de seguridad:** modelo de amenazas en cada plan. La Fase 3 cerró 87/87 amenazas verificadas contra el código.

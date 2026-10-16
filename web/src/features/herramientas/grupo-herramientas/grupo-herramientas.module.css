@@ -21,7 +21,7 @@
 }
 
 .grupo[open] .chevron {
-  transform: rotate(90deg);
+  transform: rotate(var(--giro-cuarto));
 }
 
 .lista {

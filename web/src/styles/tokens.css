@@ -77,4 +77,9 @@
 
   --duracion-transicion: 150ms;
   --duracion-giro: 1s;
+  --duracion-nula: 0ms;
+  --alto-vista: 100dvh;
+  --giro-completo: 360deg;
+  --giro-cuarto: 90deg;
+  --ancho-max-argumentos: 40%;
 }

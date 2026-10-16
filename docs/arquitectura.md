@@ -69,7 +69,7 @@ Hay tres composition roots, los únicos que importan infra: `src/tools/wiring/en
 
 ## Front (`web/`)
 
-`web/` es una SPA de Vite y React con su propio guardián (W1–W13). Habla con la API por `fetch` y lee el SSE con `eventsource-parser`. Muestra los mensajes del servidor como texto, nunca como HTML.
+`web/` es una SPA de Vite y React organizada por features: cada componente vive en `web/src/features/<feature>/<componente>/` (o en `web/src/compartido/` si lo usan varias), con su vista, su hook `usar-<componente>.ts` y su módulo CSS. El estado vive en un almacén propio, `web/src/store/`, sobre `useSyncExternalStore`, que combina los reductores puros de cada `features/<feature>/estado/` y expone selectores con nombre. Las vistas solo presentan; los hooks leen el almacén y hablan con la API por `fetch`, y el SSE se lee con `eventsource-parser`. Los mensajes del servidor se muestran como texto, nunca como HTML, y el front nunca decide un estado de negocio: presenta lo que recibe. Tiene su propio guardián en `tests/arquitectura-web.test.ts`, con las reglas W de la tabla de [convenciones.md](convenciones.md).
 
 ## De la CI a Render
 

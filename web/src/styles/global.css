@@ -16,7 +16,7 @@ html {
 
 body {
   margin: 0;
-  height: 100dvh;
+  height: var(--alto-vista);
   overflow: hidden;
 }
 
@@ -70,13 +70,13 @@ textarea {
 
 @keyframes girar {
   to {
-    transform: rotate(360deg);
+    transform: rotate(var(--giro-completo));
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
   :root {
-    --duracion-transicion: 0ms;
+    --duracion-transicion: var(--duracion-nula);
   }
 
   .transicion {

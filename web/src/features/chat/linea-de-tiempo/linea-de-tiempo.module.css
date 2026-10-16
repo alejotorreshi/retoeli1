@@ -56,7 +56,7 @@
 .iconoIrAlFinal {
   display: inline-flex;
   flex: none;
-  transform: rotate(90deg);
+  transform: rotate(var(--giro-cuarto));
 }
 
 :global([data-diseno="angosto"]) .irAlFinal {
