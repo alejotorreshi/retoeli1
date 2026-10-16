@@ -1,4 +1,5 @@
 import { describe, expect, test } from "bun:test";
+import { sigueOcupada } from "@web/api/cliente-api.ts";
 import {
   ACCION_UI,
   AVISO_SESION,
@@ -18,12 +19,7 @@ import {
   sesionDelEvento,
 } from "@web/features/chat/estado/conversacion.ts";
 import { tarjetasDelTurno } from "@web/features/confirmacion/estado/confirmaciones.ts";
-import {
-  accionDeSesion,
-  estadoDesdeVista,
-  olvidaLaSesion,
-  sigueOcupada,
-} from "@web/features/sesion/estado/hidratacion.ts";
+import { accionDeSesion, estadoDesdeVista, olvidaLaSesion } from "@web/features/sesion/estado/hidratacion.ts";
 import type {
   AccionUi,
   EstadoConversacion,

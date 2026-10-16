@@ -6,7 +6,6 @@ import {
   SEPARADOR_RUTA,
 } from "@web/config/constants/ui.constants.ts";
 import { TEXTO_ACCESO } from "@web/config/strings.ts";
-import { sigueOcupada } from "@web/features/sesion/estado/hidratacion.ts";
 import type {
   ArchivoUi,
   EstadoModelo,
@@ -247,6 +246,10 @@ function esperar(milisegundos: number, signal: AbortSignal | null): Promise<bool
     }, milisegundos);
     signal?.addEventListener(EVENTO_ABORTO, alAbortar, { once: true });
   });
+}
+
+export function sigueOcupada(resultado: ResultadoApi<VistaSesionUi>): boolean {
+  return resultado.tipo === RESULTADO_API.OK && resultado.valor.ocupada;
 }
 
 export async function obtenerSesionAsentada(

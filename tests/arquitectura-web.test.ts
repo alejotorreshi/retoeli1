@@ -160,6 +160,12 @@ const MODULO_CSS = ".module.css";
 
 const COMILLAS: ReadonlySet<string> = new Set(['"', "'", "`"]);
 
+const CAPAS_FUERA_DE_LA_API: readonly string[] = [
+  `${ALIAS_WEB}features/`,
+  `${ALIAS_WEB}store/`,
+  `${ALIAS_WEB}compartido/`,
+];
+
 const CARPETA_DE_CONSTANTES = "web/src/config/constants/";
 
 const CODIGO_DEL_FRONT = /^[a-z][a-z0-9]*(?:_[a-z0-9]+)*$/;
@@ -700,6 +706,13 @@ function violacionesDeApiTransversal(ruta: string, codigo: string): string[] {
     .map(({ especificador }) => `${ruta}: solo los hooks usar-*.ts y el almacén importan ${especificador}`);
 }
 
+function violacionesDeApiHaciaAdentro(ruta: string, codigo: string): string[] {
+  if (!ruta.startsWith(`${CARPETA_WEB}/api/`)) return [];
+  return extraerImportacionesConTipo(codigo)
+    .filter(({ especificador }) => CAPAS_FUERA_DE_LA_API.some((capa) => especificador.startsWith(capa)))
+    .map(({ especificador }) => `${ruta}: la api transversal no depende de ${especificador}`);
+}
+
 function sinCadenas(codigo: string): string {
   let resultado = "";
   let comilla: string | null = null;
@@ -962,6 +975,10 @@ describe("guardián de web/ sobre el código real", () => {
     );
     expect(importadores).toContain("web/src/store/dependencias.ts");
     expect(sobreElCodigo(violacionesDeApiTransversal)).toEqual([]);
+  });
+
+  test("W27: la api transversal no importa features, el almacén ni compartido", () => {
+    expect(sobreElCodigo(violacionesDeApiHaciaAdentro)).toEqual([]);
   });
 
   test("W18: las vistas no llevan números mágicos, style= ni colores sueltos", () => {
@@ -1417,6 +1434,24 @@ describe("el guardián de web/ muerde sobre fuentes de muestra", () => {
     ]) {
       expect(violacionesDeApiTransversal(ruta, codigo)).toEqual([]);
     }
+  });
+
+  test("W27: reporta la api que importa una feature, el almacén o compartido, y acepta config, tipos y la propia api", () => {
+    const ruta = "web/src/api/x.ts";
+    const codigo = [
+      'import { sigueOcupada } from "@web/features/sesion/estado/hidratacion.ts";',
+      'import { crearInstancia } from "@web/store/instancia.ts";',
+      'import { Aviso } from "@web/compartido/aviso/aviso.tsx";',
+      'import { pedir } from "@web/api/cliente-api.ts";',
+      'import { RESULTADO_API } from "@web/config/constants/ui.constants.ts";',
+      'import type { Despachar } from "@web/types/chat.type.ts";',
+    ].join("\n");
+    expect(violacionesDeApiHaciaAdentro(ruta, codigo)).toEqual([
+      `${ruta}: la api transversal no depende de @web/features/sesion/estado/hidratacion.ts`,
+      `${ruta}: la api transversal no depende de @web/store/instancia.ts`,
+      `${ruta}: la api transversal no depende de @web/compartido/aviso/aviso.tsx`,
+    ]);
+    expect(violacionesDeApiHaciaAdentro("web/src/store/x.ts", codigo)).toEqual([]);
   });
 
   test("W18: reporta números mágicos, style= y colores en una vista, y acepta una vista limpia", () => {

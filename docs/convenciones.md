@@ -5,7 +5,7 @@ La fuente canónica de las reglas es `.claude/CLAUDE.md` (sección "Reglas de c�
 Casi todas las reglas de forma tienen un guardián automático con una prueba que demuestra que detecta la violación:
 
 - `tests/architecture.test.ts`: el backend, `modulo/` y `.opencode/` (G1–G16 y las reglas de capas sin número).
-- `tests/arquitectura-web.test.ts`: el front `web/` (W1–W26).
+- `tests/arquitectura-web.test.ts`: el front `web/` (W1–W27).
 - `tests/sin-comentarios.test.ts`: sin comentarios en `src/`, `tests/`, `modulo/`, `.opencode/`, `demo.ts` y `web/` (TS, TSX, CSS e `index.html`).
 - `bun run check`: TypeScript estricto sin `any` (api y web) y Biome.
 
@@ -75,6 +75,7 @@ Reglas sin número del mismo archivo, cada una con su prueba de violación:
 | W24 | Una vista de `features/` o `compartido/` no declara funciones en sus atributos JSX (`onClick={() => …}`, `onChange={(evento) => …}`, `ref={(nodo) => …}` ni `function`); enlaza por nombre los manejadores que devuelve su hook `usar-<c>.ts`. Las funciones de `.map(...)` que pintan listas no son atributos y quedan fuera. | La vista solo presenta (D-100, D-102): desarmar un evento, elegir el código de una acción o armar el mensaje que se envía es lógica, y vive en el hook. |
 | W25 | En todo CSS de `web/src` salvo `tokens.css`, cada consulta de ancho de un `@media` (`(min-width: …)` o `(max-width: …)`) es exactamente un valor de `CONSULTA_DE_ANCHO` de `web/src/config/constants/ui.constants.ts`, y cada selector `[data-diseno="…"]` usa un valor de `DISENO`. | W12 deja fuera las líneas `@media` porque una media query no acepta variables, así que esta regla impide que el CSS y el `matchMedia` del front se separen: una consulta en `em` escala con la fuente del navegador y deja de coincidir con la de `px`, y un diseño mal escrito nunca se aplica. |
 | W26 | Cada clase que una vista toma de su módulo CSS (`estilos.<clase>`) está definida en ese `.module.css`, y ninguna vista indexa su módulo con corchetes (`estilos[...]`): un tono o una variante se elige con un mapa con nombre (`CLASE_DE_TONO`, `CLASE_POR_VARIANTE`). | Bajo `noUncheckedIndexedAccess` una clase de módulo es `string \| undefined`: una clase que falta pintaría en silencio la clase literal `undefined`, y un acceso con corchetes esconde qué clases se usan. |
+| W27 | Ningún archivo de `web/src/api/` importa `web/src/features/`, `web/src/store/` ni `web/src/compartido/`: la api solo depende de la config, los tipos y la propia `api/`. | La api es transversal (D-122) y las features dependen de ella, no al revés; lo que solo inspecciona un resultado de la API (como `sigueOcupada`) vive en `api/`. |
 
 ## Sin comentarios: `tests/sin-comentarios.test.ts`
 
