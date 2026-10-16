@@ -1,4 +1,4 @@
-import { CODIGO_AGENTE, TIPO_EVENTO } from "@/config/constants/agent.constants.ts";
+import { CODIGO_AGENTE, MOTIVO_FIN, TIPO_EVENTO } from "@/config/constants/agent.constants.ts";
 import { DESENLACE_ENVIO } from "@/config/constants/confirmation.constants.ts";
 import { FECHA_DEMO } from "@/config/constants/demo.constants.ts";
 import { CODIGO_ERROR } from "@/config/constants/errors.constants.ts";
@@ -519,6 +519,8 @@ export const TEXTO_PREFLIGHT = {
   archivoFaltante: (nombre: string): string => `${nombre} no aparece tras la confirmación.`,
   errorDelAgente: (mensaje: string): string => `El agente respondió con un error: ${mensaje}`,
   turnoIncompleto: `El turno terminó sin el evento ${TIPO_EVENTO.FIN_TURNO}.`,
+  turnoCortado: (motivo: string): string =>
+    `El turno terminó por ${motivo} y no por ${MOTIVO_FIN.FINAL}: la analista recibiría una respuesta cortada.`,
   tokens: (entrada: number, cacheHit: number, salida: number, totalSesion: number): string =>
     `Tokens del guion: entrada ${entrada} (caché ${cacheHit}), salida ${salida}; total de la sesión ${totalSesion}.`,
 } as const;

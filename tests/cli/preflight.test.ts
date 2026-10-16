@@ -14,7 +14,7 @@ import type {
   PlazosPreflight,
   ResultadoPreflight,
 } from "@/cli/types/preflight.type.ts";
-import { TIPO_EVENTO } from "@/config/constants/agent.constants.ts";
+import { MOTIVO_FIN, TIPO_EVENTO } from "@/config/constants/agent.constants.ts";
 import { FECHA_DEMO } from "@/config/constants/demo.constants.ts";
 import { ARCHIVOS_SALIDA } from "@/config/constants/files.constants.ts";
 import {
@@ -27,7 +27,11 @@ import {
   TIPO_CONTENIDO,
 } from "@/config/constants/http.constants.ts";
 import { ESTADO_LLM, PRESET_DEEPSEEK, PROVEEDOR_DEEPSEEK } from "@/config/constants/llm.constants.ts";
-import { CASO_GUION_PRD, TIPO_BLOQUEO_GUION } from "@/config/constants/preflight.constants.ts";
+import {
+  CASO_GUION_PRD,
+  HERRAMIENTAS_TURNO_PROCESAR,
+  TIPO_BLOQUEO_GUION,
+} from "@/config/constants/preflight.constants.ts";
 import { HERRAMIENTA, NOMBRE_VISIBLE } from "@/config/constants/tools.constants.ts";
 import { parsePreflightEnv, pinExecutionDate } from "@/config/env.ts";
 import { TEXTO_PREFLIGHT } from "@/config/strings.ts";
@@ -622,6 +626,29 @@ describe("pre-flight con --guion: cada rama de falla del validador (WR-01)", () 
     );
     expect(lineas).toContain(TEXTO_PREFLIGHT.archivoFaltante(ARCHIVOS_SALIDA.ENVIO_SIMULADO));
     expect(turnos).toBe(2);
+  });
+
+  test("un turno que llega al tope de iteraciones después de las herramientas falla con turnoCortado", async () => {
+    const url = await servir(
+      { AGENT_MAX_ITERATIONS: String(HERRAMIENTAS_TURNO_PROCESAR.length) },
+      guionPrd({ conPaquete: true }),
+    );
+    const { resultado, lineas, pedidos } = await correr(url, { guion: true });
+    expect(resultado.fallido).toBe(true);
+    expect(lineas).toContain(TEXTO_PREFLIGHT.turnoCortado(MOTIVO_FIN.TOPE_ITERACIONES));
+    expect(lineas).not.toContain(TEXTO_PREFLIGHT.turnoOk(1));
+    expect(turnosDelChat(pedidos)).toHaveLength(1);
+  });
+
+  test("un turno cerrado por el tope de tokens falla con turnoCortado aunque el resto esté bien", async () => {
+    const { lineas, turnos } = await correrGuion(
+      reescribirTurno(
+        1,
+        ajustarEvento(TIPO_EVENTO.FIN_TURNO, (datos) => ({ ...datos, motivo: MOTIVO_FIN.TOPE_TOKENS })),
+      ),
+    );
+    expect(lineas).toContain(TEXTO_PREFLIGHT.turnoCortado(MOTIVO_FIN.TOPE_TOKENS));
+    expect(turnos).toBe(1);
   });
 
   test("un turno que no termina dentro de turnoMs se aborta y falla con errorDeRed", async () => {

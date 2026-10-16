@@ -25,7 +25,7 @@ import type {
   UsoGuion,
   UsoTurnoGuion,
 } from "@/cli/types/preflight.type.ts";
-import { TIPO_EVENTO } from "@/config/constants/agent.constants.ts";
+import { MOTIVO_FIN, TIPO_EVENTO } from "@/config/constants/agent.constants.ts";
 import { FECHA_DEMO } from "@/config/constants/demo.constants.ts";
 import { ARCHIVOS_SALIDA } from "@/config/constants/files.constants.ts";
 import {
@@ -312,6 +312,8 @@ async function enviarTurno(
   if (lectura.valor.fin === null || lectura.valor.sesionId === null) {
     return fallido(TEXTO_PREFLIGHT.turnoIncompleto);
   }
+  const { motivo } = lectura.valor.fin;
+  if (motivo !== MOTIVO_FIN.FINAL) return fallido(TEXTO_PREFLIGHT.turnoCortado(motivo));
   const separacion = separacionSse(lectura.valor);
   if (separacion < opciones.plazos.separacionSseMs) {
     return fallido(TEXTO_PREFLIGHT.sseAcumulado(Math.round(separacion)));
