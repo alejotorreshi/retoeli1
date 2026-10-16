@@ -69,6 +69,10 @@ const MENCIONES: Readonly<Record<number, readonly string[]>> = {
     "docs/limites-del-demo.md",
     "compartido entre sesiones",
     "out/<sesión>/<caso>/",
+    "víspera",
+    "`--guion`",
+    "ENVIO-SIMULADO.md",
+    "turno 1",
   ],
 };
 

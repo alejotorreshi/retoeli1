@@ -22,6 +22,10 @@ const ENV_EJEMPLO = ".env.example";
 const CARPETA_DOCS = "docs";
 const ESTRUCTURA = "docs/estructura.md";
 const README_MODULO = "modulo/README.md";
+const ENTREGA_RETIRADA = "docs/entrega.md";
+const NOMBRE_ENTREGA = "entrega.md";
+const GITIGNORE = ".gitignore";
+const CARPETA_LOCAL = ".local/";
 const WORKFLOW_CI = "https://github.com/alejotorreshi/retoeli1/actions/workflows/ci.yml";
 const BADGE_CI = `${WORKFLOW_CI}/badge.svg?branch=main`;
 const URL_RENDER = "https://registro-proveedor-bfnt.onrender.com";
@@ -155,6 +159,25 @@ describe("el pre-flight documentado (IN-01, G-04-2)", () => {
     expect(lineaAntesDeLaDefensa).toBeDefined();
     expect(lineaAntesDeLaDefensa?.includes(MODO_POR_DEFECTO)).toBe(true);
     expect(lineaAntesDeLaDefensa?.includes(GUION_LA_VISPERA)).toBe(true);
+  });
+});
+
+describe("checklist de entrega fuera del repositorio (D-99, decisión de la usuaria del 2026-10-16)", () => {
+  test(`${ENTREGA_RETIRADA} ya no está en el repositorio`, () => {
+    expect(leer(ENTREGA_RETIRADA)).toBe("");
+  });
+
+  test("ningún documento público enlaza ni nombra la checklist", () => {
+    const documentos = [README, SOLUCION, ...documentosMarkdown(RAIZ, CARPETA_DOCS), README_MODULO];
+    expect(documentos.length).toBeGreaterThan(3);
+    expect(documentos.filter((archivo) => leer(archivo).includes(NOMBRE_ENTREGA))).toEqual([]);
+  });
+
+  test(`la línea ${CARPETA_LOCAL} de ${GITIGNORE} deja la copia local fuera del índice`, () => {
+    const lineas = leer(GITIGNORE)
+      .split("\n")
+      .map((linea) => linea.trim());
+    expect(lineas).toContain(CARPETA_LOCAL);
   });
 });
 
