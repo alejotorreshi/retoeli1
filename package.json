@@ -12,6 +12,7 @@
     "build:web": "bun --bun vite build --config web/vite.config.ts --configLoader native",
     "start": "bun src/server.ts",
     "demo": "bun run demo.ts",
+    "modulo": "bun src/cli/runners/generar-modulo.runner.ts",
     "test": "bun test",
     "test:vivo": "LLM_EN_VIVO=1 bun test tests/live",
     "typecheck": "tsc --noEmit",

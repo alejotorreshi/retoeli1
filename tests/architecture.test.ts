@@ -51,6 +51,7 @@ import {
   TIPO_HOJA_MAESTRO,
   VARIABLE_NOTA,
 } from "@/config/constants/mapping.constants.ts";
+import { MOTIVO_FUENTE_MODULO } from "@/config/constants/modulo.constants.ts";
 import { COLOR_TRAZO } from "@/config/constants/pdf.constants.ts";
 import { TIPO_MASCARA } from "@/config/constants/pii.constants.ts";
 import { ESTADO_SOPORTE, ESTADO_VIGENCIA } from "@/config/constants/supports.constants.ts";
@@ -80,6 +81,17 @@ const DESTINOS_DEL_BUCLE = ["loop", "llm", "domain", "application", "config-pure
 
 const DESTINOS_HTTP = ["http", "loop", "llm", "domain", "application", "config-pure", "zod", "hono"];
 
+const DESTINOS_CLI = [
+  "cli",
+  "domain",
+  "config-pure",
+  "config-env",
+  "zod",
+  "node",
+  "http",
+  "paquete:eventsource-parser",
+];
+
 const PERMITIDOS: Readonly<Record<string, readonly string[]>> = {
   domain: ["domain", "config-pure"],
   application: ["domain", "application", "config-pure"],
@@ -108,6 +120,7 @@ const PERMITIDOS: Readonly<Record<string, readonly string[]>> = {
   http: DESTINOS_HTTP,
   "wiring-http": [...DESTINOS_HTTP, "config-env", "infra", "wiring-agente", "node"],
   servidor: ["wiring-http", "node"],
+  cli: DESTINOS_CLI,
 };
 
 const CONFIG_PURA = /^src\/config\/(?:constants\/.+|types\/.+|strings)$/;
@@ -170,6 +183,7 @@ const FAMILIAS_DE_CODIGOS: readonly Readonly<Record<string, string>>[] = [
   ESTADO_COMPUERTA,
   EVENTO_COMPUERTA,
   TIPO_ACCION,
+  MOTIVO_FUENTE_MODULO,
 ];
 
 function escaparRegex(texto: string): string {
@@ -214,6 +228,7 @@ const CARPETAS_DE_ROL: Readonly<Record<string, string>> = {
   "tools/factories": "factory",
   "tools/wiring": "wiring",
   "demo/runners": "runner",
+  "cli/runners": "runner",
   "llm/adapters": "adapter",
   "llm/decorators": "decorator",
   "llm/mappers": "mapper",
@@ -233,9 +248,11 @@ const NOMBRES_CON_ROL: readonly RegExp[] = [
   /^src\/config\/(?:strings|env)\.ts$/,
   /^src\/server\.ts$/,
   new RegExp(`^src/config/constants/${KEBAB}\\.constants\\.ts$`),
-  new RegExp(`^src/(?:config|domain|application|infra|tools|demo|llm|loop|http)/types/${KEBAB}\\.type\\.ts$`),
+  new RegExp(
+    `^src/(?:config|domain|application|infra|tools|demo|llm|loop|http|cli)/types/${KEBAB}\\.type\\.ts$`,
+  ),
   new RegExp(`^tests/helpers/types/${KEBAB}\\.type\\.ts$`),
-  new RegExp(`^src/(?:infra|tools|llm|loop|http)/(?:${KEBAB}/)*schemas/${KEBAB}\\.schema\\.ts$`),
+  new RegExp(`^src/(?:infra|tools|llm|loop|http|cli)/(?:${KEBAB}/)*schemas/${KEBAB}\\.schema\\.ts$`),
   ...Object.entries(CARPETAS_DE_ROL).map(
     ([carpeta, rol]) => new RegExp(`^src/${carpeta}/${KEBAB}\\.${rol}\\.ts$`),
   ),
@@ -284,6 +301,7 @@ const CARPETAS_ENUMERADAS_EN_DOCS = [
   "http/routes",
   "http/middlewares",
   "http/services",
+  "cli/runners",
 ];
 
 const DOC_DE_ESTRUCTURA = "docs/estructura.md";
@@ -303,7 +321,7 @@ function capaDeRuta(ruta: string): string {
   if (base.startsWith("tests/")) return "tests";
   if (CONFIG_PURA.test(base)) return "config-pure";
   if (base === "src/config/env") return "config-env";
-  const capa = /^src\/(domain|application|infra|tools|demo|llm|loop|http)\//.exec(base)?.[1];
+  const capa = /^src\/(domain|application|infra|tools|demo|llm|loop|http|cli)\//.exec(base)?.[1];
   return capa ?? "desconocida";
 }
 
@@ -697,6 +715,12 @@ describe("reglas de capas sobre el código real", () => {
 
   test("docs/estructura.md nombra cada módulo de las carpetas que enumera (IN-21)", () => {
     expect(modulosSinDocumentar(listarFuentes(), leer(DOC_DE_ESTRUCTURA))).toEqual([]);
+  });
+
+  test("la capa cli del código real solo toma tipos de http con import type", () => {
+    const fuentes = listarFuentes();
+    expect(fuentes).toContain("src/cli/runners/generar-modulo.runner.ts");
+    expect(fuentes.flatMap((ruta) => violacionesDeHttpEnCli(ruta, leer(ruta)))).toEqual([]);
   });
 
   test("src/ y demo.ts no usan APIs de shell", () => {

@@ -450,3 +450,12 @@ export const TEXTO_DEMO = {
   ninguno: "ninguno",
   separadorTipos: ", ",
 } as const;
+
+export const TEXTO_MODULO = {
+  descripcionAgente:
+    "Agente que llena los formularios de registro como proveedor de Periferia IT Group ante sus clientes con los datos del repositorio maestro, arma el paquete para firma y nunca envía nada sin la confirmación explícita de la analista.",
+  generado: (ruta: string): string => `Generado: ${ruta}`,
+  fuenteAusente: (ruta: string): string => `No existe la fuente del módulo: ${ruta}; no se escribió nada.`,
+  fuenteVacia: (ruta: string): string => `La fuente del módulo está vacía: ${ruta}; no se escribió nada.`,
+  fueraDeLaRaiz: `El generador del módulo debe correr en la raíz del proyecto, donde está ${ARCHIVO_PROYECTO}; no se escribió nada.`,
+} as const;

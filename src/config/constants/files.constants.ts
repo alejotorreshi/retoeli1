@@ -24,6 +24,7 @@ export const ARCHIVO_REGLAS = "reglas.json";
 export const DIRECTORIO_AGENTE = "agent";
 export const ARCHIVO_PROMPT = "prompt.md";
 export const ARCHIVO_CONOCIMIENTO_PROCESO = "registro-proveedor.md";
+export const DIRECTORIO_CONOCIMIENTO = "src/knowledge";
 
 export const ARCHIVO_PROYECTO = "package.json";
 

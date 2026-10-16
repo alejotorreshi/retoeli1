@@ -7,7 +7,7 @@ Cada archivo vive en la carpeta de su rol y lleva el sufijo de ese rol. `tests/a
 | Carpeta | Sufijo | Rol |
 |---|---|---|
 | `domain/engines/` | `.engine.ts` | Algoritmo central que conduce un flujo: el mapeo de etiquetas (`mapeo`) y el motor de plantillas (`motor-plantillas`). |
-| `domain/builders/` | `.builder.ts` | Arma una estructura de salida con datos ya decididos: formulario (`formulario`), checklist (`checklist`), borrador (`borrador`), portal (`portal`), índice del glosario (`glosario`), campo presentado (`campo-presentado`) y texto de cierre del turno con la pregunta de confirmación (`cierre-turno`). |
+| `domain/builders/` | `.builder.ts` | Arma una estructura de salida con datos ya decididos: formulario (`formulario`), checklist (`checklist`), borrador (`borrador`), portal (`portal`), índice del glosario (`glosario`), campo presentado (`campo-presentado`), texto de cierre del turno con la pregunta de confirmación (`cierre-turno`) y frontmatter del agente y de la skill de OpenCode que se antepone, sin tocar un byte, al prompt y al conocimiento del proceso (`modulo`). |
 | `domain/policies/` | `.policy.ts` | Decide o valida según una regla de negocio: soportes (`soportes`), vigencias (`vigencias`), PII (`pii`), identificador tributario (`identificador-tributario`), plantilla del caso (`plantilla-caso`), comparación de mapeos (`comparar-mapeo`), textos de reglas (`validar-reglas`), vigencia del paquete armado (`paquete-vigente`), compuerta de confirmación (`compuerta`), clasificación de la respuesta de la analista (`confirmacion`) y redacción de secretos y claves sensibles (`redaccion`). |
 | `domain/selectors/` | `.selector.ts` | Lee o proyecta datos de una entrada sin decidir nada: maestro y solicitud. |
 | `domain/utils/` | `.util.ts` | Función genérica sin regla de negocio: fecha (`fecha`), normalización (`normalizar`), resultado (`resultado`), formato de issues (`formatear-issues`), nombre de error (`nombre-error`), texto plano sin markdown (`texto-plano`), lectura de JSON (`json`) y sobre de fallo de una herramienta (`respuesta-herramienta`). |
@@ -73,6 +73,24 @@ Direcciones permitidas:
 - `src/server.ts` solo importa `http/wiring/server.wiring.ts` y `node:`, y no lee el entorno: el puerto llega del `ServerEnv` que parsea el wiring.
 - hono solo se importa desde `http` y su wiring. Ninguna capa interior importa `http`.
 - `src/server.ts` es la cuarta excepción permitida fuera de una carpeta de rol, porque el PRD (6.5) sugiere ese nombre.
+
+## Capa CLI
+
+Los comandos de línea de comandos viven en la capa `cli`. El guardián de capas de `tests/architecture.test.ts` la declara con sus importaciones permitidas, y cada regla tiene su prueba de violación.
+
+| Carpeta | Sufijo | Rol |
+|---|---|---|
+| `cli/runners/` | `.runner.ts` | Un comando por archivo, con funciones exportadas que se prueban sin proceso y la entrada del comando bajo `import.meta.main`: el generador de `modulo/` que corre `bun run modulo` (`generar-modulo`). Lee los bytes crudos de `agent/prompt.md` y del conocimiento del proceso, les antepone el frontmatter de OpenCode con el builder `modulo` y escribe `modulo/agent.md` y `modulo/skill/registro-proveedor/SKILL.md`. Se niega a correr fuera de la raíz del proyecto y, si una fuente falta o está vacía, sale con código 1 sin escribir nada. `tests/modulo/generador.test.ts` compara byte a byte lo commiteado con su salida, así que editar el prompt o el conocimiento sin regenerar hace fallar la CI. |
+| `cli/schemas/` | `.schema.ts` | Validación zod de lo que un comando lee de afuera, con `satisfies z.ZodType<T>`. |
+| `cli/types/` | `.type.ts` | Solo tipos, con `import type` (`modulo`: `ArchivoModulo`, `LecturaModulo`, `OpcionesGeneracion` y `ResultadoGeneracion`). |
+
+Idioma: los identificadores de `src/cli` van en español, como el dominio y la demo.
+
+Direcciones permitidas:
+
+- `cli` importa `cli`, dominio, la config pura, `config/env.ts`, zod, `node:` y el paquete `eventsource-parser`. De `http` solo toma tipos de `http/types/**` con `import type`; nunca rutas, servicios, esquemas ni el wiring del servidor.
+- `cli` nunca importa infra, `loop`, `llm`, las herramientas ni hono, y ninguna otra capa importa `cli`.
+- Como el resto de `src/`, no usa APIs de shell (`Bun.spawn`, `Bun.$`, `child_process`).
 
 ## Front web (`web/`)
 
