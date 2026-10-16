@@ -1,4 +1,3 @@
-import { AccionesRapidas } from "@web/components/acciones-rapidas.tsx";
 import { LineaDeTiempo } from "@web/components/linea-de-tiempo.tsx";
 import { PanelCasos } from "@web/components/panel-casos.tsx";
 import { PantallaAcceso } from "@web/components/pantalla-acceso.tsx";
@@ -13,6 +12,7 @@ import {
   TECLA_PESTANA,
 } from "@web/config/constants/ui.constants.ts";
 import { TEXTO_APP, TEXTO_PESTANAS } from "@web/config/strings.ts";
+import { AccionesRapidas } from "@web/features/chat/acciones-rapidas/acciones-rapidas.tsx";
 import { Compositor } from "@web/features/chat/compositor/compositor.tsx";
 import { IndicadorPensando } from "@web/features/chat/indicador-pensando/indicador-pensando.tsx";
 import { AvisoModelo } from "@web/features/encabezado/aviso-modelo/aviso-modelo.tsx";
@@ -24,7 +24,6 @@ import { ProveedorAlmacen } from "@web/store/proveedor-almacen.tsx";
 import {
   seleccionarAcceso,
   seleccionarAvisoSesion,
-  seleccionarCasos,
   seleccionarConHistorial,
   seleccionarEnCurso,
   seleccionarEnvioDeshabilitado,
@@ -136,7 +135,6 @@ function Pantalla() {
   useSincronizacion();
   const acciones = useAcciones();
   const acceso = useSeleccion(seleccionarAcceso);
-  const casos = useSeleccion(seleccionarCasos);
   const turnos = useSeleccion(seleccionarTurnos);
   const conHistorial = useSeleccion(seleccionarConHistorial);
   const enCurso = useSeleccion(seleccionarEnCurso);
@@ -203,27 +201,11 @@ function Pantalla() {
               tarjetasConfirmacion={tarjetasConfirmacion}
               alResponderConfirmacion={acciones.responderConfirmacion}
               alAccionDeAviso={alAccionDeAviso}
-              acciones={
-                <AccionesRapidas
-                  casos={casos}
-                  deshabilitadas={envioDeshabilitado}
-                  compactas={false}
-                  angosto={false}
-                  alEnviar={acciones.enviarTexto}
-                />
-              }
+              acciones={<AccionesRapidas compactas={false} angosto={false} />}
             >
               {enCurso ? <IndicadorPensando etiqueta={etiquetaPensando} marca={eventosDelTurno} /> : null}
             </LineaDeTiempo>
-            {conHistorial ? (
-              <AccionesRapidas
-                casos={casos}
-                deshabilitadas={envioDeshabilitado}
-                compactas={true}
-                angosto={diseno === DISENO.ANGOSTO}
-                alEnviar={acciones.enviarTexto}
-              />
-            ) : null}
+            {conHistorial ? <AccionesRapidas compactas={true} angosto={diseno === DISENO.ANGOSTO} /> : null}
             <Compositor />
           </main>
         </div>

@@ -102,11 +102,17 @@ export type PropsEstadoVacio = {
 };
 
 export type PropsAccionesRapidas = {
-  readonly casos: readonly string[];
-  readonly deshabilitadas: boolean;
   readonly compactas: boolean;
   readonly angosto: boolean;
-  readonly alEnviar: (mensaje: string) => void;
+};
+
+export type ControlAccionesRapidas = {
+  readonly corta: boolean;
+  readonly deshabilitadas: boolean;
+  readonly cantidadCasos: number;
+  readonly alPedirDemo: () => void;
+  readonly alPedirTodos: () => void;
+  readonly alPedirListado: () => void;
 };
 
 export type PropsTurno = {
