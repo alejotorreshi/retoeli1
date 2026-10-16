@@ -199,7 +199,7 @@ export function crearRedWeb(opciones: OpcionesRedWeb): RedWeb {
     if (opciones.codigoAcceso === undefined || codigoDe(cuerpo) !== opciones.codigoAcceso) {
       return json(RESPUESTA_HTTP.NO_AUTORIZADO, { mensaje: MENSAJE_HTTP.codigoInvalido });
     }
-    accesoConcedido = true;
+    accesoConcedido = opciones.cookieDescartada !== true;
     return new RespuestaNativa(null, { status: RESPUESTA_HTTP.SIN_CONTENIDO });
   }
 

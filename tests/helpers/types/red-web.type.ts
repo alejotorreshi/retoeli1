@@ -28,6 +28,7 @@ export type OpcionesRedWeb = {
   readonly configDisponible?: boolean;
   readonly salud?: LlmHealthState;
   readonly codigoAcceso?: string;
+  readonly cookieDescartada?: boolean;
   readonly guiones?: readonly GuionChat[];
   readonly rutas?: Readonly<Record<string, RespuestaFalsa>>;
 };

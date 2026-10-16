@@ -5,6 +5,7 @@ import { useAcciones } from "@web/store/usar-almacen.ts";
 import type { ResultadoApi } from "@web/types/chat.type.ts";
 import type { ControlPantallaAcceso } from "@web/types/ui.type.ts";
 import { type ChangeEvent, type FormEvent, useEffect, useId, useRef, useState } from "react";
+import type { ConfigResponse } from "@/http/types/api.type.ts";
 
 function mensajeDelFallo(resultado: ResultadoApi<null>): string | null {
   switch (resultado.tipo) {
@@ -15,6 +16,10 @@ function mensajeDelFallo(resultado: ResultadoApi<null>): string | null {
     default:
       return resultado.mensaje;
   }
+}
+
+function avisoTrasEntrar(resultado: ResultadoApi<ConfigResponse>): string | null {
+  return resultado.tipo === RESULTADO_API.ACCESO_VENCIDO ? resultado.mensaje : null;
 }
 
 export function usePantallaAcceso(): ControlPantallaAcceso {
@@ -42,8 +47,12 @@ export function usePantallaAcceso(): ControlPantallaAcceso {
       cambiarError(null);
       const controlador = new AbortController();
       pedidoDeConfig.current = controlador;
-      await cargarConfig(controlador.signal);
-      if (!controlador.signal.aborted) cambiarPendiente(false);
+      const aviso = avisoTrasEntrar(await cargarConfig(controlador.signal));
+      if (controlador.signal.aborted) return;
+      cambiarPendiente(false);
+      if (aviso === null) return;
+      cambiarError(aviso);
+      campo.current?.focus();
       return;
     }
     cambiarError(fallo);

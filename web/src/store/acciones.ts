@@ -101,9 +101,10 @@ export function crearAcciones(almacen: AlmacenRaiz, dependencias: Dependencias):
     almacen.despachar(accionDeConfig(resultado));
   }
 
-  async function cargarConfig(signal: AbortSignal): Promise<void> {
+  async function cargarConfig(signal: AbortSignal): Promise<ResultadoApi<ConfigResponse>> {
     const resultado = await dependencias.obtenerConfig(signal);
     if (!signal.aborted) recibirConfig(resultado);
+    return resultado;
   }
 
   async function reintentarConfig(signal: AbortSignal): Promise<void> {

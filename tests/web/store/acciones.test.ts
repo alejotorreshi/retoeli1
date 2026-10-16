@@ -474,7 +474,8 @@ describe("acciones del almacén: configuración, acceso y diálogo", () => {
   test("cargarConfig despacha la config recibida y concede el acceso", async () => {
     const falsos = crearFalsos({ config: async () => ({ tipo: RESULTADO_API.OK, valor: CONFIG }) });
     const instancia = crearInstancia(falsos.dependencias);
-    await instancia.acciones.cargarConfig(new AbortController().signal);
+    const resultado = await instancia.acciones.cargarConfig(new AbortController().signal);
+    expect(resultado).toEqual({ tipo: RESULTADO_API.OK, valor: CONFIG });
     expect(conversacion(instancia).config).toEqual(CONFIG);
     expect(conversacion(instancia).acceso).toEqual({ tipo: ESTADO_ACCESO.CONCEDIDO });
   });

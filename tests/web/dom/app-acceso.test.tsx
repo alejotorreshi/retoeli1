@@ -55,6 +55,8 @@ describe("App con el acceso pedido por la API", () => {
     const campo = pantalla.getByLabelText(TEXTO_ACCESO.etiqueta);
     await dom.esperar(() => expect(document.activeElement).toBe(campo));
     expect(campo.getAttribute("type")).toBe("password");
+    expect(campo.getAttribute("aria-invalid")).not.toBe("true");
+    expect(pantalla.queryByText(MENSAJE_HTTP.accesoVencido)).toBeNull();
 
     await usuario.click(pantalla.getByRole("button", { name: TEXTO_ACCESO.mostrar }));
 
@@ -85,5 +87,21 @@ describe("App con el acceso pedido por la API", () => {
     ]);
     expect(valoresGuardados()).not.toContain(CODIGO_CORRECTO);
     expect(valoresGuardados()).not.toContain(CODIGO_INCORRECTO);
+  });
+
+  test("un código aceptado al que /api/config sigue respondiendo 401 muestra el mensaje del servidor", async () => {
+    const red = crearRedWeb({ nativos: dom.nativos, codigoAcceso: CODIGO_CORRECTO, cookieDescartada: true });
+    const { pantalla, usuario } = await montarApp(dom, red);
+    await pantalla.findByRole("heading", { name: TEXTO_ACCESO.titulo });
+    const campo = pantalla.getByLabelText(TEXTO_ACCESO.etiqueta);
+
+    await usuario.type(campo, CODIGO_CORRECTO);
+    await usuario.click(pantalla.getByRole("button", { name: TEXTO_ACCESO.entrar }));
+
+    expect(await pantalla.findByText(MENSAJE_HTTP.accesoVencido)).toBeDefined();
+    expect(campo.getAttribute("aria-invalid")).toBe("true");
+    await dom.esperar(() => expect(document.activeElement).toBe(campo));
+    expect(pantalla.getByRole("heading", { name: TEXTO_ACCESO.titulo })).toBeDefined();
+    expect(red.pedidosA(RUTA_API.ACCESO, METODO_POST)).toHaveLength(1);
   });
 });
