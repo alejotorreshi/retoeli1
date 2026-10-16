@@ -1,0 +1,24 @@
+{
+  "estado": "pendiente_de_corrida",
+  "fechaCorridaUtc": null,
+  "proveedor": null,
+  "modelo": null,
+  "precios": {
+    "fuente": "https://api-docs.deepseek.com/quick_start/pricing",
+    "consultado": "2026-10-15",
+    "moneda": "USD",
+    "tokensPorUnidad": 1000000,
+    "pico": {
+      "cacheHit": 0.006,
+      "cacheMiss": 0.3,
+      "salida": 1.2
+    },
+    "valle": {
+      "cacheHit": 0.003,
+      "cacheMiss": 0.15,
+      "salida": 0.6
+    }
+  },
+  "escenarios": [],
+  "total": null
+}

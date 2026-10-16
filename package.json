@@ -16,6 +16,7 @@
     "preflight": "bun src/cli/runners/preflight.runner.ts",
     "test": "bun test",
     "test:vivo": "LLM_EN_VIVO=1 bun test tests/live",
+    "costo": "COSTO_EN_VIVO=1 bun test tests/live/costo-por-caso.test.ts",
     "typecheck": "tsc --noEmit",
     "lint": "biome check .",
     "audit": "bun audit --audit-level=moderate",
