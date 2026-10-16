@@ -30,13 +30,14 @@ import { FECHA_DEMO } from "@/config/constants/demo.constants.ts";
 import { ARCHIVOS_SALIDA } from "@/config/constants/files.constants.ts";
 import {
   CABECERA,
+  DIRECTIVA_SIN_CACHE,
   METODO_POST,
   PARAMETRO_CASO,
   PREFIJO_BEARER,
   RESPUESTA_HTTP,
   RUTA_API,
+  SEPARADOR_DIRECTIVAS,
   TIPO_CONTENIDO,
-  VALOR_CABECERA,
 } from "@/config/constants/http.constants.ts";
 import { ESTADO_LLM } from "@/config/constants/llm.constants.ts";
 import {
@@ -47,6 +48,7 @@ import {
   OPCION_CLI,
   PAUSA_SONDEO_MS,
   PLAZO_DESPERTAR_MS,
+  SEPARACION_MINIMA_SSE_MS,
   TIMEOUT_SONDEO_SALUD_MS,
   TIMEOUT_TURNO_GUION_MS,
   TIPO_BLOQUEO_GUION,
@@ -62,6 +64,7 @@ const PLAZOS_POR_DEFECTO: PlazosPreflight = {
   sondeoMs: TIMEOUT_SONDEO_SALUD_MS,
   pausaMs: PAUSA_SONDEO_MS,
   turnoMs: TIMEOUT_TURNO_GUION_MS,
+  separacionSseMs: SEPARACION_MINIMA_SSE_MS,
 };
 
 type SaludLista = { readonly salud: HealthResponse; readonly ms: number };
@@ -73,12 +76,9 @@ type LecturaEnCurso = {
   usos: UsoTurnoGuion[];
   errores: string[];
   fin: FinTurnoGuion | null;
+  llegadaInicioMs: number | null;
+  llegadaFinMs: number | null;
 };
-
-const CABECERAS_SSE = [
-  [CABECERA.CACHE_CONTROL, VALOR_CABECERA.SIN_CACHE_NI_TRANSFORMACION],
-  [CABECERA.X_ACCEL_BUFFERING, VALOR_CABECERA.SIN_BUFFER],
-] as const;
 
 const RUTA_ARCHIVOS_GUION = RUTA_API.ARCHIVOS.replace(
   `:${PARAMETRO_CASO}`,
@@ -199,11 +199,17 @@ function anotar<T>(esquema: z.ZodType<T>, datos: unknown, guardar: (valor: T) =>
   return lectura.success;
 }
 
-function anotarFrame(lectura: LecturaEnCurso, evento: string | undefined, datos: unknown): boolean {
+function anotarFrame(
+  lectura: LecturaEnCurso,
+  evento: string | undefined,
+  datos: unknown,
+  llegadaMs: number,
+): boolean {
   switch (evento) {
     case TIPO_EVENTO.INICIO_TURNO:
       return anotar(inicioTurnoGuionSchema, datos, ({ sesionId }) => {
         lectura.sesionId = sesionId;
+        lectura.llegadaInicioMs = llegadaMs;
       });
     case TIPO_EVENTO.FIN_HERRAMIENTA:
       return anotar(finHerramientaGuionSchema, datos, (fin) => lectura.herramientas.push(fin));
@@ -216,13 +222,17 @@ function anotarFrame(lectura: LecturaEnCurso, evento: string | undefined, datos:
     case TIPO_EVENTO.FIN_TURNO:
       return anotar(finTurnoGuionSchema, datos, (fin) => {
         lectura.fin = fin;
+        lectura.llegadaFinMs = llegadaMs;
       });
     default:
       return true;
   }
 }
 
-async function leerTurno(cuerpo: NonNullable<Response["body"]>): Promise<PasoPreflight<LecturaTurnoGuion>> {
+async function leerTurno(
+  cuerpo: NonNullable<Response["body"]>,
+  ahora: () => number,
+): Promise<PasoPreflight<LecturaTurnoGuion>> {
   const lectura: LecturaEnCurso = {
     sesionId: null,
     herramientas: [],
@@ -230,11 +240,13 @@ async function leerTurno(cuerpo: NonNullable<Response["body"]>): Promise<PasoPre
     usos: [],
     errores: [],
     fin: null,
+    llegadaInicioMs: null,
+    llegadaFinMs: null,
   };
   try {
     const frames = cuerpo.pipeThrough(new TextDecoderStream()).pipeThrough(new EventSourceParserStream());
     for await (const frame of frames) {
-      if (!anotarFrame(lectura, frame.event, leerJsonDeTexto(frame.data))) {
+      if (!anotarFrame(lectura, frame.event, leerJsonDeTexto(frame.data), ahora())) {
         return fallido(TEXTO_PREFLIGHT.respuestaInvalida(RUTA_API.CHAT));
       }
     }
@@ -244,11 +256,19 @@ async function leerTurno(cuerpo: NonNullable<Response["body"]>): Promise<PasoPre
   return exito(lectura);
 }
 
+function prohibeCache(respuesta: Response): boolean {
+  const directivas = (respuesta.headers.get(CABECERA.CACHE_CONTROL) ?? "").split(SEPARADOR_DIRECTIVAS);
+  return directivas.some((directiva) => directiva.trim().toLowerCase() === DIRECTIVA_SIN_CACHE);
+}
+
 function cabeceraSseFaltante(respuesta: Response): string | null {
   const tipo = respuesta.headers.get(CABECERA.TIPO_CONTENIDO) ?? "";
   if (!tipo.startsWith(TIPO_CONTENIDO.SSE)) return CABECERA.TIPO_CONTENIDO;
-  const faltante = CABECERAS_SSE.find(([nombre, valor]) => respuesta.headers.get(nombre) !== valor);
-  return faltante?.[0] ?? null;
+  return prohibeCache(respuesta) ? null : CABECERA.CACHE_CONTROL;
+}
+
+function separacionSse(lectura: LecturaTurnoGuion): number {
+  return (lectura.llegadaFinMs ?? 0) - (lectura.llegadaInicioMs ?? 0);
 }
 
 function cabecerasDelChat(opciones: OpcionesPreflight): Record<string, string> {
@@ -285,12 +305,16 @@ async function enviarTurno(
         : TEXTO_PREFLIGHT.cabeceraSse(faltante),
     );
   }
-  const lectura = await leerTurno(respuesta.body);
+  const lectura = await leerTurno(respuesta.body, opciones.ahora);
   if (!lectura.ok) return lectura;
   const [error] = lectura.valor.errores;
   if (error !== undefined) return fallido(TEXTO_PREFLIGHT.errorDelAgente(error));
   if (lectura.valor.fin === null || lectura.valor.sesionId === null) {
     return fallido(TEXTO_PREFLIGHT.turnoIncompleto);
+  }
+  const separacion = separacionSse(lectura.valor);
+  if (separacion < opciones.plazos.separacionSseMs) {
+    return fallido(TEXTO_PREFLIGHT.sseAcumulado(Math.round(separacion)));
   }
   return lectura;
 }

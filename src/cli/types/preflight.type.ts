@@ -8,6 +8,7 @@ export type PlazosPreflight = {
   readonly sondeoMs: number;
   readonly pausaMs: number;
   readonly turnoMs: number;
+  readonly separacionSseMs: number;
 };
 
 export type OpcionesPreflight = {
@@ -70,4 +71,6 @@ export type LecturaTurnoGuion = {
   readonly usos: readonly UsoTurnoGuion[];
   readonly errores: readonly string[];
   readonly fin: FinTurnoGuion | null;
+  readonly llegadaInicioMs: number | null;
+  readonly llegadaFinMs: number | null;
 };

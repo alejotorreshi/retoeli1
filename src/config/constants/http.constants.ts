@@ -164,6 +164,10 @@ export const VALOR_CABECERA = {
   SIN_ALMACENAR: "no-store",
 } as const;
 
+export const DIRECTIVA_SIN_CACHE = "no-cache";
+
+export const SEPARADOR_DIRECTIVAS = ",";
+
 export const TIPO_CONTENIDO = {
   JSON: "application/json",
   SSE: "text/event-stream",

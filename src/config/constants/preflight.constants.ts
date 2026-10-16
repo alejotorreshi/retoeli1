@@ -8,6 +8,8 @@ export const PAUSA_SONDEO_MS = 5_000;
 
 export const TIMEOUT_TURNO_GUION_MS = 240_000;
 
+export const SEPARACION_MINIMA_SSE_MS = 250;
+
 export const MS_POR_SEGUNDO = 1_000;
 
 export const OPCION_CLI = {

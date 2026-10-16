@@ -18,6 +18,7 @@ import { FECHA_DEMO } from "@/config/constants/demo.constants.ts";
 import { ARCHIVOS_SALIDA } from "@/config/constants/files.constants.ts";
 import {
   CABECERA,
+  DIRECTIVA_SIN_CACHE,
   LONGITUD_MINIMA_CODIGO_ACCESO,
   METODO_POST,
   RESPUESTA_HTTP,
@@ -48,7 +49,19 @@ const PLAZOS_PRUEBA: PlazosPreflight = {
   sondeoMs: 10_000,
   pausaMs: 1_000,
   turnoMs: 30_000,
+  separacionSseMs: 0,
 };
+
+const DEMORA_LLM_MS = 80;
+
+const SEPARACION_SSE_PRUEBA_MS = 50;
+
+const PLAZOS_CON_SEPARACION: PlazosPreflight = {
+  ...PLAZOS_PRUEBA,
+  separacionSseMs: SEPARACION_SSE_PRUEBA_MS,
+};
+
+const relojReal = () => performance.now();
 
 type PedidoVisto = { readonly metodo: string; readonly ruta: string; readonly cuerpo: string | null };
 
@@ -104,7 +117,7 @@ function contarPedidos(pedidos: PedidoVisto[], base: FetchPreflight = fetch): Fe
 
 async function correr(
   url: URL,
-  extra: Partial<Pick<OpcionesPreflight, "codigo" | "guion" | "plazos">> & {
+  extra: Partial<Pick<OpcionesPreflight, "codigo" | "guion" | "plazos" | "ahora">> & {
     readonly envolver?: FetchPreflight;
   } = {},
 ): Promise<Corrida> {
@@ -121,7 +134,7 @@ async function correr(
     esperar: async (ms) => {
       reloj += ms;
     },
-    ahora: () => reloj,
+    ahora: extra.ahora ?? (() => reloj),
   });
   expect(lineas.filter((linea) => linea.includes(extra.codigo ?? CODIGO_PRUEBA))).toEqual([]);
   return { resultado, lineas, pedidos };
@@ -270,11 +283,18 @@ async function mapeoProyectado(raiz: string) {
   );
 }
 
-function guionPrd({ conPaquete }: { readonly conPaquete: boolean }): ArmarGuion {
+function guionPrd({
+  conPaquete,
+  demoraMs = 0,
+}: {
+  readonly conPaquete: boolean;
+  readonly demoraMs?: number;
+}): ArmarGuion {
   return async (raiz) => {
     const mapeo = await mapeoProyectado(raiz);
     const caso = { caso: CASO_GUION_PRD };
-    return [
+    const demorar = demoraMs > 0 ? { demora: () => Bun.sleep(demoraMs) } : {};
+    const respuestas: RespuestaGuion[] = [
       { cuerpo: cuerpoConHerramientas({ nombre: LEER, argumentos: caso }) },
       { cuerpo: cuerpoConHerramientas({ nombre: MAPEAR, argumentos: { ...caso, campos: [] } }) },
       { cuerpo: cuerpoConHerramientas({ nombre: GENERAR, argumentos: { ...caso, mapeo } }) },
@@ -283,6 +303,7 @@ function guionPrd({ conPaquete }: { readonly conPaquete: boolean }): ArmarGuion 
       { cuerpo: cuerpoConHerramientas({ nombre: SIMULAR, argumentos: caso }) },
       { cuerpo: cuerpoConTexto("Envío simulado registrado.") },
     ];
+    return respuestas.map((respuesta) => ({ ...respuesta, ...demorar }));
   };
 }
 
@@ -297,13 +318,32 @@ function registrarArchivos(listas: string[][]): FetchPreflight {
   };
 }
 
-const sinCabeceraDeBuffer: FetchPreflight = async (url, init) => {
-  const respuesta = await fetch(url, init);
-  if (url.pathname !== RUTA_API.CHAT) return respuesta;
-  const cabeceras = new Headers(respuesta.headers);
+function reescribirChat(transformar: (respuesta: Response) => Promise<Response>): FetchPreflight {
+  return async (url, init) => {
+    const respuesta = await fetch(url, init);
+    return url.pathname === RUTA_API.CHAT ? transformar(respuesta) : respuesta;
+  };
+}
+
+function conCabeceras(ajustar: (cabeceras: Headers) => void): FetchPreflight {
+  return reescribirChat(async (respuesta) => {
+    const cabeceras = new Headers(respuesta.headers);
+    ajustar(cabeceras);
+    return new Response(respuesta.body, { status: respuesta.status, headers: cabeceras });
+  });
+}
+
+const comoElBordeDeRender = conCabeceras((cabeceras) => {
   cabeceras.delete(CABECERA.X_ACCEL_BUFFERING);
-  return new Response(respuesta.body, { status: respuesta.status, headers: cabeceras });
-};
+  cabeceras.set(CABECERA.CACHE_CONTROL, DIRECTIVA_SIN_CACHE);
+});
+
+const sinCacheControl = conCabeceras((cabeceras) => cabeceras.delete(CABECERA.CACHE_CONTROL));
+
+const acumulandoElSse = reescribirChat(async (respuesta) => {
+  const bytes = await respuesta.arrayBuffer();
+  return new Response(bytes, { status: respuesta.status, headers: respuesta.headers });
+});
 
 function turnosDelChat(pedidos: readonly PedidoVisto[]): { sessionId: string | null; message: string }[] {
   return pedidosA(pedidos, RUTA_API.CHAT).map((pedido) => JSON.parse(pedido.cuerpo ?? "null"));
@@ -348,11 +388,41 @@ describe("pre-flight con --guion: PRD §11 en dos turnos SSE (D-92)", () => {
     expect(turnosDelChat(pedidos)).toHaveLength(1);
   });
 
-  test("si el SSE llega sin X-Accel-Buffering no, falla nombrando la cabecera", async () => {
+  test("sin X-Accel-Buffering y con Cache-Control no-cache, como llega por el borde de Render, pasa si el SSE llega por partes", async () => {
+    const url = await servir({}, guionPrd({ conPaquete: true, demoraMs: DEMORA_LLM_MS }));
+    const { resultado, lineas, pedidos } = await correr(url, {
+      guion: true,
+      envolver: comoElBordeDeRender,
+      plazos: PLAZOS_CON_SEPARACION,
+      ahora: relojReal,
+    });
+    expect(lineas).not.toContain(TEXTO_PREFLIGHT.cabeceraSse(CABECERA.X_ACCEL_BUFFERING));
+    expect(resultado.fallido).toBe(false);
+    expect(lineas.at(-1)).toBe(TEXTO_PREFLIGHT.resultadoOk);
+    expect(turnosDelChat(pedidos)).toHaveLength(2);
+  });
+
+  test("si el SSE llega sin Cache-Control no-cache, falla nombrando la cabecera", async () => {
     const url = await servir({}, guionPrd({ conPaquete: true }));
-    const { resultado, lineas, pedidos } = await correr(url, { guion: true, envolver: sinCabeceraDeBuffer });
+    const { resultado, lineas, pedidos } = await correr(url, { guion: true, envolver: sinCacheControl });
     expect(resultado.fallido).toBe(true);
-    expect(lineas).toContain(TEXTO_PREFLIGHT.cabeceraSse(CABECERA.X_ACCEL_BUFFERING));
+    expect(lineas).toContain(TEXTO_PREFLIGHT.cabeceraSse(CABECERA.CACHE_CONTROL));
+    expect(turnosDelChat(pedidos)).toHaveLength(1);
+  });
+
+  test("si un proxy acumula el SSE y turn_end llega junto con turn_start, falla con sseAcumulado", async () => {
+    const url = await servir({}, guionPrd({ conPaquete: true, demoraMs: DEMORA_LLM_MS }));
+    const { resultado, lineas, pedidos } = await correr(url, {
+      guion: true,
+      envolver: acumulandoElSse,
+      plazos: PLAZOS_CON_SEPARACION,
+      ahora: relojReal,
+    });
+    expect(resultado.fallido).toBe(true);
+    const acumulados = Array.from({ length: SEPARACION_SSE_PRUEBA_MS }, (_, ms) =>
+      TEXTO_PREFLIGHT.sseAcumulado(ms),
+    );
+    expect(lineas.some((linea) => acumulados.includes(linea))).toBe(true);
     expect(turnosDelChat(pedidos)).toHaveLength(1);
   });
 
