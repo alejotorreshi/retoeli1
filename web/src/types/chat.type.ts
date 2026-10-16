@@ -302,30 +302,9 @@ export type AccionUi =
 
 export type Despachar = (accion: AccionUi) => void;
 
-export type ControlChat = {
-  readonly estado: EstadoConversacion;
-  readonly borrador: string;
-  readonly cambiarBorrador: (borrador: string) => void;
-  readonly enviar: () => void;
-  readonly enviarTexto: (mensaje: string) => void;
-  readonly responderConfirmacion: (accion: AccionDeTarjeta) => void;
-  readonly recibirConfig: (resultado: ResultadoApi<ConfigResponse>) => void;
-  readonly detener: () => void;
-  readonly recargar: () => void;
-  readonly nuevaSesion: () => void;
-  readonly volverASesionAnterior: () => void;
-  readonly vencerAcceso: (aviso: string) => void;
-};
-
 export type EstadoModelo = HealthResponse["llm"];
 
 export type SaludModelo = Pick<HealthResponse, "model" | "llm">;
-
-export type ControlSalud = {
-  readonly salud: HealthResponse | null;
-  readonly refrescar: () => void;
-  readonly comprobando: boolean;
-};
 
 export type ArchivoUi = FileListResponse["archivos"][number];
 

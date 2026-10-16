@@ -1,4 +1,3 @@
-import { obtenerConfig } from "@web/api/cliente-api.ts";
 import { AccionesRapidas } from "@web/components/acciones-rapidas.tsx";
 import { AvisoModelo } from "@web/components/aviso-modelo.tsx";
 import { Compositor } from "@web/components/compositor.tsx";
@@ -19,22 +18,45 @@ import {
   TECLA_PESTANA,
 } from "@web/config/constants/ui.constants.ts";
 import { TEXTO_APP, TEXTO_PESTANAS } from "@web/config/strings.ts";
-import { firmaDelProgreso, marcasDeArchivos, progresoPorCaso } from "@web/features/casos/estado/casos.ts";
-import {
-  etiquetaPensando,
-  eventosDelTurno,
-  faltaConfig,
-  usoDeSesion,
-} from "@web/features/chat/estado/conversacion.ts";
-import { envioEnPausa } from "@web/features/encabezado/estado/modelo.ts";
-import { useChat } from "@web/hooks/usar-chat.ts";
 import { useDiseno } from "@web/hooks/usar-diseno.ts";
 import { usePestanas } from "@web/hooks/usar-pestanas.ts";
-import { useReintentoConfig } from "@web/hooks/usar-reintento-config.ts";
-import { useSalud } from "@web/hooks/usar-salud.ts";
+import { ProveedorAlmacen } from "@web/store/proveedor-almacen.tsx";
+import {
+  seleccionarAcceso,
+  seleccionarAvisoSesion,
+  seleccionarBorrador,
+  seleccionarCasos,
+  seleccionarComprobando,
+  seleccionarConHistorial,
+  seleccionarDialogoAbierto,
+  seleccionarEnCurso,
+  seleccionarEnvioDeshabilitado,
+  seleccionarEnvioEnPausa,
+  seleccionarEstadoLlm,
+  seleccionarEtiquetaPensando,
+  seleccionarEventosDelTurno,
+  seleccionarFechaEjecucion,
+  seleccionarFirmaDelProgreso,
+  seleccionarHidratando,
+  seleccionarMarcasDeArchivos,
+  seleccionarMensajeMaximo,
+  seleccionarProgresos,
+  seleccionarSalud,
+  seleccionarTarjetasConfirmacion,
+  seleccionarTurnos,
+  seleccionarUsoDeSesion,
+  seleccionarZona,
+} from "@web/store/selectores.ts";
+import { useAcciones, useSeleccion, useSincronizacion } from "@web/store/usar-almacen.ts";
 import type { AccionDeAviso } from "@web/types/chat.type.ts";
-import type { ControlPestanas, IdsDePestanas, Pestana, PropsBarraDePestanas } from "@web/types/ui.type.ts";
-import { type HTMLAttributes, type KeyboardEvent, useEffect, useId, useRef, useState } from "react";
+import type {
+  ControlPestanas,
+  IdsDePestanas,
+  Pestana,
+  PropsApp,
+  PropsBarraDePestanas,
+} from "@web/types/ui.type.ts";
+import { type HTMLAttributes, type KeyboardEvent, useId, useRef } from "react";
 
 function pestanaPorTecla(tecla: string, actual: Pestana): Pestana | null {
   const indice = ORDEN_PESTANAS.indexOf(actual);
@@ -119,54 +141,53 @@ function atributosDeVista(
   };
 }
 
-export function App() {
-  const { salud, refrescar, comprobando } = useSalud();
-  const {
-    estado,
-    borrador,
-    cambiarBorrador,
-    enviar,
-    enviarTexto,
-    responderConfirmacion,
-    recibirConfig,
-    detener,
-    recargar,
-    nuevaSesion,
-    volverASesionAnterior,
-    vencerAcceso,
-  } = useChat(refrescar);
-  const [nuevaSesionAbierta, setNuevaSesionAbierta] = useState(false);
+function Pantalla() {
+  useSincronizacion();
+  const acciones = useAcciones();
+  const acceso = useSeleccion(seleccionarAcceso);
+  const salud = useSeleccion(seleccionarSalud);
+  const estadoLlm = useSeleccion(seleccionarEstadoLlm);
+  const comprobando = useSeleccion(seleccionarComprobando);
+  const fechaEjecucion = useSeleccion(seleccionarFechaEjecucion);
+  const zona = useSeleccion(seleccionarZona);
+  const casos = useSeleccion(seleccionarCasos);
+  const mensajeMaximo = useSeleccion(seleccionarMensajeMaximo);
+  const turnos = useSeleccion(seleccionarTurnos);
+  const conHistorial = useSeleccion(seleccionarConHistorial);
+  const enCurso = useSeleccion(seleccionarEnCurso);
+  const hidratando = useSeleccion(seleccionarHidratando);
+  const avisoSesion = useSeleccion(seleccionarAvisoSesion);
+  const tarjetasConfirmacion = useSeleccion(seleccionarTarjetasConfirmacion);
+  const borrador = useSeleccion(seleccionarBorrador);
+  const enPausa = useSeleccion(seleccionarEnvioEnPausa);
+  const envioDeshabilitado = useSeleccion(seleccionarEnvioDeshabilitado);
+  const uso = useSeleccion(seleccionarUsoDeSesion);
+  const etiquetaPensando = useSeleccion(seleccionarEtiquetaPensando);
+  const eventosDelTurno = useSeleccion(seleccionarEventosDelTurno);
+  const progresos = useSeleccion(seleccionarProgresos);
+  const firmaDelProgreso = useSeleccion(seleccionarFirmaDelProgreso);
+  const marcas = useSeleccion(seleccionarMarcasDeArchivos);
+  const nuevaSesionAbierta = useSeleccion(seleccionarDialogoAbierto);
   const diseno = useDiseno();
   const conPestanas = diseno !== DISENO.ANCHO;
-  const progresos = progresoPorCaso(estado);
-  const pestanas = usePestanas(conPestanas, firmaDelProgreso(progresos));
+  const pestanas = usePestanas(conPestanas, firmaDelProgreso);
   const base = useId();
   const ids: IdsDePestanas = {
     pestana: (pestana) => `${base}${SUFIJO_ID.PESTANA}${pestana}`,
     vista: (pestana) => `${base}${SUFIJO_ID.VISTA}${pestana}`,
   };
 
-  useEffect(() => {
-    const controlador = new AbortController();
-    void obtenerConfig(controlador.signal).then((resultado) => {
-      if (!controlador.signal.aborted) recibirConfig(resultado);
-    });
-    return () => controlador.abort();
-  }, [recibirConfig]);
-
-  useReintentoConfig(faltaConfig(estado), recibirConfig);
-
   function alAccionDeAviso(accion: AccionDeAviso): void {
-    if (accion === ACCION_AVISO.RECARGAR) recargar();
-    if (accion === ACCION_AVISO.NUEVA_SESION) setNuevaSesionAbierta(true);
-    if (accion === ACCION_AVISO.VOLVER_SESION_ANTERIOR) volverASesionAnterior();
+    if (accion === ACCION_AVISO.RECARGAR) acciones.recargar();
+    if (accion === ACCION_AVISO.NUEVA_SESION) acciones.abrirNuevaSesion();
+    if (accion === ACCION_AVISO.VOLVER_SESION_ANTERIOR) acciones.volverASesionAnterior();
   }
 
-  async function alEntrar(): Promise<void> {
-    recibirConfig(await obtenerConfig());
+  function alEntrar(): Promise<void> {
+    return acciones.cargarConfig(new AbortController().signal);
   }
 
-  if (estado.acceso.tipo === ESTADO_ACCESO.VERIFICANDO) {
+  if (acceso.tipo === ESTADO_ACCESO.VERIFICANDO) {
     return (
       <main aria-busy="true">
         <p role="status" className={CLASE_GLOBAL.OCULTO}>
@@ -176,29 +197,24 @@ export function App() {
     );
   }
 
-  if (estado.acceso.tipo === ESTADO_ACCESO.PEDIDO) {
-    return <PantallaAcceso aviso={estado.acceso.aviso} alEntrar={alEntrar} />;
+  if (acceso.tipo === ESTADO_ACCESO.PEDIDO) {
+    return <PantallaAcceso aviso={acceso.aviso} alEntrar={alEntrar} />;
   }
-
-  const casos = estado.config?.casos ?? [];
-  const conHistorial = estado.turnos.length > 0;
-  const enPausa = envioEnPausa(salud?.llm ?? null);
-  const envioDeshabilitado = estado.enCurso || enPausa;
 
   return (
     <div className={CLASE_GLOBAL.APP} data-diseno={diseno}>
       <Encabezado
-        fechaEjecucion={estado.config?.fechaEjecucion ?? null}
+        fechaEjecucion={fechaEjecucion}
         salud={salud}
         angosto={diseno === DISENO.ANGOSTO}
-        nuevaSesionDeshabilitada={estado.enCurso}
-        alNuevaSesion={() => setNuevaSesionAbierta(true)}
+        nuevaSesionDeshabilitada={enCurso}
+        alNuevaSesion={acciones.abrirNuevaSesion}
       />
       <AvisoModelo
-        estado={salud?.llm ?? null}
-        zona={estado.config?.zona ?? null}
+        estado={estadoLlm}
+        zona={zona}
         comprobando={comprobando}
-        alComprobar={refrescar}
+        alComprobar={acciones.refrescarSalud}
       />
       {conPestanas ? <BarraDePestanas control={pestanas} ids={ids} /> : null}
       <div className={CLASE_GLOBAL.COLUMNAS}>
@@ -208,13 +224,13 @@ export function App() {
         >
           <main className={CLASE_GLOBAL.CHAT}>
             <LineaDeTiempo
-              turnos={estado.turnos}
-              cargando={estado.hidratando}
-              aviso={estado.avisoSesion}
-              enCurso={estado.enCurso}
+              turnos={turnos}
+              cargando={hidratando}
+              aviso={avisoSesion}
+              enCurso={enCurso}
               pausada={enPausa}
-              tarjetasConfirmacion={estado.tarjetasConfirmacion}
-              alResponderConfirmacion={responderConfirmacion}
+              tarjetasConfirmacion={tarjetasConfirmacion}
+              alResponderConfirmacion={acciones.responderConfirmacion}
               alAccionDeAviso={alAccionDeAviso}
               acciones={
                 <AccionesRapidas
@@ -222,13 +238,11 @@ export function App() {
                   deshabilitadas={envioDeshabilitado}
                   compactas={false}
                   angosto={false}
-                  alEnviar={enviarTexto}
+                  alEnviar={acciones.enviarTexto}
                 />
               }
             >
-              {estado.enCurso ? (
-                <IndicadorPensando etiqueta={etiquetaPensando(estado)} marca={eventosDelTurno(estado)} />
-              ) : null}
+              {enCurso ? <IndicadorPensando etiqueta={etiquetaPensando} marca={eventosDelTurno} /> : null}
             </LineaDeTiempo>
             {conHistorial ? (
               <AccionesRapidas
@@ -236,19 +250,19 @@ export function App() {
                 deshabilitadas={envioDeshabilitado}
                 compactas={true}
                 angosto={diseno === DISENO.ANGOSTO}
-                alEnviar={enviarTexto}
+                alEnviar={acciones.enviarTexto}
               />
             ) : null}
             <Compositor
               valor={borrador}
-              maximo={estado.config?.mensajeMaximo ?? null}
-              enCurso={estado.enCurso}
-              bloqueado={estado.hidratando}
+              maximo={mensajeMaximo}
+              enCurso={enCurso}
+              bloqueado={hidratando}
               pausado={enPausa}
-              uso={usoDeSesion(estado)}
-              alCambiar={cambiarBorrador}
-              alEnviar={enviar}
-              alDetener={detener}
+              uso={uso}
+              alCambiar={acciones.cambiarBorrador}
+              alEnviar={acciones.enviar}
+              alDetener={acciones.detener}
             />
           </main>
         </div>
@@ -258,18 +272,26 @@ export function App() {
         >
           <PanelCasos
             progresos={progresos}
-            marcas={marcasDeArchivos(estado)}
+            marcas={marcas}
             envioDeshabilitado={envioDeshabilitado}
-            alEnviar={enviarTexto}
-            alVencerAcceso={vencerAcceso}
+            alEnviar={acciones.enviarTexto}
+            alVencerAcceso={acciones.vencerAcceso}
           />
         </div>
       </div>
       <DialogoNuevaSesion
         abierto={nuevaSesionAbierta}
-        alCerrar={() => setNuevaSesionAbierta(false)}
-        alConfirmar={nuevaSesion}
+        alCerrar={acciones.cerrarNuevaSesion}
+        alConfirmar={acciones.nuevaSesion}
       />
     </div>
+  );
+}
+
+export function App({ instancia }: PropsApp) {
+  return (
+    <ProveedorAlmacen instancia={instancia}>
+      <Pantalla />
+    </ProveedorAlmacen>
   );
 }

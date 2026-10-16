@@ -25,6 +25,7 @@ import type {
   UsoDeSesion,
   VistaPreviaUi,
 } from "@web/types/chat.type.ts";
+import type { InstanciaAlmacen } from "@web/types/store.type.ts";
 import type { ReactNode } from "react";
 import type { ESTADO_LLM } from "@/config/constants/llm.constants.ts";
 import type { ValorDe } from "@/config/types/valor-de.type.ts";
@@ -308,4 +309,8 @@ export type PropsAvisoDiscoEfimero = {
   readonly caso: string;
   readonly deshabilitado: boolean;
   readonly alProcesar: (mensaje: string) => void;
+};
+
+export type PropsApp = {
+  readonly instancia: InstanciaAlmacen;
 };
