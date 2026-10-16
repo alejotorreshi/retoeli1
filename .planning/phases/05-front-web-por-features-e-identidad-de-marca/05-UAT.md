@@ -1,9 +1,9 @@
 ---
-status: complete
+status: diagnosed
 phase: 05-front-web-por-features-e-identidad-de-marca
 source: [05-VERIFICATION.md, 05-REVIEW-FIX.md]
 started: 2026-10-16T20:48:18Z
-updated: 2026-10-16T22:45:00Z
+updated: 2026-10-16T23:10:00Z
 ---
 
 ## Current Test
@@ -100,13 +100,17 @@ blocked: 0
   reason: "User reported: el estado vacío con las tarjetas nuevas abre desplazado al fondo a 1280x720 (scrollTop 183/183) y 375x667 (scrollTop 459); '¿Qué caso procesamos?' y su explicación (y a 375 las tarjetas CO y EC) quedan fuera de la vista. El front de antes (b7446861) cabía sin scroll; a 1280x1000 cabe"
   severity: major
   test: 1
-  artifacts: [.qa/evidence/05-front-web-por-features-e-identidad-de-marca/screenshots/05-testT01a-after-vacio.png, .qa/evidence/05-front-web-por-features-e-identidad-de-marca/screenshots/05-testT01a-after-375-vacio.png]
-  missing: []
+  root_cause: "El seguimiento al final de la línea de tiempo actúa también sobre el estado vacío: seguimiento.ts:9 arranca con pegado: true y el ResizeObserver de .contenido en usar-linea-de-tiempo.ts:69-71 llama a seguirAlFinal (scrollTop = scrollHeight, línea 59) en su primer aviso al montar, sin excluir turnos.length === 0. EstadoVacio vive dentro de .contenido (linea-de-tiempo.tsx:67,100-102). El defecto existe desde 03-07; lo destapó la grilla de casos de 05-09 (contenido 630 px vs zona 495 px a 1280x720; 741 vs 330 a 375x667). Mismo mecanismo tras Nueva sesión pegada, recarga de una sesión sin turnos y, por código, la grilla que llega tarde con el reintento WR-03; secundario: el seguimiento sobrevive al cambio de sesión ('Ir al final' sobre el estado vacío)"
+  artifacts: [web/src/features/chat/linea-de-tiempo/usar-linea-de-tiempo.ts, web/src/features/chat/estado/seguimiento.ts, web/src/features/chat/linea-de-tiempo/linea-de-tiempo.tsx, .qa/evidence/05-front-web-por-features-e-identidad-de-marca/screenshots/05-testT01a-after-vacio.png, .qa/evidence/05-front-web-por-features-e-identidad-de-marca/screenshots/05-testT01a-after-375-vacio.png]
+  missing: ["que el seguimiento al final no actúe mientras no haya turnos y se reinicie al volver al estado vacío (sin 'Ir al final')", "una prueba con layout real o alturas simuladas que exija scrollTop 0 en el estado vacío a 1280x720 y 375x667, también tras Nueva sesión y recarga"]
+  debug_session: .planning/debug/estado-vacio-abre-al-fondo.md
 
 - truth: "A 320x568 la línea 1 del encabezado (logo, divisor, título Outfit 16) cabe en una sola línea; el título no se parte (05-UI-SPEC.md:509)"
   status: failed
   reason: "User reported: a 320x568 el título 'Registro como proveedor' se parte en dos líneas (alto 38,4 px, encabezado de 102 px); a 375 y 320 la fecha y el estado del modelo se truncan con elipsis ('2026-09-…', 'Disponi…') porque compiten por 343 px"
   severity: minor
   test: 2
-  artifacts: [.qa/evidence/05-front-web-por-features-e-identidad-de-marca/screenshots/05-testT02-encabezado-320.png, .qa/evidence/05-front-web-por-features-e-identidad-de-marca/screenshots/05-testT02-encabezado-375.png]
-  missing: []
+  root_cause: "El código cumple la UI-SPEC, pero sus medidas no caben: la línea 1 se calculó solo a 375 (05-UI-SPEC.md:137) y necesita logo 96 + 16 + divisor 1 + 16 + título 182,2 = 311,2 px frente a 288 px útiles a 320 (sobran 23,2 px), así que el título encoge (encabezado.module.css:18,22-30) y se parte; el chequeo de la línea 509 nunca puede pasar. En la línea 2, Montserrat 14 con dígitos tabulares (05-08) hace que fecha + estado + 'Nueva sesión' (que no encoge, :107, 129,4 px) pidan 345-388 px según el estado frente a 343 px a 375, y ambas pastillas encogen con elipsis (:51-52,67-69); la elipsis está especificada, pero la maqueta de la línea 133 muestra la fecha completa y Fase 3 ocultó el prefijo para que la fecha se leyera"
+  artifacts: [web/src/features/encabezado/encabezado/encabezado.module.css, web/src/styles/tokens.css, .planning/phases/05-front-web-por-features-e-identidad-de-marca/05-UI-SPEC.md, .qa/evidence/05-front-web-por-features-e-identidad-de-marca/screenshots/05-testT02-encabezado-320.png, .qa/evidence/05-front-web-por-features-e-identidad-de-marca/screenshots/05-testT02-encabezado-375.png]
+  missing: ["enmendar la UI-SPEC con medidas angostas calculadas contra 288 px (línea 1) y 343 px en Montserrat (línea 2)", "línea 1: logo de 20 px con huecos de 8 px junto al divisor (279,2 px) o título 14 con huecos de 8 (272,5 px), o apilar/ocultar el título bajo unos 344 px con un valor nuevo de CONSULTA_DE_ANCHO (W25)", "línea 2: la fecha no encoge y/o 'Nueva sesión' pasa a solo icono con aria-label en angosto (libera unos 89 px: todos los estados caben a 375)"]
+  debug_session: .planning/debug/encabezado-angosto-titulo-partido.md
