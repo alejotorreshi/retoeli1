@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, test } from "bun:test";
+import { realpathSync } from "node:fs";
 import { mkdir, mkdtemp, readdir, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { basename, dirname, join } from "node:path";
@@ -28,10 +29,17 @@ const RUTA_SKILL = join(DIRECTORIO_MODULO, DIRECTORIO_SKILLS_MODULO, NOMBRE_SKIL
 const RUTA_PROMPT = join(DIRECTORIO_AGENTE, ARCHIVO_PROMPT);
 const RUTA_CONOCIMIENTO = join(DIRECTORIO_CONOCIMIENTO, ARCHIVO_CONOCIMIENTO_PROCESO);
 const NOMBRE_DE_SKILL_OPENCODE = /^[a-z0-9]+(-[a-z0-9]+)*$/;
+const ESPACIOS = /\s+/;
 const LARGO_MAXIMO_NOMBRE_SKILL = 64;
 const LARGO_MAXIMO_DESCRIPCION_SKILL = 1024;
+const PREFIJO_COMENTARIO_ATRIBUTOS = "#";
+const PREFIJO_EOL = "eol=";
+const EOL_DESACTIVADO = ["-eol", "!eol"];
+const SEPARADOR_DE_RUTA = "/";
 
 type Partido = { readonly frontmatter: string; readonly cuerpo: Uint8Array };
+
+type ReglaDeAtributos = { readonly patron: string; readonly atributos: readonly string[] };
 
 type Generacion = { readonly fallido: boolean; readonly lineas: readonly string[] };
 
@@ -99,17 +107,70 @@ async function existeModulo(raiz: string): Promise<boolean> {
   return (await readdir(raiz)).includes(DIRECTORIO_MODULO);
 }
 
+function leerReglasDeAtributos(texto: string): ReglaDeAtributos[] {
+  return texto
+    .split("\n")
+    .map((linea) => linea.trim())
+    .filter((linea) => linea !== "" && !linea.startsWith(PREFIJO_COMENTARIO_ATRIBUTOS))
+    .map((linea) => {
+      const [patron = "", ...atributos] = linea.split(ESPACIOS);
+      return { patron, atributos };
+    });
+}
+
+function nombraEol(atributo: string): boolean {
+  return atributo.startsWith(PREFIJO_EOL) || EOL_DESACTIVADO.includes(atributo);
+}
+
+function patronCoincide(patron: string, ruta: string): boolean {
+  if (!patron.includes(SEPARADOR_DE_RUTA)) return new Bun.Glob(patron).match(basename(ruta));
+  const relativo = patron.startsWith(SEPARADOR_DE_RUTA) ? patron.slice(SEPARADOR_DE_RUTA.length) : patron;
+  return new Bun.Glob(relativo).match(ruta);
+}
+
+function eolEfectivo(reglas: readonly ReglaDeAtributos[], ruta: string): string | undefined {
+  return reglas
+    .filter((regla) => patronCoincide(regla.patron, ruta))
+    .flatMap((regla) => regla.atributos.filter(nombraEol))
+    .at(-1);
+}
+
+function esCheckoutDelProyecto(): boolean {
+  if (Bun.which("git") === null) return false;
+  const consulta = Bun.spawnSync(["git", "rev-parse", "--show-toplevel"], { cwd: RAIZ, stderr: "ignore" });
+  return consulta.exitCode === 0 && realpathSync(consulta.stdout.toString().trim()) === realpathSync(RAIZ);
+}
+
+const ES_CHECKOUT_DEL_PROYECTO = esCheckoutDelProyecto();
+
 describe("los finales de línea no rompen la igualdad byte a byte (WR-02)", () => {
   const RUTAS_COMPARADAS = [RUTA_PROMPT, RUTA_CONOCIMIENTO, RUTA_AGENTE, RUTA_SKILL];
   const RETORNO_DE_CARRO = 0x0d;
   const EOL_LF = "eol: lf";
+  const ATRIBUTO_EOL_LF = "eol=lf";
+  const ARCHIVO_ATRIBUTOS = ".gitattributes";
+  const REGLAS_ESPERADAS: readonly ReglaDeAtributos[] = [
+    { patron: "*", atributos: ["text=auto", ATRIBUTO_EOL_LF] },
+    { patron: "*.md", atributos: ["text", ATRIBUTO_EOL_LF] },
+  ];
 
-  test(".gitattributes fija LF en las fuentes y en lo generado, también en un checkout de Windows", () => {
-    const consulta = Bun.spawnSync(["git", "check-attr", "eol", "--", ...RUTAS_COMPARADAS], { cwd: RAIZ });
-    expect(consulta.exitCode).toBe(0);
-    const lineas = consulta.stdout.toString().trim().split("\n");
-    expect(lineas).toEqual(RUTAS_COMPARADAS.map((ruta) => `${ruta}: ${EOL_LF}`));
+  test(".gitattributes fija LF en las fuentes y en lo generado sin depender de git", async () => {
+    const reglas = leerReglasDeAtributos(await readFile(join(RAIZ, ARCHIVO_ATRIBUTOS), "utf8"));
+    expect(reglas).toEqual(expect.arrayContaining([...REGLAS_ESPERADAS]));
+    expect(RUTAS_COMPARADAS.map((ruta) => eolEfectivo(reglas, ruta))).toEqual(
+      RUTAS_COMPARADAS.map(() => ATRIBUTO_EOL_LF),
+    );
   });
+
+  test.skipIf(!ES_CHECKOUT_DEL_PROYECTO)(
+    "git check-attr confirma eol: lf en el checkout de git del proyecto",
+    () => {
+      const consulta = Bun.spawnSync(["git", "check-attr", "eol", "--", ...RUTAS_COMPARADAS], { cwd: RAIZ });
+      expect(consulta.exitCode).toBe(0);
+      const lineas = consulta.stdout.toString().trim().split("\n");
+      expect(lineas).toEqual(RUTAS_COMPARADAS.map((ruta) => `${ruta}: ${EOL_LF}`));
+    },
+  );
 
   test("ninguna fuente ni archivo generado trae CRLF", async () => {
     for (const ruta of RUTAS_COMPARADAS) {
