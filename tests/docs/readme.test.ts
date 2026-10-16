@@ -13,6 +13,7 @@ import { sensiblesDelProyecto } from "@tests/helpers/pii.helper.ts";
 import { TIPO_EVENTO } from "@/config/constants/agent.constants.ts";
 import { ESTADO_EVIDENCIA_COSTO, RUTA_EVIDENCIA_COSTO } from "@/config/constants/costo.constants.ts";
 import { LONGITUD_MINIMA_CODIGO_ACCESO, RUTA_API } from "@/config/constants/http.constants.ts";
+import { SEPARACION_MINIMA_SSE_MS } from "@/config/constants/preflight.constants.ts";
 
 const RAIZ = join(import.meta.dir, "..", "..");
 const README = "README.md";
@@ -20,6 +21,7 @@ const ENTREGA = "docs/entrega.md";
 const SOLUCION = "SOLUCION.md";
 const ENV_EJEMPLO = ".env.example";
 const CARPETA_DOCS = "docs";
+const ESTRUCTURA = "docs/estructura.md";
 const README_MODULO = "modulo/README.md";
 const WORKFLOW_CI = "https://github.com/alejotorreshi/retoeli1/actions/workflows/ci.yml";
 const BADGE_CI = `${WORKFLOW_CI}/badge.svg?branch=main`;
@@ -183,6 +185,12 @@ describe(`${ENTREGA} (D-99)`, () => {
     expect(lineaAntesDeLaDefensa).toBeDefined();
     expect(lineaAntesDeLaDefensa?.includes(SIN_GUION)).toBe(true);
     expect(leer(README).includes(VISPERA)).toBe(true);
+  });
+});
+
+describe("el pre-flight documentado (IN-01)", () => {
+  test.each([README, ESTRUCTURA])("%s nombra el umbral del SSE con el valor de su constante", (archivo) => {
+    expect(leer(archivo)).toContain(`al menos ${SEPARACION_MINIMA_SSE_MS} ms`);
   });
 });
 

@@ -324,7 +324,7 @@ async function enviarTurno(
   if (motivo !== MOTIVO_FIN.FINAL) return fallido(TEXTO_PREFLIGHT.turnoCortado(motivo));
   const separacion = separacionSse(lectura.valor);
   if (separacion < opciones.plazos.separacionSseMs) {
-    return fallido(TEXTO_PREFLIGHT.sseAcumulado(Math.round(separacion)));
+    return fallido(TEXTO_PREFLIGHT.sseAcumulado(Math.round(separacion), opciones.plazos.separacionSseMs));
   }
   return lectura;
 }

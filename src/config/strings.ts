@@ -508,8 +508,8 @@ export const TEXTO_PREFLIGHT = {
   turnoOk: (numero: number): string => `Turno ${numero} del guion del PRD §11 OK.`,
   cabeceraSse: (nombre: string): string =>
     `La respuesta del chat no trae la cabecera ${nombre} esperada; un proxy podría acumular el SSE.`,
-  sseAcumulado: (ms: number): string =>
-    `El evento ${TIPO_EVENTO.FIN_TURNO} llegó ${ms} ms después de ${TIPO_EVENTO.INICIO_TURNO}: un proxy está acumulando el SSE y el chat se vería de una sola vez.`,
+  sseAcumulado: (ms: number, minimoMs: number): string =>
+    `El evento ${TIPO_EVENTO.FIN_TURNO} llegó ${ms} ms después de ${TIPO_EVENTO.INICIO_TURNO}, menos de los ${minimoMs} ms que exige el pre-flight: posiblemente un proxy acumula el SSE y el chat se vería de una sola vez.`,
   herramientaFaltante: (nombre: string): string =>
     `El turno no terminó con éxito ${nombre} para ${CASO_GUION_PRD}.`,
   sinConfirmacion: (caso: string): string => `El turno no dejó pendiente la confirmación de ${caso}.`,

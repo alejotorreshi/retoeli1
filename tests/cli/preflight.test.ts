@@ -31,6 +31,7 @@ import { ESTADO_LLM, PRESET_DEEPSEEK, PROVEEDOR_DEEPSEEK } from "@/config/consta
 import {
   CASO_GUION_PRD,
   HERRAMIENTAS_TURNO_PROCESAR,
+  SEPARACION_MINIMA_SSE_MS,
   TIPO_BLOQUEO_GUION,
 } from "@/config/constants/preflight.constants.ts";
 import { HERRAMIENTA, NOMBRE_VISIBLE } from "@/config/constants/tools.constants.ts";
@@ -68,6 +69,13 @@ const SEPARACION_SSE_PRUEBA_MS = 50;
 const PLAZOS_CON_SEPARACION: PlazosPreflight = {
   ...PLAZOS_PRUEBA,
   separacionSseMs: SEPARACION_SSE_PRUEBA_MS,
+};
+
+const PLAZO_TEST_UMBRAL_REAL_MS = 15_000;
+
+const PLAZOS_CON_SEPARACION_REAL: PlazosPreflight = {
+  ...PLAZOS_PRUEBA,
+  separacionSseMs: SEPARACION_MINIMA_SSE_MS,
 };
 
 const relojReal = () => performance.now();
@@ -561,6 +569,43 @@ describe("pre-flight con --guion: PRD §11 en dos turnos SSE (D-92)", () => {
     expect(turnosDelChat(pedidos)).toHaveLength(2);
   });
 
+  test(
+    "con el umbral de producción, un SSE que llega por partes con llamadas al modelo de ese largo pasa",
+    async () => {
+      const url = await servir({}, guionPrd({ conPaquete: true, demoraMs: SEPARACION_MINIMA_SSE_MS }));
+      const { resultado, lineas, pedidos } = await correr(url, {
+        guion: true,
+        envolver: comoElBordeDeRender,
+        plazos: PLAZOS_CON_SEPARACION_REAL,
+        ahora: relojReal,
+      });
+      expect(resultado.fallido).toBe(false);
+      expect(lineas.at(-1)).toBe(TEXTO_PREFLIGHT.resultadoOk);
+      expect(turnosDelChat(pedidos)).toHaveLength(2);
+    },
+    PLAZO_TEST_UMBRAL_REAL_MS,
+  );
+
+  test(
+    "con el umbral de producción, el mismo guion acumulado por un proxy falla con sseAcumulado",
+    async () => {
+      const url = await servir({}, guionPrd({ conPaquete: true, demoraMs: SEPARACION_MINIMA_SSE_MS }));
+      const { resultado, lineas, pedidos } = await correr(url, {
+        guion: true,
+        envolver: acumulandoElSse,
+        plazos: PLAZOS_CON_SEPARACION_REAL,
+        ahora: relojReal,
+      });
+      expect(resultado.fallido).toBe(true);
+      const acumulados = Array.from({ length: SEPARACION_MINIMA_SSE_MS }, (_, ms) =>
+        TEXTO_PREFLIGHT.sseAcumulado(ms, SEPARACION_MINIMA_SSE_MS),
+      );
+      expect(lineas.some((linea) => acumulados.includes(linea))).toBe(true);
+      expect(turnosDelChat(pedidos)).toHaveLength(1);
+    },
+    PLAZO_TEST_UMBRAL_REAL_MS,
+  );
+
   test("si el SSE llega sin Cache-Control, falla nombrando la cabecera", async () => {
     const url = await servir({}, guionPrd({ conPaquete: true }));
     const { resultado, lineas, pedidos } = await correr(url, { guion: true, envolver: sinCacheControl });
@@ -587,7 +632,7 @@ describe("pre-flight con --guion: PRD §11 en dos turnos SSE (D-92)", () => {
     });
     expect(resultado.fallido).toBe(true);
     const acumulados = Array.from({ length: SEPARACION_SSE_PRUEBA_MS }, (_, ms) =>
-      TEXTO_PREFLIGHT.sseAcumulado(ms),
+      TEXTO_PREFLIGHT.sseAcumulado(ms, SEPARACION_SSE_PRUEBA_MS),
     );
     expect(lineas.some((linea) => acumulados.includes(linea))).toBe(true);
     expect(turnosDelChat(pedidos)).toHaveLength(1);
