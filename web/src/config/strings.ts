@@ -55,6 +55,10 @@ export const TEXTO_APP = {
   cargando: "Cargando el agente…",
 } as const;
 
+export const TEXTO_ALMACEN = {
+  fueraDelProveedor: "useAlmacen solo funciona dentro de ProveedorAlmacen.",
+} as const;
+
 export const TEXTO_ACCESO = {
   titulo: "Acceso al agente",
   ayuda: `Escribe el código de acceso que está en el README. Lo pedimos una vez; el acceso dura ${VIGENCIA_ACCESO_HORAS_POR_DEFECTO} horas en este navegador.`,

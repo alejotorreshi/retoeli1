@@ -256,6 +256,12 @@ export const EVENTO_CAMBIO_DE_MEDIOS = "change";
 
 export const EVENTO_ABORTO = "abort";
 
+export const EVENTO_VISIBILIDAD = "visibilitychange";
+
+export const VISIBILIDAD_VISIBLE = "visible";
+
+export const SIN_CASOS: readonly string[] = Object.freeze([]);
+
 export const SUFIJO_ID = {
   PESTANA: "-pestana-",
   VISTA: "-vista-",

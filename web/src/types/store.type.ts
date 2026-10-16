@@ -1,11 +1,13 @@
 import type { ACCION_DIALOGO_SESION, ACCION_SALUD } from "@web/config/constants/ui.constants.ts";
 import type {
+  AccionDeTarjeta,
   AccionUi,
   Despachar,
   EstadoConversacion,
   ResultadoApi,
   VistaSesionUi,
 } from "@web/types/chat.type.ts";
+import type { ReactNode } from "react";
 import type { ChatBody, ConfigResponse, HealthResponse } from "@/http/types/api.type.ts";
 
 export type Almacen<E, A> = {
@@ -64,10 +66,28 @@ export type Acciones = {
   readonly cambiarBorrador: (borrador: string) => void;
   readonly enviar: () => void;
   readonly enviarTexto: (mensaje: string) => void;
+  readonly responderConfirmacion: (accion: AccionDeTarjeta) => void;
+  readonly recibirConfig: (resultado: ResultadoApi<ConfigResponse>) => void;
+  readonly cargarConfig: (signal: AbortSignal) => Promise<void>;
+  readonly reintentarConfig: (signal: AbortSignal) => Promise<void>;
+  readonly cargarSesion: (sesionId: string, signal: AbortSignal) => Promise<void>;
+  readonly detener: () => void;
+  readonly recargar: () => void;
+  readonly nuevaSesion: () => void;
+  readonly volverASesionAnterior: () => void;
+  readonly vencerAcceso: (aviso: string) => void;
   readonly refrescarSalud: () => void;
+  readonly cancelarSalud: () => void;
+  readonly abrirNuevaSesion: () => void;
+  readonly cerrarNuevaSesion: () => void;
 };
 
 export type InstanciaAlmacen = {
   readonly almacen: AlmacenRaiz;
   readonly acciones: Acciones;
+};
+
+export type PropsProveedorAlmacen = {
+  readonly instancia: InstanciaAlmacen;
+  readonly children: ReactNode;
 };
