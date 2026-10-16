@@ -5,13 +5,9 @@ import estilos from "@web/features/archivos/lista-archivos/lista-archivos.module
 import { controlFilaArchivo } from "@web/features/archivos/lista-archivos/usar-lista-archivos.ts";
 import type { PropsFilaArchivo, PropsListaArchivos } from "@web/types/ui.type.ts";
 
-function FilaArchivo({ caso, archivo, alVer, alDescargar }: PropsFilaArchivo) {
-  const { ruta, nombreDescarga, alPulsarVer, alPulsarDescargar } = controlFilaArchivo(
-    caso,
-    archivo,
-    alVer,
-    alDescargar,
-  );
+function FilaArchivo(props: PropsFilaArchivo) {
+  const { archivo } = props;
+  const { ruta, nombreDescarga, alPulsarVer, alPulsarDescargar } = controlFilaArchivo(props);
 
   return (
     <li className={estilos.fila}>

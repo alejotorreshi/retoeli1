@@ -435,13 +435,15 @@ export type PropsBarraPestanas = {
   readonly ids: IdsDePestanas;
 };
 
+export type RegistroDeBoton = (boton: HTMLButtonElement | null) => void;
+
 export type PestanaEnBarra = {
   readonly pestana: Pestana;
   readonly id: string;
   readonly idVista: string;
   readonly elegida: boolean;
   readonly conPunto: boolean;
-  readonly registrar: (boton: HTMLButtonElement | null) => void;
+  readonly registrar: RegistroDeBoton;
   readonly alElegir: () => void;
 };
 

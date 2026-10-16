@@ -4,10 +4,10 @@ import { ESTADO_LISTA_ARCHIVOS, RESULTADO_API } from "@web/config/constants/ui.c
 import { esArchivoNoEncontrado } from "@web/features/casos/estado/casos.ts";
 import type { ArchivoUi, EstadoListaArchivos } from "@web/types/chat.type.ts";
 import type {
-  AlVerArchivo,
   ControlArchivos,
   ControlFilaArchivo,
   OpcionesArchivos,
+  PropsFilaArchivo,
 } from "@web/types/ui.type.ts";
 import { type MouseEvent, useCallback, useEffect, useRef, useState } from "react";
 
@@ -80,12 +80,12 @@ export function useListaArchivos({ caso, activo, marca, alVencerAcceso }: Opcion
   };
 }
 
-export function controlFilaArchivo(
-  caso: string,
-  archivo: ArchivoUi,
-  alVer: AlVerArchivo,
-  alDescargar: (archivo: ArchivoUi) => void,
-): ControlFilaArchivo {
+export function controlFilaArchivo({
+  caso,
+  archivo,
+  alVer,
+  alDescargar,
+}: PropsFilaArchivo): ControlFilaArchivo {
   function alPulsarVer(evento: MouseEvent<HTMLButtonElement>): void {
     alVer(archivo, evento.currentTarget);
   }
