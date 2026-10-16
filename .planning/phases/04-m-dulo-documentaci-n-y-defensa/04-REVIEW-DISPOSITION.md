@@ -57,3 +57,13 @@ findings:
 # Disposición del code review de la fase 04
 
 Los 12 hallazgos de 04-REVIEW.md se corrigieron en una sola pasada del fixer, con un commit atómico cada uno (ver 04-REVIEW-FIX.md, status all_fixed). Hay que verificar CR-01 contra Render: lo cubre eli-qa con `bun run preflight -- --guion`.
+
+## Re-revisión incremental (iteración 2)
+
+Los 5 hallazgos de la re-revisión incremental (04-REVIEW.md actual) se corrigieron en commits atómicos, del 07dd7ea al db767c4 (ver 04-REVIEW-FIX.md, iteración 2):
+
+- WR-01 (warning): fixed — The CR-01 fix stopped checking `no-transform`, and the "Render edge" test fixture contradicts the project's own evidence
+- WR-02 (warning): fixed — The T-04-22 secret-assignment scanner misses `LLM_FALLBACK_API_KEY` and `PREFLIGHT_ACCESS_CODE`, and only matches `VAR=` at the start of a line
+- IN-01 (info): fixed — The 250 ms production threshold is never exercised, and the docs repeat it as a literal
+- IN-02 (info): fixed — Writing the pair is not atomic as claimed, and a leftover `.tmp` is not gitignored
+- IN-03 (info): fixed — `TEXTO_MODULO.fueraDeLaRaiz` still tells the user to run from the project root, which no longer matters
