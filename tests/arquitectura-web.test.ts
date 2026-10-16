@@ -119,6 +119,8 @@ const VISTAS_MIGRADAS: readonly string[] = [
   "web/src/features/archivos/dialogo-vista-previa/dialogo-vista-previa.tsx",
   "web/src/features/disposicion/columnas/columnas.tsx",
   "web/src/features/disposicion/barra-pestanas/barra-pestanas.tsx",
+  "web/src/features/acceso/pantalla-acceso/pantalla-acceso.tsx",
+  "web/src/features/acceso/pantalla-carga/pantalla-carga.tsx",
 ];
 
 function carpetaDeComponente(raiz: string): RegExp {
@@ -756,7 +758,8 @@ describe("el guardián de web/ muerde sobre fuentes de muestra", () => {
       "web/src/components/aviso.module.css",
       "web/src/components/icons/iconos.tsx",
       "web/src/styles/tokens.css",
-      "web/src/state/conversacion.ts",
+      "web/src/state/x.ts",
+      "web/src/hooks/usar-x.ts",
       "web/src/config/constants/ui.constants.ts",
       "web/src/store/almacen.ts",
       "web/src/store/usar-almacen.ts",
@@ -782,7 +785,11 @@ describe("el guardián de web/ muerde sobre fuentes de muestra", () => {
       "web/src/components/aviso.css: no está en una carpeta de rol de web/src con su sufijo",
       "web/src/types/chat.ts: no está en una carpeta de rol de web/src con su sufijo",
       "web/src/config/ui.ts: no está en una carpeta de rol de web/src con su sufijo",
-      "web/src/state/conversacion.ts: no está en una carpeta de rol de web/src con su sufijo",
+      "web/src/components/aviso.tsx: no está en una carpeta de rol de web/src con su sufijo",
+      "web/src/components/aviso.module.css: no está en una carpeta de rol de web/src con su sufijo",
+      "web/src/components/icons/iconos.tsx: no está en una carpeta de rol de web/src con su sufijo",
+      "web/src/state/x.ts: no está en una carpeta de rol de web/src con su sufijo",
+      "web/src/hooks/usar-x.ts: no está en una carpeta de rol de web/src con su sufijo",
       "web/src/store/otra-vista.tsx: no está en una carpeta de rol de web/src con su sufijo",
       "web/src/store/Raiz.ts: no está en una carpeta de rol de web/src con su sufijo",
       "web/src/features/chat/x.tsx: no está en una carpeta de rol de web/src con su sufijo",
@@ -838,9 +845,9 @@ describe("el guardián de web/ muerde sobre fuentes de muestra", () => {
       `${vista}: la vista no puede importar @web/features/casos/estado/casos.ts`,
       `${vista}: la vista no puede importar @web/features/chat/y/usar-y.ts`,
       `${vista}: la vista no puede importar react`,
+      `${vista}: la vista no puede importar @web/components/icons/iconos.tsx`,
     ]);
     expect(violacionesDeImportacionesDeVista("web/src/features/chat/x/usar-x.ts", codigo)).toEqual([]);
-    expect(violacionesDeImportacionesDeVista("web/src/components/x.tsx", codigo)).toEqual([]);
   });
 
   test("W17: reporta una vista con estilos ajenos y un .ts que importa un módulo CSS", () => {
@@ -865,11 +872,13 @@ describe("el guardián de web/ muerde sobre fuentes de muestra", () => {
     expect(violacionesDeApiTransversal("web/src/features/chat/x/x.tsx", codigo)).toEqual([
       "web/src/features/chat/x/x.tsx: solo los hooks usar-*.ts y el almacén importan @web/api/cliente-api.ts",
     ]);
+    expect(violacionesDeApiTransversal("web/src/components/x.tsx", codigo)).toEqual([
+      "web/src/components/x.tsx: solo los hooks usar-*.ts y el almacén importan @web/api/cliente-api.ts",
+    ]);
     for (const ruta of [
       "web/src/features/chat/x/usar-x.ts",
       "web/src/store/dependencias.ts",
       "web/src/api/flujo-chat.ts",
-      ...CARPETAS_EN_MUDANZA.map((carpeta) => `${carpeta}x.tsx`),
     ]) {
       expect(violacionesDeApiTransversal(ruta, codigo)).toEqual([]);
     }
@@ -916,9 +925,7 @@ describe("el guardián de web/ muerde sobre fuentes de muestra", () => {
       "web/src/features/chat/x/usar-x.ts: useSyncExternalStore de react solo vive en web/src/store",
     ]);
     expect(violacionesDePrimitivasDelAlmacen("web/src/store/usar-almacen.ts", codigo)).toEqual([]);
-    for (const carpeta of CARPETAS_EN_MUDANZA) {
-      expect(violacionesDePrimitivasDelAlmacen(`${carpeta}usar-x.ts`, codigo)).toEqual([]);
-    }
+    expect(violacionesDePrimitivasDelAlmacen("web/src/hooks/usar-x.ts", codigo)).toHaveLength(4);
     expect(
       violacionesDePrimitivasDelAlmacen("web/src/features/disposicion/columnas/usar-columnas.ts", codigo),
     ).toEqual([

@@ -2,7 +2,7 @@ import { describe, expect, test } from "bun:test";
 import { montarApp } from "@tests/helpers/app-dom.helper.ts";
 import { prepararDom } from "@tests/helpers/dom.helper.ts";
 import { crearRedWeb } from "@tests/helpers/red-web.helper.ts";
-import { TEXTO_ACCESO, TEXTO_CHAT } from "@web/config/strings.ts";
+import { TEXTO_ACCESO, TEXTO_APP, TEXTO_CHAT } from "@web/config/strings.ts";
 import { METODO_POST, RUTA_API } from "@/config/constants/http.constants.ts";
 import { MENSAJE_HTTP } from "@/config/strings.ts";
 
@@ -23,6 +23,18 @@ function valoresGuardados(): string[] {
 }
 
 describe("App con el acceso pedido por la API", () => {
+  test("mientras verifica el acceso muestra la pantalla de carga y anuncia que está cargando", async () => {
+    const red = crearRedWeb({ nativos: dom.nativos, codigoAcceso: CODIGO_CORRECTO });
+    const { pantalla } = await montarApp(dom, red);
+
+    const estado = pantalla.getByRole("status");
+    expect(estado.textContent).toBe(TEXTO_APP.cargando);
+    expect(estado.closest("main")?.getAttribute("aria-busy")).toBe("true");
+
+    expect(await pantalla.findByRole("heading", { name: TEXTO_ACCESO.titulo })).toBeDefined();
+    expect(pantalla.queryByText(TEXTO_APP.cargando)).toBeNull();
+  });
+
   test("un 401 de /api/config muestra la pantalla de acceso con el campo enfocado y oculto", async () => {
     const red = crearRedWeb({ nativos: dom.nativos, codigoAcceso: CODIGO_CORRECTO });
     const { pantalla, usuario } = await montarApp(dom, red);
