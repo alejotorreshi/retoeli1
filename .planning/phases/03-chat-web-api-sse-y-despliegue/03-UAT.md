@@ -1,9 +1,9 @@
 ---
-status: complete
+status: diagnosed
 phase: 03-chat-web-api-sse-y-despliegue
 source: [03-VERIFICATION.md]
 started: 2026-10-15T23:50:00Z
-updated: 2026-10-16T01:35:36.915Z
+updated: 2026-10-16T02:05:00Z
 ---
 
 ## Current Test
@@ -85,5 +85,15 @@ blocked: 0
   reason: "User reported: QA T30 a 375×667 (3/3 reproducciones): con un turno en curso, una flecha arriba despega 40 px pero con el siguiente evento la vista vuelve al fondo y 'Ir al final' nunca aparece; la rueda y PageUp sí despegan; a 1280×720 pasa 5/5. Traza: al despegarse overflow-anchor vuelve a auto, el scroll anchoring empuja la posición hacia abajo y desplazar() lo lee como bajada a ≤ 96 px del fondo y vuelve a pegar (rompe D-78 y D-78.1)."
   severity: major
   test: 7
-  artifacts: []
-  missing: []
+  root_cause: "desplazar() vuelve a pegar por cercaDelFinal ante cualquier aumento de scrollTop con la vista despegada; con overflow-anchor: auto (solo se anula pegada), el scroll anchoring de Chromium sube scrollTop lo que creció el contenido insertado por encima del ancla (tarjetas del grupo encima de la TarjetaResultado) sin cambiar la distancia; tras una flecha (40 px <= 96) eso se lee como bajada de la usuaria y re-pega. Rueda y PageUp dejan > 96 px y no se ven afectadas; 1280×720 también falla desde el segundo caso del turno"
+  artifacts:
+    - path: "web/src/state/seguimiento.ts"
+      issue: "desplazar() (L46-51) re-pega por umbral ante cualquier aumento de posición; el estado no guarda la distancia y no reconoce la firma del anclaje (Δposición == Δalto, distancia constante)"
+    - path: "web/src/components/linea-de-tiempo.tsx"
+      issue: "overflow-anchor: none solo con la vista pegada (L197 + module.css L16-18); CRECIMIENTO no lleva geometría"
+    - path: "tests/web/seguimiento.test.ts"
+      issue: "falta la secuencia de anclaje con la vista despegada; WR-04 modela un AJUSTE_PROPIO despegado que el componente nunca emite"
+  missing:
+    - "Re-pegar por umbral solo si la distancia al final bajó respecto de la última conocida (guardar distancia en el estado y refrescarla en CRECIMIENTO), o como mínimo mantener overflow-anchor: none también despegada"
+    - "Prueba de reductor: ajustePropio(8149), desplazamiento(8108,41), CRECIMIENTO, desplazamiento(8188,41) → pegado false, contenidoNuevo true; bordes 95/96/97 px; despegada que baja de verdad a <= 96 px re-pega"
+  debug_session: .planning/debug/seguimiento-375-anclaje-repega.md
