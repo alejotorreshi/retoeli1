@@ -14,7 +14,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Núcleo determinista** - Dominio puro, las 5 herramientas `proveedor_*`, formularios xlsx/pdf/portal, paquete para firma, logs y `demo.ts` con golden tests, sin LLM (completed 2026-10-13)
 - [x] **Phase 2: Agente y compuerta de confirmación** - Adaptador DeepSeek con resiliencia, ciclo propio con topes, sesiones y compuerta de confirmación decidida por el servidor (completed 2026-10-14)
-- [ ] **Phase 3: Chat web, API SSE y despliegue** - API Hono con SSE y código de acceso, chat React con tool calls visibles y link público activo en Render
+- [x] **Phase 3: Chat web, API SSE y despliegue** - API Hono con SSE y código de acceso, chat React con tool calls visibles y link público activo en Render (completed 2026-10-15)
 - [ ] **Phase 4: Módulo, documentación y defensa** - Bonus `modulo/` como fuente única, README, SOLUCION.md, CI y pre-flight de la defensa
 
 ## Phase Details
@@ -166,7 +166,7 @@ Plans:
   4. Desde el panel de artefactos, la analista descarga o previsualiza los archivos generados del caso; solo se sirven nombres en lista blanca y detrás del código de acceso. Si no hay clave, se agotó el saldo, el proveedor cayó o se alcanzó el tope diario, `/api/health` lo reporta y la UI explica en lenguaje claro qué pasa, qué sigue funcionando, qué hacer y cuándo vuelve, sin pedirle a la analista correr comandos; `demo.ts` queda como la verificación sin modelo documentada en el README.
   5. Sin código de acceso, la API rechaza toda petición salvo `/api/health`. El rate limit por IP y el límite de tamaño de mensaje responden con un mensaje claro. Un test verifica que la clave del LLM no aparece en `web/dist`, en las respuestas de la API ni en el stream SSE.
 
-**Plans:** 47/47 plans executed
+**Plans:** 47/47 plans complete
 
 Plans:
 **Wave 1**
@@ -307,5 +307,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 |-------|----------------|--------|-----------|
 | 1. Núcleo determinista | 15/15 | Complete    | 2026-10-13 |
 | 2. Agente y compuerta de confirmación | 24/24 | Complete    | 2026-10-14 |
-| 3. Chat web, API SSE y despliegue | 47/47 | In Progress | - |
+| 3. Chat web, API SSE y despliegue | 47/47 | Complete    | 2026-10-15 |
 | 4. Módulo, documentación y defensa | 0/TBD | Not started | - |

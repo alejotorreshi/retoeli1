@@ -67,31 +67,31 @@ Fuente vinculante: `reto-01/PRD.md`, sin modificar. Fixtures: `reto-01/fixtures/
 - [x] **LLM-03**: Hay timeout al proveedor con mensaje claro. Se reintenta con backoff y jitter solo ante errores transitorios (429, 500, 503 y red). Los errores 400, 401 y 422 no se reintentan, y el 402 se informa como "saldo agotado".
 - [x] **LLM-04**: Un decorador de fallback pasa a la segunda ranura (`LLM_FALLBACK_*`, `deepseek-v4-pro` por defecto) solo cuando el primario agotó sus reintentos ante errores transitorios. La ranura de respaldo hereda la clave del primario solo si la URL base es idéntica.
 - [x] **LLM-05**: El tope de tokens por sesión y el tope de iteraciones por turno son configurables. Al superarlos, el usuario recibe un mensaje claro, no un 500.
-- [ ] **LLM-06**: `/api/health` reporta la disponibilidad del LLM (`disponible`, `sin_clave`, `saldo_agotado`, `no_disponible` o `tope_diario`) sin llamar al modelo ni exponer claves. Cuando el modelo no está disponible, la UI explica por estado, en lenguaje claro y sin comandos, qué pasa, qué sigue funcionando (ver y descargar los archivos ya generados), qué hacer y cuándo vuelve; ofrece "Comprobar de nuevo", que solo relee `/api/health`, y pausa el envío solo en `sin_clave` y `tope_diario`. `demo.ts` es la verificación sin modelo del evaluador, documentada en el README y SOLUCION.md, no en la UI (D-70, reescrita).
+- [x] **LLM-06**: `/api/health` reporta la disponibilidad del LLM (`disponible`, `sin_clave`, `saldo_agotado`, `no_disponible` o `tope_diario`) sin llamar al modelo ni exponer claves. Cuando el modelo no está disponible, la UI explica por estado, en lenguaje claro y sin comandos, qué pasa, qué sigue funcionando (ver y descargar los archivos ya generados), qué hacer y cuándo vuelve; ofrece "Comprobar de nuevo", que solo relee `/api/health`, y pausa el envío solo en `sin_clave` y `tope_diario`. `demo.ts` es la verificación sin modelo del evaluador, documentada en el README y SOLUCION.md, no en la UI (D-70, reescrita).
 
 ### API HTTP (§6.4)
 
-- [ ] **API-01**: `POST /api/chat` recibe `{ sessionId, message }` y emite un stream SSE de eventos por paso (`turn_start`, `tool_start`, `tool_end`, `text`, `confirmation_required`, `usage`, `error`, `turn_end`) con heartbeat. También hay un fallback JSON `{ reply, toolCalls[], needsConfirmation }`.
-- [ ] **API-02**: `GET /api/sessions/:id` devuelve el historial completo de la sesión, con la PII redactada.
-- [ ] **API-03**: `GET /api/health` devuelve `{ ok: true, provider, model, llm }` sin exponer claves y sin pedir código de acceso.
-- [ ] **API-04**: El link público exige un código de acceso, comparado en tiempo constante. Hay rate limit por IP, límite de tamaño de mensaje y headers de seguridad.
-- [ ] **API-05**: Una ruta de descarga de artefactos sirve `out/<caso>/` con lista blanca de nombres de archivo, detrás del código de acceso.
+- [x] **API-01**: `POST /api/chat` recibe `{ sessionId, message }` y emite un stream SSE de eventos por paso (`turn_start`, `tool_start`, `tool_end`, `text`, `confirmation_required`, `usage`, `error`, `turn_end`) con heartbeat. También hay un fallback JSON `{ reply, toolCalls[], needsConfirmation }`.
+- [x] **API-02**: `GET /api/sessions/:id` devuelve el historial completo de la sesión, con la PII redactada.
+- [x] **API-03**: `GET /api/health` devuelve `{ ok: true, provider, model, llm }` sin exponer claves y sin pedir código de acceso.
+- [x] **API-04**: El link público exige un código de acceso, comparado en tiempo constante. Hay rate limit por IP, límite de tamaño de mensaje y headers de seguridad.
+- [x] **API-05**: Una ruta de descarga de artefactos sirve `out/<caso>/` con lista blanca de nombres de archivo, detrás del código de acceso.
 
 ### Front de chat (§6.1)
 
-- [ ] **UI-01**: El chat muestra el historial, el campo de entrada y un indicador de "pensando" con la herramienta en curso.
-- [ ] **UI-02**: Cada tool call queda visible en el chat como tarjeta colapsable, con nombre, args redactados, resultado resumido y estado (en curso, ok o error).
-- [ ] **UI-03**: Cuando el agente pide confirmación, la UI lo resalta con una tarjeta que muestra caso, acción y bloqueos, y ofrece los botones Confirmar y Cancelar. Esos botones envían un mensaje explícito del usuario.
-- [ ] **UI-04**: Los errores de herramienta o de proveedor aparecen en el chat en lenguaje claro y la sesión sigue usable.
-- [ ] **UI-05**: Una tarjeta de resultado por caso, construida con los datos de las herramientas, muestra contadores de lleno, faltante y por confirmar, el badge `listo_para_firma`, los bloqueos y la ruta de salida.
-- [ ] **UI-06**: Un panel de artefactos permite descargar o previsualizar los archivos generados del caso.
-- [ ] **UI-07**: Hay chips de acción rápida: el prompt §11, procesar los 4 casos y listar los casos.
-- [ ] **UI-08**: Un indicador de progreso por caso muestra las etapas leído → mapeado → generado → paquete → confirmación → envío. El `sessionId` persiste en el navegador, el historial se recarga desde la API y hay un botón "Nueva sesión".
-- [ ] **UI-09**: La UI muestra la fecha de ejecución efectiva y pide el código de acceso una sola vez.
+- [x] **UI-01**: El chat muestra el historial, el campo de entrada y un indicador de "pensando" con la herramienta en curso.
+- [x] **UI-02**: Cada tool call queda visible en el chat como tarjeta colapsable, con nombre, args redactados, resultado resumido y estado (en curso, ok o error).
+- [x] **UI-03**: Cuando el agente pide confirmación, la UI lo resalta con una tarjeta que muestra caso, acción y bloqueos, y ofrece los botones Confirmar y Cancelar. Esos botones envían un mensaje explícito del usuario.
+- [x] **UI-04**: Los errores de herramienta o de proveedor aparecen en el chat en lenguaje claro y la sesión sigue usable.
+- [x] **UI-05**: Una tarjeta de resultado por caso, construida con los datos de las herramientas, muestra contadores de lleno, faltante y por confirmar, el badge `listo_para_firma`, los bloqueos y la ruta de salida.
+- [x] **UI-06**: Un panel de artefactos permite descargar o previsualizar los archivos generados del caso.
+- [x] **UI-07**: Hay chips de acción rápida: el prompt §11, procesar los 4 casos y listar los casos.
+- [x] **UI-08**: Un indicador de progreso por caso muestra las etapas leído → mapeado → generado → paquete → confirmación → envío. El `sessionId` persiste en el navegador, el historial se recarga desde la API y hay un botón "Nueva sesión".
+- [x] **UI-09**: La UI muestra la fecha de ejecución efectiva y pide el código de acceso una sola vez.
 
 ### Seguridad, PII y observabilidad (§8, RN5, CA4)
 
-- [ ] **SEG-01**: La clave del LLM vive solo en una env var del backend y nunca aparece en el front (sin el prefijo `VITE_`), los logs, las respuestas de la API ni el repo. Existe un `.env.example` sin valores y un test verifica que la clave no esté en `web/dist` ni en las respuestas.
+- [x] **SEG-01**: La clave del LLM vive solo en una env var del backend y nunca aparece en el front (sin el prefijo `VITE_`), los logs, las respuestas de la API ni el repo. Existe un `.env.example` sin valores y un test verifica que la clave no esté en `web/dist` ni en las respuestas.
 - [ ] **SEG-02**: Una única función `redactar()`, basada en una política de rutas sensibles, se aplica a los logs, la API, el SSE y los resúmenes de tool calls. Un test busca con grep valores PII conocidos y verifica que no aparezcan fuera de los archivos de salida.
 - [x] **SEG-03**: Los logs son JSON estructurados, con IDs de correlación por sesión, turno y tool call, y nunca registran la clave ni PII.
 - [x] **SEG-04**: Cada tool call queda registrada en `out/log.jsonl` (CA4) y en `out/<caso>/log.jsonl` (RN5) con `{ ts, herramienta, ok, resumen }`, con el resumen redactado.
@@ -114,8 +114,8 @@ Fuente vinculante: `reto-01/PRD.md`, sin modificar. Fixtures: `reto-01/fixtures/
 
 ### Despliegue (§8, §9.3)
 
-- [ ] **DEP-01**: `bun run dev` levanta el front y el backend en local con un solo comando, en menos de 2 minutos en una máquina limpia con las variables de `.env.example`.
-- [ ] **DEP-02**: Un Dockerfile portable y un `render.yaml` despliegan en Render free un único servicio que sirve la API y la SPA, con la clave como secret, `FECHA_EJECUCION=2026-09-03` y el health check en `/api/health`. El link público está activo.
+- [x] **DEP-01**: `bun run dev` levanta el front y el backend en local con un solo comando, en menos de 2 minutos en una máquina limpia con las variables de `.env.example`.
+- [x] **DEP-02**: Un Dockerfile portable y un `render.yaml` despliegan en Render free un único servicio que sirve la API y la SPA, con la clave como secret, `FECHA_EJECUCION=2026-09-03` y el health check en `/api/health`. El link público está activo.
 - [ ] **DEP-03**: Un script de pre-flight calienta el servicio y verifica health y SSE antes de la defensa. El guion §11 se ensaya sobre el link público.
 
 ### Documentación de entrega (§9)
@@ -212,22 +212,22 @@ Cada requisito v1 está asignado a exactamente una fase del roadmap (`.planning/
 | LLM-03 | Phase 2 | Complete |
 | LLM-04 | Phase 2 | Complete |
 | LLM-05 | Phase 2 | Complete |
-| LLM-06 | Phase 3 | Gaps Found |
-| API-01 | Phase 3 | Gaps Found |
-| API-02 | Phase 3 | Gaps Found |
-| API-03 | Phase 3 | Gaps Found |
-| API-04 | Phase 3 | Gaps Found |
-| API-05 | Phase 3 | Gaps Found |
-| UI-01 | Phase 3 | Gaps Found |
-| UI-02 | Phase 3 | Gaps Found |
-| UI-03 | Phase 3 | Gaps Found |
-| UI-04 | Phase 3 | Gaps Found |
-| UI-05 | Phase 3 | Gaps Found |
-| UI-06 | Phase 3 | Gaps Found |
-| UI-07 | Phase 3 | Gaps Found |
-| UI-08 | Phase 3 | Gaps Found |
-| UI-09 | Phase 3 | Gaps Found |
-| SEG-01 | Phase 3 | Gaps Found |
+| LLM-06 | Phase 3 | Complete |
+| API-01 | Phase 3 | Complete |
+| API-02 | Phase 3 | Complete |
+| API-03 | Phase 3 | Complete |
+| API-04 | Phase 3 | Complete |
+| API-05 | Phase 3 | Complete |
+| UI-01 | Phase 3 | Complete |
+| UI-02 | Phase 3 | Complete |
+| UI-03 | Phase 3 | Complete |
+| UI-04 | Phase 3 | Complete |
+| UI-05 | Phase 3 | Complete |
+| UI-06 | Phase 3 | Complete |
+| UI-07 | Phase 3 | Complete |
+| UI-08 | Phase 3 | Complete |
+| UI-09 | Phase 3 | Complete |
+| SEG-01 | Phase 3 | Complete |
 | SEG-02 | Phase 1 | Partial — política de rutas PII, test grep y redactar() única para logs y resúmenes de tool calls (Fase 2) listos; falta aplicarla a API/SSE (Fase 3) |
 | SEG-03 | Phase 2 | Complete |
 | SEG-04 | Phase 1 | Complete |
@@ -241,8 +241,8 @@ Cada requisito v1 está asignado a exactamente una fase del roadmap (`.planning/
 | CAL-03 | Phase 1 | Complete |
 | CAL-04 | Phase 1 | Complete |
 | CAL-05 | Phase 4 | Pending |
-| DEP-01 | Phase 3 | Gaps Found |
-| DEP-02 | Phase 3 | Gaps Found |
+| DEP-01 | Phase 3 | Complete |
+| DEP-02 | Phase 3 | Complete |
 | DEP-03 | Phase 4 | Pending |
 | DOC-01 | Phase 4 | Pending |
 | DOC-02 | Phase 4 | Pending |

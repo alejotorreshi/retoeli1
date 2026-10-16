@@ -1,43 +1,43 @@
 ---
 gsd_state_version: "1.0"
-current_phase: 03
-current_phase_name: Chat web, API SSE y despliegue
-status: executing
-stopped_at: Completed 03-47-PLAN.md
-last_updated: "2026-10-16T02:15:15.169Z"
+current_phase: 4
+current_phase_name: Módulo, documentación y defensa
+status: planning
+stopped_at: Phase 03 complete, ready to plan Phase 4
+last_updated: "2026-10-16T02:38:39.908Z"
 last_activity: 2026-10-15
-last_activity_desc: Phase 03 execution started
-state_head: 2d5da761be453503d8c0cdd0a1b0512cd02da861
+last_activity_desc: Phase 03 complete, transitioned to Phase 4
+state_head: 8eac4f53fe722b5a1a6df3d934896ff926c59bf5
 progress:
   total_phases: 4
-  completed_phases: 2
+  completed_phases: 3
   total_plans: 86
   completed_plans: 86
-  percent: 50
+  percent: 75
 ---
 
 # Project State
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-10-14)
+See: .planning/PROJECT.md (updated 2026-10-16)
 
 **Core value:** El agente nunca inventa un dato: cada valor sale de una herramienta tipada que lo lee del maestro, y ninguna acción externa ocurre sin confirmación humana explícita.
-**Current focus:** Phase 03 — Chat web, API SSE y despliegue
+**Current focus:** Phase 4 — Módulo, documentación y defensa
 
 ## Current Position
 
-Phase: 03 (Chat web, API SSE y despliegue) — EXECUTING
-Plan: 5 of 47
-Status: Ready to execute
-Last activity: 2026-10-16 - Completed quick task 261015-t5l: G-03-7 re-pegado por anclaje de la línea de tiempo
+Phase: 4 — Módulo, documentación y defensa
+Plan: Not started
+Status: Ready to plan
+Last activity: 2026-10-15 — Phase 03 complete, transitioned to Phase 4
 
-Progress: [█████░░░░░] 50%
+Progress: [████████░░] 75%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 39
+- Total plans completed: 86
 - Average duration: -
 - Total execution time: 0.0 hours
 
@@ -47,6 +47,7 @@ Progress: [█████░░░░░] 50%
 |-------|-------|-------|----------|
 | 01 | 15 | - | - |
 | 02 | 24 | - | - |
+| 03 | 47 | - | - |
 
 **Recent Trend:**
 - Last 5 plans: -
@@ -348,6 +349,7 @@ Recent decisions affecting current work:
 - [Phase 03]: 03-46: la exhaustividad de aplicarEvento usa default con const _sinCubrir: never sin return, porque Biome prohíbe devolver valor en funciones void (IN-05)
 - [Phase 03]: 03-45 / D-77.2: /api/acceso y el Bearer reservan el intento con hit síncrono antes del primer await y lo devuelven con release ante código o Bearer correctos o cuerpo inválido; hit no cuenta un golpe rechazado
 - [Phase 03]: D-78.1 (03-47): desplazar decide fondo (TOLERANCIA_FONDO 1 px) → subida → umbral de 96 px; cualquier subida despega y el umbral solo vuelve a pegar (WR-04)
+- [Phase 03]: Cierre (2026-10-16): se revierte 71d8d20 (5f07e7c) y se aceptan con override el tope de 5 por IP aproximado, el aviso tras un envío confirmado fallido y truncado, y la flecha de 40 px a 375×667 (quick-261015-t5l corrige el anclaje de un paso); verificación passed, UAT 11/11, SECURITY 87/87
 
 ### Pending Todos
 
@@ -355,17 +357,16 @@ None yet.
 
 ### Blockers/Concerns
 
+- [Phase 4]: SOLUCION.md debe documentar como trabajo futuro los límites aceptados en la Fase 3 (docs/limites-del-demo.md: tope por IP aproximado, recibo por reserva, plazo de lectura del cuerpo; seguimiento con una sola flecha a 375×667) y los seguimientos menores de la QA (panel que lista un archivo borrado tras 404, campo en pausa sin atenuar, 401/429 sin línea de log).
 - [Phase 2]: El prompt del agente debe responder a `PAQUETE_DESACTUALIZADO` re-ejecutando `proveedor_armar_paquete`, mostrando el nuevo estado y pidiendo confirmación de nuevo (CR-01).
 - [Phase 2]: Al enviar no se compara el contenido del formulario en `paquete/`; si el maestro cambia tras armar, el agente debe regenerar el formulario y re-armar antes de enviar.
 - [Phase 3]: Pendientes abiertos de la Fase 2 que tocan la API o el chat: WR-03 (sesión agotada que sigue pidiendo confirmación), IN-22 (nota "(¿…?)" recortada), WR-17 (el rechazo por botón de un caso cancela todos) y el aviso de cancelación silenciosa de D-63.11 (el botón D-39 lo evita).
-- [Phase 3]: Hay que verificar con `curl -N` que el proxy de Render no bufferice el SSE apenas exista el endpoint.
 - [Phase 3]: El servicio en Render free duerme por inactividad y su disco es efímero; hay que calentarlo antes de la defensa.
 - [Phase 3]: Desde D-63.6, mientras un caso esté pendiente cada turno emite confirmation_required: la tarjeta de confirmación sigue visible entre turnos, y Cancelar (aprobada false) cancela todos los casos pendientes.
 - [Phase 4]: modulo/agent.md se genera desde agent/prompt.md, que desde 02-18 deja la pregunta de confirmación al servidor; sin servidor (OpenCode) nadie la escribiría, así que el generador de la Phase 4 debe decidir quién pide la confirmación (nota del generador o párrafo propio del módulo).
 - [Phase 4]: SOLUCION.md debe explicar los ids canónicos en la consola de la demo y el `resumen` (WR-03), mover desde docs/plantillas.md la nota de NOMBRE_SOPORTE (IN-01) y registrar SEG-02 como parcial hasta que exista `redactar()`.
 - [Phase 4]: SOLUCION.md debe registrar AR-02-06 (D-63.11): un pedido que nombra el caso pendiente y no empieza con un verbo de pedido tras una respuesta de espera cancela el caso; va al lado seguro y el botón de la Phase 3 (D-39) lo evita.
 - [General]: PRD §10 no trae la tabla de puntos de la rúbrica; cada "debe/obligatorio/evaluamos" se trata como ítem y el supuesto va en SOLUCION.md §7.
-- 03-11: el limitador de acceso en Render cuenta por una IP de proxy compartida (TRUSTED_PROXY_HOPS=1); la usuaria debe medir entradasXff y ajustar TRUSTED_PROXY_HOPS (y render.yaml) antes de publicar el código en el README; luego LOG_LEVEL=info
 
 ### Quick Tasks Completed
 
@@ -385,6 +386,6 @@ Items acknowledged and deferred at milestone close, most recent first:
 
 ## Session Continuity
 
-Last session: 2026-10-15T23:15:50.410Z
-Stopped at: Completed 03-47-PLAN.md
+Last session: 2026-10-16T02:45:00Z
+Stopped at: Phase 03 complete, ready to plan Phase 4
 Resume file: None
