@@ -1,9 +1,9 @@
-import estilos from "@web/components/aviso-modelo.module.css";
 import { IconoAlerta } from "@web/components/icons/iconos.tsx";
 import { TAMANO_ICONO, TONO_DEL_MODELO } from "@web/config/constants/ui.constants.ts";
 import { TEXTO_MODELO } from "@web/config/strings.ts";
-import type { PropsAvisoModelo, PropsCuerpoAvisoModelo } from "@web/types/ui.type.ts";
-import { ESTADO_LLM } from "@/config/constants/llm.constants.ts";
+import estilos from "@web/features/encabezado/aviso-modelo/aviso-modelo.module.css";
+import { useAvisoModelo } from "@web/features/encabezado/aviso-modelo/usar-aviso-modelo.ts";
+import type { PropsCuerpoAvisoModelo } from "@web/types/ui.type.ts";
 
 function CuerpoAvisoModelo({ estado, zona, comprobando, alComprobar }: PropsCuerpoAvisoModelo) {
   const partes = TEXTO_MODELO.aviso(estado, zona);
@@ -23,10 +23,12 @@ function CuerpoAvisoModelo({ estado, zona, comprobando, alComprobar }: PropsCuer
   );
 }
 
-export function AvisoModelo({ estado, zona, comprobando, alComprobar }: PropsAvisoModelo) {
+export function AvisoModelo() {
+  const { estado, zona, comprobando, alComprobar } = useAvisoModelo();
+
   return (
     <div role="status" className={estilos.region}>
-      {estado === null || estado === ESTADO_LLM.DISPONIBLE ? null : (
+      {estado === null ? null : (
         <CuerpoAvisoModelo estado={estado} zona={zona} comprobando={comprobando} alComprobar={alComprobar} />
       )}
     </div>

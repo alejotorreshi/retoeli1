@@ -1,6 +1,4 @@
 import { describe, expect, test } from "bun:test";
-import { readFileSync } from "node:fs";
-import { join } from "node:path";
 import { TONO, TONO_DEL_MODELO } from "@web/config/constants/ui.constants.ts";
 import { TEXTO_APP, TEXTO_CHAT, TEXTO_CONFIRMACION, TEXTO_MODELO } from "@web/config/strings.ts";
 import { envioEnPausa } from "@web/features/encabezado/estado/modelo.ts";
@@ -136,22 +134,6 @@ describe("coherencia entre el banner y el aviso del turno", () => {
       expect(texto).toContain("recargue la cuenta");
       expect(texto).not.toContain("puedes volver a intentarlo");
     }
-  });
-});
-
-const AVISO_MODELO = readFileSync(
-  join(import.meta.dir, "..", "..", "web", "src", "components", "aviso-modelo.tsx"),
-  "utf8",
-);
-
-describe("botón Comprobar de nuevo", () => {
-  test("el banner no importa el chat, la API, el almacén ni el estado: solo recibe alComprobar", () => {
-    const importaciones = AVISO_MODELO.split("\n").filter((linea) => linea.startsWith("import "));
-    for (const prohibido of ["@web/api/", "@web/hooks/", "@web/store/", "/estado/"]) {
-      expect(importaciones.filter((linea) => linea.includes(prohibido))).toEqual([]);
-    }
-    expect(AVISO_MODELO).toContain("onClick={alComprobar}");
-    expect(AVISO_MODELO).toContain("disabled={comprobando}");
   });
 });
 

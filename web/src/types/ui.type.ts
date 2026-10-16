@@ -26,7 +26,7 @@ import type {
   VistaPreviaUi,
 } from "@web/types/chat.type.ts";
 import type { InstanciaAlmacen } from "@web/types/store.type.ts";
-import type { ReactNode } from "react";
+import type { ReactNode, RefObject } from "react";
 import type { ESTADO_LLM } from "@/config/constants/llm.constants.ts";
 import type { ValorDe } from "@/config/types/valor-de.type.ts";
 
@@ -177,17 +177,25 @@ export type PropsCompositor = {
 };
 
 export type PropsEncabezado = {
-  readonly fechaEjecucion: string | null;
-  readonly salud: SaludModelo | null;
   readonly angosto: boolean;
-  readonly nuevaSesionDeshabilitada: boolean;
-  readonly alNuevaSesion: () => void;
 };
 
-export type PropsDialogoNuevaSesion = {
-  readonly abierto: boolean;
-  readonly alCerrar: () => void;
-  readonly alConfirmar: () => void;
+export type ControlEncabezado = {
+  readonly fechaEjecucion: string | null;
+  readonly salud: SaludModelo | null;
+  readonly nuevaSesionDeshabilitada: boolean;
+  readonly abrirNuevaSesion: () => void;
+  readonly clasePrefijo: string | undefined;
+};
+
+export type ControlDialogoNuevaSesion = {
+  readonly dialogo: RefObject<HTMLDialogElement | null>;
+  readonly seguir: RefObject<HTMLButtonElement | null>;
+  readonly idTitulo: string;
+  readonly idCuerpo: string;
+  readonly alCerrarDialogo: () => void;
+  readonly cerrar: () => void;
+  readonly confirmar: () => void;
 };
 
 export type Tono = ValorDe<typeof TONO>;
@@ -199,8 +207,8 @@ export type PartesAvisoModelo = {
   readonly detalle: string;
 };
 
-export type PropsAvisoModelo = {
-  readonly estado: EstadoModelo | null;
+export type ControlAvisoModelo = {
+  readonly estado: EstadoModeloConAviso | null;
   readonly zona: string | null;
   readonly comprobando: boolean;
   readonly alComprobar: () => void;
@@ -215,7 +223,7 @@ export type PropsCuerpoAvisoModelo = {
 
 export type PropsEstadoDelModelo = {
   readonly salud: SaludModelo;
-  readonly angosto: boolean;
+  readonly clasePrefijo: string | undefined;
 };
 
 export type PropsPantallaAcceso = {

@@ -1,31 +1,25 @@
-import estilos from "@web/components/encabezado.module.css";
-import { CLASE_GLOBAL, TONO_DEL_MODELO } from "@web/config/constants/ui.constants.ts";
+import { TONO_DEL_MODELO } from "@web/config/constants/ui.constants.ts";
 import { TEXTO_APP, TEXTO_MODELO, TEXTO_NUEVA_SESION } from "@web/config/strings.ts";
+import estilos from "@web/features/encabezado/encabezado/encabezado.module.css";
+import { useEncabezado } from "@web/features/encabezado/encabezado/usar-encabezado.ts";
 import type { PropsEncabezado, PropsEstadoDelModelo } from "@web/types/ui.type.ts";
 
-function clasePrefijo(angosto: boolean): string | undefined {
-  return angosto ? CLASE_GLOBAL.OCULTO : undefined;
-}
-
-function EstadoDelModelo({ salud, angosto }: PropsEstadoDelModelo) {
+function EstadoDelModelo({ salud, clasePrefijo }: PropsEstadoDelModelo) {
   return (
     <p className={estilos.modelo}>
       <span className={`${estilos.punto} ${estilos[TONO_DEL_MODELO[salud.llm]]}`} aria-hidden="true" />
       <span className={estilos.texto}>
-        <span className={clasePrefijo(angosto)}>{TEXTO_MODELO.prefijoModelo(salud.model)}</span>
+        <span className={clasePrefijo}>{TEXTO_MODELO.prefijoModelo(salud.model)}</span>
         {TEXTO_MODELO.etiqueta(salud.llm)}
       </span>
     </p>
   );
 }
 
-export function Encabezado({
-  fechaEjecucion,
-  salud,
-  angosto,
-  nuevaSesionDeshabilitada,
-  alNuevaSesion,
-}: PropsEncabezado) {
+export function Encabezado({ angosto }: PropsEncabezado) {
+  const { fechaEjecucion, salud, nuevaSesionDeshabilitada, abrirNuevaSesion, clasePrefijo } =
+    useEncabezado(angosto);
+
   return (
     <header className={estilos.encabezado}>
       <div className={estilos.marca}>
@@ -38,16 +32,16 @@ export function Encabezado({
       <div className={estilos.meta}>
         <p className={estilos.fecha}>
           <span className={estilos.texto}>
-            <span className={clasePrefijo(angosto)}>{TEXTO_APP.prefijoFecha}</span>
+            <span className={clasePrefijo}>{TEXTO_APP.prefijoFecha}</span>
             {TEXTO_APP.valorFecha(fechaEjecucion)}
           </span>
         </p>
-        {salud === null ? null : <EstadoDelModelo salud={salud} angosto={angosto} />}
+        {salud === null ? null : <EstadoDelModelo salud={salud} clasePrefijo={clasePrefijo} />}
         <button
           type="button"
           className={estilos.nuevaSesion}
           disabled={nuevaSesionDeshabilitada}
-          onClick={alNuevaSesion}
+          onClick={abrirNuevaSesion}
         >
           {TEXTO_NUEVA_SESION.abrir}
         </button>

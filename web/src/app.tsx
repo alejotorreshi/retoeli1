@@ -1,8 +1,5 @@
 import { AccionesRapidas } from "@web/components/acciones-rapidas.tsx";
-import { AvisoModelo } from "@web/components/aviso-modelo.tsx";
 import { Compositor } from "@web/components/compositor.tsx";
-import { DialogoNuevaSesion } from "@web/components/dialogo-nueva-sesion.tsx";
-import { Encabezado } from "@web/components/encabezado.tsx";
 import { IndicadorPensando } from "@web/components/indicador-pensando.tsx";
 import { LineaDeTiempo } from "@web/components/linea-de-tiempo.tsx";
 import { PanelCasos } from "@web/components/panel-casos.tsx";
@@ -18,6 +15,9 @@ import {
   TECLA_PESTANA,
 } from "@web/config/constants/ui.constants.ts";
 import { TEXTO_APP, TEXTO_PESTANAS } from "@web/config/strings.ts";
+import { AvisoModelo } from "@web/features/encabezado/aviso-modelo/aviso-modelo.tsx";
+import { Encabezado } from "@web/features/encabezado/encabezado/encabezado.tsx";
+import { DialogoNuevaSesion } from "@web/features/sesion/dialogo-nueva-sesion/dialogo-nueva-sesion.tsx";
 import { useDiseno } from "@web/hooks/usar-diseno.ts";
 import { usePestanas } from "@web/hooks/usar-pestanas.ts";
 import { ProveedorAlmacen } from "@web/store/proveedor-almacen.tsx";
@@ -26,26 +26,20 @@ import {
   seleccionarAvisoSesion,
   seleccionarBorrador,
   seleccionarCasos,
-  seleccionarComprobando,
   seleccionarConHistorial,
-  seleccionarDialogoAbierto,
   seleccionarEnCurso,
   seleccionarEnvioDeshabilitado,
   seleccionarEnvioEnPausa,
-  seleccionarEstadoLlm,
   seleccionarEtiquetaPensando,
   seleccionarEventosDelTurno,
-  seleccionarFechaEjecucion,
   seleccionarFirmaDelProgreso,
   seleccionarHidratando,
   seleccionarMarcasDeArchivos,
   seleccionarMensajeMaximo,
   seleccionarProgresos,
-  seleccionarSalud,
   seleccionarTarjetasConfirmacion,
   seleccionarTurnos,
   seleccionarUsoDeSesion,
-  seleccionarZona,
 } from "@web/store/selectores.ts";
 import { useAcciones, useSeleccion, useSincronizacion } from "@web/store/usar-almacen.ts";
 import type { AccionDeAviso } from "@web/types/chat.type.ts";
@@ -145,11 +139,6 @@ function Pantalla() {
   useSincronizacion();
   const acciones = useAcciones();
   const acceso = useSeleccion(seleccionarAcceso);
-  const salud = useSeleccion(seleccionarSalud);
-  const estadoLlm = useSeleccion(seleccionarEstadoLlm);
-  const comprobando = useSeleccion(seleccionarComprobando);
-  const fechaEjecucion = useSeleccion(seleccionarFechaEjecucion);
-  const zona = useSeleccion(seleccionarZona);
   const casos = useSeleccion(seleccionarCasos);
   const mensajeMaximo = useSeleccion(seleccionarMensajeMaximo);
   const turnos = useSeleccion(seleccionarTurnos);
@@ -167,7 +156,6 @@ function Pantalla() {
   const progresos = useSeleccion(seleccionarProgresos);
   const firmaDelProgreso = useSeleccion(seleccionarFirmaDelProgreso);
   const marcas = useSeleccion(seleccionarMarcasDeArchivos);
-  const nuevaSesionAbierta = useSeleccion(seleccionarDialogoAbierto);
   const diseno = useDiseno();
   const conPestanas = diseno !== DISENO.ANCHO;
   const pestanas = usePestanas(conPestanas, firmaDelProgreso);
@@ -203,19 +191,8 @@ function Pantalla() {
 
   return (
     <div className={CLASE_GLOBAL.APP} data-diseno={diseno}>
-      <Encabezado
-        fechaEjecucion={fechaEjecucion}
-        salud={salud}
-        angosto={diseno === DISENO.ANGOSTO}
-        nuevaSesionDeshabilitada={enCurso}
-        alNuevaSesion={acciones.abrirNuevaSesion}
-      />
-      <AvisoModelo
-        estado={estadoLlm}
-        zona={zona}
-        comprobando={comprobando}
-        alComprobar={acciones.refrescarSalud}
-      />
+      <Encabezado angosto={diseno === DISENO.ANGOSTO} />
+      <AvisoModelo />
       {conPestanas ? <BarraDePestanas control={pestanas} ids={ids} /> : null}
       <div className={CLASE_GLOBAL.COLUMNAS}>
         <div
@@ -279,11 +256,7 @@ function Pantalla() {
           />
         </div>
       </div>
-      <DialogoNuevaSesion
-        abierto={nuevaSesionAbierta}
-        alCerrar={acciones.cerrarNuevaSesion}
-        alConfirmar={acciones.nuevaSesion}
-      />
+      <DialogoNuevaSesion />
     </div>
   );
 }
