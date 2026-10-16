@@ -33,9 +33,9 @@ export type ResultadoPreflight = {
   readonly tokens: UsoGuion | null;
 };
 
-export type PasoPreflight<T> =
-  | { readonly ok: true; readonly valor: T }
-  | { readonly ok: false; readonly mensaje: string };
+export type FalloPreflight = { readonly ok: false; readonly mensaje: string };
+
+export type PasoPreflight<T> = { readonly ok: true; readonly valor: T } | FalloPreflight;
 
 export type InicioTurnoGuion = { readonly sesionId: string };
 

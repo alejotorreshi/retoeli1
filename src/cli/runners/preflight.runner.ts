@@ -14,6 +14,7 @@ import {
 } from "@/cli/schemas/preflight.schema.ts";
 import type {
   ConfirmacionGuion,
+  FalloPreflight,
   FinHerramientaGuion,
   FinTurnoGuion,
   LecturaTurnoGuion,
@@ -88,7 +89,7 @@ function exito<T>(valor: T): PasoPreflight<T> {
   return { ok: true, valor };
 }
 
-function fallido(mensaje: string): { readonly ok: false; readonly mensaje: string } {
+function fallido(mensaje: string): FalloPreflight {
   return { ok: false, mensaje };
 }
 
@@ -139,7 +140,7 @@ async function sondearSalud(opciones: OpcionesPreflight): Promise<PasoPreflight<
 async function esperarSalud(opciones: OpcionesPreflight): Promise<PasoPreflight<SaludLista>> {
   const { despertarMs, pausaMs } = opciones.plazos;
   const inicio = opciones.ahora();
-  let ultimoFallo: { readonly ok: false; readonly mensaje: string } | null = null;
+  let ultimoFallo: FalloPreflight | null = null;
   for (;;) {
     const sondeo = await sondearSalud(opciones);
     if (sondeo?.ok === true) return exito({ salud: sondeo.valor, ms: opciones.ahora() - inicio });
