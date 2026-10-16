@@ -100,6 +100,7 @@ const VISTAS_MIGRADAS: readonly string[] = [
   "web/src/features/sesion/dialogo-nueva-sesion/dialogo-nueva-sesion.tsx",
   "web/src/features/encabezado/encabezado/encabezado.tsx",
   "web/src/features/encabezado/aviso-modelo/aviso-modelo.tsx",
+  "web/src/compartido/aviso/aviso.tsx",
 ];
 
 function carpetaDeComponente(raiz: string): RegExp {
@@ -480,7 +481,7 @@ describe("guardián de web/ sobre el código real", () => {
   });
 
   test("W12: los módulos CSS usan tokens para colores y tamaños", () => {
-    expect(listarModulosCss()).toContain("web/src/components/aviso.module.css");
+    expect(listarModulosCss()).toContain("web/src/compartido/aviso/aviso.module.css");
     expect(listarModulosCss().flatMap((ruta) => violacionesDeEstilos(ruta, leer(ruta)))).toEqual([]);
   });
 

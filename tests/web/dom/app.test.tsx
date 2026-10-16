@@ -8,6 +8,7 @@ import {
   eventoFin,
   eventoInicio,
   eventoTexto,
+  TURNO_DE_PRUEBA,
 } from "@tests/helpers/red-web.helper.ts";
 import type { GuionChat } from "@tests/helpers/types/red-web.type.ts";
 import { CLAVE_SESION_LOCAL } from "@web/config/constants/ui.constants.ts";
@@ -18,6 +19,7 @@ import {
   TEXTO_MODELO,
   TEXTO_NUEVA_SESION,
 } from "@web/config/strings.ts";
+import { CODIGO_AGENTE, TIPO_EVENTO } from "@/config/constants/agent.constants.ts";
 import { TIPO_ACCION } from "@/config/constants/confirmation.constants.ts";
 import { METODO_POST, RUTA_API } from "@/config/constants/http.constants.ts";
 import { ESTADO_LLM } from "@/config/constants/llm.constants.ts";
@@ -30,6 +32,7 @@ const RESPUESTA_TARDIA = "Este texto llegó después de detener el turno.";
 const CASO_CONFIRMADO = "ec-corp-andina";
 const BLOQUEO = "Certificado bancario vencido";
 const PAUSA_TRAS_SOLTAR_MS = 30;
+const MENSAJE_DE_ERROR = "El proveedor tardó demasiado en responder. Intenta de nuevo.";
 
 const dom = await prepararDom({ ancho: ANCHO_ESCRITORIO });
 
@@ -159,6 +162,34 @@ describe("App en escritorio, con la red simulada en fetch", () => {
       });
     });
   }
+
+  test("un evento de error del servidor se muestra como alerta con su mensaje", async () => {
+    const red = crearRedWeb({
+      nativos: dom.nativos,
+      guiones: [
+        {
+          eventos: [
+            eventoInicio(SESION),
+            {
+              tipo: TIPO_EVENTO.ERROR,
+              turnoId: TURNO_DE_PRUEBA,
+              codigo: CODIGO_AGENTE.PROVEEDOR_TIMEOUT,
+              mensaje: MENSAJE_DE_ERROR,
+            },
+            eventoFin(),
+          ],
+        },
+      ],
+    });
+    const { pantalla, usuario } = await montarApp(dom, red);
+    const demo = await pantalla.findByRole("button", { name: TEXTO_ACCIONES.demo });
+    await dom.esperar(() => expect(habilitado(demo)).toBe(true));
+
+    await usuario.click(demo);
+
+    const alerta = await pantalla.findByRole("alert");
+    expect(alerta.textContent).toContain(MENSAJE_DE_ERROR);
+  });
 
   test("Nueva sesión pide confirmación: Seguir conserva la conversación y Empezar vuelve al estado vacío", async () => {
     const red = crearRedWeb({ nativos: dom.nativos, guiones: [turnoConRespuesta] });
