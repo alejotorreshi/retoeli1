@@ -330,6 +330,18 @@ describe("el guardián de web/ muerde sobre fuentes de muestra", () => {
     expect(violacionesDeEstado("web/src/api/x.ts", codigo)).toEqual([]);
   });
 
+  test("W4: el núcleo puro del almacén tampoco importa react ni toca el navegador", () => {
+    const codigo = ['import { useSyncExternalStore } from "react";', "const raiz = window.location;"].join("\n");
+    expect(violacionesDeEstado("web/src/store/raiz.ts", codigo)).toEqual([
+      "web/src/store/raiz.ts: el estado no importa react",
+      "web/src/store/raiz.ts:2: el estado toca el navegador",
+    ]);
+    expect(violacionesDeEstado("web/src/store/almacen.ts", codigo)).toHaveLength(2);
+    expect(violacionesDeEstado("web/src/store/selectores.ts", codigo)).toHaveLength(2);
+    expect(violacionesDeEstado("web/src/store/acciones.ts", codigo)).toEqual([]);
+    expect(violacionesDeEstado("web/src/store/usar-almacen.ts", codigo)).toEqual([]);
+  });
+
   test("W5: reporta dangerouslySetInnerHTML e innerHTML", () => {
     const codigo = [
       "<div dangerouslySetInnerHTML={{ __html: texto }} />",
@@ -449,6 +461,11 @@ describe("el guardián de web/ muerde sobre fuentes de muestra", () => {
       "web/src/styles/tokens.css",
       "web/src/state/conversacion.ts",
       "web/src/config/constants/ui.constants.ts",
+      "web/src/store/almacen.ts",
+      "web/src/store/usar-almacen.ts",
+      "web/src/store/proveedor-almacen.tsx",
+      "web/src/store/otra-vista.tsx",
+      "web/src/store/Raiz.ts",
     ];
     expect(rutas.flatMap(violacionesDeUbicacion)).toEqual([
       "web/src/aviso.tsx: no está en una carpeta de rol de web/src con su sufijo",
@@ -456,6 +473,8 @@ describe("el guardián de web/ muerde sobre fuentes de muestra", () => {
       "web/src/components/aviso.css: no está en una carpeta de rol de web/src con su sufijo",
       "web/src/types/chat.ts: no está en una carpeta de rol de web/src con su sufijo",
       "web/src/config/ui.ts: no está en una carpeta de rol de web/src con su sufijo",
+      "web/src/store/otra-vista.tsx: no está en una carpeta de rol de web/src con su sufijo",
+      "web/src/store/Raiz.ts: no está en una carpeta de rol de web/src con su sufijo",
     ]);
   });
 });
