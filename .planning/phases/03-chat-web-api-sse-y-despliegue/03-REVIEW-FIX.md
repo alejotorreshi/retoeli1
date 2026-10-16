@@ -1,164 +1,60 @@
 ---
 phase: 03-chat-web-api-sse-y-despliegue
-fixed_at: 2026-10-15T06:42:41Z
+fixed_at: 2026-10-16T00:05:04Z
 review_path: .planning/phases/03-chat-web-api-sse-y-despliegue/03-REVIEW.md
 iteration: 1
-findings_in_scope: 15
-fixed: 15
+findings_in_scope: 2
+fixed: 2
 skipped: 0
 status: all_fixed
 ---
 
-# Fase 03: Informe de corrección del code review
+# Phase 03: Code Review Fix Report (incremental, planes 03-44 a 03-47)
 
-**Corregido:** 2026-10-15T06:42:41Z
-**Revisión de origen:** `.planning/phases/03-chat-web-api-sse-y-despliegue/03-REVIEW.md`
-**Iteración:** 1
-**Alcance:** todos los hallazgos (`fix_scope: all`), con cambios proporcionados a un demo de reto técnico.
+**Fixed at:** 2026-10-16T00:05:04Z
+**Source review:** .planning/phases/03-chat-web-api-sse-y-despliegue/03-REVIEW.md
+**Iteration:** 1
 
-**Resumen:**
-- Hallazgos en alcance: 15 (7 Warning y 8 Info)
-- Corregidos: 15. WR-03 quedó **documentado (aceptado para el demo)** y no persiste estado, como pidió la usuaria.
-- Omitidos: 0
+**Summary:**
+- Findings in scope: 2 (WR-01, WR-02; alcance `critical_warning`, los IN-01 a IN-04 quedan fuera)
+- Fixed: 2
+- Skipped: 0
 
-## Verificación
+## Fixed Issues
 
-Las comprobaciones corrieron en el worktree aislado `.claude/worktrees/rf-03-22262-1792045540` (rama `gsd-reviewfix/03-22262`), con `node_modules` propio instalado con `bun install --frozen-lockfile`. Cada commit se adelantó a `main` con fast-forward, así que el árbol es el mismo que queda en la copia principal.
+### WR-01: La reserva de D-77.2 responde 429 a credenciales válidas cuando llegan juntas, y el texto anuncia un bloqueo de 15 minutos que no existe
 
-- `bun --env-file=/dev/null test`: **2127 pass, 1 skip, 0 fail** (2128 pruebas en 105 archivos). La línea base antes de las correcciones era de 2109 pass.
-- `bun run check` (tsc del backend, tsc del front, Biome y `bun audit`): **exit 0**, sin vulnerabilidades.
-- `bun run build:web`: OK.
-- Imagen Docker construida dos veces en local (después de WR-07 y al final). Corre como `bun`, solo `out/` es escribible (`src/` y `node_modules/` no lo son), `/api/health` responde 200 y `POST /api/acceso` responde 204 con entorno falso. Los contenedores se detuvieron y las imágenes se borraron.
-- No se leyó `.env`, no se llamó a ningún LLM real y no se hizo `git push`.
+**Files modified:** `src/http/services/rate-limiter.service.ts`, `src/http/types/server.type.ts`, `src/http/middlewares/access.middleware.ts`, `src/http/routes/access.route.ts`, `src/config/constants/http.constants.ts`, `src/config/strings.ts`, `tests/unit/rate-limiter.service.test.ts`, `tests/http/acceso.test.ts`, `tests/architecture.test.ts`, `docs/limites-del-demo.md`, `docs/estructura.md`
+**Commit:** 71d8d20
+**Applied fix:**
+- Cada ventana del limitador lleva ahora `pending` (reservas en vuelo) aparte de `count` (fallos evaluados). El puerto nuevo `AttemptLimiter` (`reserve`, `release`, `confirmFailure`) extiende `RateLimiter`, que pierde `release`. Los limitadores de mensajes y de sesiones nuevas siguen usando solo `hit`, `isLocked` y `retryAfterMs`, sin cambios de conducta.
+- `reserve(key)` sigue comprobando y contando en un solo paso síncrono antes del primer `await`, así que D-77.2 queda intacta. Admite solo si `count + pending < L`, de modo que la cota de L intentos evaluados por IP se sostiene con pedidos simultáneos. Devuelve `RESULTADO_RESERVA.RESERVADO`, `.BLOQUEADO` (L fallos evaluados, o la tabla saturada de claves bloqueadas) u `.OCUPADO` (cupo lleno de intentos que todavía se evalúan). `isLocked` mira solo los fallos evaluados.
+- Un código errado pasa su reserva a fallo (`confirmFailure`). Un código correcto o un cuerpo inválido la devuelven (`release`). Si la clave ya no tiene reservas en vuelo, ninguna de las dos operaciones hace nada.
+- La herencia por desalojo (D-77.1) traspasa `count + pending` como golpes a la clave nueva, así que la suma global se conserva igual que antes. Una clave es desalojable solo si `count + pending < L`, y una bloqueada nunca se desaloja (D-77 intacta).
+- El 429 por cupo ocupado usa el texto propio `MENSAJE_HTTP.intentoEnCurso` ("Hay otros intentos de acceso en curso desde tu red. Vuelve a intentarlo en unos segundos."), sin el plazo de 15 minutos y con `Retry-After: 1` (`CABECERA.REINTENTAR_TRAS`, `SEGUNDOS_REINTENTO_INTENTO_EN_CURSO`). El 429 por bloqueo sigue con `access.lockedMessage`. `RESULTADO_BEARER` suma `OCUPADO`, y `RESULTADO_RESERVA` quedó registrado en el guardián de familias de códigos.
+- Pruebas de regresión con `app.request`, deterministas en 8 corridas repetidas:
+  - Sin fallos previos, 10 `POST /api/acceso` correctos simultáneos dan exactamente 5 respuestas 204 y 5 respuestas 429 de intentos en curso con `Retry-After`. El pedido siguiente entra y la IP conserva sus 5 intentos.
+  - Lo mismo con 10 Bearer correctos simultáneos.
+  - Con L − 1 fallos entra exactamente uno y nueve reciben el 429 de intentos en curso. Esto cubre también IN-03.
+  - Con 50 errados simultáneos, 5 dan 401 y 45 reciben el 429 de intentos en curso. El pedido siguiente recibe el 429 de bloqueo de 15 minutos.
+  - Las pruebas unitarias del limitador se reescribieron para la API de reservas: ocupado frente a bloqueado, la cota con reservas simultáneas, el desalojo de una clave con reservas en vuelo y la tabla saturada.
+- Se actualizaron `docs/limites-del-demo.md` (el párrafo D-77.2, con el costo para una NAT o un script con muchos Bearer simultáneos) y las filas del limitador y del middleware de acceso en `docs/estructura.md`.
 
-## Issues corregidos
+### WR-02: `eventoDeTruncado` marca como "confirmado" un truncado cuya autorización ya se gastó, y el aviso miente sobre la causa
 
-### WR-01: El frame SSE de error interno no cumple el contrato y el cliente lo descarta en silencio
+**Files modified:** `src/loop/services/paso-herramientas.service.ts`, `tests/loop/compuerta-casos.test.ts`
+**Commit:** fec1e85
+**Applied fix:** `eventoDeTruncado` ahora decide con `evaluarEnvio(turno.autorizacion, caso).permitido`, la misma regla que decide el envío real, en lugar de comparar solo el caso. Así, un truncado legible después de que se gastó la autorización queda como `TRUNCADO` y su desenlace es `REQUIERE_CONFIRMACION`. Se agregó una fila de integración que primero falló contra el código previo: confirmar EC, `simular_envio(EC)` falla con `ERROR_INTERNO` (`FALLIDO`) y después llega un truncado legible de EC. El cierre muestra los avisos FALLIDO y REQUIERE_CONFIRMACION y no el de "se cortó antes de ejecutarse", vuelve a preguntar por EC y el "envía" siguiente envía una sola vez. Es un cambio de lógica (predicado de decisión): **fixed: requires human verification** para confirmar que la semántica coincide con D-76.2.
 
-**Archivos modificados:** `src/http/routes/chat.route.ts`, `tests/http/stream.test.ts`, `tests/web/flujo-chat.test.ts`
-**Commit:** 8607c6d
-**Fix aplicado:** El `catch` del stream ahora emite un `EventoError` del contrato (`TURNO_INTERRUMPIDO` con `MENSAJE_HTTP.errorInterno`) y un `turn_end` con `motivo: error`, los dos con el último `turnoId` visto y pasados por `toSseFrame`, que redacta. La prueba del servidor verifica los dos frames. La del cliente verifica que el error se despacha y que no aparece `FIN_STREAM`.
+## Verification
 
-### WR-02: El token de acceso no está ligado al código, así que rotar `ACCESS_CODE` no revoca las cookies emitidas
+Las comprobaciones corrieron en el checkout principal (`/Users/alejo/Developer/Alejo/reto-eli-1`, rama `main`, sin worktree, como se pidió), así que se pueden reproducir desde el árbol actual.
 
-**Archivos modificados:** `src/config/constants/http.constants.ts`, `src/http/services/access-token.service.ts`, `src/http/types/server.type.ts`, `src/http/routes/access.route.ts`, `src/http/middlewares/access.middleware.ts`, `src/http/wiring/server.wiring.ts`, `tests/http/acceso.test.ts`, `tests/unit/access-token.service.test.ts`, `docs/estructura.md`
-**Commit:** 6c81270
-**Fix aplicado:** La cookie se firma con `accessSigningKey`, un HMAC-SHA256 del código con `ACCESS_TOKEN_SECRET` como clave. Cambiar `ACCESS_CODE` invalida todas las cookies emitidas, y ni el código ni su hash viajan en la cookie. La clave derivada se agregó a los secretos que se redactan en SSE, JSON y logs. Una prueba nueva confirma que, con el mismo secreto, una cookie emitida con el código anterior responde 401.
-
-### WR-03: El tope diario de tokens vive en memoria y se reinicia con cada reinicio o spin-down de Render
-
-**Archivos modificados:** `docs/estructura.md`, `docs/limites-del-demo.md` (nuevo)
-**Commit:** c730d17
-**Estado:** documentado (aceptado para el demo)
-**Fix aplicado:** Siguiendo la indicación de la usuaria, no se construyó persistencia. Se hicieron dos cambios:
-- Se corrigió `docs/estructura.md`: el tope diario no solo se reinicia a medianoche, también con cada reinicio del proceso, y en Render free eso incluye cada spin-down y cada redespliegue.
-- Se creó `docs/limites-del-demo.md`, con lo siguiente:
-  - Qué estado se pierde al reiniciar: el tope diario (con su desborde por concurrencia), los tres limitadores por IP, los cupos de turno, las sesiones y su presupuesto, y `out/` en disco efímero.
-  - Por qué eso es aceptable en el reto: hay una sola instancia free, la clave es personal y prepaga (el 402 es el tope real), la ventana de defensa es corta y el acceso pasa por el código.
-  - Qué haría un despliegue real: un almacén compartido y persistente (Redis o una base de datos), reservar tokens antes de cada llamada, límites de gasto y alertas en el proveedor, una instancia paga siempre encendida o varias detrás del almacén, almacenamiento de objetos para `out/` y un solo camino de entrada.
-
-**`SOLUCION.md` (fase 4) debe llevar esta sección.** El documento lo dice de forma explícita.
-
-### WR-04: El limitador previo a la autenticación no tiene cota de claves y se evade rotando direcciones IPv6
-
-**Archivos modificados:** `src/config/constants/http.constants.ts`, `src/config/constants/patterns.constants.ts`, `src/http/services/client-ip.service.ts`, `src/http/services/rate-limiter.service.ts`, `src/http/types/server.type.ts`, `src/http/wiring/server.wiring.ts`, `tests/unit/client-ip.service.test.ts`, `tests/unit/rate-limiter.service.test.ts`, `tests/http/stream.test.ts`, `docs/estructura.md`
-**Commit:** a654bfe
-**Fix aplicado:** Se aplicaron tres de las cuatro sugerencias:
-1. Las IPv6 se normalizan a su prefijo /64 con `rateLimitKeyOf`, que acepta la forma comprimida y la completa. Una IPv4 mapeada (`::ffff:a.b.c.d`) se cuenta como IPv4.
-2. El limitador tiene un tope de claves, `maxKeys` (`MAX_CLAVES_LIMITADOR` = 10 000). Al pasarlo desaloja la clave más antigua.
-3. `sweep` corta en la primera ventana vigente, porque el `Map` está ordenado por inicio.
-
-No se aplicó la cuarta, el limitador global de intentos fallidos. Con él, cualquiera podría bloquear el acceso de quienes evalúan con 50 códigos errados, y la fuerza bruta ya es inviable con un código de 12 caracteres o más y el bloqueo por /64. Para el demo, ese riesgo de denegación pesa más que el beneficio.
-
-### WR-05: `TRUSTED_PROXY_HOPS=3` solo es correcto para un camino de entrada; por otro camino la IP del cliente se puede falsificar
-
-**Archivos modificados:** `src/http/services/client-ip.service.ts`, `tests/unit/client-ip.service.test.ts`, `docs/limites-del-demo.md`, `docs/estructura.md`
-**Commit:** cf526b7
-**Estado:** corregido. Requiere verificación humana, porque depende de cómo se publique el servicio.
-**Fix aplicado:** Si la entrada elegida de `X-Forwarded-For` no es una IP válida, el servidor cuenta por la dirección del socket. En `docs/limites-del-demo.md` quedó documentado el único camino de entrada medido en vivo (`registro-proveedor-bfnt.onrender.com`, que pasa por Cloudflare y por el borde de Render, con `TRUSTED_PROXY_HOPS=3` = `SALTOS_PROXY_RENDER`), junto con el procedimiento para volver a medir si se agrega otro hostname. `render.yaml` sigue con `"3"` y el comportamiento verificado en vivo no cambia. No se agregó la cabecera de borde (`CF-Connecting-IP`) porque no está verificado que Render la reenvíe.
-
-### WR-06: Un 404 de vista previa se confunde con "archivo borrado" y dispara un falso aviso de disco efímero
-
-**Archivos modificados:** `src/config/constants/files.constants.ts`, `src/config/constants/http.constants.ts`, `src/config/strings.ts`, `src/application/types/artefactos.type.ts`, `src/infra/output/artifact-reader.adapter.ts`, `src/http/routes/artifacts.route.ts`, `tests/unit/artifact-reader.adapter.test.ts`, `tests/http/artefactos.test.ts`, `tests/web/archivos.test.ts`, `docs/estructura.md`
-**Commit:** 8526c8a
-**Fix aplicado:** `vistaPrevia` devuelve `ResultadoVistaPrevia`, con tres estados (`lista`, `no_encontrado` y `no_disponible`) definidos en el objeto `RESULTADO_VISTA_PREVIA`. La ruta responde así:
-- 404 con `archivoNoEncontrado`, solo cuando el archivo no existe;
-- 422 (`RESPUESTA_HTTP.NO_PROCESABLE`) con un texto nuevo, sin la pista de reinicio, cuando el archivo existe pero no tiene vista previa (un soporte, o un formulario sin `mapeo.json` legible).
-
-El cliente ya marcaba "disco borrado" solo con un 404, y una prueba nueva fija que un 422 no lo hace.
-
-### WR-07: El Dockerfile deja el código y `node_modules` escribibles por el usuario del proceso y duplica la capa
-
-**Archivos modificados:** `Dockerfile`, `tests/despliegue/contrato-despliegue.test.ts`
-**Commit:** ce8f1b1
-**Fix aplicado:** `RUN mkdir -p out && chown bun:bun out` reemplaza el `chown -R bun:bun /app`. El contrato de despliegue exige ese RUN y prohíbe cualquier `chown -R` o un `chown` sobre `/app`. Se verificó en una imagen real (ver Verificación).
-
-### IN-01: Los errores registrados pierden la pila
-
-**Archivos modificados:** `src/domain/types/redaccion.type.ts` (nuevo), `src/domain/policies/redaccion.policy.ts`, `src/infra/logging/logger.adapter.ts`, `tests/unit/redaccion.policy.test.ts`, `tests/unit/logger.adapter.test.ts`
-**Commit:** 18518df
-**Fix aplicado:** `redactar` acepta `OpcionesRedaccion { conPila }`. Solo el logger lo activa, así que los logs llevan `stack` con los secretos limpios, y las respuestas SSE y JSON siguen sin pila (la opción está apagada por defecto).
-
-### IN-02: Textos que repiten un dato sin derivarlo de su constante, y un texto muerto
-
-**Archivos modificados:** `src/config/strings.ts`, `tests/http/acceso.test.ts`
-**Commit:** cfa0301
-**Fix aplicado:** `demasiadosMensajes` se arma desde `VENTANA_MENSAJES_CHAT_MINUTOS` y `demasiadasSesiones` desde `VENTANA_SESIONES_NUEVAS_HORAS`, con singular y plural. Con los valores actuales el texto queda igual. Se eliminó `MENSAJE_HTTP.demasiadosIntentos`, y las pruebas usan `TEXTO_HTTP.demasiadosIntentos(VENTANA_FALLOS_ACCESO_MINUTOS_POR_DEFECTO)`.
-
-### IN-03: `businessCalendar()` ignora el entorno inyectado
-
-**Archivos modificados:** `src/loop/wiring/agente.wiring.ts`, `src/http/wiring/server.wiring.ts`, `tests/http/acceso.test.ts`, `docs/estructura.md`
-**Commit:** 3d56706
-**Estado:** corregido. Requiere verificación humana, porque el arreglo se aparta de la sugerencia.
-**Fix aplicado:** No se aplicó la sugerencia literal (leer `parseToolEnv(envSource)` en el servidor) porque crearía una inconsistencia real. Las herramientas leen la fecha y la zona del proceso, porque su contrato `execute(args, ctx)` no recibe entorno, y el agente ya comparte ese reloj con ellas. Si el servidor leyera el entorno inyectado, `/api/config` podría mostrar una fecha distinta de la que usan las herramientas.
-
-Lo que se hizo:
-- Se eliminó el `businessCalendar` duplicado del servidor.
-- `/api/config` y el mensaje del tope diario usan `relojDeNegocio` y `zonaDeNegocio`, exportados desde `agente.wiring.ts`, que son la misma fuente que las herramientas.
-- El comportamiento quedó documentado en `docs/estructura.md` y fijado con una prueba: un `envSource` inyectado no cambia la fecha ni la zona.
-
-### IN-04: `release()` con `Math.max(0, …)` oculta una doble liberación, e `inUse` y `trackedKeys` solo existen para las pruebas
-
-**Archivos modificados:** `src/http/types/server.type.ts`, `src/http/services/turn-slots.service.ts`, `src/http/services/rate-limiter.service.ts`, `src/http/routes/chat.route.ts`, `tests/unit/turn-slots.service.test.ts`, `tests/unit/rate-limiter.service.test.ts`, `docs/estructura.md`
-**Commit:** 0c4e025
-**Fix aplicado:** `tryAcquire()` devuelve una `ReleaseSlot` de un solo uso, o `null` si no hay cupo, y la ruta del chat la guarda en `TurnDeps`. `inUse` y `trackedKeys` pasan a un puerto de observación (`ObservableTurnSlots`, `ObservableRateLimiter`) que devuelven las fábricas. Los tipos que reciben las rutas (`TurnSlots`, `RateLimiter`) ya no los incluyen.
-
-### IN-05: En las pruebas, la demora del proveedor falso empieza al armar el guion, no al recibir el pedido
-
-**Archivos modificados:** `tests/helpers/types/fetch-falso.type.ts`, `tests/helpers/fetch-falso.helper.ts`, `tests/http/stream.test.ts`, `tests/http/topes.test.ts`, `tests/loop/sesion.test.ts`
-**Commit:** e1de609
-**Fix aplicado:** `demora` pasa a ser una fábrica (`() => Promise<void>`) que el fetch falso invoca al recibir el pedido. Se actualizaron todos los guiones que la usan.
-
-### IN-06: La etapa de build del Dockerfile depende de que los imports de `api.type.ts` sean solo de tipos
-
-**Archivos modificados:** `tests/despliegue/contrato-despliegue.test.ts`
-**Commit:** 579bffa
-**Fix aplicado:** Ya existía un guardián en `tests/despliegue/contrato-despliegue.test.ts` que recorre las importaciones de valor de `web/` y quedaba fuera del alcance de la revisión. Pero comparaba contra una lista fija (`config/`, `http/types/`). Se hicieron tres cambios:
-- La lista ahora se deriva de los `COPY src/…` reales de la etapa `build` del Dockerfile, así que no puede desalinearse.
-- El escáner también sigue los `export … from`.
-- Se agregó una prueba que demuestra que el guardián distingue las importaciones de valor de las de tipo y detecta una ruta fuera del build.
-
-Se prefirió esto a `COPY src ./src` porque así un cambio solo de backend no invalida la capa del build web, que cuesta minutos de build en Render free.
-
-### IN-07: Una constante de otro ámbito en el middleware HTTP
-
-**Archivos modificados:** `src/config/constants/llm.constants.ts`, `src/config/constants/http.constants.ts`, `src/http/middlewares/json-only.middleware.ts`, `src/llm/adapters/openai-compatible.adapter.ts`, `web/src/config/constants/ui.constants.ts`
-**Commit:** db7e710
-**Fix aplicado:** `METODO_POST` se movió a `http.constants.ts`. El middleware, el adaptador del proveedor y la SPA lo importan desde ahí.
-
-### IN-08: Si `/api/config` falla justo después de entrar, la UI queda sin configuración y no reintenta
-
-**Archivos modificados:** `web/src/hooks/usar-reintento-config.ts` (nuevo), `web/src/app.tsx`, `web/src/state/conversacion.ts`, `web/src/config/constants/ui.constants.ts`, `tests/web/conversacion.test.ts`, `docs/estructura.md`
-**Commit:** 99b2510
-**Fix aplicado:** Cuando el acceso está concedido y falta la config (`faltaConfig`), `useReintentoConfig` vuelve a pedir `/api/config` cada `REINTENTO_CONFIG_MS` (10 s) y al volver a la pestaña. Solo despacha si llega una config válida o un 401 (`configResuelta`), y lo cancela todo al desmontarse o cuando la config llega. Las funciones puras tienen pruebas.
-
-## Notas para la disposición
-
-- `03-REVIEW-DISPOSITION.md` no se tocó. Le toca al orquestador marcar WR-01, WR-02 y WR-04 a WR-07 e IN-01 a IN-08 como `fixed`, y WR-03 como `accepted` (documentado en `docs/limites-del-demo.md`, y debe pasar a `SOLUCION.md` en la fase 4).
-- No hubo `git push`. Un push redespliega Render, y lo decide la usuaria.
+- `bun run check` (tsc del backend y del front, Biome y `bun audit`): pasa, con salida 0 y sin vulnerabilidades.
+- `bun test` completo: 2326 pass, 1 skip, 0 fail (9461 `expect()`, 107 archivos).
 
 ---
 
-_Corregido: 2026-10-15T06:42:41Z_
+_Fixed: 2026-10-16T00:05:04Z_
 _Fixer: Claude (gsd-code-fixer)_
-_Iteración: 1_
+_Iteration: 1_
