@@ -1,14 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import {
-  FUENTES_AUTOALOJADAS,
-  LICENCIAS_DE_FUENTES,
-  MARCADOR_TITULO,
-  NOMBRE_PLUGIN_TITULO,
-  RUTA_FAVICON,
-  RUTA_LOGO,
-} from "@web/config/constants/marca.constants.ts";
+import { MARCADOR_TITULO, NOMBRE_PLUGIN_TITULO, RUTA_LOGO } from "@web/config/constants/marca.constants.ts";
 import { TEXTO_APP } from "@web/config/strings.ts";
 import type { PluginOption, UserConfig } from "vite";
 
@@ -16,11 +9,22 @@ const RAIZ = join(import.meta.dir, "..", "..");
 const CARPETA_PUBLICA = join(RAIZ, "web", "public");
 const INDEX_HTML = "web/index.html";
 const GLOBAL_CSS = "web/src/styles/global.css";
+const TOKENS_CSS = "web/src/styles/tokens.css";
 const MARCA_CONSTANTES = "web/src/config/constants/marca.constants.ts";
 const CONFIG_VITE = join(RAIZ, "web", "vite.config.ts");
 const URL_PUBLICA = /\/(?:marca|fuentes)\/[\w.-]+/g;
 const URL_ABSOLUTA = /https?:\/\//;
 const TITULO = /<title>([^<]*)<\/title>/;
+const FUENTE_DE_FONT_FACE = /src:\s*url\("(\/fuentes\/[\w.-]+)"\)/g;
+const FAMILIA_DE_FONT_FACE = /font-family:\s*"([^"]+)"/g;
+const PRECARGA_DE_FUENTE = /<link rel="preload" as="font"[^>]*href="([^"]+)"/g;
+const ICONO = /<link rel="icon"[^>]*href="([^"]+)"/;
+const ICONO_APPLE = /<link rel="apple-touch-icon"[^>]*href="([^"]+)"/;
+const COLOR_DE_TEMA = /<meta name="theme-color" content="([^"]+)"/;
+const TOKEN_DE_MARCA = /--marca:\s*([^;]+);/;
+const CARPETA_DE_LICENCIAS = "/fuentes/";
+const PREFIJO_LICENCIA = "OFL-";
+const EXTENSION_LICENCIA = ".txt";
 const LICENCIA_OFL = "SIL OPEN FONT LICENSE";
 const FIRMA_WOFF2 = "wOF2";
 const FIRMA_RIFF = "RIFF";
@@ -64,12 +68,43 @@ function transformadorDelPlugin(opciones: readonly PluginOption[]): unknown {
   return plugin.transformIndexHtml;
 }
 
-const FUENTES = Object.values(FUENTES_AUTOALOJADAS);
-const LICENCIAS = Object.values(LICENCIAS_DE_FUENTES);
+function capturas(texto: string, patron: RegExp): string[] {
+  return [...texto.matchAll(patron)].flatMap((coincidencia) => coincidencia.slice(1, 2));
+}
+
+function captura(texto: string, patron: RegExp): string | null {
+  return patron.exec(texto)?.[1] ?? null;
+}
+
+function fuentesDeFontFace(css: string): string[] {
+  return capturas(css, FUENTE_DE_FONT_FACE);
+}
+
+function licenciasDeFontFace(css: string): string[] {
+  return [...new Set(capturas(css, FAMILIA_DE_FONT_FACE))].map(
+    (familia) => `${CARPETA_DE_LICENCIAS}${PREFIJO_LICENCIA}${familia}${EXTENSION_LICENCIA}`,
+  );
+}
+
+function precargasHuerfanas(html: string, css: string): string[] {
+  const declaradas = new Set(fuentesDeFontFace(css));
+  return capturas(html, PRECARGA_DE_FUENTE).filter((precarga) => !declaradas.has(precarga));
+}
+
+function colorDeTemaDistinto(html: string, tokens: string): boolean {
+  const tema = captura(html, COLOR_DE_TEMA);
+  return tema === null || tema !== captura(tokens, TOKEN_DE_MARCA)?.trim();
+}
+
+const FUENTES = fuentesDeFontFace(leer(GLOBAL_CSS));
+const LICENCIAS = licenciasDeFontFace(leer(GLOBAL_CSS));
+const FAVICON = captura(leer(INDEX_HTML), ICONO) ?? "";
 
 describe("activos de marca autoalojados en web/public", () => {
-  test("el logo, el favicon, las tres fuentes y las dos licencias existen", () => {
-    for (const ruta of [RUTA_LOGO, RUTA_FAVICON, ...FUENTES, ...LICENCIAS]) {
+  test("el logo, el favicon de index.html, las tres fuentes de global.css y la licencia de cada familia existen", () => {
+    expect(FUENTES).toHaveLength(3);
+    expect(LICENCIAS).toEqual(["/fuentes/OFL-Outfit.txt", "/fuentes/OFL-Montserrat.txt"]);
+    for (const ruta of [RUTA_LOGO, FAVICON, ...FUENTES, ...LICENCIAS]) {
       expect(existsSync(join(CARPETA_PUBLICA, ruta))).toBe(true);
     }
   });
@@ -81,7 +116,7 @@ describe("activos de marca autoalojados en web/public", () => {
     const logo = bytesPublicos(RUTA_LOGO);
     expect(ascii(logo, 0, LARGO_FIRMA)).toBe(FIRMA_RIFF);
     expect(ascii(logo, INICIO_WEBP, FIN_WEBP)).toBe(FIRMA_WEBP);
-    expect([...bytesPublicos(RUTA_FAVICON).slice(0, FIRMA_JPEG.length)]).toEqual(FIRMA_JPEG);
+    expect([...bytesPublicos(FAVICON).slice(0, FIRMA_JPEG.length)]).toEqual(FIRMA_JPEG);
   });
 
   test("las licencias son la SIL Open Font License", () => {
@@ -94,11 +129,34 @@ describe("activos de marca autoalojados en web/public", () => {
     const urls = [INDEX_HTML, GLOBAL_CSS, MARCA_CONSTANTES].flatMap(
       (ruta) => leer(ruta).match(URL_PUBLICA) ?? [],
     );
-    expect(urls).toContain(RUTA_FAVICON);
-    expect(urls.filter((url) => url.startsWith("/fuentes/")).length).toBeGreaterThan(FUENTES.length);
+    expect(urls).toContain(FAVICON);
+    expect(urls).toContain(RUTA_LOGO);
     for (const url of urls) {
       expect({ url, existe: existsSync(join(CARPETA_PUBLICA, url)) }).toEqual({ url, existe: true });
     }
+  });
+
+  test("index.html solo precarga fuentes que global.css declara, el ícono de Apple es el favicon y theme-color es --marca", () => {
+    const html = leer(INDEX_HTML);
+    expect(capturas(html, PRECARGA_DE_FUENTE).length).toBeGreaterThan(0);
+    expect(precargasHuerfanas(html, leer(GLOBAL_CSS))).toEqual([]);
+    expect(captura(html, ICONO_APPLE)).toBe(FAVICON);
+    expect(colorDeTemaDistinto(html, leer(TOKENS_CSS))).toBe(false);
+  });
+
+  test("detecta una precarga sin @font-face y un theme-color que no es --marca", () => {
+    const css =
+      '@font-face { font-family: "Outfit"; src: url("/fuentes/outfit-latin-600.woff2") format("woff2"); }';
+    const html = [
+      '<link rel="preload" as="font" type="font/woff2" crossorigin href="/fuentes/outfit-latin-600.woff2" />',
+      '<link rel="preload" as="font" type="font/woff2" crossorigin href="/fuentes/outfit-latin-700.woff2" />',
+      '<meta name="theme-color" content="#000000" />',
+    ].join("\n");
+    expect(precargasHuerfanas(html, css)).toEqual(["/fuentes/outfit-latin-700.woff2"]);
+    expect(colorDeTemaDistinto(html, ":root { --marca: #063635; }")).toBe(true);
+    expect(colorDeTemaDistinto(html, ":root { --marca: #000000; }")).toBe(false);
+    expect(colorDeTemaDistinto("<head></head>", ":root { --marca: #000000; }")).toBe(true);
+    expect(licenciasDeFontFace(css)).toEqual(["/fuentes/OFL-Outfit.txt"]);
   });
 
   test("ni index.html ni web/src cargan nada de un dominio externo", () => {
@@ -111,7 +169,7 @@ describe("el título del documento se escribe en el build", () => {
   test("index.html lleva el marcador una sola vez y el favicon de la marca", () => {
     const html = leer(INDEX_HTML);
     expect(html.split(MARCADOR_TITULO)).toHaveLength(2);
-    expect(html).toContain(`href="${RUTA_FAVICON}"`);
+    expect(FAVICON.startsWith("/marca/")).toBe(true);
     expect(html).not.toContain("data:,");
   });
 
