@@ -1,18 +1,26 @@
-import { CODIGO_AGENTE } from "@/config/constants/agent.constants.ts";
+import { CODIGO_AGENTE, TIPO_EVENTO } from "@/config/constants/agent.constants.ts";
 import { DESENLACE_ENVIO } from "@/config/constants/confirmation.constants.ts";
+import { FECHA_DEMO } from "@/config/constants/demo.constants.ts";
 import { CODIGO_ERROR } from "@/config/constants/errors.constants.ts";
 import { ARCHIVO_PROYECTO, ARCHIVOS_SALIDA, OUT_DIR } from "@/config/constants/files.constants.ts";
 import {
   ENTORNO_APP,
   LONGITUD_MINIMA_CODIGO_ACCESO,
   LONGITUD_MINIMA_SECRETO_TOKEN,
+  RUTA_API,
   TIPO_CONTENIDO,
   VENTANA_MENSAJES_CHAT_MINUTOS,
   VENTANA_SESIONES_NUEVAS_HORAS,
 } from "@/config/constants/http.constants.ts";
 import { LONGITUD_MAXIMA_CASO } from "@/config/constants/limits.constants.ts";
-import { ESQUEMA_LOOPBACK, ESQUEMA_SEGURO, HOSTS_LOOPBACK } from "@/config/constants/llm.constants.ts";
+import {
+  ESQUEMA_LOOPBACK,
+  ESQUEMA_SEGURO,
+  ESTADO_LLM,
+  HOSTS_LOOPBACK,
+} from "@/config/constants/llm.constants.ts";
 import { ESTADO_CAMPO } from "@/config/constants/mapping.constants.ts";
+import { CASO_GUION_PRD, OPCION_CLI } from "@/config/constants/preflight.constants.ts";
 import { FIN_DE_ORACION, SALTO_DE_LINEA } from "@/config/constants/text.constants.ts";
 import { HERRAMIENTA, NOMBRE_VISIBLE, ORDEN_FLUJO_HERRAMIENTAS } from "@/config/constants/tools.constants.ts";
 import type { ValorDe } from "@/config/types/valor-de.type.ts";
@@ -344,6 +352,8 @@ export const TEXTO_ENV = {
   codigoAccesoCorto: `El código de acceso debe tener al menos ${LONGITUD_MINIMA_CODIGO_ACCESO} caracteres.`,
   secretoTokenCorto: `El secreto de firma del acceso debe tener al menos ${LONGITUD_MINIMA_SECRETO_TOKEN} caracteres.`,
   secretoTokenRepetido: "Debe ser distinto del código de acceso y de la clave del modelo.",
+  urlPreflightInvalida: "La URL del pre-flight no es válida.",
+  urlPreflightNoSegura: `La URL del pre-flight debe usar ${ESQUEMA_SEGURO}; solo estos hosts locales admiten también ${ESQUEMA_LOOPBACK}: ${[...HOSTS_LOOPBACK].join(", ")}. Así el código de acceso nunca viaja sin cifrar.`,
   secretoTokenRequerido: `Falta el secreto de firma del acceso: es obligatorio con NODE_ENV=${ENTORNO_APP.PRODUCCION} y debe ser distinto del código de acceso y de la clave del modelo.`,
 } as const;
 
@@ -459,4 +469,53 @@ export const TEXTO_MODULO = {
   fuenteAusente: (ruta: string): string => `No existe la fuente del módulo: ${ruta}; no se escribió nada.`,
   fuenteVacia: (ruta: string): string => `La fuente del módulo está vacía: ${ruta}; no se escribió nada.`,
   fueraDeLaRaiz: `El generador del módulo debe correr en la raíz del proyecto, donde está ${ARCHIVO_PROYECTO}; no se escribió nada.`,
+} as const;
+
+const SIMULAR_ENVIO = NOMBRE_VISIBLE[HERRAMIENTA.SIMULAR_ENVIO];
+
+export const TEXTO_PREFLIGHT = {
+  uso: `Uso: deja PREFLIGHT_ACCESS_CODE en el entorno o en el .env local y corre bun run preflight -- --${OPCION_CLI.URL} https://… [--${OPCION_CLI.GUION}]. El código de acceso nunca va como argumento.`,
+  despertando: (origen: string, segundos: number): string =>
+    `Despertando ${origen}: pido ${RUTA_API.SALUD} hasta que responda 200, con un máximo de ${segundos} s.`,
+  saludLista: (proveedor: string, modelo: string, ms: number): string =>
+    `Servicio listo en ${ms} ms: proveedor ${proveedor}, modelo ${modelo}, estado del modelo ${ESTADO_LLM.DISPONIBLE}.`,
+  modeloNoDisponible: (estado: string): string =>
+    `El servicio responde, pero el modelo no está disponible (estado ${estado}); revisa la clave y el saldo del proveedor antes de la defensa.`,
+  servicioDormido: (segundos: number): string =>
+    `El servicio no respondió 200 en ${RUTA_API.SALUD} en ${segundos} s; revisa el despliegue en Render.`,
+  accesoOk: (fecha: string, casos: number): string =>
+    `Código de acceso aceptado: fecha de ejecución ${fecha} y ${casos} casos disponibles.`,
+  codigoRechazado:
+    "El servidor rechazó el código de acceso (401); revisa PREFLIGHT_ACCESS_CODE. No reintento para no bloquear la IP.",
+  ipBloqueada:
+    "El servidor bloqueó esta IP por intentos fallidos (429); espera a que venza la ventana antes de volver a probar.",
+  fechaInesperada: (fecha: string): string =>
+    `La fecha de ejecución del servicio es ${fecha} y el guion espera ${FECHA_DEMO}; revisa FECHA_EJECUCION en Render.`,
+  casoAusente: (caso: string): string =>
+    `El servicio no lista el caso ${caso}; revisa que los fixtures estén en la imagen.`,
+  respuestaInvalida: (paso: string): string => `La respuesta de ${paso} no tiene la forma esperada.`,
+  estadoInesperado: (paso: string, estado: number): string => `${paso} respondió con el estado ${estado}.`,
+  errorDeRed: (paso: string): string => `No pude conectar con ${paso} o se agotó el tiempo de espera.`,
+  faltaUrl: "Falta la URL del servicio: pásala con --url o en PREFLIGHT_URL.",
+  entornoInvalido: (detalle: string): string => `La configuración del pre-flight no es válida: ${detalle}`,
+  resultadoOk: "Pre-flight OK.",
+  resultadoFallido: "Pre-flight fallido.",
+  mensajeGuion: `Procesa el caso "${CASO_GUION_PRD}". Dime qué campos quedaron llenos, cuáles faltan, si el paquete está listo para firma y qué soportes debo actualizar. No envíes nada todavía.`,
+  mensajeConfirmacion: EJEMPLOS_CONFIRMACION[0],
+  turnoOk: (numero: number): string => `Turno ${numero} del guion del PRD §11 OK.`,
+  cabeceraSse: (nombre: string): string =>
+    `La respuesta del chat no trae la cabecera ${nombre} esperada; un proxy podría acumular el SSE.`,
+  herramientaFaltante: (nombre: string): string =>
+    `El turno no terminó con éxito ${nombre} para ${CASO_GUION_PRD}.`,
+  sinConfirmacion: (caso: string): string => `El turno no dejó pendiente la confirmación de ${caso}.`,
+  bloqueoAusente: (tipo: string): string => `La confirmación pendiente no nombra el bloqueo ${tipo}.`,
+  envioAntesDeTiempo: `El agente llamó a ${SIMULAR_ENVIO} antes de la confirmación.`,
+  envioFaltante: `Tras la confirmación no hubo un ${SIMULAR_ENVIO} exitoso para ${CASO_GUION_PRD}.`,
+  confirmacionAbierta: "Tras el envío simulado la conversación sigue pidiendo confirmación.",
+  archivoInesperado: (nombre: string): string => `${nombre} ya existe antes de la confirmación.`,
+  archivoFaltante: (nombre: string): string => `${nombre} no aparece tras la confirmación.`,
+  errorDelAgente: (mensaje: string): string => `El agente respondió con un error: ${mensaje}`,
+  turnoIncompleto: `El turno terminó sin el evento ${TIPO_EVENTO.FIN_TURNO}.`,
+  tokens: (entrada: number, cacheHit: number, salida: number, totalSesion: number): string =>
+    `Tokens del guion: entrada ${entrada} (caché ${cacheHit}), salida ${salida}; total de la sesión ${totalSesion}.`,
 } as const;

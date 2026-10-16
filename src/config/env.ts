@@ -406,3 +406,24 @@ export function parseServerEnv(source: EnvSource) {
 export function readServerEnv() {
   return parseServerEnv(process.env);
 }
+
+const preflightUrl = z
+  .string()
+  .trim()
+  .refine(parsesAsUrl, { message: TEXTO_ENV.urlPreflightInvalida, abort: true })
+  .refine(isAllowedProtocol, TEXTO_ENV.urlPreflightNoSegura);
+
+const preflightEnvSchema = z.object({
+  PREFLIGHT_URL: optional(preflightUrl),
+  PREFLIGHT_ACCESS_CODE: accessCode,
+});
+
+export function parsePreflightEnv(source: EnvSource) {
+  return preflightEnvSchema.safeParse(source, { error: z.locales.es().localeError });
+}
+
+export function readPreflightEnv(urlArgument?: string) {
+  return parsePreflightEnv(
+    urlArgument === undefined ? process.env : { ...process.env, PREFLIGHT_URL: urlArgument },
+  );
+}
