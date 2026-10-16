@@ -334,7 +334,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 | 2. Agente y compuerta de confirmación | 24/24 | Complete    | 2026-10-14 |
 | 3. Chat web, API SSE y despliegue | 47/47 | Complete    | 2026-10-15 |
 | 4. Módulo, documentación y defensa | 8/8 | Complete    | 2026-10-16 |
-| 5. Front web por features e identidad de marca | 0/0 | Not started | - |
+| 5. Front web por features e identidad de marca | 0/9 | Planned | - |
 
 ### Phase 5: Front web por features e identidad de marca
 
@@ -347,7 +347,30 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
   4. El chat muestra la identidad de marca del UI-SPEC (logo, acento, tipografía y estado vacío con los 4 casos).
   5. La regresión completa (`bun run check`, `bun test`, `demo.ts`, `build:web`), la CI y el ensayo del §11 con Playwright sobre el link público pasan sin cambios de conducta.
 **Depends on:** Phase 4
-**Plans:** 0 plans
+**Plans:** 9 plans
 
 Plans:
-- [ ] TBD (run /gsd-plan-phase 5 to break down)
+**Wave 1**
+- [ ] 05-01-PLAN.md — Infraestructura de pruebas DOM por archivo (Testing Library y happy-dom fijados, D-115) y caracterización del front por la red: el `App` real con solo `fetch` falso, para que FE-06 se pruebe igual antes y después de la mudanza
+- [ ] 05-02-PLAN.md — Store propio sin dependencias (`useSyncExternalStore`, Context de instancia y selectores memoizados) y reductores puros junto a su feature (D-101, D-120)
+
+**Wave 2** *(blocked on Wave 1 completion)*
+- [ ] 05-03-PLAN.md — Trazador: el `App` corre sobre el store, sesión y encabezado migrados a vista, hook y CSS, y guardianes W14 a W18 y W20
+
+**Wave 3** *(blocked on Wave 2 completion)*
+- [ ] 05-04-PLAN.md — Hojas del chat, herramientas, confirmación, tarjeta de resultado y `compartido` (íconos y avisos)
+
+**Wave 4** *(blocked on Wave 3 completion)*
+- [ ] 05-05-PLAN.md — Contenedores del chat sobre el store: compositor, acciones rápidas, línea de tiempo y estado vacío extraído
+
+**Wave 5** *(blocked on Wave 4 completion)*
+- [ ] 05-06-PLAN.md — Panel de casos y archivos con la red solo en hooks (D-122)
+
+**Wave 6** *(blocked on Wave 5 completion)*
+- [ ] 05-07-PLAN.md — Disposición y acceso, `app.tsx` solo con providers, fin de la transición, W12 ampliado, W21 y reglas y docs al día
+
+**Wave 7** *(blocked on Wave 6 completion)*
+- [ ] 05-08-PLAN.md — Identidad de Periferia: logo, favicon, título, fuentes autoalojadas, paleta, píldoras y encabezado y acceso en teal (D-105 a D-110)
+
+**Wave 8** *(blocked on Wave 7 completion)*
+- [ ] 05-09-PLAN.md — Estado vacío con las tarjetas de los casos (D-111 a D-114), textos sin el símbolo de sección (D-118, W19) y compuerta final de regresión para eli-qa
