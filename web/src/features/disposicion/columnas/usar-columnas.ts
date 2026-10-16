@@ -12,7 +12,7 @@ import {
 } from "@web/store/selectores.ts";
 import { useSeleccion, useSincronizacion } from "@web/store/usar-almacen.ts";
 import type { ControlColumnas, ControlPestanas, Diseno, IdsDePestanas, Pestana } from "@web/types/ui.type.ts";
-import { type HTMLAttributes, useEffect, useId, useState, useSyncExternalStore } from "react";
+import { type HTMLAttributes, useId, useState, useSyncExternalStore } from "react";
 
 function disenoActual(): Diseno {
   if (window.matchMedia(CONSULTA_DE_ANCHO.ANCHO).matches) return DISENO.ANCHO;
@@ -31,10 +31,7 @@ function usePestanas(conPestanas: boolean, firmaDelPanel: string): ControlPestan
   const [pestana, setPestana] = useState<Pestana>(PESTANA.CHAT);
   const [firmaVista, setFirmaVista] = useState(firmaDelPanel);
   const viendoPanel = !conPestanas || pestana === PESTANA.CASOS;
-
-  useEffect(() => {
-    if (viendoPanel) setFirmaVista(firmaDelPanel);
-  }, [viendoPanel, firmaDelPanel]);
+  if (viendoPanel && firmaVista !== firmaDelPanel) setFirmaVista(firmaDelPanel);
 
   return { pestana, elegir: setPestana, cambiosSinVer: !viendoPanel && firmaDelPanel !== firmaVista };
 }
