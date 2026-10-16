@@ -102,7 +102,7 @@ Fuente vinculante: `reto-01/PRD.md`, sin modificar. Fixtures: `reto-01/fixtures/
 - [x] **DEMO-02**: Hay tests golden por caso con la tabla de verdad: co 17/0/0 y listo; ec 13/1/1 y bloqueado por soporte ausente; hn 9/1/1 y bloqueado por parafiscales vencidos; pa 8/0/1 y listo por la vía del portal.
 - [x] **DEMO-03**: Hay tests unitarios de dominio (mapeo, RN1, vigencias, clasificador de confirmación, redacción), tests de contrato de herramientas (`{ok,data}`, nunca lanzan) y tests del ciclo con un LLM falso: tope de iteraciones, compuerta (incluido "No envíes…" y el guion §11), CA5 tras timeout o 503 e intento de inyección.
 - [x] **DEMO-04**: Hay fixtures sintéticos propios en `tests/fixtures/` para la etiqueta ambigua (HU-1), una plantilla corrupta y un caso inexistente (HU-5).
-- [ ] **DEMO-05**: GitHub Actions corre `bun test`, `bun run demo.ts`, `tsc --noEmit` y lint, y el README muestra un badge.
+- [x] **DEMO-05**: GitHub Actions corre `bun test`, `bun run demo.ts`, `tsc --noEmit` y lint, y el README muestra un badge.
 
 ### Calidad de código y mantenibilidad
 
@@ -110,7 +110,7 @@ Fuente vinculante: `reto-01/PRD.md`, sin modificar. Fixtures: `reto-01/fixtures/
 - [x] **CAL-02**: El código no lleva comentarios. Se entiende por sí solo gracias a nombres expresivos, tipos y funciones pequeñas de una responsabilidad. Las explicaciones viven en la documentación, no en el código.
 - [x] **CAL-03**: Las constantes y la configuración están centralizadas, tipadas y validadas con zod desde env: rutas, topes, timeouts, umbral de confianza 0.8, tabla país → identificador y catálogo de errores. No hay números ni strings mágicos dispersos.
 - [x] **CAL-04**: Las capas tienen dependencias hacia adentro (dominio puro → herramientas/casos de uso → infraestructura → HTTP), sin framework de DI. Solo hay puertos donde existe más de una implementación (LLM, reloj, store de sesión). Un test de arquitectura verifica la dirección de los imports.
-- [ ] **CAL-05**: Hay documentación de continuidad (`docs/arquitectura.md` y `docs/convenciones.md`) para que otro dev o una IA retome el proyecto. Los commits siguen Conventional Commits con la identidad `elianatorres5772`.
+- [x] **CAL-05**: Hay documentación de continuidad (`docs/arquitectura.md` y `docs/convenciones.md`) para que otro dev o una IA retome el proyecto. Los commits siguen Conventional Commits con la identidad `elianatorres5772`.
 
 ### Despliegue (§8, §9.3)
 
@@ -120,7 +120,7 @@ Fuente vinculante: `reto-01/PRD.md`, sin modificar. Fixtures: `reto-01/fixtures/
 
 ### Documentación de entrega (§9)
 
-- [ ] **DOC-01**: El `README.md` explica cómo levantar en local con un comando, las variables de entorno, cómo correr `demo.ts`, el link de prueba y el código de acceso.
+- [x] **DOC-01**: El `README.md` explica cómo levantar en local con un comando, las variables de entorno, cómo correr `demo.ts`, el link de prueba y el código de acceso.
 - [ ] **DOC-02**: `SOLUCION.md` tiene las 10 secciones obligatorias:
   1. Problema.
   2. Arquitectura con diagrama.
@@ -235,16 +235,16 @@ Cada requisito v1 está asignado a exactamente una fase del roadmap (`.planning/
 | DEMO-02 | Phase 1 | Complete |
 | DEMO-03 | Phase 2 | Complete |
 | DEMO-04 | Phase 1 | Complete |
-| DEMO-05 | Phase 4 | Pending |
+| DEMO-05 | Phase 4 | Complete |
 | CAL-01 | Phase 1 | Complete |
 | CAL-02 | Phase 1 | Complete |
 | CAL-03 | Phase 1 | Complete |
 | CAL-04 | Phase 1 | Complete |
-| CAL-05 | Phase 4 | Pending |
+| CAL-05 | Phase 4 | Complete |
 | DEP-01 | Phase 3 | Complete |
 | DEP-02 | Phase 3 | Complete |
 | DEP-03 | Phase 4 | Complete |
-| DOC-01 | Phase 4 | Pending |
+| DOC-01 | Phase 4 | Complete |
 | DOC-02 | Phase 4 | Pending |
 | MOD-01 | Phase 4 | Complete |
 | MOD-02 | Phase 4 | Complete |
