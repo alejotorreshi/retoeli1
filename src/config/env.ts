@@ -49,6 +49,7 @@ import {
 } from "@/config/constants/llm.constants.ts";
 import { NIVEL_LOG_POR_DEFECTO, NIVELES_LOG } from "@/config/constants/logging.constants.ts";
 import { PATRON_BARRA_FINAL, PATRON_FECHA } from "@/config/constants/patterns.constants.ts";
+import { RUTA_RAIZ_URL } from "@/config/constants/preflight.constants.ts";
 import { LOCALE_INTL, ZONA_HORARIA_POR_DEFECTO } from "@/config/constants/runtime.constants.ts";
 import { TEXTO_ENV } from "@/config/strings.ts";
 import type {
@@ -407,11 +408,17 @@ export function readServerEnv() {
   return parseServerEnv(process.env);
 }
 
+function isBareOrigin(valor: string): boolean {
+  const url = new URL(valor);
+  return url.pathname === RUTA_RAIZ_URL && url.search === "" && url.hash === "";
+}
+
 const preflightUrl = z
   .string()
   .trim()
   .refine(parsesAsUrl, { message: TEXTO_ENV.urlPreflightInvalida, abort: true })
-  .refine(isAllowedProtocol, TEXTO_ENV.urlPreflightNoSegura);
+  .refine(isAllowedProtocol, TEXTO_ENV.urlPreflightNoSegura)
+  .refine(isBareOrigin, TEXTO_ENV.urlPreflightConRuta);
 
 const preflightEnvSchema = z.object({
   PREFLIGHT_URL: optional(preflightUrl),
@@ -423,7 +430,8 @@ export function parsePreflightEnv(source: EnvSource) {
 }
 
 export function readPreflightEnv(urlArgument?: string) {
+  const fromArgument = urlArgument?.trim() ?? "";
   return parsePreflightEnv(
-    urlArgument === undefined ? process.env : { ...process.env, PREFLIGHT_URL: urlArgument },
+    fromArgument === "" ? process.env : { ...process.env, PREFLIGHT_URL: fromArgument },
   );
 }

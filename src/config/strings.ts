@@ -353,6 +353,8 @@ export const TEXTO_ENV = {
   secretoTokenCorto: `El secreto de firma del acceso debe tener al menos ${LONGITUD_MINIMA_SECRETO_TOKEN} caracteres.`,
   secretoTokenRepetido: "Debe ser distinto del código de acceso y de la clave del modelo.",
   urlPreflightInvalida: "La URL del pre-flight no es válida.",
+  urlPreflightConRuta:
+    "La URL del pre-flight debe ser solo el origen del servicio, sin ruta, consulta ni fragmento, porque el pre-flight pide sus rutas /api desde la raíz.",
   urlPreflightNoSegura: `La URL del pre-flight debe usar ${ESQUEMA_SEGURO}; solo estos hosts locales admiten también ${ESQUEMA_LOOPBACK}: ${[...HOSTS_LOOPBACK].join(", ")}. Así el código de acceso nunca viaja sin cifrar.`,
   secretoTokenRequerido: `Falta el secreto de firma del acceso: es obligatorio con NODE_ENV=${ENTORNO_APP.PRODUCCION} y debe ser distinto del código de acceso y de la clave del modelo.`,
 } as const;

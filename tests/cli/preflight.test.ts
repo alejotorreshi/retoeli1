@@ -33,8 +33,8 @@ import {
   TIPO_BLOQUEO_GUION,
 } from "@/config/constants/preflight.constants.ts";
 import { HERRAMIENTA, NOMBRE_VISIBLE } from "@/config/constants/tools.constants.ts";
-import { parsePreflightEnv, pinExecutionDate } from "@/config/env.ts";
-import { TEXTO_PREFLIGHT } from "@/config/strings.ts";
+import { parsePreflightEnv, pinExecutionDate, readPreflightEnv } from "@/config/env.ts";
+import { TEXTO_ENV, TEXTO_PREFLIGHT } from "@/config/strings.ts";
 import { crearHerramientas } from "@/tools/factories/herramientas.factory.ts";
 
 const RAIZ = join(import.meta.dir, "..", "..");
@@ -148,6 +148,11 @@ async function correr(
   });
   expect(lineas.filter((linea) => linea.includes(extra.codigo ?? CODIGO_PRUEBA))).toEqual([]);
   return { resultado, lineas, pedidos };
+}
+
+function restaurarVariable(nombre: string, valor: string | undefined): void {
+  if (valor === undefined) delete process.env[nombre];
+  else process.env[nombre] = valor;
 }
 
 function pedidosA(pedidos: readonly PedidoVisto[], ruta: string): PedidoVisto[] {
@@ -270,6 +275,38 @@ describe("entorno del pre-flight (D-92)", () => {
     for (const url of ["https://registro.example.com", "http://localhost:3998"]) {
       const lectura = parsePreflightEnv({ PREFLIGHT_ACCESS_CODE: CODIGO_PRUEBA, PREFLIGHT_URL: url });
       expect(lectura.data).toEqual({ PREFLIGHT_ACCESS_CODE: CODIGO_PRUEBA, PREFLIGHT_URL: url });
+    }
+  });
+
+  test("una URL con ruta, consulta o fragmento falla en vez de descartarlos en silencio", () => {
+    for (const url of [
+      "https://registro.example.com/prefijo",
+      "https://registro.example.com/?x=1",
+      "https://registro.example.com/#a",
+    ]) {
+      expect(errores({ PREFLIGHT_ACCESS_CODE: CODIGO_PRUEBA, PREFLIGHT_URL: url })).toContain(
+        TEXTO_ENV.urlPreflightConRuta,
+      );
+    }
+    const conBarra = parsePreflightEnv({
+      PREFLIGHT_ACCESS_CODE: CODIGO_PRUEBA,
+      PREFLIGHT_URL: "https://registro.example.com/",
+    });
+    expect(conBarra.success).toBe(true);
+  });
+
+  test("--url vacío no pisa PREFLIGHT_URL del entorno", () => {
+    const previa = { url: process.env.PREFLIGHT_URL, codigo: process.env.PREFLIGHT_ACCESS_CODE };
+    process.env.PREFLIGHT_URL = "https://registro.example.com";
+    process.env.PREFLIGHT_ACCESS_CODE = CODIGO_PRUEBA;
+    try {
+      for (const vacio of ["", "  "]) {
+        expect(readPreflightEnv(vacio).data?.PREFLIGHT_URL).toBe("https://registro.example.com");
+      }
+      expect(readPreflightEnv("http://localhost:3998").data?.PREFLIGHT_URL).toBe("http://localhost:3998");
+    } finally {
+      restaurarVariable("PREFLIGHT_URL", previa.url);
+      restaurarVariable("PREFLIGHT_ACCESS_CODE", previa.codigo);
     }
   });
 

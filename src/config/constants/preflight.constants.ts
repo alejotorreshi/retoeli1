@@ -12,6 +12,8 @@ export const SEPARACION_MINIMA_SSE_MS = 250;
 
 export const MS_POR_SEGUNDO = 1_000;
 
+export const RUTA_RAIZ_URL = "/";
+
 export const OPCION_CLI = {
   URL: "url",
   GUION: "guion",
