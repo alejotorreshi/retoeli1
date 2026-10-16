@@ -37,7 +37,7 @@ Todo corrió **en el checkout principal** (`/Users/alejo/Developer/Alejo/reto-el
 
 Las pruebas DOM se corrieron 5 veces seguidas después de quitar las pausas fijas (IN-09), y las 5 dieron 0 fallos.
 
-## Hallazgos corregidos
+## Fixed Issues
 
 ### WR-01: `CASO_DEMO_PRD` era una copia literal de `CASO_GUION_PRD`
 
