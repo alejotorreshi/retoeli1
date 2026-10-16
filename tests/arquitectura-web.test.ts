@@ -63,8 +63,6 @@ const KEBAB = "[a-z0-9]+(?:-[a-z0-9]+)*";
 
 const ESTADO_DE_FEATURE = new RegExp(`^web/src/features/${KEBAB}/estado/`);
 
-const CARPETAS_EN_MUDANZA: readonly string[] = ["web/src/components/", "web/src/hooks/"];
-
 const VISTA = new RegExp(`^web/src/(?:features/${KEBAB}|compartido)/(${KEBAB})/\\1\\.tsx$`);
 
 const ARCHIVO_EN_CARPETA_DE_COMPONENTE = new RegExp(
@@ -132,13 +130,12 @@ const UBICACIONES_WEB: readonly RegExp[] = [
   /^web\/src\/config\/strings\.ts$/,
   new RegExp(`^web/src/config/constants/${KEBAB}\\.constants\\.ts$`),
   new RegExp(`^web/src/types/${KEBAB}\\.type\\.ts$`),
-  new RegExp(`^web/src/(?:api|hooks)/${KEBAB}\\.tsx?$`),
+  new RegExp(`^web/src/api/${KEBAB}\\.ts$`),
   new RegExp(`^web/src/store/${KEBAB}\\.ts$`),
   /^web\/src\/store\/proveedor-almacen\.tsx$/,
   new RegExp(`^web/src/features/${KEBAB}/estado/${KEBAB}\\.ts$`),
   carpetaDeComponente(`features/${KEBAB}`),
   carpetaDeComponente("compartido"),
-  new RegExp(`^web/src/components/(?:icons/)?${KEBAB}\\.(?:tsx|module\\.css)$`),
   new RegExp(`^web/src/styles/${KEBAB}\\.css$`),
 ];
 
@@ -278,10 +275,6 @@ function rutaDelAlias(especificador: string): string | null {
     : null;
 }
 
-function enMudanza(ruta: string): boolean {
-  return CARPETAS_EN_MUDANZA.some((carpeta) => ruta.startsWith(carpeta));
-}
-
 function archivosPorCarpetaDeComponente(rutas: readonly string[]): Map<string, Set<string>> {
   const carpetas = new Map<string, Set<string>>();
   for (const ruta of rutas) {
@@ -329,7 +322,7 @@ function esImportacionDeVista(ruta: string, importacion: Importacion): boolean {
   if (destino === null) return false;
   const componente = carpetaDe(ruta).slice(carpetaDe(ruta).lastIndexOf("/") + 1);
   if (destino === `${carpetaDe(ruta)}/usar-${componente}.ts`) return true;
-  return destino !== ruta && (VISTA.test(destino) || (enMudanza(destino) && destino.endsWith(".tsx")));
+  return destino !== ruta && VISTA.test(destino);
 }
 
 function violacionesDeImportacionesDeVista(ruta: string, codigo: string): string[] {
@@ -359,7 +352,6 @@ function puedeImportarLaApi(ruta: string): boolean {
   return (
     ruta.startsWith(`${CARPETA_WEB}/api/`) ||
     ruta.startsWith(`${CARPETA_WEB}/store/`) ||
-    enMudanza(ruta) ||
     HOOK_DE_COMPONENTE.test(nombreDeArchivo(ruta))
   );
 }
@@ -425,7 +417,7 @@ function nombresImportadosDeReact(codigo: string): string[] {
 }
 
 function violacionesDePrimitivasDelAlmacen(ruta: string, codigo: string): string[] {
-  if (ruta.startsWith(`${CARPETA_WEB}/store/`) || enMudanza(ruta)) return [];
+  if (ruta.startsWith(`${CARPETA_WEB}/store/`)) return [];
   const permitidas = PRIMITIVAS_PERMITIDAS.get(ruta) ?? new Set<string>();
   return nombresImportadosDeReact(codigo)
     .filter((nombre) => PRIMITIVAS_DEL_ALMACEN.has(nombre) && !permitidas.has(nombre))
@@ -685,10 +677,10 @@ describe("el guardián de web/ muerde sobre fuentes de muestra", () => {
       "  );",
       "}",
     ].join("\n");
-    expect(violacionesDeTexto("web/src/components/x.tsx", codigo)).toEqual([
-      "web/src/components/x.tsx: texto legible fuera de web/src/config/strings.ts: Caso sin datos",
-      "web/src/components/x.tsx: texto legible fuera de web/src/config/strings.ts: Lista de casos",
-      "web/src/components/x.tsx: texto legible fuera de web/src/config/strings.ts: Hola mundo",
+    expect(violacionesDeTexto("web/src/features/chat/x/x.tsx", codigo)).toEqual([
+      "web/src/features/chat/x/x.tsx: texto legible fuera de web/src/config/strings.ts: Caso sin datos",
+      "web/src/features/chat/x/x.tsx: texto legible fuera de web/src/config/strings.ts: Lista de casos",
+      "web/src/features/chat/x/x.tsx: texto legible fuera de web/src/config/strings.ts: Hola mundo",
     ]);
     expect(violacionesDeTexto(DUENO_DE_TEXTO, 'export const A = "Hola mundo";\n')).toEqual([]);
   });
@@ -703,9 +695,9 @@ describe("el guardián de web/ muerde sobre fuentes de muestra", () => {
   test("W10: reporta tipos exportados fuera de web/src/types y valores dentro", () => {
     const fuera =
       "export type A = string;\nexport interface B { readonly c: string }\ntype Local = number;\n";
-    expect(violacionesDeUbicacionDeTipos("web/src/components/x.tsx", fuera)).toEqual([
-      "web/src/components/x.tsx:1: exporta un tipo fuera de web/src/types/*.type.ts",
-      "web/src/components/x.tsx:2: exporta un tipo fuera de web/src/types/*.type.ts",
+    expect(violacionesDeUbicacionDeTipos("web/src/features/chat/x/x.tsx", fuera)).toEqual([
+      "web/src/features/chat/x/x.tsx:1: exporta un tipo fuera de web/src/types/*.type.ts",
+      "web/src/features/chat/x/x.tsx:2: exporta un tipo fuera de web/src/types/*.type.ts",
     ]);
     expect(violacionesDeUbicacionDeTipos("web/src/types/x.type.ts", fuera)).toEqual([]);
     const dentro =

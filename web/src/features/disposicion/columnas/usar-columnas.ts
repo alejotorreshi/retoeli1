@@ -10,7 +10,7 @@ import {
   seleccionarConHistorial,
   seleccionarFirmaDelProgreso,
 } from "@web/store/selectores.ts";
-import { useAcciones, useSeleccion, useSincronizacion } from "@web/store/usar-almacen.ts";
+import { useSeleccion, useSincronizacion } from "@web/store/usar-almacen.ts";
 import type { ControlColumnas, ControlPestanas, Diseno, IdsDePestanas, Pestana } from "@web/types/ui.type.ts";
 import { type HTMLAttributes, useEffect, useId, useState, useSyncExternalStore } from "react";
 
@@ -56,7 +56,6 @@ function atributosDeVista(
 
 export function useColumnas(): ControlColumnas {
   useSincronizacion();
-  const { cargarConfig } = useAcciones();
   const acceso = useSeleccion(seleccionarAcceso);
   const conHistorial = useSeleccion(seleccionarConHistorial);
   const firmaDelProgreso = useSeleccion(seleccionarFirmaDelProgreso);
@@ -69,10 +68,6 @@ export function useColumnas(): ControlColumnas {
     vista: (pestana) => `${base}${SUFIJO_ID.VISTA}${pestana}`,
   };
 
-  function alEntrar(): Promise<void> {
-    return cargarConfig(new AbortController().signal);
-  }
-
   return {
     acceso,
     diseno,
@@ -83,6 +78,5 @@ export function useColumnas(): ControlColumnas {
     ids,
     vistaChat: atributosDeVista(conPestanas, pestanas, ids, PESTANA.CHAT),
     vistaCasos: atributosDeVista(conPestanas, pestanas, ids, PESTANA.CASOS),
-    alEntrar,
   };
 }

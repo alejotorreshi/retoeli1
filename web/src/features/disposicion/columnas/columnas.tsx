@@ -1,6 +1,6 @@
-import { PantallaAcceso } from "@web/components/pantalla-acceso.tsx";
-import { CLASE_GLOBAL, ESTADO_ACCESO } from "@web/config/constants/ui.constants.ts";
-import { TEXTO_APP } from "@web/config/strings.ts";
+import { ESTADO_ACCESO } from "@web/config/constants/ui.constants.ts";
+import { PantallaAcceso } from "@web/features/acceso/pantalla-acceso/pantalla-acceso.tsx";
+import { PantallaCarga } from "@web/features/acceso/pantalla-carga/pantalla-carga.tsx";
 import { PanelCasos } from "@web/features/casos/panel-casos/panel-casos.tsx";
 import { AccionesRapidas } from "@web/features/chat/acciones-rapidas/acciones-rapidas.tsx";
 import { Compositor } from "@web/features/chat/compositor/compositor.tsx";
@@ -13,32 +13,12 @@ import { Encabezado } from "@web/features/encabezado/encabezado/encabezado.tsx";
 import { DialogoNuevaSesion } from "@web/features/sesion/dialogo-nueva-sesion/dialogo-nueva-sesion.tsx";
 
 export function Columnas() {
-  const {
-    acceso,
-    diseno,
-    angosto,
-    conPestanas,
-    conHistorial,
-    pestanas,
-    ids,
-    vistaChat,
-    vistaCasos,
-    alEntrar,
-  } = useColumnas();
+  const { acceso, diseno, angosto, conPestanas, conHistorial, pestanas, ids, vistaChat, vistaCasos } =
+    useColumnas();
 
-  if (acceso.tipo === ESTADO_ACCESO.VERIFICANDO) {
-    return (
-      <main aria-busy="true">
-        <p role="status" className={CLASE_GLOBAL.OCULTO}>
-          {TEXTO_APP.cargando}
-        </p>
-      </main>
-    );
-  }
+  if (acceso.tipo === ESTADO_ACCESO.VERIFICANDO) return <PantallaCarga />;
 
-  if (acceso.tipo === ESTADO_ACCESO.PEDIDO) {
-    return <PantallaAcceso aviso={acceso.aviso} alEntrar={alEntrar} />;
-  }
+  if (acceso.tipo === ESTADO_ACCESO.PEDIDO) return <PantallaAcceso aviso={acceso.aviso} />;
 
   return (
     <div className={estilos.app} data-diseno={diseno}>

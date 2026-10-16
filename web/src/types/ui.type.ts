@@ -33,6 +33,7 @@ import type {
 } from "@web/types/chat.type.ts";
 import type { InstanciaAlmacen } from "@web/types/store.type.ts";
 import type {
+  ChangeEvent,
   FormEvent,
   HTMLAttributes,
   KeyboardEvent,
@@ -297,7 +298,20 @@ export type PropsEstadoDelModelo = {
 
 export type PropsPantallaAcceso = {
   readonly aviso: string | null;
-  readonly alEntrar: () => Promise<void>;
+};
+
+export type ControlPantallaAcceso = {
+  readonly idCampo: string;
+  readonly idError: string;
+  readonly campo: RefObject<HTMLInputElement | null>;
+  readonly codigo: string;
+  readonly visible: boolean;
+  readonly pendiente: boolean;
+  readonly error: string | null;
+  readonly envioDeshabilitado: boolean;
+  readonly alCambiarCodigo: (evento: ChangeEvent<HTMLInputElement>) => void;
+  readonly alAlternarVisible: () => void;
+  readonly alEnviarFormulario: (evento: FormEvent<HTMLFormElement>) => void;
 };
 
 export type PropsProgresoCaso = {
@@ -415,7 +429,6 @@ export type ControlColumnas = {
   readonly ids: IdsDePestanas;
   readonly vistaChat: HTMLAttributes<HTMLDivElement>;
   readonly vistaCasos: HTMLAttributes<HTMLDivElement>;
-  readonly alEntrar: () => Promise<void>;
 };
 
 export type VistaPreviaAbierta = {
