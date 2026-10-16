@@ -1,9 +1,17 @@
 .tarjeta {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
+  display: grid;
+  flex: 1;
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-areas:
+    "pildora pais"
+    "cliente cliente"
+    "slug slug"
+    "accion accion";
+  align-content: start;
+  align-items: center;
+  justify-items: start;
   gap: var(--espacio-sm);
-  width: 100%;
+  min-width: 0;
   min-height: var(--alto-control);
   padding: var(--espacio-md);
   font: inherit;
@@ -13,39 +21,166 @@
   border: var(--borde-ancho) solid var(--borde);
   border-radius: var(--radio);
   cursor: pointer;
+  transition:
+    background-color var(--duracion-transicion) ease,
+    border-color var(--duracion-transicion) ease,
+    color var(--duracion-transicion) ease,
+    box-shadow var(--duracion-transicion) ease;
+}
+
+.soloSlug {
+  grid-template-areas:
+    "cliente cliente"
+    "accion accion";
 }
 
 .pildora {
   display: inline-flex;
+  grid-area: pildora;
   align-items: center;
   min-height: var(--alto-pildora-pais);
   padding-inline: var(--espacio-sm);
   font-size: var(--etiqueta-tamano);
   font-weight: var(--etiqueta-peso-fuerte);
+  line-height: var(--etiqueta-interlinea);
   color: var(--acento);
   background: var(--acento-tinte);
   border-radius: var(--radio-pildora);
+  transition:
+    background-color var(--duracion-transicion) ease,
+    color var(--duracion-transicion) ease;
 }
 
 .cliente {
+  grid-area: cliente;
+  max-width: 100%;
   font-family: var(--titulo-fuente);
   font-size: var(--titulo-tamano);
   font-weight: var(--titulo-peso);
+  line-height: var(--titulo-interlinea);
   overflow-wrap: anywhere;
 }
 
+.detalle {
+  display: contents;
+}
+
+.pais {
+  grid-area: pais;
+  font-size: var(--etiqueta-tamano);
+  font-weight: var(--etiqueta-peso);
+  line-height: var(--etiqueta-interlinea);
+  color: var(--texto-tenue);
+}
+
+.separador {
+  display: none;
+}
+
 .slug {
+  grid-area: slug;
+  max-width: 100%;
   font-family: var(--fuente-mono);
+  font-size: var(--etiqueta-tamano);
+  font-weight: var(--etiqueta-peso);
+  line-height: var(--etiqueta-interlinea);
+  color: var(--texto-tenue);
   overflow-wrap: anywhere;
 }
 
 .accion {
   display: inline-flex;
+  grid-area: accion;
   align-items: center;
   gap: var(--espacio-xs);
+  margin-block-start: var(--espacio-sm);
+  font-size: var(--etiqueta-tamano);
+  font-weight: var(--etiqueta-peso-fuerte);
+  line-height: var(--etiqueta-interlinea);
   color: var(--acento);
+  transition: color var(--duracion-transicion) ease;
+}
+
+.chevron {
+  display: inline-flex;
+  flex: none;
+}
+
+.tarjeta:active:not(:disabled) {
+  background: var(--acento-tinte);
+  border-color: var(--acento);
+  box-shadow: none;
 }
 
 .tarjeta:disabled {
+  color: var(--texto-tenue);
+  background: var(--secundario);
+  border-color: var(--borde);
+  box-shadow: none;
   cursor: not-allowed;
+}
+
+.tarjeta:disabled .pildora {
+  color: var(--deshabilitado-texto);
+  background: var(--deshabilitado-fondo);
+}
+
+.tarjeta:disabled .accion {
+  color: var(--texto-tenue);
+}
+
+@media (hover: hover) {
+  .tarjeta:hover:not(:disabled):not(:active) {
+    background: var(--acento-suave);
+    border-color: var(--acento);
+    box-shadow: var(--sombra-elevada);
+  }
+}
+
+:global([data-diseno="angosto"]) .tarjeta {
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-areas:
+    "pildora cliente accion"
+    "pildora detalle accion";
+  column-gap: var(--espacio-md);
+  row-gap: 0;
+  padding: var(--espacio-sm) var(--espacio-md);
+}
+
+:global([data-diseno="angosto"]) .soloSlug {
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas: "cliente accion";
+}
+
+:global([data-diseno="angosto"]) .cliente {
+  font-size: var(--titulo-angosto-tamano);
+}
+
+:global([data-diseno="angosto"]) .detalle {
+  display: flex;
+  flex-wrap: wrap;
+  grid-area: detalle;
+  gap: var(--espacio-xs);
+  min-width: 0;
+  font-size: var(--etiqueta-tamano);
+  line-height: var(--etiqueta-interlinea);
+  color: var(--texto-tenue);
+}
+
+:global([data-diseno="angosto"]) .separador {
+  display: inline;
+}
+
+:global([data-diseno="angosto"]) .accion {
+  justify-self: end;
+  margin: 0;
+}
+
+:global([data-diseno="angosto"]) .textoAccion {
+  display: none;
+}
+
+:global([data-diseno="angosto"]) .chevron svg {
+  width: var(--icono-grande);
+  height: var(--icono-grande);
 }

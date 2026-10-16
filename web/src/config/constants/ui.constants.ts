@@ -80,6 +80,8 @@ export const ID_RAIZ = "root";
 
 export const TECLA_ENVIAR = "Enter";
 
+export const ID_CAMPO_MENSAJE = "campo-mensaje";
+
 export const DISTANCIA_PEGADO_AL_FINAL = 96;
 
 export const TOLERANCIA_FONDO = 1;

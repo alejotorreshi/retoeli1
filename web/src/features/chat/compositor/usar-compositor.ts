@@ -1,4 +1,4 @@
-import { MARGEN_AVISO_CONTADOR, TECLA_ENVIAR } from "@web/config/constants/ui.constants.ts";
+import { ID_CAMPO_MENSAJE, MARGEN_AVISO_CONTADOR, TECLA_ENVIAR } from "@web/config/constants/ui.constants.ts";
 import { TEXTO_CHAT } from "@web/config/strings.ts";
 import {
   seleccionarBorrador,
@@ -50,6 +50,7 @@ export function useCompositor(): ControlCompositor {
   }
 
   return {
+    idCampo: ID_CAMPO_MENSAJE,
     idAyuda,
     idContador,
     descritoPor: contador === null ? idAyuda : `${idAyuda} ${idContador}`,

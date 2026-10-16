@@ -4,6 +4,7 @@ import { useCompositor } from "@web/features/chat/compositor/usar-compositor.ts"
 
 export function Compositor() {
   const {
+    idCampo,
     idAyuda,
     idContador,
     descritoPor,
@@ -24,6 +25,7 @@ export function Compositor() {
     <form className={estilos.compositor} onSubmit={alEnviarFormulario}>
       <div className={estilos.interior}>
         <textarea
+          id={idCampo}
           className={estilos.campo}
           aria-label={TEXTO_CHAT.etiquetaMensaje}
           aria-describedby={descritoPor}

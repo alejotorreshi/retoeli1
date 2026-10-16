@@ -1,30 +1,68 @@
 .vacio {
   margin-block-start: var(--espacio-2xl);
-  text-align: center;
+  text-align: start;
 }
 
-.vacioTitulo {
+.titulo {
   margin: 0 0 var(--espacio-sm);
+  font-family: var(--display-fuente);
+  font-size: var(--display-tamano);
+  font-weight: var(--display-peso);
+  line-height: var(--display-interlinea);
+}
+
+.cuerpo {
+  margin: 0;
+  color: var(--texto-tenue);
+}
+
+.seccion {
+  margin-block-start: var(--espacio-lg);
+}
+
+.rotulo {
+  margin: 0 0 var(--espacio-sm);
+  font-size: var(--etiqueta-tamano);
+  font-weight: var(--etiqueta-peso-fuerte);
+  line-height: var(--etiqueta-interlinea);
+  color: var(--texto-tenue);
+}
+
+.cargando {
+  margin: 0;
+  font-size: var(--etiqueta-tamano);
+  font-weight: var(--etiqueta-peso);
+  line-height: var(--etiqueta-interlinea);
+  color: var(--texto-tenue);
+}
+
+.grilla {
+  display: grid;
+  grid-template-columns: repeat(var(--columnas-tarjetas-caso), minmax(0, 1fr));
+  gap: var(--espacio-md);
+  align-items: stretch;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.celda {
+  display: flex;
+  min-width: 0;
+}
+
+:global([data-diseno="angosto"]) .vacio {
+  margin-block-start: var(--espacio-lg);
+}
+
+:global([data-diseno="angosto"]) .titulo {
   font-family: var(--titulo-fuente);
   font-size: var(--titulo-tamano);
   font-weight: var(--titulo-peso);
   line-height: var(--titulo-interlinea);
 }
 
-.vacioCuerpo {
-  margin: 0;
-  color: var(--texto-tenue);
-}
-
-.vacioAcciones {
-  margin-block-start: var(--espacio-lg);
-}
-
-.grilla {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--espacio-md);
-  margin: var(--espacio-lg) 0 0;
-  padding: 0;
-  list-style: none;
+:global([data-diseno="angosto"]) .grilla {
+  grid-template-columns: repeat(var(--columnas-tarjetas-caso-angosto), minmax(0, 1fr));
+  gap: var(--espacio-sm);
 }

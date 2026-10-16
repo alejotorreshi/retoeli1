@@ -9,7 +9,7 @@ export function TarjetaCaso({ slug }: PropsTarjetaCaso) {
   return (
     <button
       type="button"
-      className={estilos.tarjeta}
+      className={pais === null ? `${estilos.tarjeta} ${estilos.soloSlug}` : estilos.tarjeta}
       aria-label={etiqueta}
       disabled={deshabilitada}
       onClick={alProcesar}

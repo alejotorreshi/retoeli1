@@ -74,8 +74,7 @@ export const TEXTO_ACCESO = {
 export const TEXTO_CHAT = {
   lineaDeTiempo: "Conversación con el agente",
   vacioTitulo: "¿Qué caso procesamos?",
-  vacioCuerpo:
-    'Pide un caso por su nombre, por ejemplo "procesa el caso co-industrias-delta", o usa una acción rápida. El agente lee la solicitud, mapea cada campo contra el maestro, genera el formulario y arma el paquete para firma. No registra ningún envío sin tu confirmación.',
+  vacioCuerpo: `Elige un caso para procesarlo o escribe una instrucción, por ejemplo "procesa el caso ${CASO_DEMO_PRD}". El agente lee la solicitud, mapea cada campo contra el maestro, genera el formulario y arma el paquete para firma. No registra ningún envío sin tu confirmación.`,
   pensando: "Pensando…",
   cargandoConversacion: "Cargando la conversación…",
   pensandoEn: (gerundio: string, caso: string | null) =>
@@ -284,8 +283,10 @@ function losCasos(cantidad: number): string {
   return cantidad === 0 ? "Los casos" : `Los ${cantidad} casos`;
 }
 
+const ACCIONES_RAPIDAS = "Acciones rápidas";
+
 export const TEXTO_ACCIONES = {
-  grupo: "Acciones rápidas",
+  grupo: ACCIONES_RAPIDAS,
   demo: `${DEMO_CORTO}: ${CASO_DEMO_PRD}`,
   demoCorto: DEMO_CORTO,
   mensajeDemoDe,
@@ -296,6 +297,12 @@ export const TEXTO_ACCIONES = {
     `Procesa estos casos: ${casos.join(SEPARADOR_LISTA_CASOS)}. Dime el estado de cada uno. No envíes nada todavía.`,
   listar: "¿Qué casos hay?",
   mensajeListar: "¿Qué casos hay disponibles?",
+} as const;
+
+export const TEXTO_ESTADO_VACIO = {
+  casos: "Casos disponibles",
+  acciones: ACCIONES_RAPIDAS,
+  cargandoCasos: "Cargando los casos…",
 } as const;
 
 export const TEXTO_PAIS = {

@@ -233,6 +233,7 @@ export type ContadorCompositor = {
 };
 
 export type ControlCompositor = {
+  readonly idCampo: string;
   readonly idAyuda: string;
   readonly idContador: string;
   readonly descritoPor: string;
@@ -515,5 +516,10 @@ export type ControlTarjetaCaso = {
 };
 
 export type ControlEstadoVacio = {
+  readonly contenedor: RefObject<HTMLDivElement | null>;
+  readonly idCasos: string;
+  readonly idAcciones: string;
   readonly casos: readonly string[];
+  readonly mostrarCasos: boolean;
+  readonly cargandoCasos: boolean;
 };

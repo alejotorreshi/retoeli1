@@ -101,6 +101,8 @@
   --ancho-divisor-marca: 1px;
   --alto-divisor-marca: 24px;
   --alto-pildora-pais: 24px;
+  --columnas-tarjetas-caso: 2;
+  --columnas-tarjetas-caso-angosto: 1;
 
   --foco-ancho: 2px;
   --foco-separacion: 2px;
