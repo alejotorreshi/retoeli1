@@ -1,9 +1,9 @@
 ---
-status: diagnosed
+status: complete
 phase: 05-front-web-por-features-e-identidad-de-marca
 source: [05-VERIFICATION.md, 05-REVIEW-FIX.md]
 started: 2026-10-16T20:48:18Z
-updated: 2026-10-16T23:10:00Z
+updated: 2026-10-17T00:40:00Z
 ---
 
 ## Current Test
@@ -14,14 +14,18 @@ updated: 2026-10-16T23:10:00Z
 
 ### 1. Subir los 108 commits de la fase 5 a origin/main, esperar la CI y el autodeploy de Render, y correr con Playwright MCP (eli-qa) el ensayo del pedido de la sección 11 del PRD sobre el link público, más todos los flujos de D-116 (acceso, estado vacío y tarjetas, turno con herramientas, confirmación, panel de casos, archivos y vista previa, nueva sesión, errores y avisos, layouts ancho y angosto), en local y en el link público, comparando la conducta antes y después del refactor
 expected: La CI pasa en verde; el ensayo de la sección 11 da el mismo resultado que en la Fase 3 y 4 (ec-corp-andina BLOQUEADO 13/1/1, sin envío sin confirmación); ningún flujo cambia de conducta
-result: issue
+result: pass
+retest: "re-run tras el cierre de brechas (05-10, 05-11): T01a-r pass, .qa/evidence/05-front-web-por-features-e-identidad-de-marca/05-QA-EVIDENCE-2026-10-17T00-05-00Z.md"
+previous_result: issue
 reported: "El ensayo de la sección 11 en el link público da 13/1/1 BLOQUEADO sin envío sin confirmación y la CI está en verde (confirmado por la usuaria), y los flujos de D-116 hacen las mismas 23 llamadas antes y después; pero el estado vacío con las tarjetas nuevas abre desplazado al fondo a 1280x720 y 375x667, con '¿Qué caso procesamos?' (y a 375 las tarjetas CO y EC) fuera de la vista; antes del refactor cabía sin scroll"
 severity: major
 evidence: .qa/evidence/05-front-web-por-features-e-identidad-de-marca/05-QA-EVIDENCE-2026-10-16T22-05-00Z.md (T01a F1, T01b)
 
 ### 2. Encabezado angosto con logo a 375 x 667 y 320 x 568
 expected: La línea 1 (logo de 24 px, divisor neón, título Outfit 16) cabe en una sola línea sin tapar el logo; la línea 2 sigue en una fila con elipsis
-result: issue
+result: pass
+retest: "re-run tras el cierre de brechas (05-10, 05-11): T02-r pass, .qa/evidence/05-front-web-por-features-e-identidad-de-marca/05-QA-EVIDENCE-2026-10-17T00-05-00Z.md"
+previous_result: issue
 reported: "A 320x568 el título 'Registro como proveedor' se parte en dos líneas (38,4 px, el encabezado crece a 102 px), contra 05-UI-SPEC.md:509; además a 375 y 320 la fecha y el estado del modelo se truncan ('2026-09-…', 'Disponi…')"
 severity: minor
 evidence: .qa/evidence/05-front-web-por-features-e-identidad-de-marca/05-QA-EVIDENCE-2026-10-16T22-05-00Z.md (T02)
@@ -87,8 +91,8 @@ result: pass
 ## Summary
 
 total: 15
-passed: 13
-issues: 2
+passed: 15
+issues: 0
 pending: 0
 skipped: 0
 blocked: 0
@@ -96,7 +100,7 @@ blocked: 0
 ## Gaps
 
 - truth: "Ningún flujo cambia de conducta tras el refactor: el estado vacío se ve completo desde arriba (título, explicación y tarjetas de caso) al entrar, como antes"
-  status: failed
+  status: resolved
   reason: "User reported: el estado vacío con las tarjetas nuevas abre desplazado al fondo a 1280x720 (scrollTop 183/183) y 375x667 (scrollTop 459); '¿Qué caso procesamos?' y su explicación (y a 375 las tarjetas CO y EC) quedan fuera de la vista. El front de antes (b7446861) cabía sin scroll; a 1280x1000 cabe"
   severity: major
   test: 1
@@ -104,9 +108,10 @@ blocked: 0
   artifacts: [web/src/features/chat/linea-de-tiempo/usar-linea-de-tiempo.ts, web/src/features/chat/estado/seguimiento.ts, web/src/features/chat/linea-de-tiempo/linea-de-tiempo.tsx, .qa/evidence/05-front-web-por-features-e-identidad-de-marca/screenshots/05-testT01a-after-vacio.png, .qa/evidence/05-front-web-por-features-e-identidad-de-marca/screenshots/05-testT01a-after-375-vacio.png]
   missing: ["que el seguimiento al final no actúe mientras no haya turnos y se reinicie al volver al estado vacío (sin 'Ir al final')", "una prueba con layout real o alturas simuladas que exija scrollTop 0 en el estado vacío a 1280x720 y 375x667, también tras Nueva sesión y recarga"]
   debug_session: .planning/debug/estado-vacio-abre-al-fondo.md
+  resolved_by: 05-10 (6a8a96a, ac1a050); re-run T01a-r pass
 
 - truth: "A 320x568 la línea 1 del encabezado (logo, divisor, título Outfit 16) cabe en una sola línea; el título no se parte (05-UI-SPEC.md:509)"
-  status: failed
+  status: resolved
   reason: "User reported: a 320x568 el título 'Registro como proveedor' se parte en dos líneas (alto 38,4 px, encabezado de 102 px); a 375 y 320 la fecha y el estado del modelo se truncan con elipsis ('2026-09-…', 'Disponi…') porque compiten por 343 px"
   severity: minor
   test: 2
@@ -114,3 +119,4 @@ blocked: 0
   artifacts: [web/src/features/encabezado/encabezado/encabezado.module.css, web/src/styles/tokens.css, .planning/phases/05-front-web-por-features-e-identidad-de-marca/05-UI-SPEC.md, .qa/evidence/05-front-web-por-features-e-identidad-de-marca/screenshots/05-testT02-encabezado-320.png, .qa/evidence/05-front-web-por-features-e-identidad-de-marca/screenshots/05-testT02-encabezado-375.png]
   missing: ["enmendar la UI-SPEC con medidas angostas calculadas contra 288 px (línea 1) y 343 px en Montserrat (línea 2)", "línea 1: logo de 20 px con huecos de 8 px junto al divisor (279,2 px) o título 14 con huecos de 8 (272,5 px), o apilar/ocultar el título bajo unos 344 px con un valor nuevo de CONSULTA_DE_ANCHO (W25)", "línea 2: la fecha no encoge y/o 'Nueva sesión' pasa a solo icono con aria-label en angosto (libera unos 89 px: todos los estados caben a 375)"]
   debug_session: .planning/debug/encabezado-angosto-titulo-partido.md
+  resolved_by: 05-11 (c06a5b7, e8c9d84, 2dd45a9); re-run T02-r pass

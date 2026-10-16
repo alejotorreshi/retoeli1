@@ -192,7 +192,8 @@
       "recipe": "Server 3125 with a 64-char synthetic LLM_MODEL; at 320x568 after access: model prefix element hidden (display none / zero width), model text has text-overflow ellipsis and scrollWidth > clientWidth, line 2 one row, no document horizontal scroll; screenshot.",
       "asserts": [
         "prefix hidden",
-        "ellipsis on model",
+        "no horizontal scroll",
+        "line 2 one row with a long model name",
         "no horizontal scroll"
       ],
       "human_checks": [],
@@ -386,5 +387,22 @@
       "T06 remote true cold start"
     ],
     "scripts": ".qa/evidence/05-front-web-por-features-e-identidad-de-marca/seeds/playwright-ab (T01a/T09a/402 templates: set BASE to 3124 before or 3123 after) and seeds/playwright-c (measurement helpers for T02/T11/T12; lib.head + body + lib.tail are concatenated into one browser_run_code_unsafe snippet)"
+  },
+  "last_rerun": {
+    "evidence": ".qa/evidence/05-front-web-por-features-e-identidad-de-marca/05-QA-EVIDENCE-2026-10-17T00-05-00Z.md",
+    "at": "2026-10-17T00:40:00Z",
+    "scope": "failed {T01a,T02} ∪ codegraph affected by 3b51af9..HEAD: T06,T07,T09a,T11,T12",
+    "tests": [
+      "T01a-r",
+      "T02-r",
+      "T06-r",
+      "T07-r",
+      "T09a-r",
+      "T11-r",
+      "T12-r"
+    ],
+    "verdict": "all pass (human accepted)",
+    "scripts": ".qa/evidence/05-front-web-por-features-e-identidad-de-marca/seeds/playwright-r (*.run.js against 3133 HEAD / 3134 before / 3135 long model)",
+    "stacks": "3133 HEAD, 3134 before, 3135 long model, fake LLM 4023"
   }
 }
