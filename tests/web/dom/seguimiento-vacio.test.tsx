@@ -2,8 +2,8 @@ import { afterEach, beforeEach, describe, expect, test } from "bun:test";
 import { montarApp } from "@tests/helpers/app-dom.helper.ts";
 import { prepararDom } from "@tests/helpers/dom.helper.ts";
 import { crearRedWeb, eventoFin, eventoInicio, eventoTexto } from "@tests/helpers/red-web.helper.ts";
-import type { GuionChat } from "@tests/helpers/types/red-web.type.ts";
 import type { AppMontada, ConsultasDom } from "@tests/helpers/types/dom.type.ts";
+import type { GuionChat } from "@tests/helpers/types/red-web.type.ts";
 import { TEXTO_ACCIONES, TEXTO_CHAT, TEXTO_ESTADO_VACIO } from "@web/config/strings.ts";
 
 const ANCHO_ESCRITORIO = 1280;

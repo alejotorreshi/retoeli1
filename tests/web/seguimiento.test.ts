@@ -461,7 +461,10 @@ describe("seguimiento con el estado vacío", () => {
   });
 
   test("un crecimiento con turnos y la vista despegada sigue marcando contenido nuevo", () => {
-    const estado = reducirSeguimiento(despegado(), crecimiento(DISTANCIA_TRAS_CRECER, TURNOS_DE_UNA_CONVERSACION));
+    const estado = reducirSeguimiento(
+      despegado(),
+      crecimiento(DISTANCIA_TRAS_CRECER, TURNOS_DE_UNA_CONVERSACION),
+    );
     expect(estado.contenidoNuevo).toBe(true);
     expect(estado.distancia).toBe(DISTANCIA_TRAS_CRECER);
   });

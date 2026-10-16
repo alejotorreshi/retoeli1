@@ -1,7 +1,11 @@
 import { ACCION_AVISO, SENAL_SEGUIMIENTO } from "@web/config/constants/ui.constants.ts";
 import { resultadosDelTurno } from "@web/features/casos/estado/casos.ts";
 import { anuncioDeEstado } from "@web/features/chat/estado/conversacion.ts";
-import { reducirSeguimiento, seguimientoInicial } from "@web/features/chat/estado/seguimiento.ts";
+import {
+  debeSeguirAlFinal,
+  reducirSeguimiento,
+  seguimientoInicial,
+} from "@web/features/chat/estado/seguimiento.ts";
 import { tarjetasDelTurno } from "@web/features/confirmacion/estado/confirmaciones.ts";
 import {
   seleccionarAvisoSesion,
@@ -67,8 +71,13 @@ export function useLineaDeTiempo(): ControlLineaDeTiempo {
     const cuerpo = contenido.current;
     if (desplazable === null || cuerpo === null) return;
     const observador = new ResizeObserver(() => {
-      despachar({ tipo: SENAL_SEGUIMIENTO.CRECIMIENTO, distancia: distanciaAlFinal(desplazable) });
-      if (seguimiento.current.pegado) seguirAlFinal(desplazable);
+      const turnosActuales = turnosVistos.current;
+      despachar({
+        tipo: SENAL_SEGUIMIENTO.CRECIMIENTO,
+        distancia: distanciaAlFinal(desplazable),
+        turnos: turnosActuales,
+      });
+      if (debeSeguirAlFinal(seguimiento.current, turnosActuales)) seguirAlFinal(desplazable);
     });
     observador.observe(cuerpo);
     return () => observador.disconnect();

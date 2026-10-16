@@ -80,7 +80,11 @@ export type SenalSeguimiento =
       readonly posicion: number;
       readonly distancia: number;
     }
-  | { readonly tipo: typeof SENAL_SEGUIMIENTO.CRECIMIENTO; readonly distancia: number }
+  | {
+      readonly tipo: typeof SENAL_SEGUIMIENTO.CRECIMIENTO;
+      readonly distancia: number;
+      readonly turnos: number;
+    }
   | { readonly tipo: typeof SENAL_SEGUIMIENTO.ENVIO }
   | { readonly tipo: typeof SENAL_SEGUIMIENTO.IR_AL_FINAL };
 

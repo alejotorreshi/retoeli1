@@ -61,9 +61,17 @@ function desplazar(estado: EstadoSeguimiento, posicion: number, distancia: numbe
   return anotarMedida(estado, posicion, distancia);
 }
 
-function crecer(estado: EstadoSeguimiento, distancia: number): EstadoSeguimiento {
-  if (estado.pegado) return estado;
+function hayTurnos(turnos: number): boolean {
+  return turnos > 0;
+}
+
+function crecer(estado: EstadoSeguimiento, distancia: number, turnos: number): EstadoSeguimiento {
+  if (!hayTurnos(turnos) || estado.pegado) return estado;
   return conCambios(estado, { ...estado, contenidoNuevo: true, distancia });
+}
+
+export function debeSeguirAlFinal(estado: EstadoSeguimiento, turnos: number): boolean {
+  return hayTurnos(turnos) && estado.pegado;
 }
 
 export function reducirSeguimiento(estado: EstadoSeguimiento, senal: SenalSeguimiento): EstadoSeguimiento {
@@ -73,7 +81,7 @@ export function reducirSeguimiento(estado: EstadoSeguimiento, senal: SenalSeguim
     case SENAL_SEGUIMIENTO.DESPLAZAMIENTO:
       return desplazar(estado, senal.posicion, senal.distancia);
     case SENAL_SEGUIMIENTO.CRECIMIENTO:
-      return crecer(estado, senal.distancia);
+      return crecer(estado, senal.distancia, senal.turnos);
     case SENAL_SEGUIMIENTO.ENVIO:
     case SENAL_SEGUIMIENTO.IR_AL_FINAL:
       return volverAlFinal(estado);
