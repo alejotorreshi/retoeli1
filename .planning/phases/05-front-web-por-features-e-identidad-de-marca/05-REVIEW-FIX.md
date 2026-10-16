@@ -1,183 +1,192 @@
 ---
 phase: 05-front-web-por-features-e-identidad-de-marca
-fixed_at: 2026-10-16T20:36:49Z
+fixed_at: 2026-10-16T21:36:31Z
 review_path: .planning/phases/05-front-web-por-features-e-identidad-de-marca/05-REVIEW.md
-iteration: 1
-findings_in_scope: 16
-fixed: 16
+iteration: 2
+findings_in_scope: 12
+fixed: 12
 skipped: 0
 status: all_fixed
 ---
 
-# Fase 5: informe de corrección de la revisión de código
+# Fase 5: informe de corrección de la revisión de código (iteración 2)
 
-**Corregido el:** 2026-10-16T20:36:49Z
+**Corregido el:** 2026-10-16T21:36:31Z
 **Revisión de origen:** `.planning/phases/05-front-web-por-features-e-identidad-de-marca/05-REVIEW.md`
-**Iteración:** 1
+**Iteración:** 2 (la iteración 1 está en `05-REVIEW-FIX.iter1.md` y no se deshizo nada de ella)
 
 **Resumen:**
-- Hallazgos en alcance: 16 (6 advertencias y 10 informativos, `fix_scope: all`)
-- Corregidos: 16
+- Hallazgos en alcance: 12 (2 advertencias y 10 informativos, `fix_scope: all`)
+- Corregidos: 12
 - Omitidos: 0
 
-Hay un commit atómico por hallazgo, en `main` local, con rutas explícitas y la identidad `elianatorres5772 <elianatorres5772@gmail.com>`. No se hizo push.
-
-Cada corrección de un guardián siguió el orden RED → GREEN. Primero se agregó la muestra negativa, y se vio fallar la prueba de muestra o la del código real. Después vino el cambio.
+Cada hallazgo tiene un commit atómico en `main` local, con rutas explícitas y la identidad `elianatorres5772 <elianatorres5772@gmail.com>`. No se hizo push y no se tocó `reto-01/`.
 
 ## Dónde corrió la verificación
 
-Todo corrió **en el checkout principal** (`/Users/alejo/Developer/Alejo/reto-eli-1`, rama `main`), no en un worktree aislado. El orquestador pidió commitear sobre `main` local con rutas explícitas, y un worktree no trae `node_modules`, así que ahí no se pueden correr `tsc`, Biome ni `bun test`. Por eso los números de abajo se reproducen desde el árbol actual.
+Todo corrió **en el checkout principal** (`/Users/alejo/Developer/Alejo/reto-eli-1`, rama `main`), no en un worktree aislado. El orquestador pidió trabajar ahí, y un worktree no trae `node_modules`. Por eso los números de abajo se reproducen desde el árbol actual.
 
 | Puerta | Resultado |
 |---|---|
 | `bun run check` (tsc ×3 + Biome) | OK: `Checked 516 files … No fixes applied.`, exit 0 |
-| `bun test` | 2642 pass · 2 skip · 0 fail (2644 pruebas, 131 archivos, 10549 `expect`) |
+| `bun test` | 2648 pass · 2 skip · 0 fail (2650 pruebas en 131 archivos, 10588 `expect`) |
+| `bun test --isolate` | 2648 pass · 2 skip · 0 fail (mismos totales) |
 | `bun run build:web` | OK, exit 0. `web/dist/index.html` lleva `<title>Registro como proveedor · Periferia IT Group</title>` y `theme-color` `#063635` |
-| `bun run demo.ts` | OK, exit 0. Los 4 casos: co LISTO 17/0/0, ec BLOQUEADO 13/1/1, hn BLOQUEADO 9/1/1, pa LISTO 8/0/1 |
+| `bun run demo.ts` | OK, exit 0. Resultados de los 4 casos: co LISTO 17/0/0, ec BLOQUEADO 13/1/1, hn BLOQUEADO 9/1/1 y pa LISTO 8/0/1 (los mismos que en la iteración 1) |
 
-Las pruebas DOM se corrieron 5 veces seguidas después de quitar las pausas fijas (IN-09), y las 5 dieron 0 fallos.
+Además se corrieron `tests/web/dom` y `tests/web/store` 5 veces seguidas, y las 5 dieron 0 fallos.
 
 ## Fixed Issues
 
-### WR-01: `CASO_DEMO_PRD` era una copia literal de `CASO_GUION_PRD`
+### WR-01: The file-preview modal lives inside an auto-collapsing `<details>`, so it can vanish while the page stays inert
 
-**Archivos modificados:** `web/src/config/constants/ui.constants.ts`, `web/src/config/strings.ts`, `tests/web/tarjeta-caso.test.ts`, `tests/web/dom/app.test.tsx`
-**Commit:** 4db7d61
-**Corrección aplicada:** Se borró `CASO_DEMO_PRD` del front. `strings.ts` y las pruebas importan `CASO_GUION_PRD` de `@/config/constants/preflight.constants.ts`, la config pura que W3 deja importar, y esa es ahora la única fuente. W23 vigila el slug desde WR-06.
+**Archivos modificados:** `web/src/features/casos/bloque-caso/bloque-caso.tsx`, `web/src/features/casos/bloque-caso/usar-bloque-caso.ts`, `tests/web/dom/app-panel.test.tsx`
+**Commit:** b235fff
+**Estado:** corregido, **requiere verificación humana** (cambia lógica de estado)
+**Corrección aplicada:** Primero se agregó la prueba DOM, que falló (RED) en `dialogo.closest("details") === null`. Después vino la corrección:
+- `DialogoVistaPrevia` se renderiza como hermano del `<details>`, dentro del `<li>`, así que plegar el bloque ya no puede ocultar un diálogo modal abierto.
+- `useBloqueCaso` ya no copia `reciente` con un `useEffect`. Ahora reacciona solo cuando `reciente` cambia, y lo hace durante el render. Si el bloque pierde la recencia mientras muestra una vista previa, no se pliega. Así la lista de archivos no se aborta y el botón "Ver" sigue visible para recibir el foco al cerrar.
 
-### WR-02: el placeholder del compositor escribía el slug a mano
+La prueba nueva procesa el caso A, abre su vista previa y luego suelta un evento de herramienta del caso B, de modo que B pasa a ser el reciente. Comprueba que:
+- el diálogo sigue conectado y abierto, fuera de cualquier `<details>`;
+- el bloque de A sigue abierto y el contenido sigue visible;
+- al cerrar, el foco vuelve a "Ver".
 
-**Archivos modificados:** `web/src/config/strings.ts`, `tests/web/dom/app.test.tsx`
-**Commit:** 957c38c
-**Corrección aplicada:** `placeholder` se arma ahora con `${CASO_GUION_PRD}`. La prueba DOM comprueba que el campo lleva ese placeholder y que el texto contiene el slug derivado.
+### WR-02: Guardian false negatives in W24 and in the store-primitive rule
 
-### WR-03: el estado vacío decía "Cargando los casos…" para siempre cuando `/api/config` fallaba
+**Archivos modificados:** `tests/arquitectura-web.test.ts`, `docs/convenciones.md`, `.claude/CLAUDE.md`
+**Commit:** 4e7c1ca
+**Corrección aplicada:** Las tres muestras negativas se escribieron primero y las tres pruebas fallaron (RED). Después vino el cambio y pasaron a GREEN.
+1. **W24:** `FUNCION_EN_ATRIBUTO` ahora mira la expresión entera del atributo JSX sobre el archivo completo sin cadenas (`\b[A-Za-z][\w-]*=\{[^{}]*?(?:=>|\bfunction\b|\.bind\()`, global). Reporta la línea donde empieza el atributo. La muestra suma estos casos:
+   - el ternario con flecha;
+   - la flecha en varias líneas;
+   - los parámetros partidos como los parte Biome;
+   - `.bind(…)`;
+   - una línea con `>=` y `<=` que **no** debe reportarse.
+2. **W20 (primitivas del almacén):** ya no lee los nombres importados. Busca cada uso de `createContext`, `useContext`, `useReducer` y `useSyncExternalStore` en el código sin cadenas. Con eso se reportan `import * as React` + `React.useSyncExternalStore`, el import por defecto y el alias. La expresión se deriva del conjunto `PRIMITIVAS_DEL_ALMACEN`, que sigue siendo la única lista. La muestra también confirma que el texto `"useContext"` dentro de una cadena no se reporta.
+3. **W4:** `API_DEL_NAVEGADOR` suma `matchMedia`, `ResizeObserver`, `navigator`, `globalThis`, `setTimeout`, `setInterval`, `requestAnimationFrame` y `URL.createObjectURL`/`revokeObjectURL`. La muestra tiene una línea por cada nombre nuevo.
 
-**Archivos modificados:** `web/src/config/strings.ts`, `web/src/types/ui.type.ts`, `web/src/features/chat/estado-vacio/usar-estado-vacio.ts`, `web/src/features/chat/estado-vacio/estado-vacio.tsx`, `web/src/features/chat/estado-vacio/estado-vacio.module.css`, `web/src/store/selectores.ts`, `tests/web/dom/app.test.tsx`, `05-UI-SPEC.md`
-**Commit:** 35978f4
-**Estado:** corregido, **requiere verificación humana** (cambia un texto visible y la lógica de un estado)
-**Corrección aplicada:** Se eligió la corrección mínima. El acceso solo pasa a `CONCEDIDO` con `CONFIG_RECIBIDA`, así que dentro del estado vacío una config nula significa siempre que la carga falló. Mientras `/api/config` no responde por primera vez, se ve `PantallaCarga`.
-- No se agregó un tercer estado `CARGANDO`, porque no se puede alcanzar.
-- El hook usa `seleccionarFaltaConfig`, y el selector `seleccionarConfigCargada` se borró porque quedó sin uso.
-- El estado vacío muestra `TEXTO_ESTADO_VACIO.casosNoDisponibles` en un `<p role="status">`: "No se pudieron cargar los casos. Se vuelve a intentar en unos segundos; mientras tanto puedes escribir la instrucción."
-- El reintento de config de la Fase 3 sigue igual.
-- La prueba DOM que fijaba la conducta vieja ahora pide el aviso con `role="status"` y comprueba que la grilla lo reemplaza cuando el reintento responde.
-- Se actualizó `05-UI-SPEC.md`: la viñeta del estado vacío, la tabla de copy y las filas `loading`/`error` de la matriz de estados.
+El código real ya cumplía con las tres reglas ampliadas, así que no hubo que tocar `web/src`. `docs/convenciones.md` (W4, W20 y W24) y `.claude/CLAUDE.md` describen ahora las formas nuevas.
 
-### WR-04: las vistas llevaban manejadores en línea
+### IN-01: Dead `id` on the composer textarea (left behind by the iteration-1 IN-04 fix)
 
-**Archivos modificados:** `compositor.tsx`/`usar-compositor.ts`, `tarjeta-confirmacion.tsx`/`usar-tarjeta-confirmacion.ts`, `linea-de-tiempo.tsx`/`usar-linea-de-tiempo.ts`, `lista-archivos.tsx`/`usar-lista-archivos.ts`, `aviso-disco-efimero.tsx` y el nuevo `aviso-disco-efimero/usar-aviso-disco-efimero.ts`, `web/src/types/ui.type.ts`, `tests/arquitectura-web.test.ts`, `.claude/CLAUDE.md`, `docs/convenciones.md`
-**Commit:** 5a8f04c
-**Corrección aplicada:** Ahora cada hook devuelve los manejadores listos para enlazar:
-- `alCambiar(evento)` del compositor.
-- `alConfirmar` y `alCancelar` de la tarjeta de confirmación. La vista ya no importa `TIPO_ACCION`.
-- `accionDelError` por turno en la línea de tiempo, que reemplaza el `alAccionDeAviso` que se pasaba hilo por hilo.
-- `alPulsarVer` de la fila de archivo.
-- `alProcesarDeNuevo` del aviso de disco efímero, en un hook nuevo que arma el mensaje con `TEXTO_DISCO.mensaje(caso)`. Se creó un archivo nuevo, `usar-aviso-disco-efimero.ts`, porque ese componente no tenía hook.
+**Archivos modificados:** `web/src/types/ui.type.ts`, `web/src/features/chat/compositor/compositor.tsx`, `web/src/features/chat/compositor/usar-compositor.ts`
+**Commit:** cef2e19
+**Corrección aplicada:** Se quitaron el `useId()`, el campo `idCampo` de `ControlCompositor` y el atributo `id` del `textarea`. El campo sigue nombrado por `aria-label` y el foco sigue pasando por `registrarCampoDelMensaje`. El `idCampo` de la pantalla de acceso no se tocó, porque ese sí lo usan `<label htmlFor>` y `aria-controls`.
 
-Se sumó el guardián **W24**: una vista no declara funciones en sus atributos JSX. La muestra negativa cubre flecha, `async`, `ref` y `function`. Primero estuvo en RED con exactamente las 6 líneas reales y después pasó a GREEN.
+### IN-02: The case-card data shape is redundant, and `ControlTarjetaCaso.slug` is never read
 
-### WR-05: las constantes de marca no eran la fuente de verdad
-
-**Archivos modificados:** `tests/web/marca.test.ts`, `web/src/config/constants/marca.constants.ts`
-**Commit:** 2f4c6b1
-**Corrección aplicada:** Se siguió la opción "drop them" de la revisión, que coincide con el UI-SPEC (las rutas son constantes solo cuando las usa TS).
-- Se borraron `RUTA_FAVICON`, `FUENTES_AUTOALOJADAS` y `LICENCIAS_DE_FUENTES`, que solo usaba la prueba.
-- Las fuentes de verdad pasan a ser `global.css` para las `@font-face`, `index.html` para el favicon y las precargas, y `tokens.css` para `--marca`.
-- La prueba lee esos archivos. Verifica que cada fuente existe y es WOFF2, que hay una licencia OFL por familia y que cada precarga apunta a una `@font-face` declarada. También verifica que `apple-touch-icon` es el favicon y que `theme-color` es igual a `--marca`.
-- Hay una muestra negativa para una precarga huérfana y para un `theme-color` distinto.
-
-### WR-06: falsos negativos de los guardianes
-
-**Archivos modificados:** `tests/arquitectura-web.test.ts`, `docs/convenciones.md`, `docs/estructura.md`, `.claude/CLAUDE.md`
-**Commit:** ef3e17f
-**Corrección aplicada:** Las cuatro muestras negativas fallaron primero (RED) y después pasaron (GREEN).
-1. **W21:** `useSeleccion(x)` exige que `x` se importe de `@web/store/selectores.ts`. Un selector local o un alias que no venga de ahí se reporta. De paso se corrigió `SELECTOR_EN_LINEA`, que marcaba como "en línea" `useSeleccion( nombre )` cuando llevaba espacios.
-2. **W16/W13:** solo cuenta como hook el `usar-<c>.ts` de su propia carpeta de componente (`HOOK_EN_SU_CARPETA`). W13 rechaza además los `usar-*.ts` dentro de `features/<f>/estado/`.
-3. **W23:** `CODIGOS_DE_NEGOCIO` ya no es una lista a mano. Se deriva de cada `src/config/constants/*.constants.ts` así:
-   - todos los valores de cada familia `snake_case`, también las de transporte como `TIPO_EVENTO`;
-   - cada cadena exportada que es un código compuesto `snake_case` o `kebab-case`, como `CASO_GUION_PRD` y `TIPO_BLOQUEO_GUION`;
-   - menos una lista explícita de 12 palabras genéricas (`string`, `boolean`, `true`, `false`, `none`, `ok`, `error`, `text`, `lista`, `pendiente`, `envio` y `herramientas`).
-
-   Con esto, `{ tipo: "turn_end" }` y `"ec-corp-andina"` ya se reportan. El ejemplo de la revisión, `"fin_turno"`, no es un valor real; el valor de `TIPO_EVENTO.FIN_TURNO` es `"turn_end"`.
-
-## Hallazgos informativos corregidos
-
-### IN-01: código muerto y exportaciones que solo usaban las pruebas
-
-**Archivos modificados:** `web/src/config/constants/ui.constants.ts`, `web/src/config/strings.ts`, `web/src/styles/global.css`, `tests/web/estado-del-modelo.test.ts`, `docs/estructura.md`
-**Commit:** 487d04d
-**Corrección aplicada:** Se borraron `CLASE_GLOBAL.TRANSICION`, las dos reglas `.transicion`, `TEXTO_RESULTADO.etiqueta`, `TEXTO_CONFIRMACION.etiqueta`, `TEXTO_MODELO.estado` y `TEXTO_APP.fechaEjecucion`. La prueba ahora arma el texto con las piezas reales (`prefijoModelo` + `etiqueta`, `prefijoFecha` + `valorFecha`).
-
-### IN-02: `memoizarPorReferencia` trataba un `undefined` guardado como si no estuviera en caché
-
-**Archivos modificados:** `web/src/store/selectores.ts`, `tests/web/store/selectores.test.ts`
-**Commit:** b17978e
-**Corrección aplicada:** La caché guarda el valor envuelto (`{ valor }`), sin `as`. Se agregó primero una prueba en RED en la que una derivación que da `undefined` se calcula una sola vez.
-
-### IN-03: prefijo `use` en funciones que no son hooks
-
-**Archivos modificados:** `tarjeta-confirmacion.tsx`/`usar-tarjeta-confirmacion.ts`, `tarjeta-herramienta.tsx`/`usar-tarjeta-herramienta.ts`, `lista-archivos.tsx`/`usar-lista-archivos.ts`, `usar-bloque-caso.ts`
-**Commit:** 3bc2ff6
-**Corrección aplicada:** Se renombraron `usePilaConfirmaciones` → `tarjetasEnPila`, `useTarjetaHerramienta` → `controlTarjetaHerramienta` y `useFilaArchivo` → `controlFilaArchivo`. `useArchivos` pasa a llamarse `useListaArchivos`, el hook propio de su carpeta, que `useBloqueCaso` eleva. La función nueva de WR-04 se llama `controlAvisoDiscoEfimero` por la misma regla.
-
-### IN-04: el estado vacío pasaba el foco por un id global del DOM
-
-**Archivos modificados:** `web/src/store/acciones.ts`, `web/src/types/store.type.ts`, `web/src/types/ui.type.ts`, `usar-compositor.ts`, `compositor.tsx`, `usar-estado-vacio.ts`, `ui.constants.ts`, `tests/web/store/acciones.test.ts`
-**Commit:** 8c85b84
+**Archivos modificados:** `web/src/types/ui.type.ts`, `web/src/features/chat/estado/tarjeta-caso.ts`, `web/src/features/chat/tarjeta-caso/usar-tarjeta-caso.ts`, `tests/web/tarjeta-caso.test.ts`
+**Commit:** bdb52cf
 **Corrección aplicada:**
-- El almacén expone `registrarCampoDelMensaje` y `enfocarCampoDelMensaje`, con un tipo `CampoEnfocable` que no depende del DOM.
-- El compositor registra su `textarea` con `ref={registrarCampo}`, y el estado vacío llama a `enfocarCampoDelMensaje()` al desmontarse si tenía el foco.
-- Se borró `ID_CAMPO_MENSAJE`, y el campo usa `useId()`.
-- Se agregó una prueba unitaria de la acción. La prueba DOM del foco sigue pasando.
+- `datosDeTarjetaCaso` devuelve `{ cliente, pais: PaisDeTarjeta | null }`.
+- Se borraron `paisDe`, los campos `slug`, `pais`, `codigo` y `nombrePais` de `DatosTarjetaCaso`, y `ControlTarjetaCaso.slug`.
+- El tipo `Pais` se queda, porque lo usan `esPaisConocido` y `TEXTO_PAIS`.
+- La prueba se actualizó a la forma nueva. Además fija los cuatro nombres de país visibles.
 
-### IN-05: la carga de config del acceso usaba una señal que nadie podía abortar
+### IN-03: The preview dialog keeps the previous file's content across close and reopen
 
-**Archivos modificados:** `web/src/features/acceso/pantalla-acceso/usar-pantalla-acceso.ts`
-**Commit:** 25ca91f
-**Corrección aplicada:** Ahora el controlador se guarda en un ref y se aborta al desmontar la pantalla. `cambiarPendiente(false)` solo corre si la señal sigue viva, que es el caso de un 401 en config, porque la pantalla se queda.
+**Archivos modificados:** `web/src/types/ui.type.ts`, `web/src/features/archivos/dialogo-vista-previa/usar-dialogo-vista-previa.ts`
+**Commit:** 0487cc0
+**Corrección aplicada:** El estado del diálogo se guarda junto con la apertura a la que pertenece (`VistaPreviaDeApertura = { abierta, estado }`). El estado visible se deriva así: si lo guardado no corresponde a la `abierta` actual, se lee como `CARGANDO`. Por eso una reapertura muestra "cargando" desde su primer render, y ya no hace falta el `setEstado(VISTA_CARGANDO)` dentro del efecto. Una reapertura del mismo archivo también empieza en "cargando", igual que antes.
 
-### IN-06: el título del documento se escribía dos veces
+No se agregó una prueba propia. El cuadro intermedio con el contenido viejo no se puede observar de forma determinista con la red falsa, que responde al instante. La garantía es estructural, y las pruebas DOM de la vista previa (contenido, 404, 401 y la de WR-01) siguen en verde.
 
-**Archivos modificados:** `web/src/main.tsx`
-**Commit:** d5ce290
-**Corrección aplicada:** Se quitó `document.title = …`. El plugin `titulo-del-documento` de Vite queda como único mecanismo, en dev y en build, y lo prueba `marca.test.ts`.
+### IN-04: Props are mirrored into state through effects (extra render with stale UI)
 
-### IN-07: los puntos de quiebre estaban duplicados en `em` en el CSS
+**Archivos modificados:** `web/src/features/herramientas/grupo-herramientas/usar-grupo-herramientas.ts`, `web/src/features/disposicion/columnas/usar-columnas.ts` (y `usar-bloque-caso.ts`, ya en el commit de WR-01)
+**Commit:** a569137
+**Corrección aplicada:** Los tres `useEffect(() => setX(prop), [prop])` se reemplazaron por ajustes durante el render:
+- `useGrupoHerramientas` cierra el grupo cuando `cerrarAlTerminar` cambia a `true`, y recuerda el valor anterior en `cerrabaAlTerminar`.
+- `usePestanas` marca el panel como visto durante el render si se está viendo y su firma cambió.
+- `useBloqueCaso` quedó resuelto en WR-01.
 
-**Archivos modificados:** `pantalla-acceso.module.css`, `pantalla-carga.module.css`, `tests/arquitectura-web.test.ts`, `.claude/CLAUDE.md`, `docs/convenciones.md`
-**Commit:** 0e18e77
-**Corrección aplicada:** `@media (min-width: 40em)` pasa a `@media (min-width: 640px)`, que es igual a `CONSULTA_DE_ANCHO.MEDIO`. Se sumó el guardián **W25**: toda consulta de ancho de un `@media` es un valor de `CONSULTA_DE_ANCHO` y todo `[data-diseno="…"]` es un valor de `DISENO`. La muestra negativa cubre `em`, `max-width` y un diseño inventado. Estuvo en RED con las 2 líneas reales y después en GREEN. Con la fuente por defecto de 16 px no cambia nada visible.
+Ninguno pinta ya un cuadro con el estado viejo. En `web/src` solo queda un `useEffect` que llama a un setter, el temporizador de `usar-indicador-pensando.ts`, y ese no copia una prop.
 
-### IN-08: `LogoMarca` podía pintar `class="… undefined"`
+### IN-05: Icon switches are not exhaustive, unlike the class maps next to them
 
-**Archivos modificados:** `encabezado.tsx`, `aviso-modelo.tsx`, `tests/arquitectura-web.test.ts`, `.claude/CLAUDE.md`, `docs/convenciones.md`
-**Commit:** 43dc9cb
-**Corrección aplicada:** Se sumó el guardián **W26**: cada `estilos.<clase>` de una vista existe en su `.module.css`, y ninguna vista indexa el módulo con corchetes. Eso cubre `CLASE_POR_VARIANTE` y todos los `CLASE_DE_*`. Los dos accesos dinámicos `estilos[TONO_DEL_MODELO[…]]` pasaron a mapas `CLASE_DE_TONO` con nombre, y el compilador comprueba que el tono existe. La muestra negativa cubre una clase que falta y un acceso con corchetes.
-
-### IN-09: pausas fijas en las pruebas DOM
-
-**Archivos modificados:** `tests/web/dom/app.test.tsx`
-**Commit:** d42a262
-**Corrección aplicada:** Se quitaron las 5 llamadas `Bun.sleep(PAUSA_TRAS_SOLTAR_MS)` y la constante. Ahora las pruebas usan `await dom.act(async () => red.soltar())` y después `findBy*`. En la prueba de Detener, la ausencia del texto tardío no queda vacía: después de abortar, el flujo falso ya está en error y `soltar` no emite nada.
-
-### IN-10: deriva de estructura y documentación
-
-**Archivos modificados:** `web/src/api/cliente-api.ts`, `web/src/features/sesion/estado/hidratacion.ts`, `tests/web/hidratacion.test.ts`, `tests/arquitectura-web.test.ts`, `.claude/CLAUDE.md`, `docs/convenciones.md`
-**Commit:** 2169bcc
+**Archivos modificados:** `web/src/types/ui.type.ts`, `web/src/features/casos/progreso-caso/progreso-caso.tsx`, `web/src/features/herramientas/tarjeta-herramienta/tarjeta-herramienta.tsx`, `web/src/features/encabezado/aviso-modelo/aviso-modelo.tsx`
+**Commit:** 1ef17b7
 **Corrección aplicada:**
-- `sigueOcupada` se mudó a `api/cliente-api.ts`, porque solo inspecciona el resultado de la API.
-- Se sumó el guardián **W27**: `web/src/api/` no importa `features/`, `store/` ni `compartido/`. Tiene muestra negativa y estuvo en RED con la importación real.
-- `CLAUDE.md` describe `compartido/` como `aviso`, `iconos` y `logo-marca`.
+- Los `switch` con `default` se reemplazaron por mapas `ICONO_DE_ESTADO` con `as const satisfies Record<EstadoEtapa | EstadoHerramienta, ComponenteIcono>`. `ComponenteIcono` es un tipo nuevo en `ui.type.ts`.
+- El ícono "en curso" (giro + reloj) pasó a ser un componente con nombre en cada vista.
+- En la tarjeta de herramienta, la envoltura toma la clase de `CLASE_DE_ESTADO`, así que el DOM resultante es el mismo de antes.
+- `CLASE_DE_TONO` de `aviso-modelo.tsx` ahora `satisfies Record<TonoDelAvisoModelo, string | undefined>`, donde `TonoDelAvisoModelo = (typeof TONO_DEL_MODELO)[EstadoModeloConAviso]`.
+
+Si se agrega un estado nuevo y no tiene ícono o clase, el código no compila.
+
+### IN-06: Views still make decisions that belong in their hooks
+
+**Archivos modificados:** `web/src/types/ui.type.ts`, `acciones-rapidas.tsx`/`usar-acciones-rapidas.ts`, `tarjeta-resultado.tsx`/`usar-tarjeta-resultado.ts`, `tarjeta-herramienta.tsx`/`usar-tarjeta-herramienta.ts`, `encabezado.tsx`/`usar-encabezado.ts`, `lista-archivos.tsx`/`usar-lista-archivos.ts`
+**Commit:** a27b8cb
+**Corrección aplicada:** Los hooks devuelven valores listos para enlazar, y las vistas solo los enlazan. Ninguna vista decide ya habilitación, etiquetas cortas, visibilidad ni variantes.
+
+| Componente | Valores que devuelve el hook ahora |
+|---|---|
+| Acciones rápidas | `todosDeshabilitado`, y `demo` y `todos` como `TextosDeChip { texto, etiqueta }`, armados por `textosDeChip(corta, completo, corto)`. Se fueron `corta` y `cantidadCasos` del control. |
+| Tarjeta de resultado | `bloqueosVisibles`, que reemplaza a `paqueteArmado` |
+| Tarjeta de herramienta | `resumen`, `resultado` y `codigoVisible`, que reemplazan a `fallida` |
+| Encabezado | `varianteLogo`, junto a `clasePrefijo`, así que toda la lógica de `angosto` vive en el hook |
+| Lista de archivos | `vacia` en `ControlArchivos` |
+
+### IN-07: Quick actions and the "procesar de nuevo" chip stay enabled during hydration, and their clicks are silently dropped
+
+**Archivos modificados:** `web/src/store/selectores.ts`, `tests/web/store/selectores.test.ts`, `tests/web/store/app-con-almacen.test.tsx`
+**Commit:** 7038e5c
+**Estado:** corregido, **requiere verificación humana** (cambia lógica de estado visible: los chips se ven deshabilitados mientras se hidrata)
+**Corrección aplicada:** Se aplicó la corrección mínima que pide la revisión: `seleccionarEnvioDeshabilitado` = `enCurso || hidratando || envioEnPausa`. Es la misma guarda que ya aplican `iniciarTurno` y el compositor. Afecta a los chips de acción rápida, a las tarjetas de caso y al chip "procesar de nuevo".
+
+Los flujos no cambian. Antes, esos clics durante la hidratación ya se descartaban en silencio; ahora el botón se ve deshabilitado.
+
+Primero se escribieron dos pruebas, y ambas fallaron (RED):
+- una prueba de selector: una sesión guardada (hidratando) deja el envío deshabilitado, y una sesión nueva no;
+- una prueba DOM: después de un turno se llama a `recargar()` del almacén y los chips "Listar" quedan deshabilitados mientras `hidratando`. Al terminar la hidratación vuelven a habilitarse.
+
+### IN-08: A login that succeeds, followed by a 401 on `/api/config`, fails silently
+
+**Archivos modificados:** `web/src/types/store.type.ts`, `web/src/store/acciones.ts`, `web/src/features/acceso/pantalla-acceso/usar-pantalla-acceso.ts`, `tests/helpers/types/red-web.type.ts`, `tests/helpers/red-web.helper.ts`, `tests/web/dom/app-acceso.test.tsx`, `tests/web/store/acciones.test.ts`
+**Commit:** a40ff20
+**Estado:** corregido, **requiere verificación humana** (agrega un mensaje visible en un camino de error)
+**Corrección aplicada:** Se eligió la variante "solo después del login" de la revisión, porque es la que no cambia el flujo de la primera visita.
+- `cargarConfig` devuelve su `ResultadoApi<ConfigResponse>`, y sigue despachando igual que antes.
+- `usePantallaAcceso` revisa ese resultado después de un código aceptado. Si es `ACCESO_VENCIDO`, muestra el `mensaje` del servidor en el error del campo (`aria-invalid`) y devuelve el foco al campo.
+- `accionDeConfig` no se tocó. El 401 de la primera carga, sin cookie, sigue mostrando la pantalla de acceso sin aviso. La prueba existente ahora lo fija de forma explícita: sin `aria-invalid` y sin el texto `accesoVencido`.
+
+La red falsa de pruebas tiene una opción nueva, `cookieDescartada`: el código correcto recibe 204 pero el acceso no queda concedido, que es justo el caso de la revisión. La prueba DOM nueva falló primero (RED) y después pasó.
+
+### IN-09: The root id and the global classes are copied by hand, and a mismatch fails silently
+
+**Archivos modificados:** `web/src/main.tsx`, `web/src/config/strings.ts`, `tests/web/marca.test.ts`
+**Commit:** deb0194
+**Corrección aplicada:**
+- `main.tsx` lanza `new Error(TEXTO_APP.raizAusente)` si falta la raíz, en lugar de dejar la página en blanco. El texto vive en `strings.ts` y se deriva de `ID_RAIZ`.
+- `marca.test.ts` comprueba tres cosas: que `index.html` lleva `id="${ID_RAIZ}"`, que `global.css` estiliza `#${ID_RAIZ}` (sin aceptar `#root-x`) y que define `.${clase}` para cada valor de `CLASE_GLOBAL`.
+- Hay muestras negativas para un id distinto en el HTML, para un selector parecido en el CSS y para `.sr-only` renombrado.
+
+### IN-10: Hook API churn and inconsistency in the small `control*` helpers
+
+**Archivos modificados:** `web/src/types/ui.type.ts`, `web/src/features/disposicion/barra-pestanas/usar-barra-pestanas.ts`, `web/src/features/archivos/lista-archivos/usar-lista-archivos.ts`, `web/src/features/archivos/lista-archivos/lista-archivos.tsx`
+**Commit:** 6a9d4e2
+**Corrección aplicada:**
+- `useBarraPestanas` arma una sola vez, con el inicializador perezoso de `useState`, un callback ref por pestaña: `registroDe(botones, pestana)`. Lo guarda en un objeto que `satisfies Record<Pestana, RegistroDeBoton>`. Así React no desengancha y vuelve a enganchar los botones en cada render. `RegistroDeBoton` es un tipo nuevo, que también usa `PestanaEnBarra.registrar`.
+- `controlFilaArchivo` recibe `PropsFilaArchivo`, como `controlAvisoDiscoEfimero(props)` y los demás. La vista le pasa sus props tal cual.
+
+La navegación con flechas entre pestañas sigue cubierta por las pruebas DOM de `app-angosto`, que están en verde.
 
 ## Notas para quien revise
 
-- **WR-03** cambia un texto visible y lleva `requires human verification`. Conviene revisarlo con Playwright, cortando `/api/config` después del login. Contradecía la fila `error` anterior del UI-SPEC, que se actualizó en el mismo commit porque así lo pidió la usuaria.
-- Los guardianes del front pasan de W1–W23 a **W1–W27**: W24 son los manejadores en línea, W25 el diseño en el CSS, W26 las clases de los módulos CSS y W27 la api transversal. `CLAUDE.md` y `docs/convenciones.md` ya lo reflejan.
-- No se tocó `reto-01/`.
+- **Requieren verificación humana:**
+  - **WR-01**: la vista previa abierta y el bloque que no se pliega. Conviene probarlo con Playwright durante "Procesar los 4 casos".
+  - **IN-07**: los chips se ven deshabilitados durante Detener/Recargar.
+  - **IN-08**: el mensaje después del login cuando la cookie no queda guardada.
+
+  Las tres cambian lógica de estado. Las pruebas cubren lo estructural, no la intención.
+- Ningún hallazgo se omitió. IN-07 e IN-08 se corrigieron con la variante mínima, y los flujos siguen iguales: en IN-08 el primer 401 sigue en silencio.
+- Los guardianes del front siguen siendo W1–W27. Solo se ampliaron W4, W20 y W24, y `CLAUDE.md` y `docs/convenciones.md` ya lo reflejan.
+- `.planning/config.json` ya estaba modificado antes de esta corrida y no se tocó.
 
 ---
 
-_Corregido: 2026-10-16T20:36:49Z_
+_Corregido: 2026-10-16T21:36:31Z_
 _Corrector: Claude (gsd-code-fixer)_
-_Iteración: 1_
+_Iteración: 2_
