@@ -121,6 +121,10 @@
     color var(--duracion-transicion) ease;
 }
 
+.iconoNuevaSesion {
+  display: none;
+}
+
 .nuevaSesion:active:not(:disabled) {
   background: var(--marca-elevada);
 }
@@ -166,4 +170,20 @@
 :global([data-diseno="angosto"]) .modelo {
   min-height: 0;
   padding: var(--espacio-xs) var(--espacio-sm);
+}
+
+:global([data-diseno="angosto"]) .fecha {
+  flex: none;
+}
+
+:global([data-diseno="angosto"]) .nuevaSesion {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: var(--alto-control);
+  padding-inline: 0;
+}
+
+:global([data-diseno="angosto"]) .iconoNuevaSesion {
+  display: inline-flex;
 }

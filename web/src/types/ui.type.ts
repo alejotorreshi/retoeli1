@@ -283,7 +283,7 @@ export type ControlEncabezado = {
   readonly salud: SaludModelo | null;
   readonly nuevaSesionDeshabilitada: boolean;
   readonly abrirNuevaSesion: () => void;
-  readonly clasePrefijo: string | undefined;
+  readonly claseOcultaEnAngosto: string | undefined;
   readonly varianteLogo: VarianteLogo;
 };
 
@@ -324,7 +324,7 @@ export type PropsCuerpoAvisoModelo = {
 
 export type PropsEstadoDelModelo = {
   readonly salud: SaludModelo;
-  readonly clasePrefijo: string | undefined;
+  readonly claseOcultaEnAngosto: string | undefined;
 };
 
 export type PropsPantallaAcceso = {

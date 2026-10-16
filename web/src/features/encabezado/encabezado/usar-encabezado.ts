@@ -4,7 +4,7 @@ import { seleccionarEnCurso, seleccionarFechaEjecucion, seleccionarSalud } from 
 import { useAcciones, useSeleccion } from "@web/store/usar-almacen.ts";
 import type { ControlEncabezado } from "@web/types/ui.type.ts";
 
-function clasePrefijo(angosto: boolean): string | undefined {
+function claseOcultaEnAngosto(angosto: boolean): string | undefined {
   return angosto ? CLASE_GLOBAL.OCULTO : undefined;
 }
 
@@ -18,7 +18,7 @@ export function useEncabezado(angosto: boolean): ControlEncabezado {
     salud,
     nuevaSesionDeshabilitada,
     abrirNuevaSesion,
-    clasePrefijo: clasePrefijo(angosto),
+    claseOcultaEnAngosto: claseOcultaEnAngosto(angosto),
     varianteLogo: angosto ? VARIANTE_LOGO.ENCABEZADO_ANGOSTO : VARIANTE_LOGO.ENCABEZADO,
   };
 }

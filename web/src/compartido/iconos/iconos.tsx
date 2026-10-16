@@ -58,6 +58,14 @@ export function IconoChevron({ tamano = TAMANO_ICONO.CHICO }: PropsIcono) {
   );
 }
 
+export function IconoMas({ tamano = TAMANO_ICONO.CHICO }: PropsIcono) {
+  return (
+    <SvgIcono tamano={tamano}>
+      <path d="M12 5v14M5 12h14" />
+    </SvgIcono>
+  );
+}
+
 export function IconoDescargar({ tamano = TAMANO_ICONO.CHICO }: PropsIcono) {
   return (
     <SvgIcono tamano={tamano}>
