@@ -176,7 +176,7 @@ bun run preflight -- --url https://registro-proveedor-bfnt.onrender.com --guion
 
 ## Módulo reutilizable
 
-`modulo/` empaqueta el agente para otro host de agentes sin este servidor (PRD §9.4): `agent.md` (frontmatter de OpenCode más el prompt), `skill/registro-proveedor/SKILL.md` (el conocimiento del proceso) y `tools/proveedor.ts` (los mismos objetos de las herramientas de la aplicación). `bun run modulo` regenera `agent.md` y `SKILL.md` desde `agent/prompt.md` y `src/knowledge/`, y una prueba falla si lo commiteado no coincide. `opencode.json` registra el agente y la skill, y `.opencode/tools/proveedor.ts` enlaza las herramientas para que OpenCode las vea como `proveedor_<export>`. Los detalles y límites están en [modulo/README.md](modulo/README.md).
+`modulo/` empaqueta el agente para otro host de agentes sin este servidor (PRD §9.4): `agent.md` (frontmatter de OpenCode más el prompt), `skill/registro-proveedor/SKILL.md` (el conocimiento del proceso) y `tools/proveedor.ts` (los mismos objetos de las herramientas de la aplicación). `bun run modulo` regenera `agent.md` y `SKILL.md` desde `agent/prompt.md` y `src/knowledge/`, y una prueba falla si lo commiteado no coincide. `.gitattributes` fija LF en todo el repositorio, así que esa comparación byte a byte también vale en un checkout de Windows con `core.autocrlf`. `opencode.json` registra el agente y la skill, y `.opencode/tools/proveedor.ts` enlaza las herramientas para que OpenCode las vea como `proveedor_<export>`. Los detalles y límites están en [modulo/README.md](modulo/README.md).
 
 ## Despliegue
 

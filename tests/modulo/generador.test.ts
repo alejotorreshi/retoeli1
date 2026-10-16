@@ -98,6 +98,25 @@ async function existeModulo(raiz: string): Promise<boolean> {
   return (await readdir(raiz)).includes(DIRECTORIO_MODULO);
 }
 
+describe("los finales de línea no rompen la igualdad byte a byte (WR-02)", () => {
+  const RUTAS_COMPARADAS = [RUTA_PROMPT, RUTA_CONOCIMIENTO, RUTA_AGENTE, RUTA_SKILL];
+  const RETORNO_DE_CARRO = 0x0d;
+  const EOL_LF = "eol: lf";
+
+  test(".gitattributes fija LF en las fuentes y en lo generado, también en un checkout de Windows", () => {
+    const consulta = Bun.spawnSync(["git", "check-attr", "eol", "--", ...RUTAS_COMPARADAS], { cwd: RAIZ });
+    expect(consulta.exitCode).toBe(0);
+    const lineas = consulta.stdout.toString().trim().split("\n");
+    expect(lineas).toEqual(RUTAS_COMPARADAS.map((ruta) => `${ruta}: ${EOL_LF}`));
+  });
+
+  test("ninguna fuente ni archivo generado trae CRLF", async () => {
+    for (const ruta of RUTAS_COMPARADAS) {
+      expect((await leerBytes(ruta)).includes(RETORNO_DE_CARRO)).toBe(false);
+    }
+  });
+});
+
 describe("modulo/agent.md sale del generador (MOD-01, MOD-02)", () => {
   test("el archivo commiteado es byte a byte la salida del generador", async () => {
     expect(iguales(await leerBytes(RUTA_AGENTE), await generado(RUTA_AGENTE))).toBe(true);
