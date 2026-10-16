@@ -309,6 +309,18 @@ function violacionesDeEstilosAjenos(ruta: string, codigo: string): string[] {
     );
 }
 
+function violacionesDeApiTransversal(ruta: string, codigo: string): string[] {
+  return [ruta, codigo].filter(() => false);
+}
+
+function violacionesDeValoresMagicos(ruta: string, codigo: string): string[] {
+  return [ruta, codigo].filter(() => false);
+}
+
+function violacionesDePrimitivasDelAlmacen(ruta: string, codigo: string): string[] {
+  return [ruta, codigo].filter(() => false);
+}
+
 function violacionesDeUbicacion(ruta: string): string[] {
   return UBICACIONES_WEB.some((patron) => patron.test(ruta))
     ? []
@@ -403,6 +415,27 @@ describe("guardián de web/ sobre el código real", () => {
       expect(listarModulosCss()).toContain(`${vista.slice(0, -".tsx".length)}${MODULO_CSS}`);
     }
     expect(sobreElCodigo(violacionesDeEstilosAjenos)).toEqual([]);
+  });
+  test("W16: la carpeta api solo la importan los hooks usar-*.ts, el almacén y la propia api", () => {
+    const importadores = listarCodigoWeb().filter((ruta) =>
+      extraerImportacionesConTipo(leer(ruta)).some(({ especificador }) =>
+        especificador.startsWith(`${ALIAS_WEB}api/`),
+      ),
+    );
+    expect(importadores).toContain("web/src/store/dependencias.ts");
+    expect(sobreElCodigo(violacionesDeApiTransversal)).toEqual([]);
+  });
+
+  test("W18: las vistas no llevan números mágicos, style= ni colores sueltos", () => {
+    expect(listarCodigoWeb().filter((ruta) => VISTA.test(ruta)).length).toBeGreaterThan(0);
+    expect(sobreElCodigo(violacionesDeValoresMagicos)).toEqual([]);
+  });
+
+  test("W20: createContext, useContext, useReducer y useSyncExternalStore viven en web/src/store", () => {
+    expect(
+      violacionesDePrimitivasDelAlmacen("web/src/hooks/usar-diseno.ts", leer("web/src/hooks/usar-diseno.ts")),
+    ).toEqual([]);
+    expect(sobreElCodigo(violacionesDePrimitivasDelAlmacen)).toEqual([]);
   });
 });
 
@@ -713,6 +746,74 @@ describe("el guardián de web/ muerde sobre fuentes de muestra", () => {
     expect(violacionesDeEstilosAjenos("web/src/features/chat/x/usar-x.ts", codigo)).toEqual([
       "web/src/features/chat/x/usar-x.ts: un .ts no importa un módulo CSS @web/features/chat/x/x.module.css",
       "web/src/features/chat/x/usar-x.ts: un .ts no importa un módulo CSS @web/features/chat/y/y.module.css",
+    ]);
+  });
+  test("W16: reporta la api importada desde un estado de feature o una vista", () => {
+    const codigo = 'import { obtenerConfig } from "@web/api/cliente-api.ts";\n';
+    expect(violacionesDeApiTransversal("web/src/features/chat/estado/x.ts", codigo)).toEqual([
+      "web/src/features/chat/estado/x.ts: solo los hooks usar-*.ts y el almacén importan @web/api/cliente-api.ts",
+    ]);
+    expect(violacionesDeApiTransversal("web/src/features/chat/x/x.tsx", codigo)).toEqual([
+      "web/src/features/chat/x/x.tsx: solo los hooks usar-*.ts y el almacén importan @web/api/cliente-api.ts",
+    ]);
+    for (const ruta of [
+      "web/src/features/chat/x/usar-x.ts",
+      "web/src/store/dependencias.ts",
+      "web/src/api/flujo-chat.ts",
+      "web/src/components/x.tsx",
+      "web/src/hooks/usar-x.ts",
+    ]) {
+      expect(violacionesDeApiTransversal(ruta, codigo)).toEqual([]);
+    }
+  });
+
+  test("W18: reporta números mágicos, style= y colores en una vista, y acepta una vista limpia", () => {
+    const sucia = [
+      "export function X() {",
+      "  return (",
+      "    <svg width={24} style={{ color: tono }}>",
+      '      <path fill="#fff" d="M20 6 9 17l-5-5" />',
+      "    </svg>",
+      "  );",
+      "}",
+    ].join("\n");
+    const vista = "web/src/features/chat/x/x.tsx";
+    expect(violacionesDeValoresMagicos(vista, sucia)).toEqual([
+      `${vista}:3: número mágico en la vista; va en config/constants`,
+      `${vista}:3: la vista usa style=; los estilos van en su módulo CSS`,
+      `${vista}:4: color suelto en la vista; usa un token de tokens.css`,
+    ]);
+    const limpia = [
+      "export function X() {",
+      "  return (",
+      "    <p data-x={0} tabIndex={-1}>",
+      "      {TEXTO.a}",
+      '      <path d="M20 6 9 17l-5-5" />',
+      ["      {`$", "{TEXTO.b} 42`}"].join(""),
+      "    </p>",
+      "  );",
+      "}",
+    ].join("\n");
+    expect(violacionesDeValoresMagicos(vista, limpia)).toEqual([]);
+    expect(violacionesDeValoresMagicos("web/src/features/chat/x/usar-x.ts", sucia)).toEqual([]);
+  });
+
+  test("W20: reporta las primitivas del almacén fuera de web/src/store", () => {
+    const codigo =
+      'import { createContext, useContext, useReducer, useSyncExternalStore, type ReactNode } from "react";\n';
+    expect(violacionesDePrimitivasDelAlmacen("web/src/features/chat/x/usar-x.ts", codigo)).toEqual([
+      "web/src/features/chat/x/usar-x.ts: createContext de react solo vive en web/src/store",
+      "web/src/features/chat/x/usar-x.ts: useContext de react solo vive en web/src/store",
+      "web/src/features/chat/x/usar-x.ts: useReducer de react solo vive en web/src/store",
+      "web/src/features/chat/x/usar-x.ts: useSyncExternalStore de react solo vive en web/src/store",
+    ]);
+    expect(violacionesDePrimitivasDelAlmacen("web/src/store/usar-almacen.ts", codigo)).toEqual([]);
+    expect(
+      violacionesDePrimitivasDelAlmacen("web/src/features/disposicion/columnas/usar-columnas.ts", codigo),
+    ).toEqual([
+      "web/src/features/disposicion/columnas/usar-columnas.ts: createContext de react solo vive en web/src/store",
+      "web/src/features/disposicion/columnas/usar-columnas.ts: useContext de react solo vive en web/src/store",
+      "web/src/features/disposicion/columnas/usar-columnas.ts: useReducer de react solo vive en web/src/store",
     ]);
   });
 });
