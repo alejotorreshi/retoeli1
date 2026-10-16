@@ -84,6 +84,11 @@ Contraste medido: neón sobre blanco 1.31:1 (**prohibido para texto o controles 
 - **D-121:** Los textos siguen en un **único `web/src/config/strings.ts`** (regla vigente de CLAUDE.md y W).
 - **D-122:** **`web/src/api/` es transversal**. Solo la importan los hooks `usar-*.ts` y el store, nunca una vista `.tsx`, y un guardián W lo exige. `sesion-local.ts` sigue siendo el único lugar con `localStorage`.
 
+### Limpieza extra del front (pedido de la usuaria durante la ejecución, 2026-10-16)
+La usuaria pidió "que el código sea muy muy limpio" y aprobó sumar estos dos guardianes, cada uno con su prueba negativa, en el plan 05-07 (reglas y docs):
+- **D-123:** **Condicionales contra constantes en el front.** En `web/src`, toda comparación (`===`, `!==`), `case`, asignación de discriminante y retorno de un código o estado usa el objeto `as const` (por ejemplo `ESTADO_ACCESO.PEDIDO`, `TONO_CONTADOR.TENUE`) y nunca el string literal. Es el equivalente en el front de G15 y de la regla de CLAUDE.md "Códigos y estados son objetos `as const`". Quedan fuera los literales de `config/strings.ts` y `config/constants/**`, donde nacen los valores. — **Reversibility:** reversible
+- **D-124:** **El front no reimplementa reglas de negocio.** El servidor es la autoridad: valida con zod, exige el código de acceso y hace cumplir la confirmación (RN4). El front solo presenta lo que recibe y nunca decide un estado de negocio por su cuenta (por ejemplo "listo para firma", "faltante" o "requiere confirmación"). Lo hace cumplir un guardián: los códigos de negocio del backend (`src/config/constants/**`, por ejemplo los estados de campo y de paquete y los tipos de acción) no aparecen como literales copiados en `web/src`, sino importados como constantes compartidas de la config pura, que es la única fuente de verdad. A eso se suma W3, que impide importar dominio, aplicación, herramientas o loop. — **Reversibility:** reversible
+
 ### Claude's Discretion
 - El tono exacto de los colores de estado (D-110), los tamaños de la escala tipográfica y la jerarquía, siempre que pasen AA y respeten la paleta de Periferia.
 - El aspecto de las tarjetas de caso (disposición en grilla, hover y foco) y de la pantalla de acceso con la marca.
