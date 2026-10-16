@@ -1,0 +1,22 @@
+.logo {
+  display: block;
+  flex: none;
+  width: auto;
+  max-width: 100%;
+  color: var(--sobre-marca);
+  font-family: var(--fuente-base);
+  font-size: var(--etiqueta-tamano);
+  font-weight: var(--etiqueta-peso-fuerte);
+}
+
+.encabezado {
+  height: var(--alto-logo-encabezado);
+}
+
+.encabezadoAngosto {
+  height: var(--alto-logo-encabezado-angosto);
+}
+
+.acceso {
+  height: var(--alto-logo-acceso);
+}

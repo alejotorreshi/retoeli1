@@ -1,3 +1,4 @@
+import type { VARIANTE_LOGO } from "@web/config/constants/marca.constants.ts";
 import type {
   DISENO,
   PESTANA,
@@ -245,6 +246,12 @@ export type ControlCompositor = {
   readonly alEnviarFormulario: (evento: FormEvent<HTMLFormElement>) => void;
   readonly alPresionarTecla: (evento: KeyboardEvent<HTMLTextAreaElement>) => void;
   readonly alDetener: () => void;
+};
+
+export type VarianteLogo = ValorDe<typeof VARIANTE_LOGO>;
+
+export type PropsLogoMarca = {
+  readonly variante: VarianteLogo;
 };
 
 export type PropsEncabezado = {

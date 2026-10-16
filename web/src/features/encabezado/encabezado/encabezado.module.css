@@ -13,8 +13,8 @@
 .marca {
   display: flex;
   flex-wrap: wrap;
-  align-items: baseline;
-  gap: 0 var(--espacio-sm);
+  align-items: center;
+  gap: 0 var(--espacio-md);
   min-width: 0;
 }
 
@@ -26,12 +26,12 @@
   color: var(--texto);
 }
 
-.separador,
-.subtitulo {
-  margin: 0;
-  font-size: var(--etiqueta-tamano);
-  line-height: var(--etiqueta-interlinea);
-  color: var(--texto-tenue);
+.divisor {
+  flex: none;
+  align-self: center;
+  width: var(--ancho-divisor-marca);
+  height: var(--alto-divisor-marca);
+  background: var(--neon);
 }
 
 .meta {
@@ -121,10 +121,6 @@
 
 :global([data-diseno="angosto"]) .marca {
   flex-basis: 100%;
-}
-
-:global([data-diseno="angosto"]) .separador {
-  display: none;
 }
 
 :global([data-diseno="angosto"]) .meta {

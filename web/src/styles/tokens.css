@@ -35,6 +35,8 @@
   --texto-tenue: #57606a;
   --borde: #d0d7de;
   --acento-suave: #eaf1fb;
+  --sobre-marca: #ffffff;
+  --neon: #6dfd8c;
 
   --exito-texto: #1a6b41;
   --exito-fondo: #eaf6ef;
@@ -70,6 +72,11 @@
   --icono-grande: 20px;
   --punto-estado: 8px;
   --tamano-oculto: 1px;
+  --alto-logo-encabezado: 32px;
+  --alto-logo-encabezado-angosto: 24px;
+  --alto-logo-acceso: 40px;
+  --ancho-divisor-marca: 1px;
+  --alto-divisor-marca: 24px;
 
   --foco-ancho: 2px;
   --foco-separacion: 2px;

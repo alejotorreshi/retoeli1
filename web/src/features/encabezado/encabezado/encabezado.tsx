@@ -1,3 +1,5 @@
+import { LogoMarca } from "@web/compartido/logo-marca/logo-marca.tsx";
+import { VARIANTE_LOGO } from "@web/config/constants/marca.constants.ts";
 import { TONO_DEL_MODELO } from "@web/config/constants/ui.constants.ts";
 import { TEXTO_APP, TEXTO_MODELO, TEXTO_NUEVA_SESION } from "@web/config/strings.ts";
 import estilos from "@web/features/encabezado/encabezado/encabezado.module.css";
@@ -23,11 +25,9 @@ export function Encabezado({ angosto }: PropsEncabezado) {
   return (
     <header className={estilos.encabezado}>
       <div className={estilos.marca}>
+        <LogoMarca variante={angosto ? VARIANTE_LOGO.ENCABEZADO_ANGOSTO : VARIANTE_LOGO.ENCABEZADO} />
+        <span className={estilos.divisor} aria-hidden="true" />
         <h1 className={estilos.titulo}>{TEXTO_APP.titulo}</h1>
-        <span className={estilos.separador} aria-hidden="true">
-          {TEXTO_APP.separador}
-        </span>
-        <p className={estilos.subtitulo}>{TEXTO_APP.subtitulo}</p>
       </div>
       <div className={estilos.meta}>
         <p className={estilos.fecha}>

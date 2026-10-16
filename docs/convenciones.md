@@ -56,7 +56,7 @@ Reglas sin número del mismo archivo, cada una con su prueba de violación:
 | W5 | Sin `dangerouslySetInnerHTML` ni `innerHTML`. | El texto del modelo nunca se interpreta como HTML. |
 | W6 | Sin `import.meta.env`. | El bundle es público y no debe cargar configuración secreta. |
 | W7 | Sin `sessionStorage`, y `localStorage` solo en `sesion-local.ts` para el `sessionId`. | El código de acceso nunca queda en el navegador. |
-| W8 | Todo texto visible vive en `web/src/config/strings.ts`. | El mismo motivo que G8. |
+| W8 | Todo texto visible vive en `web/src/config/strings.ts`, también el de `web/index.html`: su `<title>` llega en el build desde `TEXTO_APP.tituloDocumento` por el marcador de `marca.constants.ts`. | El mismo motivo que G8. |
 | W9 | Sin `enum` de TypeScript. | El mismo motivo que G7. |
 | W10 | Los tipos exportados viven en `web/src/types/*.type.ts`, que solo tienen tipos. | El mismo motivo que G3 y G4. |
 | W11 | Las regex viven en `web/src/config/constants/patterns.constants.ts`. | El mismo motivo que G11. |
