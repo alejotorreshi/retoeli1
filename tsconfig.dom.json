@@ -26,7 +26,7 @@
     }
   },
   "include": [
-    "tests/web/dom",
+    "tests/**/*.tsx",
     "tests/helpers/dom.helper.ts",
     "tests/helpers/app-dom.helper.ts",
     "tests/helpers/types/dom.type.ts"
