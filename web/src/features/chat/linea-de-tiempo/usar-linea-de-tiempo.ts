@@ -5,6 +5,7 @@ import {
   debeSeguirAlFinal,
   reducirSeguimiento,
   seguimientoInicial,
+  volvioAlVacio,
 } from "@web/features/chat/estado/seguimiento.ts";
 import { tarjetasDelTurno } from "@web/features/confirmacion/estado/confirmaciones.ts";
 import {
@@ -30,6 +31,10 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react
 
 function distanciaAlFinal(zona: HTMLElement): number {
   return zona.scrollHeight - zona.scrollTop - zona.clientHeight;
+}
+
+function subirAlInicio(desplazable: HTMLElement): void {
+  desplazable.scrollTop = 0;
 }
 
 export function useLineaDeTiempo(): ControlLineaDeTiempo {
@@ -84,11 +89,18 @@ export function useLineaDeTiempo(): ControlLineaDeTiempo {
   }, [despachar, seguirAlFinal]);
 
   useLayoutEffect(() => {
-    const crecio = turnos.length > turnosVistos.current;
+    const anteriores = turnosVistos.current;
     turnosVistos.current = turnos.length;
-    if (!crecio || zona.current === null) return;
+    const desplazable = zona.current;
+    if (desplazable === null) return;
+    if (volvioAlVacio(anteriores, turnos.length)) {
+      despachar({ tipo: SENAL_SEGUIMIENTO.VACIO });
+      subirAlInicio(desplazable);
+      return;
+    }
+    if (turnos.length <= anteriores) return;
     despachar({ tipo: SENAL_SEGUIMIENTO.ENVIO });
-    seguirAlFinal(zona.current);
+    seguirAlFinal(desplazable);
   }, [turnos.length, despachar, seguirAlFinal]);
 
   function alDesplazar(evento: SyntheticEvent<HTMLElement>): void {

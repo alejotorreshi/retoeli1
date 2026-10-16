@@ -86,7 +86,8 @@ export type SenalSeguimiento =
       readonly turnos: number;
     }
   | { readonly tipo: typeof SENAL_SEGUIMIENTO.ENVIO }
-  | { readonly tipo: typeof SENAL_SEGUIMIENTO.IR_AL_FINAL };
+  | { readonly tipo: typeof SENAL_SEGUIMIENTO.IR_AL_FINAL }
+  | { readonly tipo: typeof SENAL_SEGUIMIENTO.VACIO };
 
 export type PropsAvisoInicial = {
   readonly aviso: AvisoDeSesion;

@@ -70,6 +70,10 @@ function crecer(estado: EstadoSeguimiento, distancia: number, turnos: number): E
   return conCambios(estado, { ...estado, contenidoNuevo: true, distancia });
 }
 
+export function volvioAlVacio(anteriores: number, actuales: number): boolean {
+  return hayTurnos(anteriores) && !hayTurnos(actuales);
+}
+
 export function debeSeguirAlFinal(estado: EstadoSeguimiento, turnos: number): boolean {
   return hayTurnos(turnos) && estado.pegado;
 }
@@ -85,5 +89,7 @@ export function reducirSeguimiento(estado: EstadoSeguimiento, senal: SenalSeguim
     case SENAL_SEGUIMIENTO.ENVIO:
     case SENAL_SEGUIMIENTO.IR_AL_FINAL:
       return volverAlFinal(estado);
+    case SENAL_SEGUIMIENTO.VACIO:
+      return conCambios(estado, seguimientoInicial);
   }
 }

@@ -90,6 +90,7 @@ export const SENAL_SEGUIMIENTO = {
   CRECIMIENTO: "crecimiento",
   ENVIO: "envio",
   IR_AL_FINAL: "ir_al_final",
+  VACIO: "vacio",
 } as const;
 
 export const MARGEN_AVISO_CONTADOR = 200;
