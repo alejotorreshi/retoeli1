@@ -146,6 +146,16 @@ describe("App en escritorio: panel de casos y archivos", () => {
     expect(await pantalla.findByText(MENSAJE_HTTP.accesoVencido)).toBeDefined();
   });
 
+  test("un 401 al pedir la vista previa devuelve a la pantalla de acceso con el aviso del servidor", async () => {
+    const { pantalla, usuario } = await procesarCaso(ACCESO_VENCIDO);
+    const ver = await pantalla.findByRole("button", { name: TEXTO_ARCHIVOS.verArchivo(ARCHIVO.nombre) });
+
+    await usuario.click(ver);
+
+    expect(await pantalla.findByRole("heading", { name: TEXTO_ACCESO.titulo })).toBeDefined();
+    expect(await pantalla.findByText(MENSAJE_HTTP.accesoVencido)).toBeDefined();
+  });
+
   test("un caso hecho sin sus archivos en disco muestra el aviso de reinicio y su chip lo vuelve a procesar", async () => {
     const red = crearRedWeb({
       nativos: dom.nativos,
