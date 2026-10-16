@@ -136,7 +136,7 @@ La CI de GitHub Actions corre en cada push a `main`: `bun install --frozen-lockf
 
 ## API
 
-El servidor es Hono 4.13.13 sobre Bun. Todas las rutas bajo `/api` piden acceso, salvo `/api/health` y `/api/acceso`. El acceso se da con la cookie firmada que entrega `/api/acceso` (`HttpOnly`, `Secure`, `SameSite=Strict`, `Path=/api`) o con la cabecera `Authorization: Bearer <código>`.
+El servidor es Hono 4.13.13 sobre Bun. Todas las rutas bajo `/api` piden acceso, salvo `/api/health` y `/api/acceso`. El acceso se da con la cookie firmada que entrega `/api/acceso` (`HttpOnly`, `SameSite=Strict`, `Path=/api` y `Secure` fuera de desarrollo) o con la cabecera `Authorization: Bearer <código>`.
 
 | Método | Ruta | Qué hace |
 |---|---|---|
