@@ -69,14 +69,14 @@ El bucle está escrito a mano (`src/loop/`), sin framework, para que el tope de 
 
 El modelo no está atado al código: el adaptador lee `LLM_PROVIDER`, `LLM_BASE_URL`, `LLM_MODEL` y `LLM_API_KEY`, y hay un proveedor de respaldo opcional (`LLM_FALLBACK_*`).
 
-**Precios** por millón de tokens, de https://api-docs.deepseek.com/quick_start/pricing (consultado el 2026-10-15):
+**Precios** por millón de tokens, de https://api-docs.deepseek.com/quick_start/pricing (consultado el 2026-10-15). DeepSeek publica qué horas son pico y cuáles valle; ni la constante de precios ni la evidencia guardan esa franja, así que la tabla de costos muestra las dos tarifas:
 
 | Tarifa | Entrada con caché | Entrada sin caché | Salida |
 |---|---|---|---|
-| Pico (01:00–04:00 y 06:00–10:00 UTC, lunes a viernes) | 0.006 | 0.30 | 1.20 |
-| Valle (el resto) | 0.003 | 0.15 | 0.60 |
+| Pico | 0.006 | 0.30 | 1.20 |
+| Valle | 0.003 | 0.15 | 0.60 |
 
-**Costo medido** en una corrida real contra el modelo, el 2026-10-16 a las 04:54 UTC. Cada caso se procesó en una sesión nueva, y el guion del PRD §11 ("procesa ec-corp-andina…" y después "envía") corrió en una sesión de 2 turnos. La evidencia está en [docs/evidencia/costo-por-caso.json](docs/evidencia/costo-por-caso.json), y una prueba exige que esta tabla coincida con ella:
+**Costo medido** en una corrida real contra el modelo, que terminó el 2026-10-16 a las 04:54 UTC (la evidencia registra la hora del final de la corrida). Cada caso se procesó en una sesión nueva, y el guion del PRD §11 ("procesa ec-corp-andina…" y después "envía") corrió en una sesión de 2 turnos. La evidencia está en [docs/evidencia/costo-por-caso.json](docs/evidencia/costo-por-caso.json), y una prueba exige que esta tabla coincida con ella:
 
 | Escenario | Turnos | Llamadas | Entrada | Cache hit | Cache miss | Salida | USD pico | USD valle |
 |---|---|---|---|---|---|---|---|---|
@@ -87,7 +87,7 @@ El modelo no está atado al código: el adaptador lee `LLM_PROVIDER`, `LLM_BASE_
 | guion-11 | 2 | 7 | 57710 | 56320 | 1390 | 1082 | 0.0021 | 0.0010 |
 | Total | 6 | 27 | 207951 | 197376 | 10575 | 4460 | 0.0097 | 0.0049 |
 
-Un caso procesado cuesta unos **0.002 USD en tarifa pico y 0.001 USD en valle**. La corrida cayó en horario valle, así que esa fue la tarifa aplicada. Con 8 a 12 solicitudes al mes, el costo mensual queda por debajo de 0.03 USD. Es una muestra única, no un promedio: el modelo puede tomar otro camino de herramientas en otra corrida. Más del 90 % de la entrada fue cache hit, porque el prefijo del prompt es estable.
+Un caso procesado cuesta unos **0.002 USD en tarifa pico y 0.001 USD en valle**. Con 8 a 12 solicitudes al mes, el costo mensual queda por debajo de 0.03 USD. Es una muestra única, no un promedio: el modelo puede tomar otro camino de herramientas en otra corrida. Más del 90 % de la entrada fue cache hit, porque el prefijo del prompt es estable.
 
 Para reproducirla: `bun run costo`, con la clave en `.env`. Reescribe la evidencia y la prueba vuelve a comparar la tabla.
 
