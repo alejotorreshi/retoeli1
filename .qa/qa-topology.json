@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-15T13:11:37Z",
+  "generated_at": "2026-10-16T05:50:46Z",
   "project": "reto-eli-1",
   "runtime": {
     "bun_pinned": "1.4.3",
@@ -43,8 +43,8 @@
       "depends_on": [],
       "probe": {
         "result": "up",
-        "detail": "exit 0 in <1 s",
-        "checked_at": "2026-10-15T13:11:37Z"
+        "detail": "exit 0 in ~1 s",
+        "checked_at": "2026-10-16T05:50:46Z"
       },
       "fallback": "auto",
       "in_local_qa_scope": true,
@@ -89,8 +89,8 @@
       "depends_on": [],
       "probe": {
         "result": "up",
-        "detail": "imported by demo runner and tests (codegraph)",
-        "checked_at": "2026-10-15T13:11:37Z"
+        "detail": "imported by demo runner, tests and re-exported by modulo/tools/proveedor.ts (codegraph)",
+        "checked_at": "2026-10-16T05:50:46Z"
       },
       "fallback": "auto",
       "in_local_qa_scope": true,
@@ -256,7 +256,7 @@
       "kind": "gate",
       "present": true,
       "detected_by": [
-        "package.json scripts.check"
+        "package.json scripts.check (tsc --noEmit && tsc --noEmit -p web/tsconfig.json && biome check .)"
       ],
       "start": {
         "cmd": "bun run check",
@@ -280,8 +280,8 @@
       "depends_on": [],
       "probe": {
         "result": "up",
-        "detail": "exit 0 in ~1 s (tsc api+web, biome, bun audit: no vulnerabilities, 269 packages)",
-        "checked_at": "2026-10-15T13:11:37Z"
+        "detail": "exit 0 in ~1 s (tsc api+web, biome: 453 files). bun audit is no longer part of check; see gate-audit",
+        "checked_at": "2026-10-16T05:50:46Z"
       },
       "fallback": "auto",
       "in_local_qa_scope": true,
@@ -316,8 +316,8 @@
       "depends_on": [],
       "probe": {
         "result": "up",
-        "detail": "exit 0 in ~14 s (2127 pass, 1 skip: opt-in live test, 0 fail, 105 files)",
-        "checked_at": "2026-10-15T13:11:37Z"
+        "detail": "exit 0 in ~17 s (2476 pass, 2 skip: opt-in live tests LLM_EN_VIVO and COSTO_EN_VIVO, 0 fail, 118 files)",
+        "checked_at": "2026-10-16T05:50:46Z"
       },
       "fallback": "auto",
       "in_local_qa_scope": true,
@@ -435,7 +435,7 @@
         "GET * (static web/dist, SPA fallback)"
       ],
       "auth": "POST /api/acceso with the access code -> cookie/Bearer token; /api/* except health/acceso return 401 without it",
-      "notes": "Vite proxies /api -> http://localhost:3000 in dev; in production the same server serves web/dist."
+      "notes": "Vite proxies /api -> http://localhost:3000 in dev; in production the same server serves web/dist. Phase 4: routes unchanged (RUTA_API, codegraph); rate limiter now also caps new sessions per hour (NEW_SESSIONS_PER_HOUR). 2026-10-16: `bun --no-env-file src/server.ts` with synthetic ACCESS_CODE + fake LLM_API_KEY + FECHA_EJECUCION=2026-09-03 on PORT=3051 served /api/health 200 {llm: disponible} in <1 s (used as the preflight target, torn down)."
     },
     {
       "name": "api-offline",
@@ -546,7 +546,7 @@
       "available_from_phase": 3,
       "detected_by": [
         "Dockerfile (oven/bun:1.4.3-slim, two stages, EXPOSE 10000)",
-        "render.yaml (runtime docker, plan free, healthCheckPath /api/health, autoDeploy true)"
+        "render.yaml (runtime docker, plan free, healthCheckPath /api/health, autoDeployTrigger: checksPass)"
       ],
       "start": {
         "cmd": null,
@@ -574,15 +574,18 @@
           "FECHA_EJECUCION",
           "TZ_NEGOCIO",
           "LOG_LEVEL",
-          "TRUSTED_PROXY_HOPS"
+          "TRUSTED_PROXY_HOPS",
+          "NEW_SESSIONS_PER_HOUR"
         ],
         "missing": []
       },
-      "depends_on": [],
+      "depends_on": [
+        "ci"
+      ],
       "probe": {
         "result": "not_probed",
-        "detail": "fallback human (default probe skips it); Render free sleeps after 15 min, cold start ~1 min; autoDeploy on push to main",
-        "checked_at": "2026-10-15T13:11:37Z"
+        "detail": "fallback human (default probe skips it, and this unattended run must not touch the public URL with an access code); Render free sleeps after 15 min, cold start ~1 min; since Phase 4 it deploys on push to main only after the GitHub checks (ci) pass",
+        "checked_at": "2026-10-16T05:50:46Z"
       },
       "fallback": "human",
       "in_local_qa_scope": false,
@@ -591,8 +594,410 @@
         "Chat on the public URL spends the personal provider key: authorize real-model turns explicitly.",
         "Warm the service (GET /api/health) before timed checks; Render Events/Logs are only visible to the human."
       ],
-      "url": "https://registro-proveedor-bfnt.onrender.com"
+      "url": "https://registro-proveedor-bfnt.onrender.com",
+      "notes": "Smoke it with the preflight-cli surface pointed at this URL (human types PREFLIGHT_ACCESS_CODE). The service must run with FECHA_EJECUCION=2026-09-03 or preflight fails before the access check."
+    },
+    {
+      "name": "preflight-cli",
+      "kind": "cli",
+      "present": true,
+      "available_from_phase": 4,
+      "detected_by": [
+        "package.json scripts.preflight",
+        "src/cli/runners/preflight.runner.ts (ejecutarPreflight, codegraph)",
+        "src/config/env.ts readPreflightEnv / parsePreflightEnv",
+        "tests/cli/preflight.test.ts"
+      ],
+      "start": {
+        "cmd": "bun run preflight -- --url <base origin>",
+        "cwd": ".",
+        "qa_override": "PREFLIGHT_ACCESS_CODE=<synthetic, same as the target's ACCESS_CODE> bun --no-env-file src/cli/runners/preflight.runner.ts --url http://localhost:<port> (inline, never written to a file), against a local target started as: NODE_ENV=development PORT=<free port> FECHA_EJECUCION=2026-09-03 ACCESS_CODE=<synthetic> LLM_API_KEY=<fake> bun --no-env-file src/server.ts"
+      },
+      "port": null,
+      "readiness": {
+        "kind": "exit-code",
+        "expect": 0,
+        "timeout_s": 240
+      },
+      "logs": {
+        "path": ".qa/logs/preflight.log"
+      },
+      "artifacts": [],
+      "env": {
+        "required": [
+          "PREFLIGHT_ACCESS_CODE (env only, never a CLI argument; same length rules as ACCESS_CODE)",
+          "PREFLIGHT_URL | --url (one of; bare origin, https or http only on localhost/127.0.0.1/[::1]; an empty --url does not override PREFLIGHT_URL)"
+        ],
+        "optional": [],
+        "missing": []
+      },
+      "depends_on": [
+        "api"
+      ],
+      "probe": {
+        "result": "up",
+        "detail": "local target only (synthetic code, fake key, torn down): exit 0 in <1 s -> health 200 (llm disponible), /api/config accepted, fecha 2026-09-03, 4 casos; 0 LLM calls. Also verified: target with FECHA_EJECUCION != 2026-09-03 -> exit 1 'revisa FECHA_EJECUCION'; wrong code -> exit 1 on the first 401 without retrying; missing code -> exit 1 naming PREFLIGHT_ACCESS_CODE; missing URL -> exit 1; http on a non-loopback host -> rejected before any request. Works both via bun run (local env file) and with --no-env-file.",
+        "checked_at": "2026-10-16T05:50:46Z"
+      },
+      "fallback": "auto",
+      "in_local_qa_scope": true,
+      "human_requirements": [
+        "Against the public deploy URL the human supplies PREFLIGHT_ACCESS_CODE at run time; QA never stores, logs or passes it. One wrong code is one failed attempt toward the IP lockout (ACCESS_MAX_FAILED_ATTEMPTS), so never loop it."
+      ],
+      "notes": "Default mode spends no LLM tokens (health + access + config only). Readiness waits up to 180 s for a cold Render start (PLAZO_DESPERTAR_MS). Exit code is 1 on any failure, including usage errors."
+    },
+    {
+      "name": "preflight-guion",
+      "kind": "cli",
+      "present": true,
+      "available_from_phase": 4,
+      "detected_by": [
+        "package.json scripts.preflight",
+        "src/cli/runners/preflight.runner.ts (--guion: correrGuion)"
+      ],
+      "start": {
+        "cmd": "bun run preflight -- --url <base origin> --guion",
+        "cwd": "."
+      },
+      "port": null,
+      "readiness": {
+        "kind": "exit-code",
+        "expect": 0,
+        "timeout_s": 720
+      },
+      "logs": {
+        "path": ".qa/logs/preflight-guion.log"
+      },
+      "artifacts": [
+        "out/ec-corp-andina/** on the target server (listed through GET /api/casos/:caso/archivos)"
+      ],
+      "env": {
+        "required": [
+          "PREFLIGHT_ACCESS_CODE",
+          "PREFLIGHT_URL | --url (one of)"
+        ],
+        "optional": [],
+        "missing": []
+      },
+      "depends_on": [
+        "preflight-cli"
+      ],
+      "probe": {
+        "result": "not_probed",
+        "detail": "fallback human: runs the PRD §11 script (2 SSE turns on ec-corp-andina: process with 4 tools, then confirm and simular_envio; checks ENVIO-SIMULADO.md appears only after turn 2) and spends real LLM tokens on the target's key; it prints a token summary",
+        "checked_at": "2026-10-16T05:50:46Z"
+      },
+      "fallback": "human",
+      "in_local_qa_scope": false,
+      "human_requirements": [
+        "Explicit authorization per run: real LLM calls on the personal provider key of the target service. The human supplies PREFLIGHT_ACCESS_CODE."
+      ]
+    },
+    {
+      "name": "modulo-gen",
+      "kind": "cli",
+      "present": true,
+      "available_from_phase": 4,
+      "detected_by": [
+        "package.json scripts.modulo",
+        "src/cli/runners/generar-modulo.runner.ts (generarModulo, codegraph)",
+        "tests/modulo/generador.test.ts (byte-for-byte check)"
+      ],
+      "start": {
+        "cmd": "bun run modulo",
+        "cwd": "."
+      },
+      "port": null,
+      "readiness": {
+        "kind": "exit-code",
+        "expect": 0,
+        "timeout_s": 30
+      },
+      "logs": {
+        "path": ".qa/logs/modulo.log"
+      },
+      "artifacts": [
+        "modulo/agent.md",
+        "modulo/skill/registro-proveedor/SKILL.md"
+      ],
+      "env": {
+        "required": [],
+        "optional": [],
+        "missing": []
+      },
+      "depends_on": [],
+      "probe": {
+        "result": "up",
+        "detail": "exit 0 in <1 s, printed 'Generado: modulo/agent.md' and 'Generado: modulo/skill/registro-proveedor/SKILL.md'; run twice, git diff --quiet -- modulo stayed clean (idempotent)",
+        "checked_at": "2026-10-16T05:50:46Z"
+      },
+      "fallback": "auto",
+      "in_local_qa_scope": true,
+      "human_requirements": [],
+      "notes": "Writes tracked files (atomic rename). Idempotency check: run it, then `git diff --quiet -- modulo` must exit 0. Sources: agent/prompt.md and src/knowledge/registro-proveedor.md; it refuses to run outside the repo root."
+    },
+    {
+      "name": "modulo-opencode",
+      "kind": "library",
+      "present": true,
+      "available_from_phase": 4,
+      "detected_by": [
+        "modulo/README.md",
+        "modulo/tools/proveedor.ts (re-exports @/tools/proveedor.ts, codegraph)",
+        ".opencode/tools/proveedor.ts (re-exports @modulo/tools/proveedor.ts)",
+        "opencode.json (default_agent registro-proveedor, prompt {file:./modulo/agent.md}, skills ./modulo/skill, permission edit/bash deny)",
+        "tests/modulo/herramientas.test.ts, tests/modulo/opencode.test.ts"
+      ],
+      "entry": "modulo/tools/proveedor.ts",
+      "exports": [
+        "leer_solicitud",
+        "mapear_campos",
+        "generar_formulario",
+        "armar_paquete",
+        "simular_envio"
+      ],
+      "invoke": "bun -e from a scratch copy: import from @modulo/tools/proveedor.ts (or .opencode/tools/proveedor.ts) with an empty env and no server; each export must be === the src/tools/proveedor.ts export; ctx accepts sessionId or sessionID. A real OpenCode session is not available locally.",
+      "port": null,
+      "readiness": {
+        "kind": "exit-code",
+        "expect": 0,
+        "timeout_s": 60
+      },
+      "logs": {
+        "path": ".qa/logs/modulo-opencode.log"
+      },
+      "artifacts": [
+        "out/**"
+      ],
+      "env": {
+        "required": [],
+        "optional": [
+          "FECHA_EJECUCION",
+          "TZ_NEGOCIO"
+        ],
+        "missing": []
+      },
+      "depends_on": [
+        "tools",
+        "modulo-gen"
+      ],
+      "probe": {
+        "result": "up",
+        "detail": "covered offline by tests/modulo/* inside gate-test (green); not run inside OpenCode",
+        "checked_at": "2026-10-16T05:50:46Z"
+      },
+      "fallback": "auto",
+      "in_local_qa_scope": true,
+      "human_requirements": [
+        "Live check inside a real OpenCode session (skill discovery under ./modulo/skill, tsconfig alias resolution, zod 4 schemas) is unrehearsed per modulo/README.md (D-83); only a human with OpenCode installed can run it."
+      ]
+    },
+    {
+      "name": "cost-live",
+      "kind": "cli",
+      "present": true,
+      "available_from_phase": 4,
+      "detected_by": [
+        "package.json scripts.costo",
+        "tests/live/costo-por-caso.test.ts (skipIf COSTO_EN_VIVO !== '1')",
+        "tests/helpers/costo.helper.ts escribirEvidencia"
+      ],
+      "start": {
+        "cmd": "bun run costo",
+        "cwd": "."
+      },
+      "port": null,
+      "readiness": {
+        "kind": "exit-code",
+        "expect": 0,
+        "timeout_s": 600
+      },
+      "logs": {
+        "path": ".qa/logs/cost-live.log"
+      },
+      "artifacts": [
+        "docs/evidencia/costo-por-caso.json (tracked: a run rewrites committed evidence)",
+        "out/**"
+      ],
+      "env": {
+        "required": [
+          "COSTO_EN_VIVO=1 (set by the script)",
+          "LLM_API_KEY | DEEPSEEK_API_KEY (one of; from the gitignored repo-root env file)"
+        ],
+        "optional": [
+          "AGENT_DAILY_TOKEN_BUDGET",
+          "AGENT_MAX_ITERATIONS",
+          "AGENT_MAX_SESSIONS",
+          "AGENT_SESSION_TOKEN_BUDGET",
+          "AGENT_SESSION_TTL_MINUTES",
+          "AGENT_TURN_DEADLINE_MS",
+          "FECHA_EJECUCION",
+          "LLM_BASE_URL",
+          "LLM_FALLBACK_API_KEY",
+          "LLM_FALLBACK_BASE_URL",
+          "LLM_FALLBACK_ENABLED",
+          "LLM_FALLBACK_MAX_TOKENS_PARAM",
+          "LLM_FALLBACK_MODEL",
+          "LLM_FALLBACK_PROVIDER",
+          "LLM_FALLBACK_REASONING_PASSBACK",
+          "LLM_FALLBACK_TEMPERATURE",
+          "LLM_FALLBACK_THINKING",
+          "LLM_FALLBACK_TOOL_CHOICE_NONE",
+          "LLM_MAX_OUTPUT_TOKENS",
+          "LLM_MAX_RETRIES",
+          "LLM_MAX_TOKENS_PARAM",
+          "LLM_MODEL",
+          "LLM_PROVIDER",
+          "LLM_REASONING_PASSBACK",
+          "LLM_TEMPERATURE",
+          "LLM_THINKING",
+          "LLM_TIMEOUT_MS",
+          "LLM_TOOL_CHOICE_NONE",
+          "LOG_LEVEL",
+          "TZ_NEGOCIO"
+        ],
+        "missing": []
+      },
+      "depends_on": [
+        "agent"
+      ],
+      "probe": {
+        "result": "not_probed",
+        "detail": "fallback human: live model run that spends the personal key and rewrites tracked evidence; skipped in gate-test",
+        "checked_at": "2026-10-16T05:50:46Z"
+      },
+      "fallback": "human",
+      "in_local_qa_scope": true,
+      "human_requirements": [
+        "Explicit authorization per run: real LLM calls on the personal key (one run per case). Commit the regenerated docs/evidencia/costo-por-caso.json only if intended. Never print the key; never run a command that names the env file."
+      ]
+    },
+    {
+      "name": "gate-build-web",
+      "kind": "gate",
+      "present": true,
+      "available_from_phase": 3,
+      "detected_by": [
+        "package.json scripts.build:web",
+        ".github/workflows/ci.yml step 'Build de la SPA'"
+      ],
+      "start": {
+        "cmd": "bun run build:web",
+        "cwd": "."
+      },
+      "port": null,
+      "readiness": {
+        "kind": "exit-code",
+        "expect": 0,
+        "timeout_s": 120
+      },
+      "logs": {
+        "path": ".qa/logs/build-web.log"
+      },
+      "artifacts": [
+        "web/dist/** (gitignored)"
+      ],
+      "env": {
+        "required": [],
+        "optional": [],
+        "missing": []
+      },
+      "depends_on": [],
+      "probe": {
+        "result": "up",
+        "detail": "exit 0, Vite build in ~170 ms",
+        "checked_at": "2026-10-16T05:50:46Z"
+      },
+      "fallback": "auto",
+      "in_local_qa_scope": true,
+      "human_requirements": []
+    },
+    {
+      "name": "gate-audit",
+      "kind": "gate",
+      "present": true,
+      "available_from_phase": 4,
+      "detected_by": [
+        "package.json scripts.audit (bun audit --audit-level=moderate)",
+        ".github/workflows/ci.yml job auditoria (continue-on-error, non-blocking)"
+      ],
+      "start": {
+        "cmd": "bun run audit",
+        "cwd": "."
+      },
+      "port": null,
+      "readiness": {
+        "kind": "exit-code",
+        "expect": 0,
+        "timeout_s": 60
+      },
+      "logs": {
+        "path": ".qa/logs/audit.log"
+      },
+      "artifacts": [],
+      "env": {
+        "required": [],
+        "optional": [],
+        "missing": []
+      },
+      "depends_on": [],
+      "probe": {
+        "result": "up",
+        "detail": "exit 0, no vulnerabilities (269 packages); needs registry network access",
+        "checked_at": "2026-10-16T05:50:46Z"
+      },
+      "fallback": "auto",
+      "in_local_qa_scope": true,
+      "human_requirements": [],
+      "notes": "Non-blocking in CI: a failure only emits a ::warning."
+    },
+    {
+      "name": "ci",
+      "kind": "ci",
+      "present": true,
+      "available_from_phase": 4,
+      "detected_by": [
+        ".github/workflows/ci.yml (jobs verificar + auditoria; on push to main, pull_request, workflow_dispatch; ubuntu-24.04; Bun from .bun-version)",
+        "tests/despliegue/ci.test.ts"
+      ],
+      "start": {
+        "cmd": null,
+        "cwd": ".",
+        "local_equivalent": "bun install --frozen-lockfile && bun run check && bun test && bun run demo.ts && bun run build:web (then bun run audit, non-blocking)"
+      },
+      "port": null,
+      "readiness": {
+        "kind": "remote",
+        "url": "https://github.com/alejotorreshi/retoeli1/actions/workflows/ci.yml",
+        "expect": "success on the pushed commit",
+        "timeout_s": 900
+      },
+      "logs": {
+        "path": ".qa/logs/ci.log"
+      },
+      "artifacts": [],
+      "env": {
+        "required": [],
+        "optional": [],
+        "missing": []
+      },
+      "depends_on": [],
+      "probe": {
+        "result": "not_probed",
+        "detail": "remote run status not checked: the gh CLI is not installed locally and the repo is private. Local equivalent steps are all green (gate-check, gate-test, demo-cli, gate-build-web, gate-audit). The workflow never sets LLM_EN_VIVO / COSTO_EN_VIVO (guarded by tests/despliegue/ci.test.ts), so it spends no tokens.",
+        "checked_at": "2026-10-16T05:50:46Z"
+      },
+      "fallback": "human",
+      "in_local_qa_scope": false,
+      "human_requirements": [
+        "Confirm the GitHub Actions run for the pushed commit is green (private repo; gh CLI not installed here). Render deploys only after these checks pass (autoDeployTrigger: checksPass)."
+      ]
     }
   ],
-  "db_connections": []
+  "db_connections": [],
+  "notes": [
+    "2026-10-16 unattended re-map after Phase 4 (no human available): defaults applied, no probe touched the public Render URL, no --guion and no bun run costo were run (no LLM spend).",
+    "The local preflight target used a synthetic ACCESS_CODE, a fake LLM key and --no-env-file; both were passed inline and never written to disk.",
+    "The local env file was not inspected (standing rule), so whether it holds PREFLIGHT_ACCESS_CODE / PREFLIGHT_URL is unknown; the QA override passes them inline instead."
+  ]
 }
