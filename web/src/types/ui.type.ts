@@ -98,10 +98,16 @@ export type PropsAccionesRapidas = {
   readonly angosto: boolean;
 };
 
+export type TextosDeChip = {
+  readonly texto: string;
+  readonly etiqueta: string | undefined;
+};
+
 export type ControlAccionesRapidas = {
-  readonly corta: boolean;
   readonly deshabilitadas: boolean;
-  readonly cantidadCasos: number;
+  readonly todosDeshabilitado: boolean;
+  readonly demo: TextosDeChip;
+  readonly todos: TextosDeChip;
   readonly alPedirDemo: () => void;
   readonly alPedirTodos: () => void;
   readonly alPedirListado: () => void;
@@ -191,7 +197,7 @@ export type ContadorConTono = ContadorDeCaso & {
 export type ControlTarjetaResultado = {
   readonly idTitulo: string;
   readonly firma: EstadoFirma;
-  readonly paqueteArmado: boolean;
+  readonly bloqueosVisibles: readonly string[] | null;
   readonly contadores: readonly ContadorConTono[];
 };
 
@@ -215,8 +221,10 @@ export type ControlGrupoHerramientas = {
 };
 
 export type ControlTarjetaHerramienta = {
-  readonly fallida: boolean;
   readonly argumentos: string;
+  readonly resumen: string;
+  readonly resultado: string;
+  readonly codigoVisible: string | null;
 };
 
 export type PropsIndicadorPensando = {
@@ -271,6 +279,7 @@ export type ControlEncabezado = {
   readonly nuevaSesionDeshabilitada: boolean;
   readonly abrirNuevaSesion: () => void;
   readonly clasePrefijo: string | undefined;
+  readonly varianteLogo: VarianteLogo;
 };
 
 export type ControlDialogoNuevaSesion = {
@@ -368,6 +377,7 @@ export type OpcionesArchivos = {
 
 export type ControlArchivos = {
   readonly estado: EstadoListaArchivos;
+  readonly vacia: boolean;
   readonly borrados: boolean;
   readonly reintentar: () => void;
   readonly descargar: (archivo: ArchivoUi) => void;

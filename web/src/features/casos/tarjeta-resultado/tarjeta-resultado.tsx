@@ -34,7 +34,7 @@ function Bloqueos({ bloqueos }: PropsBloqueosResultado) {
 }
 
 export function TarjetaResultado({ resultado }: PropsTarjetaResultado) {
-  const { idTitulo, firma, paqueteArmado, contadores } = useTarjetaResultado(resultado);
+  const { idTitulo, firma, bloqueosVisibles, contadores } = useTarjetaResultado(resultado);
   return (
     <li>
       <article className={estilos.tarjeta} aria-labelledby={idTitulo}>
@@ -62,7 +62,7 @@ export function TarjetaResultado({ resultado }: PropsTarjetaResultado) {
         </p>
         <dl className={estilos.detalle}>
           <dt className={estilos.termino}>{TEXTO_RESULTADO.bloqueos}</dt>
-          <Bloqueos bloqueos={paqueteArmado ? resultado.bloqueosLegibles : null} />
+          <Bloqueos bloqueos={bloqueosVisibles} />
           <dt className={estilos.termino}>{TEXTO_RESULTADO.ruta}</dt>
           <dd className={resultado.carpeta === null ? estilos.valor : estilos.ruta}>
             {resultado.carpeta ?? TEXTO_RESULTADO.sinDato}

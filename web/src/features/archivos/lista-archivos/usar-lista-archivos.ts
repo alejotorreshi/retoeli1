@@ -70,7 +70,14 @@ export function useListaArchivos({ caso, activo, marca, alVencerAcceso }: Opcion
     [caso, alVencerAcceso, marcarBorrados],
   );
 
-  return { estado, borrados, reintentar, descargar, marcarBorrados };
+  return {
+    estado,
+    vacia: estado.tipo === ESTADO_LISTA_ARCHIVOS.LISTA && estado.archivos.length === 0,
+    borrados,
+    reintentar,
+    descargar,
+    marcarBorrados,
+  };
 }
 
 export function controlFilaArchivo(

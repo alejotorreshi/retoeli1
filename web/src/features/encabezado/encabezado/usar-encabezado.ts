@@ -1,3 +1,4 @@
+import { VARIANTE_LOGO } from "@web/config/constants/marca.constants.ts";
 import { CLASE_GLOBAL } from "@web/config/constants/ui.constants.ts";
 import { seleccionarEnCurso, seleccionarFechaEjecucion, seleccionarSalud } from "@web/store/selectores.ts";
 import { useAcciones, useSeleccion } from "@web/store/usar-almacen.ts";
@@ -18,5 +19,6 @@ export function useEncabezado(angosto: boolean): ControlEncabezado {
     nuevaSesionDeshabilitada,
     abrirNuevaSesion,
     clasePrefijo: clasePrefijo(angosto),
+    varianteLogo: angosto ? VARIANTE_LOGO.ENCABEZADO_ANGOSTO : VARIANTE_LOGO.ENCABEZADO,
   };
 }

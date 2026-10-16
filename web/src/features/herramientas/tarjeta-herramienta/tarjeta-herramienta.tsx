@@ -47,7 +47,7 @@ function IconoDeEstado({ estado }: PropsIconoDeEstado) {
 }
 
 export function TarjetaHerramienta({ llamada }: PropsTarjetaHerramienta) {
-  const { fallida, argumentos } = controlTarjetaHerramienta(llamada);
+  const { argumentos, resumen, resultado, codigoVisible } = controlTarjetaHerramienta(llamada);
   return (
     <li>
       <details className={estilos.tarjeta}>
@@ -61,7 +61,7 @@ export function TarjetaHerramienta({ llamada }: PropsTarjetaHerramienta) {
           <span className={`${estilos.badge} ${CLASE_DE_ESTADO[llamada.estado]}`}>
             {TEXTO_HERRAMIENTA.estado(llamada.estado)}
           </span>
-          <span className={estilos.resumen}>{llamada.resumen ?? ""}</span>
+          <span className={estilos.resumen}>{resumen}</span>
         </summary>
         <div className={estilos.cuerpo}>
           <dl className={estilos.detalle}>
@@ -72,11 +72,9 @@ export function TarjetaHerramienta({ llamada }: PropsTarjetaHerramienta) {
               <pre className={estilos.argumentos}>{argumentos}</pre>
             </dd>
             <dt className={estilos.termino}>{TEXTO_HERRAMIENTA.resultado}</dt>
-            <dd className={estilos.resultado}>{llamada.resumen ?? TEXTO_HERRAMIENTA.sinResultado}</dd>
+            <dd className={estilos.resultado}>{resultado}</dd>
           </dl>
-          {fallida && llamada.codigo !== null ? (
-            <p className={estilos.codigo}>{TEXTO_HERRAMIENTA.codigo(llamada.codigo)}</p>
-          ) : null}
+          {codigoVisible === null ? null : <p className={estilos.codigo}>{codigoVisible}</p>}
         </div>
       </details>
     </li>

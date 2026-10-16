@@ -65,7 +65,7 @@ export function ListaArchivos({ caso, control, alVer }: PropsListaArchivos) {
         </div>
       );
     default:
-      return estado.archivos.length === 0 ? (
+      return control.vacia ? (
         <p className={estilos.tenue}>{TEXTO_ARCHIVOS.vacio}</p>
       ) : (
         <ul className={estilos.lista} aria-label={TEXTO_ARCHIVOS.lista(caso)}>

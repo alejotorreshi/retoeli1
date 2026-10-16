@@ -18,7 +18,7 @@ export function useTarjetaResultado(resultado: ResultadoDeCaso): ControlTarjetaR
   return {
     idTitulo,
     firma,
-    paqueteArmado: firma !== ESTADO_FIRMA.SIN_ARMAR,
+    bloqueosVisibles: firma === ESTADO_FIRMA.SIN_ARMAR ? null : resultado.bloqueosLegibles,
     contadores: contadoresDe(resultado).map(conTono),
   };
 }

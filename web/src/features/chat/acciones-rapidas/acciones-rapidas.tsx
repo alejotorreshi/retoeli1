@@ -4,7 +4,7 @@ import { useAccionesRapidas } from "@web/features/chat/acciones-rapidas/usar-acc
 import type { PropsAccionesRapidas } from "@web/types/ui.type.ts";
 
 export function AccionesRapidas({ compactas, angosto }: PropsAccionesRapidas) {
-  const { corta, deshabilitadas, cantidadCasos, alPedirDemo, alPedirTodos, alPedirListado } =
+  const { deshabilitadas, todosDeshabilitado, demo, todos, alPedirDemo, alPedirTodos, alPedirListado } =
     useAccionesRapidas({ compactas, angosto });
   const grupo = (
     <fieldset aria-label={TEXTO_ACCIONES.grupo} className={estilos.grupo}>
@@ -12,19 +12,19 @@ export function AccionesRapidas({ compactas, angosto }: PropsAccionesRapidas) {
         type="button"
         className={estilos.chip}
         disabled={deshabilitadas}
-        aria-label={corta ? TEXTO_ACCIONES.demo : undefined}
+        aria-label={demo.etiqueta}
         onClick={alPedirDemo}
       >
-        {corta ? TEXTO_ACCIONES.demoCorto : TEXTO_ACCIONES.demo}
+        {demo.texto}
       </button>
       <button
         type="button"
         className={estilos.chip}
-        disabled={deshabilitadas || cantidadCasos === 0}
-        aria-label={corta ? TEXTO_ACCIONES.todos(cantidadCasos) : undefined}
+        disabled={todosDeshabilitado}
+        aria-label={todos.etiqueta}
         onClick={alPedirTodos}
       >
-        {corta ? TEXTO_ACCIONES.todosCorto(cantidadCasos) : TEXTO_ACCIONES.todos(cantidadCasos)}
+        {todos.texto}
       </button>
       <button type="button" className={estilos.chip} disabled={deshabilitadas} onClick={alPedirListado}>
         {TEXTO_ACCIONES.listar}
