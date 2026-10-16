@@ -14,6 +14,7 @@ export type HerramientasDom = {
   readonly act: typeof act;
   readonly esperar: typeof waitFor;
   readonly pantalla: () => ConsultasDom;
+  readonly dentroDe: (elemento: HTMLElement) => ConsultasDom;
   readonly usuario: () => UserEvent;
   readonly nativos: RespuestasNativas;
 };

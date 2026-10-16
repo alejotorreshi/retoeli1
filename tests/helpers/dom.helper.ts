@@ -4,12 +4,12 @@ import type { HerramientasDom, OpcionesDom } from "@tests/helpers/types/dom.type
 
 const URL_DE_PRUEBA = "http://localhost:3000/";
 
-const FLUJOS_NATIVOS = ["TransformStream", "WritableStream"] as const;
+const GLOBALES_NATIVOS = ["TransformStream", "WritableStream", "queueMicrotask"] as const;
 
-function conservarFlujosNativos(): () => void {
-  const flujos = FLUJOS_NATIVOS.map((nombre) => [nombre, Reflect.get(globalThis, nombre)] as const);
+function conservarGlobalesNativos(): () => void {
+  const globales = GLOBALES_NATIVOS.map((nombre) => [nombre, Reflect.get(globalThis, nombre)] as const);
   return () => {
-    for (const [nombre, valor] of flujos) {
+    for (const [nombre, valor] of globales) {
       Object.defineProperty(globalThis, nombre, { value: valor, configurable: true, writable: true });
     }
   };
@@ -17,9 +17,9 @@ function conservarFlujosNativos(): () => void {
 
 export async function prepararDom({ ancho }: OpcionesDom): Promise<HerramientasDom> {
   const nativos = { Response: globalThis.Response, Headers: globalThis.Headers };
-  const restaurarFlujos = conservarFlujosNativos();
+  const restaurarNativos = conservarGlobalesNativos();
   GlobalRegistrator.register({ url: URL_DE_PRUEBA, width: ancho });
-  restaurarFlujos();
+  restaurarNativos();
   const rtl = await import("@testing-library/react");
   const { default: userEvent } = await import("@testing-library/user-event");
   afterEach(() => rtl.cleanup());
@@ -30,6 +30,7 @@ export async function prepararDom({ ancho }: OpcionesDom): Promise<HerramientasD
     act: rtl.act,
     esperar: rtl.waitFor,
     pantalla: () => rtl.within(document.body),
+    dentroDe: (elemento) => rtl.within(elemento),
     usuario: () => userEvent.setup({ document }),
     nativos,
   };

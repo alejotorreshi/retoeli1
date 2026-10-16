@@ -5,7 +5,7 @@ import type {
   RedWeb,
   RespuestaFalsa,
 } from "@tests/helpers/types/red-web.type.ts";
-import { MOTIVO_FIN, TIPO_EVENTO } from "@/config/constants/agent.constants.ts";
+import { ACCION, MOTIVO_FIN, TIPO_EVENTO } from "@/config/constants/agent.constants.ts";
 import {
   CABECERA,
   MENSAJE_MAXIMO_CARACTERES_POR_DEFECTO,
@@ -18,6 +18,7 @@ import { ESTADO_LLM, PRESET_DEEPSEEK, PROVEEDOR_DEEPSEEK } from "@/config/consta
 import { MENSAJE_HTTP } from "@/config/strings.ts";
 import type { ConfigResponse, HealthResponse, SseEvent } from "@/http/types/api.type.ts";
 import type { LlmHealthState } from "@/llm/types/resilience.type.ts";
+import type { ResultadoVisible } from "@/loop/types/resultado-visible.type.ts";
 
 const METODO_GET = "GET";
 
@@ -80,13 +81,53 @@ export function eventoTexto(texto: string): SseEvent {
   return { tipo: TIPO_EVENTO.TEXTO, turnoId: TURNO_DE_PRUEBA, texto };
 }
 
-export function eventoFin(): SseEvent {
+export function eventoFin(needsConfirmation = false): SseEvent {
   return {
     tipo: TIPO_EVENTO.FIN_TURNO,
     turnoId: TURNO_DE_PRUEBA,
     motivo: MOTIVO_FIN.FINAL,
-    needsConfirmation: false,
+    needsConfirmation,
   };
+}
+
+export function eventoConfirmacion(caso: string, bloqueosLegibles: readonly string[]): SseEvent {
+  return {
+    tipo: TIPO_EVENTO.CONFIRMACION_REQUERIDA,
+    turnoId: TURNO_DE_PRUEBA,
+    caso,
+    accion: ACCION.ENVIO,
+    bloqueos: [],
+    bloqueosLegibles,
+  };
+}
+
+export function eventosDeHerramienta(
+  herramienta: string,
+  caso: string,
+  resultado: ResultadoVisible | null,
+): readonly SseEvent[] {
+  const llamadaId = `${herramienta}-${caso}`;
+  return [
+    {
+      tipo: TIPO_EVENTO.INICIO_HERRAMIENTA,
+      turnoId: TURNO_DE_PRUEBA,
+      llamadaId,
+      herramienta,
+      caso,
+      argumentos: { caso },
+    },
+    {
+      tipo: TIPO_EVENTO.FIN_HERRAMIENTA,
+      turnoId: TURNO_DE_PRUEBA,
+      llamadaId,
+      herramienta,
+      caso,
+      ok: true,
+      codigo: null,
+      resumen: null,
+      resultado,
+    },
+  ];
 }
 
 function marco(evento: SseEvent): string {
