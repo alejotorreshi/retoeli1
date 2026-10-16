@@ -36,6 +36,9 @@ const PREFIJO_COMENTARIO_ATRIBUTOS = "#";
 const PREFIJO_EOL = "eol=";
 const EOL_DESACTIVADO = ["-eol", "!eol"];
 const SEPARADOR_DE_RUTA = "/";
+const AGENTE_VIEJO = "agente de una corrida anterior\n";
+const ARCHIVO_QUE_BLOQUEA = "bloqueo.txt";
+const SKILL_EN_MODULO = join(DIRECTORIO_SKILLS_MODULO, NOMBRE_SKILL, ARCHIVO_SKILL);
 
 type Partido = { readonly frontmatter: string; readonly cuerpo: Uint8Array };
 
@@ -313,6 +316,41 @@ describe("generarModulo escribe por archivo temporal y renombre", () => {
     expect(entradas.filter((entrada) => entrada.endsWith(SUFIJO_TEMPORAL_MODULO))).toEqual([]);
     const relativas = [RUTA_AGENTE, RUTA_SKILL].map((ruta) => ruta.slice(DIRECTORIO_MODULO.length + 1));
     expect(entradas.filter((entrada) => entrada.endsWith(".md")).sort()).toEqual(relativas.sort());
+  });
+});
+
+async function temporalesDe(raiz: string): Promise<string[]> {
+  const entradas = await readdir(join(raiz, DIRECTORIO_MODULO), { recursive: true });
+  return entradas.filter((entrada) => entrada.endsWith(SUFIJO_TEMPORAL_MODULO));
+}
+
+async function moduloViejo(): Promise<{ readonly raiz: string; readonly agente: Uint8Array }> {
+  const agente = new TextEncoder().encode(AGENTE_VIEJO);
+  const raiz = await raizTemporal({ ...(await fuentesReales()), [RUTA_AGENTE]: agente });
+  return { raiz, agente };
+}
+
+async function bloquearConDirectorio(raiz: string, ruta: string): Promise<void> {
+  await mkdir(join(raiz, ruta), { recursive: true });
+  await writeFile(join(raiz, ruta, ARCHIVO_QUE_BLOQUEA), AGENTE_VIEJO);
+}
+
+describe("generarModulo deja el par intacto si una escritura o un renombre fallan (IN-02)", () => {
+  test("si falla el renombre de SKILL.md, agent.md vuelve a su contenido previo y no quedan temporales", async () => {
+    const { raiz, agente } = await moduloViejo();
+    await bloquearConDirectorio(raiz, RUTA_SKILL);
+    await expect(generarEn(raiz)).rejects.toThrow();
+    expect(iguales(await leerBytes(RUTA_AGENTE, raiz), agente)).toBe(true);
+    expect(await temporalesDe(raiz)).toEqual([]);
+  });
+
+  test("si falla la escritura de un temporal, ningún original cambia y no queda el otro temporal", async () => {
+    const { raiz, agente } = await moduloViejo();
+    await bloquearConDirectorio(raiz, `${RUTA_SKILL}${SUFIJO_TEMPORAL_MODULO}`);
+    await expect(generarEn(raiz)).rejects.toThrow();
+    expect(iguales(await leerBytes(RUTA_AGENTE, raiz), agente)).toBe(true);
+    expect(await Bun.file(join(raiz, RUTA_SKILL)).exists()).toBe(false);
+    expect(await temporalesDe(raiz)).toEqual([`${SKILL_EN_MODULO}${SUFIJO_TEMPORAL_MODULO}`]);
   });
 });
 

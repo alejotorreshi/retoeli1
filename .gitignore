@@ -6,6 +6,7 @@ out/
 .DS_Store
 *.log
 web/dist/
+modulo/**/*.tmp
 
 .playwright-mcp/
 .qa/logs/

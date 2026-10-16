@@ -87,19 +87,48 @@ export async function generarModulo({ raiz, escribir }: OpcionesGeneracion): Pro
   return { fallido: false };
 }
 
+type Destino = {
+  readonly final: string;
+  readonly temporal: string;
+  readonly contenido: Uint8Array;
+  readonly previo: Uint8Array | null;
+};
+
+async function leerPrevio(ruta: string): Promise<Uint8Array | null> {
+  try {
+    return await Bun.file(ruta).bytes();
+  } catch {
+    return null;
+  }
+}
+
+async function restaurar({ final, previo }: Destino): Promise<void> {
+  if (previo === null) await rm(final, { force: true });
+  else await Bun.write(final, previo);
+}
+
 async function escribirJuntos(raiz: string, archivos: readonly ArchivoModulo[]): Promise<void> {
-  const destinos = archivos.map(({ ruta, contenido }) => ({
-    final: join(raiz, ruta),
-    temporal: join(raiz, `${ruta}${SUFIJO_TEMPORAL_MODULO}`),
-    contenido,
-  }));
+  const destinos: Destino[] = await Promise.all(
+    archivos.map(async ({ ruta, contenido }) => ({
+      final: join(raiz, ruta),
+      temporal: join(raiz, `${ruta}${SUFIJO_TEMPORAL_MODULO}`),
+      contenido,
+      previo: await leerPrevio(join(raiz, ruta)),
+    })),
+  );
+  const renombrados: Destino[] = [];
   try {
     await Promise.all(destinos.map(({ temporal, contenido }) => Bun.write(temporal, contenido)));
+    for (const destino of destinos) {
+      await rename(destino.temporal, destino.final);
+      renombrados.push(destino);
+    }
   } catch (error) {
-    await Promise.all(destinos.map(({ temporal }) => rm(temporal, { force: true })));
+    for (const destino of renombrados) await restaurar(destino);
     throw error;
+  } finally {
+    await Promise.allSettled(destinos.map(({ temporal }) => rm(temporal, { force: true })));
   }
-  for (const { temporal, final } of destinos) await rename(temporal, final);
 }
 
 if (import.meta.main) {
