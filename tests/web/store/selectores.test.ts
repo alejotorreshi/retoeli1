@@ -193,4 +193,16 @@ describe("selectores del almacén", () => {
     expect(derivar({ n: 1 })).not.toBe(derivar(origen));
     expect(llamadas).toBe(2);
   });
+
+  test("memoizarPorReferencia también recuerda una derivación que da undefined", () => {
+    let llamadas = 0;
+    const derivar = selectores.memoizarPorReferencia((origen: { readonly n: number }) => {
+      llamadas += 1;
+      return origen.n > 1 ? origen.n : undefined;
+    });
+    const origen = { n: 1 };
+    expect(derivar(origen)).toBeUndefined();
+    expect(derivar(origen)).toBeUndefined();
+    expect(llamadas).toBe(1);
+  });
 });

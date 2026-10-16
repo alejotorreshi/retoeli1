@@ -21,13 +21,13 @@ import type { EstadoRaiz } from "@web/types/store.type.ts";
 import type { HealthResponse } from "@/http/types/api.type.ts";
 
 export function memoizarPorReferencia<O extends object, T>(derivar: (origen: O) => T): (origen: O) => T {
-  const cache = new WeakMap<O, T>();
+  const cache = new WeakMap<O, { readonly valor: T }>();
   return (origen) => {
     const previo = cache.get(origen);
-    if (previo !== undefined) return previo;
-    const nuevo = derivar(origen);
-    cache.set(origen, nuevo);
-    return nuevo;
+    if (previo !== undefined) return previo.valor;
+    const valor = derivar(origen);
+    cache.set(origen, { valor });
+    return valor;
   };
 }
 
