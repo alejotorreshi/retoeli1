@@ -14,6 +14,7 @@ import type { GuionChat } from "@tests/helpers/types/red-web.type.ts";
 import { CLAVE_SESION_LOCAL } from "@web/config/constants/ui.constants.ts";
 import {
   TEXTO_ACCIONES,
+  TEXTO_APP,
   TEXTO_CHAT,
   TEXTO_CONFIRMACION,
   TEXTO_MODELO,
@@ -68,6 +69,17 @@ describe("App en escritorio, con la red simulada en fetch", () => {
       expect(chips.every(habilitado)).toBe(true);
     });
     expect(localStorage.getItem(CLAVE_SESION_LOCAL)).toBe(SESION);
+  });
+
+  test("el encabezado muestra el logo de Periferia IT Group antes del título de la app", async () => {
+    const red = crearRedWeb({ nativos: dom.nativos });
+    const { pantalla } = await montarApp(dom, red);
+
+    const encabezado = await pantalla.findByRole("banner");
+    const logo = dom.dentroDe(encabezado).getByRole("img", { name: TEXTO_APP.subtitulo });
+    const titulo = dom.dentroDe(encabezado).getByRole("heading", { level: 1, name: TEXTO_APP.titulo });
+    expect(logo.compareDocumentPosition(titulo) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(dom.dentroDe(encabezado).queryByText(TEXTO_APP.subtitulo)).toBeNull();
   });
 
   test("la línea de tiempo muestra el estado vacío con los tres chips y el indicador mientras corre el turno", async () => {

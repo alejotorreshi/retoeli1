@@ -21,6 +21,7 @@ import {
   eventoTexto,
 } from "@tests/helpers/red-web.helper.ts";
 import type { Importacion } from "@tests/helpers/types/importacion.type.ts";
+import { MARCADOR_TITULO } from "@web/config/constants/marca.constants.ts";
 import { ACCION_UI, ESTADO_ACCESO, TIPO_CAMPO_CODIGO } from "@web/config/constants/ui.constants.ts";
 import { estadoRaizInicial, reducirRaiz } from "@web/store/raiz.ts";
 import * as selectores from "@web/store/selectores.ts";
@@ -76,6 +77,10 @@ const ALMACEN_LOCAL = /\blocalStorage\b/;
 const DUENO_DE_ALMACEN_LOCAL = "web/src/api/sesion-local.ts";
 
 const DUENO_DE_TEXTO = "web/src/config/strings.ts";
+
+const INDEX_HTML = "web/index.html";
+
+const ETIQUETA_HTML = /<[^>]*>/g;
 
 const DUENO_DE_REGEX = "web/src/config/constants/patterns.constants.ts";
 
@@ -375,6 +380,17 @@ function violacionesDeTexto(ruta: string, codigo: string): string[] {
   return literalesDeTexto(transpilar(ruta, codigo))
     .filter((literal) => TEXTO_LEGIBLE.test(literal))
     .map((literal) => `${ruta}: texto legible fuera de ${DUENO_DE_TEXTO}: ${literal.trim()}`);
+}
+
+function violacionesDeTextoHtml(ruta: string, html: string): string[] {
+  return html
+    .replace(ETIQUETA_HTML, "\n")
+    .split(MARCADOR_TITULO)
+    .join("")
+    .split("\n")
+    .map((linea) => linea.trim())
+    .filter((linea) => TEXTO_LEGIBLE.test(linea))
+    .map((linea) => `${ruta}: texto legible fuera de ${DUENO_DE_TEXTO}: ${linea}`);
 }
 
 function violacionesDeEnum(ruta: string, codigo: string): string[] {
@@ -752,6 +768,12 @@ describe("guardián de web/ sobre el código real", () => {
     expect(sobreElCodigo(violacionesDeTexto)).toEqual([]);
   });
 
+  test("W8: web/index.html no escribe texto legible entre etiquetas; el título llega por el marcador", () => {
+    const html = leer(INDEX_HTML);
+    expect(html).toContain(`<title>${MARCADOR_TITULO}</title>`);
+    expect(violacionesDeTextoHtml(INDEX_HTML, html)).toEqual([]);
+  });
+
   test("W9: sin enum de TypeScript", () => {
     expect(sobreElCodigo(violacionesDeEnum)).toEqual([]);
   });
@@ -981,6 +1003,15 @@ describe("el guardián de web/ muerde sobre fuentes de muestra", () => {
       "web/src/features/chat/x/x.tsx: texto legible fuera de web/src/config/strings.ts: Hola mundo",
     ]);
     expect(violacionesDeTexto(DUENO_DE_TEXTO, 'export const A = "Hola mundo";\n')).toEqual([]);
+  });
+
+  test("W8: reporta texto legible escrito a mano en index.html y acepta el marcador del título", () => {
+    const conTexto =
+      '<head>\n<meta name="viewport" content="width=device-width" />\n<title>Hola mundo</title>\n</head>';
+    expect(violacionesDeTextoHtml(INDEX_HTML, conTexto)).toEqual([
+      `${INDEX_HTML}: texto legible fuera de ${DUENO_DE_TEXTO}: Hola mundo`,
+    ]);
+    expect(violacionesDeTextoHtml(INDEX_HTML, `<title>${MARCADOR_TITULO}</title>`)).toEqual([]);
   });
 
   test("W9: reporta un enum de TypeScript", () => {

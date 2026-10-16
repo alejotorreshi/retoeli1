@@ -20,6 +20,12 @@ const APP_JS = 'console.log("app-js-3Rt");';
 const RUTA_APP_JS = "/assets/app.js";
 const RUTA_TRAVERSAL = "/..%2f..%2fpackage.json";
 const MARCA_PACKAGE_JSON = "proyecto-temporal";
+const ACTIVOS_DE_MARCA = [
+  { ruta: "/fuentes/montserrat-latin-400.woff2", tipo: "font/woff2" },
+  { ruta: "/marca/periferia-it-group.webp", tipo: "image/webp" },
+  { ruta: "/marca/favicon.jpg", tipo: "image/jpeg" },
+] as const;
+const CONTENIDO_ACTIVO = new Uint8Array([1, 2, 3, 4]);
 
 let proyecto: ProyectoTemporal;
 let directorioWeb: string;
@@ -30,6 +36,9 @@ beforeAll(async () => {
   await mkdir(join(directorioWeb, "assets"), { recursive: true });
   await writeFile(join(directorioWeb, ARCHIVO_INDEX_WEB), INDEX_HTML);
   await writeFile(join(directorioWeb, RUTA_APP_JS), APP_JS);
+  await mkdir(join(directorioWeb, "fuentes"), { recursive: true });
+  await mkdir(join(directorioWeb, "marca"), { recursive: true });
+  for (const { ruta } of ACTIVOS_DE_MARCA) await writeFile(join(directorioWeb, ruta), CONTENIDO_ACTIVO);
 });
 
 afterAll(async () => {
@@ -68,6 +77,15 @@ describe("la SPA construida se sirve desde el mismo proceso", () => {
     expect(respuesta.headers.get("Content-Type")).toContain("javascript");
     expect(await respuesta.text()).toBe(APP_JS);
   });
+
+  for (const { ruta, tipo } of ACTIVOS_DE_MARCA) {
+    test(`${ruta} se sirve como ${tipo} sin código de acceso`, async () => {
+      const respuesta = await pedirPublico(ruta);
+      expect(respuesta.status).toBe(RESPUESTA_HTTP.OK);
+      expect(respuesta.headers.get("Content-Type")).toBe(tipo);
+      expect(new Uint8Array(await respuesta.arrayBuffer())).toEqual(CONTENIDO_ACTIVO);
+    });
+  }
 
   test("un ../ codificado responde index.html y nunca el package.json de la raíz", async () => {
     expect(await Bun.file(join(proyecto.raiz, "package.json")).text()).toContain(MARCA_PACKAGE_JSON);
