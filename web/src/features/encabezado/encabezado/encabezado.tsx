@@ -1,15 +1,21 @@
 import { LogoMarca } from "@web/compartido/logo-marca/logo-marca.tsx";
 import { VARIANTE_LOGO } from "@web/config/constants/marca.constants.ts";
-import { TONO_DEL_MODELO } from "@web/config/constants/ui.constants.ts";
+import { TONO, TONO_DEL_MODELO } from "@web/config/constants/ui.constants.ts";
 import { TEXTO_APP, TEXTO_MODELO, TEXTO_NUEVA_SESION } from "@web/config/strings.ts";
 import estilos from "@web/features/encabezado/encabezado/encabezado.module.css";
 import { useEncabezado } from "@web/features/encabezado/encabezado/usar-encabezado.ts";
-import type { PropsEncabezado, PropsEstadoDelModelo } from "@web/types/ui.type.ts";
+import type { PropsEncabezado, PropsEstadoDelModelo, Tono } from "@web/types/ui.type.ts";
+
+const CLASE_DE_TONO = {
+  [TONO.EXITO]: estilos.exito,
+  [TONO.ATENCION]: estilos.atencion,
+  [TONO.ERROR]: estilos.error,
+} as const satisfies Record<Tono, string | undefined>;
 
 function EstadoDelModelo({ salud, clasePrefijo }: PropsEstadoDelModelo) {
   return (
     <p className={estilos.modelo}>
-      <span className={`${estilos.punto} ${estilos[TONO_DEL_MODELO[salud.llm]]}`} aria-hidden="true" />
+      <span className={`${estilos.punto} ${CLASE_DE_TONO[TONO_DEL_MODELO[salud.llm]]}`} aria-hidden="true" />
       <span className={estilos.texto}>
         <span className={clasePrefijo}>{TEXTO_MODELO.prefijoModelo(salud.model)}</span>
         {TEXTO_MODELO.etiqueta(salud.llm)}

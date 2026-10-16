@@ -110,6 +110,10 @@ const CONSULTAS_DEL_FRONT: ReadonlySet<string> = new Set(Object.values(CONSULTA_
 
 const DISENOS_DEL_FRONT: ReadonlySet<string> = new Set(Object.values(DISENO));
 
+const IMPORTACION_DE_MODULO_CSS = /import\s+([A-Za-z_$][\w$]*)\s+from\s+["'](@web\/[^"']+\.module\.css)["']/;
+
+const CLASE_DE_CSS = /\.(-?[A-Za-z_][\w-]*)/g;
+
 const DUENO_DE_TOKENS = "web/src/styles/tokens.css";
 
 const PREFIJO_SELECTOR = "seleccionar";
@@ -527,6 +531,35 @@ function violacionesDeDisenoEnCss(ruta: string, css: string): string[] {
   });
 }
 
+function clasesDelModulo(css: string): ReadonlySet<string> {
+  return new Set([...css.matchAll(CLASE_DE_CSS)].map((coincidencia) => coincidencia[1] ?? ""));
+}
+
+function violacionesDeClasesDeLaVista(ruta: string, codigo: string, css: string): string[] {
+  const nombre = IMPORTACION_DE_MODULO_CSS.exec(codigo)?.[1];
+  if (nombre === undefined || !VISTA.test(ruta)) return [];
+  const clases = clasesDelModulo(css);
+  const usoDeClase = new RegExp(`\\b${nombre}\\s*(?:\\.\\s*([A-Za-z_$][\\w$]*)|\\[)`, "g");
+  return codigo.split("\n").flatMap((linea, indice) =>
+    [...linea.matchAll(usoDeClase)].flatMap(([, clase]) => {
+      if (clase === undefined)
+        return [
+          `${ruta}:${indice + 1}: indexa su módulo CSS con corchetes; usa un mapa de clases con nombre`,
+        ];
+      return clases.has(clase)
+        ? []
+        : [`${ruta}:${indice + 1}: usa la clase ${clase}, que su módulo CSS no define`];
+    }),
+  );
+}
+
+function violacionesDeClasesDelFront(ruta: string, codigo: string): string[] {
+  const modulo = IMPORTACION_DE_MODULO_CSS.exec(codigo)?.[2];
+  const destino = modulo === undefined ? null : rutaDelAlias(modulo);
+  if (destino === null || !existsSync(join(RAIZ, destino))) return [];
+  return violacionesDeClasesDeLaVista(ruta, codigo, leer(destino));
+}
+
 function violacionesDeSelectorEnLinea(ruta: string, codigo: string): string[] {
   const importados = selectoresImportados(codigo);
   return codigo.split("\n").flatMap((linea, indice) => {
@@ -895,6 +928,10 @@ describe("guardián de web/ sobre el código real", () => {
     expect(listarEstilos().flatMap((ruta) => violacionesDeDisenoEnCss(ruta, leer(ruta)))).toEqual([]);
   });
 
+  test("W26: cada clase que una vista toma de su módulo CSS existe, sin indexarlo con corchetes", () => {
+    expect(sobreElCodigo(violacionesDeClasesDelFront)).toEqual([]);
+  });
+
   test("W13: cada archivo de web/src está en su carpeta de rol con su sufijo", () => {
     expect(listarTodoWeb().flatMap(violacionesDeUbicacion)).toEqual([]);
   });
@@ -1210,6 +1247,26 @@ describe("el guardián de web/ muerde sobre fuentes de muestra", () => {
       `${ruta}:4: el diseño estrecho no es un valor de DISENO`,
       `${ruta}:6: la consulta (max-width: 1023px) no es un valor de CONSULTA_DE_ANCHO`,
     ]);
+  });
+
+  test("W26: reporta una clase que el módulo CSS no define y un acceso con corchetes", () => {
+    const ruta = "web/src/compartido/x/x.tsx";
+    const codigo = [
+      'import estilos from "@web/compartido/x/x.module.css";',
+      "const CLASE = { [VARIANTE.A]: estilos.encabezado, [VARIANTE.B]: estilos.acceso };",
+      "<img className={estilos.logo} data-variante={CLASE[variante]} />",
+      "<span className={estilos[TONO_DEL_MODELO[llm]]} />",
+    ].join("\n");
+    const css = [
+      ".logo { inline-size: auto; }",
+      ".encabezado { block-size: var(--alto); }",
+      ".punto { }",
+    ].join("\n");
+    expect(violacionesDeClasesDeLaVista(ruta, codigo, css)).toEqual([
+      `${ruta}:2: usa la clase acceso, que su módulo CSS no define`,
+      `${ruta}:4: indexa su módulo CSS con corchetes; usa un mapa de clases con nombre`,
+    ]);
+    expect(violacionesDeClasesDeLaVista("web/src/compartido/x/usar-x.ts", codigo, css)).toEqual([]);
   });
 
   test("W13: reporta archivos sueltos o con el sufijo equivocado en web/src", () => {
