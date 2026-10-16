@@ -27,7 +27,7 @@ function listarFuentesWeb(): string[] {
 }
 
 function listarFuentes(): string[] {
-  const rutas = ["src", "tests"]
+  const rutas = ["src", "tests", "modulo"]
     .filter((carpeta) => existsSync(join(RAIZ, carpeta)))
     .flatMap((carpeta) => escanear(`${carpeta}/**/*.ts`));
   if (existsSync(join(RAIZ, "demo.ts"))) rutas.push("demo.ts");

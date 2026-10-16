@@ -125,6 +125,7 @@ const PERMITIDOS: Readonly<Record<string, readonly string[]>> = {
   "wiring-http": [...DESTINOS_HTTP, "config-env", "infra", "wiring-agente", "node"],
   servidor: ["wiring-http", "node"],
   cli: DESTINOS_CLI,
+  modulo: ["proveedor"],
 };
 
 const CONFIG_PURA = /^src\/config\/(?:constants\/.+|types\/.+|strings)$/;
@@ -249,6 +250,7 @@ const ROLES_DE_PRUEBA = [...new Set([...Object.values(CARPETAS_DE_ROL), "adapter
 const NOMBRES_CON_ROL: readonly RegExp[] = [
   /^demo\.ts$/,
   /^src\/tools\/proveedor\.ts$/,
+  /^modulo\/tools\/proveedor\.ts$/,
   /^src\/config\/(?:strings|env)\.ts$/,
   /^src\/server\.ts$/,
   new RegExp(`^src/config/constants/${KEBAB}\\.constants\\.ts$`),
@@ -323,6 +325,7 @@ function capaDeRuta(ruta: string): string {
   if (base === "src/server") return "servidor";
   if (base === "src/tools/proveedor") return "proveedor";
   if (base.startsWith("tests/")) return "tests";
+  if (base.startsWith(`${DIRECTORIO_MODULO}/`)) return "modulo";
   if (CONFIG_PURA.test(base)) return "config-pure";
   if (base === "src/config/env") return "config-env";
   const capa = /^src\/(domain|application|infra|tools|demo|llm|loop|http|cli)\//.exec(base)?.[1];
@@ -499,8 +502,14 @@ function violacionesDeShell(ruta: string, codigo: string): string[] {
     );
 }
 
+function escanearCarpetas(carpetas: readonly string[]): string[] {
+  return carpetas
+    .filter((carpeta) => existsSync(join(RAIZ, carpeta)))
+    .flatMap((carpeta) => [...new Bun.Glob(`${carpeta}/**/*.ts`).scanSync({ cwd: RAIZ })]);
+}
+
 function listarFuentes(): string[] {
-  const rutas = existsSync(join(RAIZ, "src")) ? [...new Bun.Glob("src/**/*.ts").scanSync({ cwd: RAIZ })] : [];
+  const rutas = escanearCarpetas(["src", DIRECTORIO_MODULO]);
   if (existsSync(join(RAIZ, "demo.ts"))) rutas.push("demo.ts");
   return rutas.map((ruta) => ruta.split("\\").join("/")).sort();
 }
@@ -558,9 +567,7 @@ function dependenciasLocales(ruta: string, codigo: string): string[] {
 }
 
 function listarTodasLasFuentes(): string[] {
-  const rutas = ["src", "tests"]
-    .filter((carpeta) => existsSync(join(RAIZ, carpeta)))
-    .flatMap((carpeta) => [...new Bun.Glob(`${carpeta}/**/*.ts`).scanSync({ cwd: RAIZ })]);
+  const rutas = escanearCarpetas(["src", "tests", DIRECTORIO_MODULO]);
   if (existsSync(join(RAIZ, "demo.ts"))) rutas.push("demo.ts");
   return rutas.map((ruta) => ruta.split("\\").join("/")).sort();
 }

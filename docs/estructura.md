@@ -92,6 +92,23 @@ Direcciones permitidas:
 - `cli` nunca importa infra, `loop`, `llm`, las herramientas ni hono, y ninguna otra capa importa `cli`.
 - Como el resto de `src/`, no usa APIs de shell (`Bun.spawn`, `Bun.$`, `child_process`).
 
+## Módulo reutilizable (`modulo/`)
+
+El PRD (§9.4) pide que las mismas herramientas se puedan montar en otro host de agentes sin el servidor. `modulo/` tiene tres piezas y ninguna es una copia a mano:
+
+| Pieza | De dónde sale | Qué la mantiene igual a la app |
+|---|---|---|
+| `modulo/agent.md` | `bun run modulo`: frontmatter de OpenCode más los bytes exactos de `agent/prompt.md`. | `tests/modulo/generador.test.ts` compara byte a byte lo commiteado con la salida del generador. |
+| `modulo/skill/registro-proveedor/SKILL.md` | `bun run modulo`: frontmatter de la skill más los bytes exactos de `src/knowledge/registro-proveedor.md`. | La misma prueba de bytes de `tests/modulo/generador.test.ts`. |
+| `modulo/tools/proveedor.ts` | Una reexportación con nombre de las cinco herramientas de `@/tools/proveedor.ts`, sin copia ni empaquetado. | `tests/modulo/herramientas.test.ts` exige que cada export sea la misma referencia (`===`) que la de la app, que el archivo se importe con el entorno vacío y que `proveedor_simular_envio` siga rechazando una llamada sin `confirmado: true`. |
+
+Reglas del guardián para `modulo/`:
+
+- `modulo/tools/proveedor.ts` es la capa `modulo` de `tests/architecture.test.ts`: solo puede importar `@/tools/proveedor.ts`. Un import de `@/tools/factories/…`, infra, `config/env.ts` o `node:` se reporta.
+- En `modulo/` el único `.ts` permitido es `modulo/tools/proveedor.ts` (G5), y cumple el mismo contrato de las cinco herramientas que `src/tools/proveedor.ts` (CAL-04).
+- `tsconfig.json` incluye `modulo`, así que `tsc` lo comprueba, y `tests/sin-comentarios.test.ts` también lo recorre.
+- Ninguna capa de `src/` importa `modulo/`.
+
 ## Front web (`web/`)
 
 El chat del navegador vive en `web/` (Vite + React) y tiene su propio guardián, `tests/arquitectura-web.test.ts` (W1–W13), con una prueba de violación por regla. `tests/sin-comentarios.test.ts` también recorre `web/**/*.{ts,tsx,css}` y `web/index.html`, sin contar `web/dist`.
