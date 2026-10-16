@@ -17,7 +17,7 @@ El reto se evalúa leyendo el código y pidiendo explicarlo línea por línea en
 
 | Id | Regla | Por qué |
 |---|---|---|
-| G1 | `src/`, `tests/` y `demo.ts` no usan importaciones relativas (`./`, `../`): solo los alias `@/`, `@tests/` y `@web/`. | Mover un archivo no rompe importaciones ajenas, y el guardián de capas puede leer la capa de destino del alias. |
+| G1 | `src/`, `tests/` y `demo.ts` no usan importaciones relativas (`./`, `../`): solo los alias `@/`, `@tests/`, `@web/` y `@modulo/` (este último solo lo usa `.opencode/`). | Mover un archivo no rompe importaciones ajenas, y el guardián de capas puede leer la capa de destino del alias. |
 | G2 | El grafo de importaciones resuelve los alias y no tiene ciclos, ni siquiera de solo tipos (IN-10). | Sin ciclos, cada capa se puede entender y probar sola. |
 | G3 | Los tipos exportados viven solo en `types/<nombre>.type.ts` de su capa. La excepción son los tipos del entorno junto a sus esquemas en `config/env.ts`. | Un tipo se encuentra siempre en el mismo lugar. |
 | G4 | Los archivos de tipos solo tienen `type` e `import type`. | Importar un tipo nunca arrastra código ni efectos. |
