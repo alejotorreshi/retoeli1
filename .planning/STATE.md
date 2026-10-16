@@ -3,16 +3,16 @@ gsd_state_version: "1.0"
 current_phase: 5
 current_phase_name: front-web-por-features-e-identidad-de-marca
 status: executing
-stopped_at: Completed 05-02-PLAN.md
-last_updated: "2026-10-16T18:07:44.791Z"
+stopped_at: Completed 05-03-PLAN.md
+last_updated: "2026-10-16T18:21:45.359Z"
 last_activity: 2026-10-16
 last_activity_desc: Phase 5 execution started
-state_head: 1f788d358295c30559902c275547a3ebc05073ab
+state_head: c415712f5d4079b574f91962dc52f2de5327112a
 progress:
   total_phases: 5
   completed_phases: 4
   total_plans: 103
-  completed_plans: 96
+  completed_plans: 97
   percent: 80
 ---
 
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-10-16)
 ## Current Position
 
 Phase: 5 (front-web-por-features-e-identidad-de-marca) — EXECUTING
-Plan: 3 of 9
+Plan: 4 of 9
 Status: Ready to execute
 Last activity: 2026-10-16 — Phase 5 execution started
 
@@ -155,6 +155,7 @@ Progress: [████████░░] 80%
 | Phase 04 P08 | 4 min | 2 tasks | 6 files |
 | Phase 05 P01 | 15 min | 3 tasks | 17 files |
 | Phase 05 P02 | 13 min | 3 tasks | 45 files |
+| Phase 05 P03 | 9 min | 3 tasks | 25 files |
 
 ## Accumulated Context
 
@@ -386,6 +387,9 @@ Recent decisions affecting current work:
 - [Phase 05]: Front store: selectors are named seleccionar* exports memoized by slice reference, so a property test walks every export for Object.is stability
 - [Phase 05]: Front store: slice reducers take only their action family; reducirRaiz routes by Sets of ACCION_SALUD and ACCION_DIALOGO_SESION values and keeps reducirConversacion as the single conversacion slice
 - [Phase 05]: Front store: only web/src/store/dependencias.ts imports web/src/api; actions receive Dependencias by parameter and are tested without a DOM
+- [Phase 05]: The App runs on the store: main.tsx creates crearInstancia(dependenciasReales) once and App({ instancia }) renders ProveedorAlmacen around Pantalla; usar-chat, usar-salud and usar-reintento-config are deleted
+- [Phase 05]: montarApp fails a DOM test on any console.error through onTestFinished, and returns the store instance
+- [Phase 05]: Component folders are view (JSX, aria, classes, TEXTO_*), usar-<c>.ts hook (store, actions, refs, ids, effects) and CSS module; W14, W15, W16, W17, W18 and W20 guard them, with CARPETAS_EN_MUDANZA exempting components/ and hooks/ until 05-07
 
 ### Pending Todos
 
@@ -424,6 +428,6 @@ Items acknowledged and deferred at milestone close, most recent first:
 
 ## Session Continuity
 
-Last session: 2026-10-16T18:07:44.648Z
-Stopped at: Completed 05-02-PLAN.md
+Last session: 2026-10-16T18:21:45.212Z
+Stopped at: Completed 05-03-PLAN.md
 Resume file: None
