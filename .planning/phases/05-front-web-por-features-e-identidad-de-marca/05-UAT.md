@@ -68,12 +68,20 @@ result: [pending]
 expected: (a) El verificador comprobó en este pase que los 5 paquetes no declaran preinstall/install/postinstall y que el más reciente (happy-dom 20.14.6, 2026-10-08T23:18Z) tenía 7 d 18 h al instalarse (36727e4, 2026-10-16T17:42Z). (b) La atribución está en SOLUCION.md:137, pero ninguna prueba la exige
 result: [pending]
 
+### 14. Vista previa abierta mientras el agente procesa los 4 casos (revisión de código iter. 2, WR-01)
+expected: Con la vista previa de un archivo del caso A abierta, al pasar el agente al caso B el diálogo sigue visible fuera del bloque plegable, el bloque de A no se pliega y al cerrar el foco vuelve a "Ver"
+result: [pending]
+
+### 15. 401 en /api/config justo después de un código aceptado (revisión de código iter. 3, IN-01) y chips/tarjetas durante la recarga de sesión (iter. 2, IN-07)
+expected: Bloqueando la cookie tras un código correcto, el mensaje del servidor aparece como aviso del sistema arriba del campo (no como error del campo); durante la hidratación de una sesión, chips, tarjetas y "procesar de nuevo" se ven deshabilitados
+result: [pending]
+
 ## Summary
 
-total: 13
+total: 15
 passed: 0
 issues: 0
-pending: 13
+pending: 15
 skipped: 0
 blocked: 0
 
