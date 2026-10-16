@@ -1,28 +1,23 @@
-import estilos from "@web/components/tarjeta-resultado.module.css";
-import { ESTADO_FIRMA } from "@web/config/constants/ui.constants.ts";
+import { ESTADO_FIRMA, TONO_CONTADOR } from "@web/config/constants/ui.constants.ts";
 import { TEXTO_RESULTADO } from "@web/config/strings.ts";
-import { contadoresDe, estadoDeFirma } from "@web/features/casos/estado/casos.ts";
-import type { ContadorDeCaso, EstadoCampoUi, EstadoFirma } from "@web/types/chat.type.ts";
-import type { PropsBloqueosResultado, PropsTarjetaResultado } from "@web/types/ui.type.ts";
-import { useId } from "react";
+import estilos from "@web/features/casos/tarjeta-resultado/tarjeta-resultado.module.css";
+import { useTarjetaResultado } from "@web/features/casos/tarjeta-resultado/usar-tarjeta-resultado.ts";
+import type { EstadoFirma } from "@web/types/chat.type.ts";
+import type { PropsBloqueosResultado, PropsTarjetaResultado, TonoContador } from "@web/types/ui.type.ts";
 import { ESTADO_CAMPO } from "@/config/constants/mapping.constants.ts";
 
-const CLASE_DE_CONTADOR = {
+const CLASE_DE_TONO = {
   [ESTADO_CAMPO.LLENO]: estilos.lleno,
   [ESTADO_CAMPO.FALTANTE]: estilos.faltante,
   [ESTADO_CAMPO.REQUIERE_CONFIRMACION]: estilos.porConfirmar,
-} as const satisfies Record<EstadoCampoUi, string | undefined>;
+  [TONO_CONTADOR.TENUE]: estilos.tenue,
+} as const satisfies Record<TonoContador, string | undefined>;
 
 const CLASE_DE_FIRMA = {
   [ESTADO_FIRMA.LISTO]: estilos.listo,
   [ESTADO_FIRMA.NO_LISTO]: estilos.noListo,
   [ESTADO_FIRMA.SIN_ARMAR]: estilos.sinArmar,
 } as const satisfies Record<EstadoFirma, string | undefined>;
-
-function claseDelNumero({ estado, cantidad }: ContadorDeCaso): string {
-  const tono = cantidad === null || cantidad === 0 ? estilos.tenue : CLASE_DE_CONTADOR[estado];
-  return `${estilos.numero} ${tono}`;
-}
 
 function Bloqueos({ bloqueos }: PropsBloqueosResultado) {
   if (bloqueos === null) return <dd className={estilos.valor}>{TEXTO_RESULTADO.sinDato}</dd>;
@@ -39,9 +34,7 @@ function Bloqueos({ bloqueos }: PropsBloqueosResultado) {
 }
 
 export function TarjetaResultado({ resultado }: PropsTarjetaResultado) {
-  const idTitulo = useId();
-  const firma = estadoDeFirma(resultado.listoParaFirma);
-  const paqueteArmado = firma !== ESTADO_FIRMA.SIN_ARMAR;
+  const { idTitulo, firma, paqueteArmado, contadores } = useTarjetaResultado(resultado);
   return (
     <li>
       <article className={estilos.tarjeta} aria-labelledby={idTitulo}>
@@ -55,9 +48,11 @@ export function TarjetaResultado({ resultado }: PropsTarjetaResultado) {
           <span className={`${estilos.badge} ${estilos.neutro}`}>{TEXTO_RESULTADO.pais(resultado.pais)}</span>
         </header>
         <ul className={estilos.contadores}>
-          {contadoresDe(resultado).map((contador) => (
+          {contadores.map((contador) => (
             <li key={contador.estado} className={estilos.celda}>
-              <span className={claseDelNumero(contador)}>{TEXTO_RESULTADO.cantidad(contador.cantidad)}</span>
+              <span className={`${estilos.numero} ${CLASE_DE_TONO[contador.tono]}`}>
+                {TEXTO_RESULTADO.cantidad(contador.cantidad)}
+              </span>
               <span className={estilos.rotulo}>{TEXTO_RESULTADO.contador(contador.estado)}</span>
             </li>
           ))}

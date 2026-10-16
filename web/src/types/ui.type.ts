@@ -4,16 +4,20 @@ import type {
   SENAL_SEGUIMIENTO,
   TAMANO_ICONO,
   TONO,
+  TONO_CONTADOR,
 } from "@web/config/constants/ui.constants.ts";
 import type {
   AccionDeAviso,
   AccionDeTarjeta,
   ArchivoUi,
   AvisoDeSesion,
+  ContadorDeCaso,
   ControlArchivos,
   ErrorVisible,
+  EstadoCampoUi,
   EstadoEtapa,
   EstadoFilaVistaPrevia,
+  EstadoFirma,
   EstadoHerramienta,
   EstadoModelo,
   LlamadaDelTurno,
@@ -21,6 +25,7 @@ import type {
   ResultadoDeCaso,
   SaludModelo,
   TarjetaDeConfirmacion,
+  TipoAccion,
   TurnoConversacion,
   UsoDeSesion,
   VistaPreviaUi,
@@ -134,8 +139,39 @@ export type PropsTarjetaConfirmacion = {
   readonly alResponder: (accion: AccionDeTarjeta) => void;
 };
 
+export type TarjetaEnPila = {
+  readonly tarjeta: TarjetaDeConfirmacion;
+  readonly listoParaFirma: boolean | null;
+};
+
+export type ControlTarjetaConfirmacion = {
+  readonly idTitulo: string;
+  readonly idAyuda: string;
+  readonly firma: EstadoFirma;
+  readonly abierta: boolean;
+  readonly bloqueada: boolean;
+  readonly cantidadBloqueos: number;
+  readonly ayuda: string;
+  readonly textoConfirmar: string;
+  readonly textoCancelar: string;
+  readonly responder: (tipo: TipoAccion) => void;
+};
+
 export type PropsTarjetaResultado = {
   readonly resultado: ResultadoDeCaso;
+};
+
+export type TonoContador = EstadoCampoUi | ValorDe<typeof TONO_CONTADOR>;
+
+export type ContadorConTono = ContadorDeCaso & {
+  readonly tono: TonoContador;
+};
+
+export type ControlTarjetaResultado = {
+  readonly idTitulo: string;
+  readonly firma: EstadoFirma;
+  readonly paqueteArmado: boolean;
+  readonly contadores: readonly ContadorConTono[];
 };
 
 export type PropsBloqueosResultado = {

@@ -1,15 +1,17 @@
 import { IconoAlerta } from "@web/compartido/iconos/iconos.tsx";
-import estilos from "@web/components/tarjeta-confirmacion.module.css";
 import {
   ESTADO_FIRMA,
   ESTADO_TARJETA_CONFIRMACION,
   TAMANO_ICONO,
 } from "@web/config/constants/ui.constants.ts";
 import { TEXTO_CONFIRMACION, TEXTO_RESULTADO } from "@web/config/strings.ts";
-import { estadoDeFirma, listoParaFirmaHasta } from "@web/features/casos/estado/casos.ts";
-import type { EstadoFirma, EstadoTarjetaConfirmacion, TipoAccion } from "@web/types/chat.type.ts";
+import estilos from "@web/features/confirmacion/tarjeta-confirmacion/tarjeta-confirmacion.module.css";
+import {
+  usePilaConfirmaciones,
+  useTarjetaConfirmacion,
+} from "@web/features/confirmacion/tarjeta-confirmacion/usar-tarjeta-confirmacion.ts";
+import type { EstadoFirma, EstadoTarjetaConfirmacion } from "@web/types/chat.type.ts";
 import type { PropsPilaConfirmaciones, PropsTarjetaConfirmacion } from "@web/types/ui.type.ts";
-import { useId } from "react";
 import { TIPO_ACCION } from "@/config/constants/confirmation.constants.ts";
 
 const CLASE_DE_FIRMA = {
@@ -25,32 +27,20 @@ const CLASE_DE_DESENLACE = {
   [ESTADO_TARJETA_CONFIRMACION.REEMPLAZADA]: estilos.info,
 } as const satisfies Record<EstadoTarjetaConfirmacion, string | undefined>;
 
-function ayudaDeBloqueo(ocupada: boolean, enviando: TipoAccion | null): string {
-  return ocupada || enviando !== null ? TEXTO_CONFIRMACION.ocupada : TEXTO_CONFIRMACION.enPausa;
-}
-
-function textoDelBoton(tipo: TipoAccion, enviando: TipoAccion | null, texto: string): string {
-  return enviando === tipo ? TEXTO_CONFIRMACION.enviando : texto;
-}
-
-export function TarjetaConfirmacion({
-  tarjeta,
-  listoParaFirma,
-  ocupada,
-  pausada,
-  alResponder,
-}: PropsTarjetaConfirmacion) {
-  const idTitulo = useId();
-  const idAyuda = useId();
-  const firma = estadoDeFirma(listoParaFirma);
-  const abierta = tarjeta.estado === ESTADO_TARJETA_CONFIRMACION.ABIERTA;
-  const bloqueada = ocupada || pausada || tarjeta.enviando !== null;
-  const cantidadBloqueos = tarjeta.bloqueosLegibles.length;
-
-  function responder(tipo: TipoAccion): void {
-    if (bloqueada) return;
-    alResponder({ tipo, caso: tarjeta.caso });
-  }
+export function TarjetaConfirmacion(props: PropsTarjetaConfirmacion) {
+  const { tarjeta } = props;
+  const {
+    idTitulo,
+    idAyuda,
+    firma,
+    abierta,
+    bloqueada,
+    cantidadBloqueos,
+    ayuda,
+    textoConfirmar,
+    textoCancelar,
+    responder,
+  } = useTarjetaConfirmacion(props);
 
   return (
     <article
@@ -95,7 +85,7 @@ export function TarjetaConfirmacion({
               aria-describedby={bloqueada ? idAyuda : undefined}
               onClick={() => responder(TIPO_ACCION.CONFIRMAR)}
             >
-              {textoDelBoton(TIPO_ACCION.CONFIRMAR, tarjeta.enviando, TEXTO_CONFIRMACION.confirmar)}
+              {textoConfirmar}
             </button>
             <button
               type="button"
@@ -104,12 +94,12 @@ export function TarjetaConfirmacion({
               aria-describedby={bloqueada ? idAyuda : undefined}
               onClick={() => responder(TIPO_ACCION.CANCELAR)}
             >
-              {textoDelBoton(TIPO_ACCION.CANCELAR, tarjeta.enviando, TEXTO_CONFIRMACION.cancelar)}
+              {textoCancelar}
             </button>
           </div>
           {bloqueada ? (
             <p id={idAyuda} className={estilos.ayuda}>
-              {ayudaDeBloqueo(ocupada, tarjeta.enviando)}
+              {ayuda}
             </p>
           ) : null}
         </div>
@@ -131,14 +121,15 @@ export function PilaConfirmaciones({
   pausada,
   alResponder,
 }: PropsPilaConfirmaciones) {
-  if (tarjetas.length === 0) return null;
+  const pila = usePilaConfirmaciones(tarjetas, turnos);
+  if (pila.length === 0) return null;
   return (
     <li className={estilos.pila}>
-      {tarjetas.map((tarjeta) => (
+      {pila.map(({ tarjeta, listoParaFirma }) => (
         <TarjetaConfirmacion
           key={tarjeta.clave}
           tarjeta={tarjeta}
-          listoParaFirma={listoParaFirmaHasta(turnos, tarjeta.caso, tarjeta.resueltaEnTurno)}
+          listoParaFirma={listoParaFirma}
           ocupada={ocupada}
           pausada={pausada}
           alResponder={alResponder}

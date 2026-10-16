@@ -163,6 +163,10 @@ export const ESTADO_FIRMA = {
   SIN_ARMAR: "sin_armar",
 } as const;
 
+export const TONO_CONTADOR = {
+  TENUE: "tenue",
+} as const;
+
 export const SEPARADOR_RUTA = "/";
 
 export const CASO_DEMO_PRD = "ec-corp-andina";
