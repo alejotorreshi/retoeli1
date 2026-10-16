@@ -5,11 +5,11 @@ titles: json
 findings:
   - id: WR-01
     severity: warning
-    disposition: open
+    disposition: fixed
     title: "La reserva de D-77.2 responde 429 a credenciales válidas cuando llegan juntas, y el texto anuncia un bloqueo de 15 minutos que no existe"
   - id: WR-02
     severity: warning
-    disposition: open
+    disposition: fixed
     title: "`eventoDeTruncado` marca como \"confirmado\" un truncado cuya autorización ya se gastó, y el aviso miente sobre la causa"
   - id: IN-01
     severity: info
@@ -43,17 +43,17 @@ findings:
     severity: info
     disposition: open
     title: "`aplicarEvento` no tiene comprobación de exhaustividad"
-open: 10
+open: 8
 total: 10
-recorded: 2026-10-15T23:24:56.156Z
+recorded: 2026-10-16T00:06:16.081Z
 ---
 
 # Phase 03: Code Review Disposition
 
 | Finding | Severity | Disposition | Source |
 |---------|----------|-------------|--------|
-| WR-01 | warning | open | - |
-| WR-02 | warning | open | - |
+| WR-01 | warning | fixed | 03-REVIEW-FIX.md |
+| WR-02 | warning | fixed | 03-REVIEW-FIX.md |
 | IN-01 | info | open | - |
 | IN-02 | info | open | - |
 | IN-03 | info | open | - |
