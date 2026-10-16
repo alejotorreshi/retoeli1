@@ -9,18 +9,24 @@ export const seguimientoInicial: EstadoSeguimiento = {
   pegado: true,
   contenidoNuevo: false,
   posicion: null,
+  distancia: null,
 };
 
 function conCambios(estado: EstadoSeguimiento, siguiente: EstadoSeguimiento): EstadoSeguimiento {
   const igual =
     siguiente.pegado === estado.pegado &&
     siguiente.contenidoNuevo === estado.contenidoNuevo &&
-    siguiente.posicion === estado.posicion;
+    siguiente.posicion === estado.posicion &&
+    siguiente.distancia === estado.distancia;
   return igual ? estado : siguiente;
 }
 
 function anotarPosicion(estado: EstadoSeguimiento, posicion: number): EstadoSeguimiento {
   return conCambios(estado, { ...estado, posicion });
+}
+
+function anotarMedida(estado: EstadoSeguimiento, posicion: number, distancia: number): EstadoSeguimiento {
+  return conCambios(estado, { ...estado, posicion, distancia });
 }
 
 function volverAlFinal(estado: EstadoSeguimiento): EstadoSeguimiento {
@@ -31,6 +37,10 @@ function subio(estado: EstadoSeguimiento, posicion: number): boolean {
   return estado.posicion !== null && posicion < estado.posicion;
 }
 
+function seAcercoAlFinal(estado: EstadoSeguimiento, distancia: number): boolean {
+  return estado.distancia !== null && distancia < estado.distancia;
+}
+
 function enElFondo(distancia: number): boolean {
   return distancia <= TOLERANCIA_FONDO;
 }
@@ -39,20 +49,21 @@ function cercaDelFinal(distancia: number): boolean {
   return distancia <= DISTANCIA_PEGADO_AL_FINAL;
 }
 
-function pegarEn(estado: EstadoSeguimiento, posicion: number): EstadoSeguimiento {
-  return conCambios(estado, { pegado: true, contenidoNuevo: false, posicion });
+function pegarEn(estado: EstadoSeguimiento, posicion: number, distancia: number): EstadoSeguimiento {
+  return conCambios(estado, { pegado: true, contenidoNuevo: false, posicion, distancia });
 }
 
 function desplazar(estado: EstadoSeguimiento, posicion: number, distancia: number): EstadoSeguimiento {
-  if (enElFondo(distancia)) return pegarEn(estado, posicion);
-  if (subio(estado, posicion)) return conCambios(estado, { ...estado, pegado: false, posicion });
-  if (cercaDelFinal(distancia)) return pegarEn(estado, posicion);
-  return anotarPosicion(estado, posicion);
+  if (enElFondo(distancia)) return pegarEn(estado, posicion, distancia);
+  if (subio(estado, posicion)) return conCambios(estado, { ...estado, pegado: false, posicion, distancia });
+  if (seAcercoAlFinal(estado, distancia) && cercaDelFinal(distancia))
+    return pegarEn(estado, posicion, distancia);
+  return anotarMedida(estado, posicion, distancia);
 }
 
-function crecer(estado: EstadoSeguimiento): EstadoSeguimiento {
+function crecer(estado: EstadoSeguimiento, distancia: number): EstadoSeguimiento {
   if (estado.pegado) return estado;
-  return conCambios(estado, { ...estado, contenidoNuevo: true });
+  return conCambios(estado, { ...estado, contenidoNuevo: true, distancia });
 }
 
 export function reducirSeguimiento(estado: EstadoSeguimiento, senal: SenalSeguimiento): EstadoSeguimiento {
@@ -62,7 +73,7 @@ export function reducirSeguimiento(estado: EstadoSeguimiento, senal: SenalSeguim
     case SENAL_SEGUIMIENTO.DESPLAZAMIENTO:
       return desplazar(estado, senal.posicion, senal.distancia);
     case SENAL_SEGUIMIENTO.CRECIMIENTO:
-      return crecer(estado);
+      return crecer(estado, senal.distancia);
     case SENAL_SEGUIMIENTO.ENVIO:
     case SENAL_SEGUIMIENTO.IR_AL_FINAL:
       return volverAlFinal(estado);

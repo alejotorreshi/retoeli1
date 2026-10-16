@@ -161,7 +161,8 @@ describe("reducirSeguimiento", () => {
     );
     const anotado = reducirSeguimiento(seguimientoInicial, ajustePropio(POSICION_TIPO_A));
     expect(reducirSeguimiento(anotado, ajustePropio(POSICION_TIPO_A))).toBe(anotado);
-    expect(reducirSeguimiento(anotado, desplazamiento(POSICION_TIPO_A, DISTANCIA_TIPO_A))).toBe(anotado);
+    const medido = reducirSeguimiento(anotado, desplazamiento(POSICION_TIPO_A, DISTANCIA_TIPO_A));
+    expect(reducirSeguimiento(medido, desplazamiento(POSICION_TIPO_A, DISTANCIA_TIPO_A))).toBe(medido);
     const conNuevo = conContenidoNuevo();
     expect(reducirSeguimiento(conNuevo, crecimiento(DISTANCIA_TRAS_CRECER))).toBe(conNuevo);
   });

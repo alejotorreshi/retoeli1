@@ -159,7 +159,7 @@ export function LineaDeTiempo({
     const cuerpo = contenido.current;
     if (desplazable === null || cuerpo === null) return;
     const observador = new ResizeObserver(() => {
-      despachar({ tipo: SENAL_SEGUIMIENTO.CRECIMIENTO });
+      despachar({ tipo: SENAL_SEGUIMIENTO.CRECIMIENTO, distancia: distanciaAlFinal(desplazable) });
       if (seguimiento.current.pegado) seguirAlFinal(desplazable);
     });
     observador.observe(cuerpo);
