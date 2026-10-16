@@ -105,6 +105,8 @@ const VISTAS_MIGRADAS: readonly string[] = [
   "web/src/features/chat/indicador-pensando/indicador-pensando.tsx",
   "web/src/features/herramientas/grupo-herramientas/grupo-herramientas.tsx",
   "web/src/features/herramientas/tarjeta-herramienta/tarjeta-herramienta.tsx",
+  "web/src/features/confirmacion/tarjeta-confirmacion/tarjeta-confirmacion.tsx",
+  "web/src/features/casos/tarjeta-resultado/tarjeta-resultado.tsx",
 ];
 
 function carpetaDeComponente(raiz: string): RegExp {
