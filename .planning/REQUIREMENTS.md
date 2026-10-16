@@ -121,7 +121,7 @@ Fuente vinculante: `reto-01/PRD.md`, sin modificar. Fixtures: `reto-01/fixtures/
 ### Documentación de entrega (§9)
 
 - [x] **DOC-01**: El `README.md` explica cómo levantar en local con un comando, las variables de entorno, cómo correr `demo.ts`, el link de prueba y el código de acceso.
-- [ ] **DOC-02**: `SOLUCION.md` tiene las 10 secciones obligatorias:
+- [x] **DOC-02**: `SOLUCION.md` tiene las 10 secciones obligatorias:
   1. Problema.
   2. Arquitectura con diagrama.
   3. Ciclo del agente.
@@ -245,7 +245,7 @@ Cada requisito v1 está asignado a exactamente una fase del roadmap (`.planning/
 | DEP-02 | Phase 3 | Complete |
 | DEP-03 | Phase 4 | Complete |
 | DOC-01 | Phase 4 | Complete |
-| DOC-02 | Phase 4 | Pending |
+| DOC-02 | Phase 4 | Complete |
 | MOD-01 | Phase 4 | Complete |
 | MOD-02 | Phase 4 | Complete |
 
