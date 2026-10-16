@@ -51,7 +51,7 @@ import {
   TIPO_HOJA_MAESTRO,
   VARIABLE_NOTA,
 } from "@/config/constants/mapping.constants.ts";
-import { MOTIVO_FUENTE_MODULO } from "@/config/constants/modulo.constants.ts";
+import { DIRECTORIO_MODULO, MOTIVO_FUENTE_MODULO } from "@/config/constants/modulo.constants.ts";
 import { COLOR_TRAZO } from "@/config/constants/pdf.constants.ts";
 import { TIPO_MASCARA } from "@/config/constants/pii.constants.ts";
 import { ESTADO_SOPORTE, ESTADO_VIGENCIA } from "@/config/constants/supports.constants.ts";
@@ -59,6 +59,10 @@ import { HERRAMIENTA } from "@/config/constants/tools.constants.ts";
 import * as STRINGS from "@/config/strings.ts";
 
 const RAIZ = join(import.meta.dir, "..");
+
+const HERRAMIENTAS_DEL_MODULO = "modulo/tools/proveedor.ts";
+
+const RUTA_HERRAMIENTAS_DEL_MODULO = join(RAIZ, DIRECTORIO_MODULO, "tools", "proveedor.ts");
 
 const API_SHELL = /child_process|\bBun\s*\.\s*(?:spawn|\$)|\bBun\s*\[\s*["'`](?:spawn|\$)/;
 
@@ -723,6 +727,12 @@ describe("reglas de capas sobre el código real", () => {
     expect(fuentes.flatMap((ruta) => violacionesDeHttpEnCli(ruta, leer(ruta)))).toEqual([]);
   });
 
+  test("modulo/ entra en el escaneo y solo reexporta las herramientas de la app (MOD-02)", () => {
+    expect(listarFuentes()).toContain(HERRAMIENTAS_DEL_MODULO);
+    expect(listarTodasLasFuentes()).toContain(HERRAMIENTAS_DEL_MODULO);
+    expect(violacionesDeCapas(HERRAMIENTAS_DEL_MODULO, leer(HERRAMIENTAS_DEL_MODULO))).toEqual([]);
+  });
+
   test("src/ y demo.ts no usan APIs de shell", () => {
     const violaciones = listarFuentes().flatMap((ruta) => violacionesDeShell(ruta, leer(ruta)));
     expect(violaciones).toEqual([]);
@@ -746,6 +756,15 @@ describe("superficie pública de herramientas (CAL-04)", () => {
       "mapear_campos",
       "simular_envio",
     ]);
+    expect(Object.entries(modulo).flatMap(([nombre, valor]) => contratoIncompleto(nombre, valor))).toEqual(
+      [],
+    );
+  });
+
+  test("modulo/tools/proveedor.ts cumple el mismo contrato de las cinco herramientas (MOD-02)", async () => {
+    const modulo = Object.fromEntries(Object.entries(await import(RUTA_HERRAMIENTAS_DEL_MODULO)));
+    expect(Object.keys(modulo).sort()).toEqual([...HERRAMIENTAS_PRD].sort());
+    expect(violacionesDeHerramientas(modulo)).toEqual([]);
     expect(Object.entries(modulo).flatMap(([nombre, valor]) => contratoIncompleto(nombre, valor))).toEqual(
       [],
     );
@@ -1368,6 +1387,31 @@ describe("el escáner muerde sobre fuentes de muestra", () => {
     ]);
     expect(rutas.flatMap(violacionesDeArchivoSuelto)).toEqual([
       "src/cli/x.ts: archivo suelto en la raíz de su capa; va en una carpeta de rol",
+    ]);
+  });
+
+  test("la capa modulo solo reexporta @/tools/proveedor.ts", () => {
+    const permitido = 'export { leer_solicitud, simular_envio } from "@/tools/proveedor.ts";\n';
+    const prohibido = [
+      'export { crearHerramientas } from "@/tools/factories/herramientas.factory.ts";',
+      'import { createLogger } from "@/infra/logging/logger.adapter.ts";',
+      'import { readToolEnv } from "@/config/env.ts";',
+      'import { join } from "node:path";',
+    ].join("\n");
+    expect(violacionesDeCapas(HERRAMIENTAS_DEL_MODULO, permitido)).toEqual([]);
+    expect(violacionesDeCapas(HERRAMIENTAS_DEL_MODULO, prohibido)).toEqual([
+      "modulo/tools/proveedor.ts: la capa modulo no puede importar @/tools/factories/herramientas.factory.ts",
+      "modulo/tools/proveedor.ts: la capa modulo no puede importar @/infra/logging/logger.adapter.ts",
+      "modulo/tools/proveedor.ts: la capa modulo no puede importar @/config/env.ts",
+      "modulo/tools/proveedor.ts: la capa modulo no puede importar node:path",
+    ]);
+  });
+
+  test("G5: en modulo/ el único .ts es tools/proveedor.ts", () => {
+    const rutas = [HERRAMIENTAS_DEL_MODULO, "modulo/tools/otra.ts", "modulo/proveedor.ts"];
+    expect(rutas.flatMap(violacionesDeNombre)).toEqual([
+      "modulo/tools/otra.ts: el nombre no sigue la tabla de sufijos por carpeta",
+      "modulo/proveedor.ts: el nombre no sigue la tabla de sufijos por carpeta",
     ]);
   });
 
