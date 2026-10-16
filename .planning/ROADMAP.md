@@ -295,7 +295,7 @@ Plans:
   4. GitHub Actions corre `bun test`, `bun run demo.ts`, `tsc --noEmit` y lint en verde, y el README muestra el badge.
   5. El script de pre-flight calienta el servicio en Render y verifica health y SSE, y el guion §11 completo se ensaya con éxito sobre el link público.
 
-**Plans:** 7/8 plans executed
+**Plans:** 8/8 plans executed
 
 Plans:
 **Wave 1**
@@ -318,7 +318,7 @@ Plans:
 - [x] 04-07-PLAN.md — `SOLUCION.md` con las 10 secciones del PRD §9.1 y la compuerta local de la fase antes del push
 
 **Gap closure** *(UAT G-04-1, G-04-2)*
-- [ ] 04-08-PLAN.md — El test WR-02 pasa en una copia sin `.git` (G-04-1), y `out/<caso>/` compartido entre sesiones queda documentado, con `--guion` la víspera, en `docs/entrega.md`, `SOLUCION.md` §10 y el README (G-04-2)
+- [x] 04-08-PLAN.md — El test WR-02 pasa en una copia sin `.git` (G-04-1), y `out/<caso>/` compartido entre sesiones queda documentado, con `--guion` la víspera, en `docs/entrega.md`, `SOLUCION.md` §10 y el README (G-04-2)
 
 **Research flag**: (ligero) Frontmatter de agente, herramienta y skill de OpenCode, y el campo `sessionID` de su contexto.
 
@@ -332,4 +332,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 | 1. Núcleo determinista | 15/15 | Complete    | 2026-10-13 |
 | 2. Agente y compuerta de confirmación | 24/24 | Complete    | 2026-10-14 |
 | 3. Chat web, API SSE y despliegue | 47/47 | Complete    | 2026-10-15 |
-| 4. Módulo, documentación y defensa | 7/7 | In Progress | - |
+| 4. Módulo, documentación y defensa | 8/8 | In Progress | - |

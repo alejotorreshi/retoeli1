@@ -3,16 +3,16 @@ gsd_state_version: "1.0"
 current_phase: 04
 current_phase_name: m-dulo-documentaci-n-y-defensa
 status: verifying
-stopped_at: Completed 04-07-PLAN.md
-last_updated: "2026-10-16T05:18:55.843Z"
+stopped_at: Completed 04-08-PLAN.md
+last_updated: "2026-10-16T06:20:17.040Z"
 last_activity: 2026-10-15
 last_activity_desc: Phase 04 execution started
-state_head: f12506da72012bfac80d11455617f146929265ee
+state_head: fdd86f1cd05665863e0855c15e86146ec4b6f919
 progress:
   total_phases: 4
   completed_phases: 3
-  total_plans: 93
-  completed_plans: 93
+  total_plans: 94
+  completed_plans: 94
   percent: 75
 ---
 
@@ -151,6 +151,7 @@ Progress: [████████░░] 75%
 | Phase 04 P05 | 7 min | 2 tasks | 7 files |
 | Phase 04 P06 | 11min | 2 tasks | 7 files |
 | Phase 04 P07 | 7 min | 2 tasks | 4 files |
+| Phase 04 P08 | 4 min | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -370,6 +371,8 @@ Recent decisions affecting current work:
 - [Phase 04]: 04-06: README y docs de continuidad protegidos por pruebas de contrato derivadas del repo (.env.example, RUTA_API, TIPO_EVENTO, package.json, ids de guardianes, carpetas de src/); el código de acceso se inyecta desde .qa/render.token sin imprimirse
 - [Phase 04]: 04-07: SOLUCION.md registra SEG-02 como parcial según REQUIREMENTS.md, aunque redactar() ya cubre logs, resúmenes, JSON y SSE; cerrarlo requiere una verificación que actualice la trazabilidad
 - [Phase 04]: 04-07: SOLUCION.md §8 marca HU-1..HU-5 hecho, el bonus modulo/ parcial (sin ensayo en vivo en OpenCode, D-83) y el diseño §7.4 hecho
+- [Phase 04]: 04-08: WR-02 se comprueba sin git (parseo de .gitattributes y eol efectivo por ruta); git check-attr solo corre cuando git rev-parse --show-toplevel es la raíz del proyecto (test.skipIf)
+- [Phase 04]: 04-08: G-04-2 se cierra solo con documentación; el --guion y los ensayos del §11 van la víspera para que Render vacíe out/ antes de la defensa, y el pre-flight por defecto queda para los 10 minutos antes
 
 ### Pending Todos
 
@@ -406,6 +409,6 @@ Items acknowledged and deferred at milestone close, most recent first:
 
 ## Session Continuity
 
-Last session: 2026-10-16T05:18:55.712Z
-Stopped at: Completed 04-07-PLAN.md
+Last session: 2026-10-16T06:20:16.900Z
+Stopped at: Completed 04-08-PLAN.md
 Resume file: None
