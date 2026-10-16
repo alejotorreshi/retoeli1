@@ -3,6 +3,26 @@ phase: 05
 review: 05-REVIEW.md
 titles: json
 findings:
+  - id: IN-01
+    severity: info
+    disposition: fixed
+    title: "The IN-08 fix opens a second channel for the 401 message and marks a code the server just accepted as invalid"
+  - id: IN-02
+    severity: info
+    disposition: fixed
+    title: "The composer re-derives the \"can send\" rule instead of reading `seleccionarEnvioDeshabilitado`"
+  - id: IN-03
+    severity: info
+    disposition: fixed
+    title: "W20 still lets a feature read the store context through React 19 `use(ContextoAlmacen)`"
+  - id: IN-04
+    severity: info
+    disposition: fixed
+    title: "W4 is still a denylist, and it misses the impurities that matter most for pure reducers"
+  - id: IN-05
+    severity: info
+    disposition: fixed
+    title: "The \"en curso\" icon and its reduced-motion CSS are duplicated between two features"
   - id: WR-01
     severity: warning
     disposition: fixed
@@ -11,26 +31,6 @@ findings:
     severity: warning
     disposition: fixed
     title: "Guardian false negatives in W24 and in the store-primitive rule"
-  - id: IN-01
-    severity: info
-    disposition: fixed
-    title: "Dead `id` on the composer textarea (left behind by the iteration-1 IN-04 fix)"
-  - id: IN-02
-    severity: info
-    disposition: fixed
-    title: "The case-card data shape is redundant, and `ControlTarjetaCaso.slug` is never read"
-  - id: IN-03
-    severity: info
-    disposition: fixed
-    title: "The preview dialog keeps the previous file's content across close and reopen"
-  - id: IN-04
-    severity: info
-    disposition: fixed
-    title: "Props are mirrored into state through effects (extra render with stale UI)"
-  - id: IN-05
-    severity: info
-    disposition: fixed
-    title: "Icon switches are not exhaustive, unlike the class maps next to them"
   - id: IN-06
     severity: info
     disposition: fixed
@@ -69,25 +69,25 @@ findings:
     title: "falsos negativos de los guardianes"
 open: 0
 total: 16
-recorded: 2026-10-16T21:37:58.991Z
+recorded: 2026-10-16T21:49:55.777Z
 ---
 
 # Phase 05: Code Review Disposition
 
 | Finding | Severity | Disposition | Source |
 |---------|----------|-------------|--------|
-| WR-01 | warning | fixed | 05-REVIEW-FIX.md |
-| WR-02 | warning | fixed | 05-REVIEW-FIX.md |
 | IN-01 | info | fixed | 05-REVIEW-FIX.md |
 | IN-02 | info | fixed | 05-REVIEW-FIX.md |
 | IN-03 | info | fixed | 05-REVIEW-FIX.md |
 | IN-04 | info | fixed | 05-REVIEW-FIX.md |
 | IN-05 | info | fixed | 05-REVIEW-FIX.md |
-| IN-06 | info | fixed | 05-REVIEW-FIX.md |
-| IN-07 | info | fixed | 05-REVIEW-FIX.md |
-| IN-08 | info | fixed | 05-REVIEW-FIX.md |
-| IN-09 | info | fixed | 05-REVIEW-FIX.md |
-| IN-10 | info | fixed | 05-REVIEW-FIX.md |
+| WR-01 | warning | fixed | 05-REVIEW-FIX.iter2.md (not in the current review) |
+| WR-02 | warning | fixed | 05-REVIEW-FIX.iter2.md (not in the current review) |
+| IN-06 | info | fixed | 05-REVIEW-FIX.iter2.md (not in the current review) |
+| IN-07 | info | fixed | 05-REVIEW-FIX.iter2.md (not in the current review) |
+| IN-08 | info | fixed | 05-REVIEW-FIX.iter2.md (not in the current review) |
+| IN-09 | info | fixed | 05-REVIEW-FIX.iter2.md (not in the current review) |
+| IN-10 | info | fixed | 05-REVIEW-FIX.iter2.md (not in the current review) |
 | WR-03 | warning | fixed | 05-REVIEW-FIX.iter1.md (not in the current review) |
 | WR-04 | warning | fixed | 05-REVIEW-FIX.iter1.md (not in the current review) |
 | WR-05 | warning | fixed | 05-REVIEW-FIX.iter1.md (not in the current review) |
