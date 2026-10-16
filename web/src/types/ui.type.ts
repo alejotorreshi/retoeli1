@@ -496,25 +496,21 @@ export type PropsApp = {
 
 export type Pais = ValorDe<typeof PAIS>;
 
+export type PaisDeTarjeta = {
+  readonly codigo: string;
+  readonly nombre: string;
+};
+
 export type DatosTarjetaCaso = {
-  readonly slug: string;
-  readonly pais: Pais | null;
-  readonly codigo: string | null;
-  readonly nombrePais: string | null;
   readonly cliente: string;
+  readonly pais: PaisDeTarjeta | null;
 };
 
 export type PropsTarjetaCaso = {
   readonly slug: string;
 };
 
-export type PaisDeTarjeta = {
-  readonly codigo: string;
-  readonly nombre: string;
-};
-
 export type ControlTarjetaCaso = {
-  readonly slug: string;
   readonly cliente: string;
   readonly pais: PaisDeTarjeta | null;
   readonly etiqueta: string;

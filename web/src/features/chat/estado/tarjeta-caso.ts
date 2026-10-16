@@ -21,7 +21,7 @@ function clienteDelResto(resto: string): string {
 }
 
 function soloSlug(slug: string): DatosTarjetaCaso {
-  return { slug, pais: null, codigo: null, nombrePais: null, cliente: slug };
+  return { cliente: slug, pais: null };
 }
 
 export function datosDeTarjetaCaso(slug: string): DatosTarjetaCaso {
@@ -30,5 +30,5 @@ export function datosDeTarjetaCaso(slug: string): DatosTarjetaCaso {
   const prefijo = slug.slice(0, corte);
   const cliente = clienteDelResto(slug.slice(corte + 1));
   if (!esPaisConocido(prefijo) || cliente.length === 0) return soloSlug(slug);
-  return { slug, pais: prefijo, codigo: prefijo.toUpperCase(), nombrePais: TEXTO_PAIS[prefijo], cliente };
+  return { cliente, pais: { codigo: prefijo.toUpperCase(), nombre: TEXTO_PAIS[prefijo] } };
 }

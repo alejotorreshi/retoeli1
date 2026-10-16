@@ -23,51 +23,27 @@ describe("datos de la tarjeta de caso derivados del slug (D-113)", () => {
       "pa-logistica-istmo",
     ]);
     expect(CASOS_FIXTURE.map(datosDeTarjetaCaso)).toEqual([
-      {
-        slug: "co-industrias-delta",
-        pais: PAIS.CO,
-        codigo: "CO",
-        nombrePais: "Colombia",
-        cliente: "Industrias Delta",
-      },
-      { slug: "ec-corp-andina", pais: PAIS.EC, codigo: "EC", nombrePais: "Ecuador", cliente: "Corp Andina" },
-      {
-        slug: "hn-agroexport-sula",
-        pais: PAIS.HN,
-        codigo: "HN",
-        nombrePais: "Honduras",
-        cliente: "Agroexport Sula",
-      },
-      {
-        slug: "pa-logistica-istmo",
-        pais: PAIS.PA,
-        codigo: "PA",
-        nombrePais: "Panamá",
-        cliente: "Logistica Istmo",
-      },
+      { cliente: "Industrias Delta", pais: { codigo: "CO", nombre: TEXTO_PAIS[PAIS.CO] } },
+      { cliente: "Corp Andina", pais: { codigo: "EC", nombre: TEXTO_PAIS[PAIS.EC] } },
+      { cliente: "Agroexport Sula", pais: { codigo: "HN", nombre: TEXTO_PAIS[PAIS.HN] } },
+      { cliente: "Logistica Istmo", pais: { codigo: "PA", nombre: TEXTO_PAIS[PAIS.PA] } },
+    ]);
+    expect([PAIS.CO, PAIS.EC, PAIS.HN, PAIS.PA].map((pais) => TEXTO_PAIS[pais])).toEqual([
+      "Colombia",
+      "Ecuador",
+      "Honduras",
+      "Panamá",
     ]);
   });
 
   test("un prefijo desconocido o un slug sin guion dejan solo el slug", () => {
     for (const slug of ["xx-algo", "solo"]) {
-      expect(datosDeTarjetaCaso(slug)).toEqual({
-        slug,
-        pais: null,
-        codigo: null,
-        nombrePais: null,
-        cliente: slug,
-      });
+      expect(datosDeTarjetaCaso(slug)).toEqual({ cliente: slug, pais: null });
     }
   });
 
   test("un prefijo conocido sin cliente después del guion también deja solo el slug", () => {
-    expect(datosDeTarjetaCaso("co-")).toEqual({
-      slug: "co-",
-      pais: null,
-      codigo: null,
-      nombrePais: null,
-      cliente: "co-",
-    });
+    expect(datosDeTarjetaCaso("co-")).toEqual({ cliente: "co-", pais: null });
   });
 
   test("solo los valores de PAIS son países conocidos y cada uno tiene su nombre visible", () => {
