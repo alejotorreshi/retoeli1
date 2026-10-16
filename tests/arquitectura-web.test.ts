@@ -62,8 +62,8 @@ const NUCLEO_PURO_DEL_ALMACEN: ReadonlySet<string> = new Set([
   "web/src/store/selectores.ts",
 ]);
 
-const API_DEL_NAVEGADOR =
-  /\b(?:document|window|localStorage|sessionStorage|fetch|matchMedia|ResizeObserver|navigator|globalThis|setTimeout|setInterval|requestAnimationFrame|URL\.(?:createObjectURL|revokeObjectURL))\b/;
+const API_IMPURA =
+  /\b(?:document|window|localStorage|sessionStorage|fetch|matchMedia|ResizeObserver|navigator|globalThis|setTimeout|setInterval|requestAnimationFrame|queueMicrotask|URL\.(?:createObjectURL|revokeObjectURL)|Date\.now|new\s+Date|Math\.random|crypto|performance|location|history|XMLHttpRequest|WebSocket|EventSource)\b/;
 
 const INYECCION_DE_HTML = /\b(?:dangerouslySetInnerHTML|innerHTML|outerHTML|insertAdjacentHTML)\b/;
 
@@ -407,7 +407,10 @@ function violacionesDeEstado(ruta: string, codigo: string): string[] {
   const react = extraerImportacionesConTipo(codigo)
     .filter(({ especificador }) => PAQUETES_DE_REACT.has(nombreDePaquete(especificador)))
     .map(({ especificador }) => `${ruta}: el estado no importa ${especificador}`);
-  return [...react, ...lineasQueCumplen(ruta, codigo, API_DEL_NAVEGADOR, "el estado toca el navegador")];
+  return [
+    ...react,
+    ...lineasQueCumplen(ruta, codigo, API_IMPURA, "el estado toca el navegador, el reloj o el azar"),
+  ];
 }
 
 function violacionesDeInyeccionHtml(ruta: string, codigo: string): string[] {
@@ -886,7 +889,7 @@ describe("guardián de web/ sobre el código real", () => {
     expect(sobreElCodigo(violacionesDeAliasSrc)).toEqual([]);
   });
 
-  test("W4: el estado de features/*/estado y el núcleo del almacén no importan react ni tocan el navegador", () => {
+  test("W4: el estado de features/*/estado y el núcleo del almacén no importan react ni tocan el navegador, el reloj ni el azar", () => {
     const estadoPuro = listarCodigoWeb().filter(esEstadoPuro);
     expect(estadoPuro).toContain("web/src/features/chat/estado/conversacion.ts");
     expect(estadoPuro).toContain("web/src/features/encabezado/estado/salud.ts");
@@ -1081,7 +1084,7 @@ describe("el guardián de web/ muerde sobre fuentes de muestra", () => {
     ]);
   });
 
-  test("W4: reporta react y las APIs del navegador dentro del estado", () => {
+  test("W4: reporta react, el navegador, el reloj y el azar dentro del estado", () => {
     const codigo = [
       'import { useReducer } from "react";',
       "const raiz = document.body;",
@@ -1097,11 +1100,25 @@ describe("el guardián de web/ muerde sobre fuentes de muestra", () => {
       "const enlace = URL.createObjectURL(datos);",
       "URL.revokeObjectURL(enlace);",
       "const cuadro = requestAnimationFrame(pintar);",
+      "const ahora = Date.now();",
+      "const hoy = new Date();",
+      "const azar = Math.random();",
+      "const clave = crypto.randomUUID();",
+      "const instante = performance.now();",
+      "const ruta = location.pathname;",
+      "history.back();",
+      "const pedido = new XMLHttpRequest();",
+      "const canal = new WebSocket(direccion);",
+      "const eventos = new EventSource(direccion);",
+      "queueMicrotask(avisar);",
+      "const piso = Math.floor(total / 2);",
+      "const fecha = Date.parse(texto);",
     ].join("\n");
     expect(violacionesDeEstado("web/src/features/chat/estado/x.ts", codigo)).toEqual([
       "web/src/features/chat/estado/x.ts: el estado no importa react",
-      ...[2, 3, 4, 6, 7, 8, 9, 10, 11, 12, 13, 14].map(
-        (linea) => `web/src/features/chat/estado/x.ts:${linea}: el estado toca el navegador`,
+      ...[2, 3, 4, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25].map(
+        (linea) =>
+          `web/src/features/chat/estado/x.ts:${linea}: el estado toca el navegador, el reloj o el azar`,
       ),
     ]);
     expect(violacionesDeEstado("web/src/api/x.ts", codigo)).toEqual([]);
@@ -1117,13 +1134,13 @@ describe("el guardián de web/ muerde sobre fuentes de muestra", () => {
     expect(violacionesDeEstado("web/src/features/chat/estado/x.ts", codigo)).toEqual([]);
   });
 
-  test("W4: el núcleo puro del almacén tampoco importa react ni toca el navegador", () => {
+  test("W4: el núcleo puro del almacén tampoco importa react ni toca el navegador, el reloj ni el azar", () => {
     const codigo = ['import { useSyncExternalStore } from "react";', "const raiz = window.location;"].join(
       "\n",
     );
     expect(violacionesDeEstado("web/src/store/raiz.ts", codigo)).toEqual([
       "web/src/store/raiz.ts: el estado no importa react",
-      "web/src/store/raiz.ts:2: el estado toca el navegador",
+      "web/src/store/raiz.ts:2: el estado toca el navegador, el reloj o el azar",
     ]);
     expect(violacionesDeEstado("web/src/store/almacen.ts", codigo)).toHaveLength(2);
     expect(violacionesDeEstado("web/src/store/selectores.ts", codigo)).toHaveLength(2);
