@@ -4,15 +4,14 @@ import {
   VISIBILIDAD_VISIBLE,
 } from "@web/config/constants/ui.constants.ts";
 import { TEXTO_ALMACEN } from "@web/config/strings.ts";
+import { ContextoAlmacen } from "@web/store/contexto-almacen.ts";
 import {
   seleccionarAccesoConcedido,
   seleccionarFaltaConfig,
   seleccionarSesionPorCargar,
 } from "@web/store/selectores.ts";
 import type { Acciones, EstadoRaiz, InstanciaAlmacen } from "@web/types/store.type.ts";
-import { createContext, useContext, useEffect, useSyncExternalStore } from "react";
-
-export const ContextoAlmacen = createContext<InstanciaAlmacen | null>(null);
+import { useContext, useEffect, useSyncExternalStore } from "react";
 
 export function useAlmacen(): InstanciaAlmacen {
   const instancia = useContext(ContextoAlmacen);

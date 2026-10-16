@@ -1,4 +1,4 @@
-import { ContextoAlmacen } from "@web/store/usar-almacen.ts";
+import { ContextoAlmacen } from "@web/store/contexto-almacen.ts";
 import type { PropsProveedorAlmacen } from "@web/types/store.type.ts";
 
 export function ProveedorAlmacen({ instancia, children }: PropsProveedorAlmacen) {

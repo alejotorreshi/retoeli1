@@ -232,12 +232,17 @@ const FUNCION_EN_ATRIBUTO = /\b[A-Za-z][\w-]*=\{[^{}]*?(?:=>|\bfunction\b|\.bind
 
 const PRIMITIVAS_DEL_ALMACEN: ReadonlySet<string> = new Set([
   "createContext",
+  "use",
   "useContext",
   "useReducer",
   "useSyncExternalStore",
 ]);
 
 const USO_DE_PRIMITIVA_DEL_ALMACEN = new RegExp(`\\b(?:${[...PRIMITIVAS_DEL_ALMACEN].join("|")})\\b`, "g");
+
+const CONTEXTO_DEL_ALMACEN = "ContextoAlmacen";
+
+const USO_DEL_CONTEXTO_DEL_ALMACEN = new RegExp(`\\b${CONTEXTO_DEL_ALMACEN}\\b`);
 
 const PRIMITIVAS_PERMITIDAS: ReadonlyMap<string, ReadonlySet<string>> = new Map([
   ["web/src/features/disposicion/columnas/usar-columnas.ts", new Set(["useSyncExternalStore"])],
@@ -843,9 +848,12 @@ function primitivasDelAlmacenUsadas(codigo: string): string[] {
 function violacionesDePrimitivasDelAlmacen(ruta: string, codigo: string): string[] {
   if (ruta.startsWith(`${CARPETA_WEB}/store/`)) return [];
   const permitidas = PRIMITIVAS_PERMITIDAS.get(ruta) ?? new Set<string>();
-  return primitivasDelAlmacenUsadas(codigo)
+  const primitivas = primitivasDelAlmacenUsadas(codigo)
     .filter((nombre) => !permitidas.has(nombre))
     .map((nombre) => `${ruta}: ${nombre} de react solo vive en web/src/store`);
+  return USO_DEL_CONTEXTO_DEL_ALMACEN.test(sinCadenas(codigo))
+    ? [...primitivas, `${ruta}: ${CONTEXTO_DEL_ALMACEN} solo se usa en web/src/store`]
+    : primitivas;
 }
 
 function violacionesDeUbicacion(ruta: string): string[] {
@@ -1015,7 +1023,7 @@ describe("guardián de web/ sobre el código real", () => {
     expect(sobreElCodigo(violacionesDeSelectorEnLinea)).toEqual([]);
   });
 
-  test("W20: createContext, useContext, useReducer y useSyncExternalStore viven en web/src/store", () => {
+  test("W20: createContext, use, useContext, useReducer, useSyncExternalStore y ContextoAlmacen viven en web/src/store", () => {
     const columnas = "web/src/features/disposicion/columnas/usar-columnas.ts";
     expect(primitivasDelAlmacenUsadas(leer(columnas))).toContain("useSyncExternalStore");
     expect(violacionesDePrimitivasDelAlmacen(columnas, leer(columnas))).toEqual([]);
@@ -1554,6 +1562,24 @@ describe("el guardián de web/ muerde sobre fuentes de muestra", () => {
     expect(
       violacionesDePrimitivasDelAlmacen("web/src/features/chat/x/usar-x.ts", 'const nota = "useContext";'),
     ).toEqual([]);
+    const conUse = [
+      'import { use } from "react";',
+      'import { ContextoAlmacen } from "@web/store/contexto-almacen.ts";',
+      "const instancia = use(ContextoAlmacen);",
+    ].join("\n");
+    expect(violacionesDePrimitivasDelAlmacen("web/src/features/chat/x/usar-x.ts", conUse)).toEqual([
+      "web/src/features/chat/x/usar-x.ts: use de react solo vive en web/src/store",
+      "web/src/features/chat/x/usar-x.ts: ContextoAlmacen solo se usa en web/src/store",
+    ]);
+    const conConsumidor = "const vista = <ContextoAlmacen.Consumer>{leer}</ContextoAlmacen.Consumer>;";
+    expect(violacionesDePrimitivasDelAlmacen("web/src/features/chat/x/x.tsx", conConsumidor)).toEqual([
+      "web/src/features/chat/x/x.tsx: ContextoAlmacen solo se usa en web/src/store",
+    ]);
+    const conUseEnReact = 'import * as React from "react";\nconst instancia = React.use(Contexto);';
+    expect(violacionesDePrimitivasDelAlmacen("web/src/features/chat/x/usar-x.ts", conUseEnReact)).toEqual([
+      "web/src/features/chat/x/usar-x.ts: use de react solo vive en web/src/store",
+    ]);
+    expect(violacionesDePrimitivasDelAlmacen("web/src/store/usar-almacen.ts", conUse)).toEqual([]);
     expect(
       violacionesDePrimitivasDelAlmacen("web/src/features/disposicion/columnas/usar-columnas.ts", codigo),
     ).toEqual([
