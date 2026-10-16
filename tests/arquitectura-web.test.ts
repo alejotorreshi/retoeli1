@@ -32,6 +32,12 @@ const SRC_DE_SOLO_TIPO = /^@\/http\/types\//;
 
 const CARPETA_DE_ESTADO = "web/src/state/";
 
+const NUCLEO_PURO_DEL_ALMACEN: ReadonlySet<string> = new Set([
+  "web/src/store/almacen.ts",
+  "web/src/store/raiz.ts",
+  "web/src/store/selectores.ts",
+]);
+
 const API_DEL_NAVEGADOR = /\b(?:document|window|localStorage|sessionStorage|fetch)\b/;
 
 const INYECCION_DE_HTML = /\b(?:dangerouslySetInnerHTML|innerHTML|outerHTML|insertAdjacentHTML)\b/;
@@ -62,6 +68,8 @@ const UBICACIONES_WEB: readonly RegExp[] = [
   new RegExp(`^web/src/config/constants/${KEBAB}\\.constants\\.ts$`),
   new RegExp(`^web/src/types/${KEBAB}\\.type\\.ts$`),
   new RegExp(`^web/src/(?:api|state|hooks)/${KEBAB}\\.tsx?$`),
+  new RegExp(`^web/src/store/${KEBAB}\\.ts$`),
+  /^web\/src\/store\/proveedor-almacen\.tsx$/,
   new RegExp(`^web/src/components/(?:icons/)?${KEBAB}\\.(?:tsx|module\\.css)$`),
   new RegExp(`^web/src/styles/${KEBAB}\\.css$`),
 ];
@@ -123,8 +131,12 @@ function violacionesDeAliasSrc(ruta: string, codigo: string): string[] {
     .map(({ especificador }) => `${ruta}: web/ no puede importar ${especificador}`);
 }
 
+function esEstadoPuro(ruta: string): boolean {
+  return ruta.startsWith(CARPETA_DE_ESTADO) || NUCLEO_PURO_DEL_ALMACEN.has(ruta);
+}
+
 function violacionesDeEstado(ruta: string, codigo: string): string[] {
-  if (!ruta.startsWith(CARPETA_DE_ESTADO)) return [];
+  if (!esEstadoPuro(ruta)) return [];
   const react = extraerImportacionesConTipo(codigo)
     .filter(({ especificador }) => PAQUETES_DE_REACT.has(nombreDePaquete(especificador)))
     .map(({ especificador }) => `${ruta}: el estado no importa ${especificador}`);
@@ -331,7 +343,9 @@ describe("el guardián de web/ muerde sobre fuentes de muestra", () => {
   });
 
   test("W4: el núcleo puro del almacén tampoco importa react ni toca el navegador", () => {
-    const codigo = ['import { useSyncExternalStore } from "react";', "const raiz = window.location;"].join("\n");
+    const codigo = ['import { useSyncExternalStore } from "react";', "const raiz = window.location;"].join(
+      "\n",
+    );
     expect(violacionesDeEstado("web/src/store/raiz.ts", codigo)).toEqual([
       "web/src/store/raiz.ts: el estado no importa react",
       "web/src/store/raiz.ts:2: el estado toca el navegador",
