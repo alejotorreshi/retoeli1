@@ -5,9 +5,9 @@ import {
   IconoReloj,
   IconoX,
 } from "@web/compartido/iconos/iconos.tsx";
-import estilos from "@web/components/progreso-caso.module.css";
 import { ESTADO_ETAPA } from "@web/config/constants/ui.constants.ts";
 import { TEXTO_PROGRESO } from "@web/config/strings.ts";
+import estilos from "@web/features/casos/progreso-caso/progreso-caso.module.css";
 import type { EstadoEtapa } from "@web/types/chat.type.ts";
 import type { PropsIconoDeEtapa, PropsProgresoCaso } from "@web/types/ui.type.ts";
 

@@ -1,6 +1,6 @@
 import { IconoAlerta } from "@web/compartido/iconos/iconos.tsx";
-import estilos from "@web/components/aviso-disco-efimero.module.css";
 import { TEXTO_DISCO } from "@web/config/strings.ts";
+import estilos from "@web/features/archivos/aviso-disco-efimero/aviso-disco-efimero.module.css";
 import type { PropsAvisoDiscoEfimero } from "@web/types/ui.type.ts";
 
 export function AvisoDiscoEfimero({ caso, deshabilitado, alProcesar }: PropsAvisoDiscoEfimero) {
