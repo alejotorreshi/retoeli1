@@ -4,7 +4,10 @@ import { prepararDom } from "@tests/helpers/dom.helper.ts";
 import { crearRedWeb, eventoFin, eventoInicio, eventoTexto } from "@tests/helpers/red-web.helper.ts";
 import type { AppMontada, ConsultasDom } from "@tests/helpers/types/dom.type.ts";
 import type { GuionChat } from "@tests/helpers/types/red-web.type.ts";
-import { TEXTO_ACCIONES, TEXTO_CHAT, TEXTO_ESTADO_VACIO } from "@web/config/strings.ts";
+import { CLAVE_SESION_LOCAL } from "@web/config/constants/ui.constants.ts";
+import { TEXTO_ACCIONES, TEXTO_CHAT, TEXTO_ESTADO_VACIO, TEXTO_NUEVA_SESION } from "@web/config/strings.ts";
+import { PARAMETRO_SESION, RESPUESTA_HTTP, RUTA_API } from "@/config/constants/http.constants.ts";
+import type { SessionViewResponse } from "@/http/types/api.type.ts";
 
 const ANCHO_ESCRITORIO = 1280;
 const SESION = "sesion-del-seguimiento";
@@ -14,6 +17,18 @@ const ZONA_1280X720 = 495;
 const ALTO_VACIO_375X667 = 789;
 const ZONA_375X667 = 330;
 const ALTO_CONVERSACION = 2400;
+const ALTO_CONVERSACION_CRECIDA = 2600;
+const POSICION_DE_LECTURA = 1000;
+const EVENTO_DESPLAZAMIENTO = "scroll";
+const RUTA_DE_LA_SESION = RUTA_API.SESION.replace(`:${PARAMETRO_SESION}`, SESION);
+const SESION_SIN_TURNOS: SessionViewResponse = {
+  sesionId: SESION,
+  turnos: [],
+  pendientes: [],
+  casosEnviados: [],
+  tokensUsados: 0,
+  ocupada: false,
+};
 const NOMBRE_OBSERVADOR = "ResizeObserver";
 const MEDIDAS_DEL_VACIO = [
   { ventana: "1280x720", alto: ALTO_VACIO_1280X720, zona: ZONA_1280X720 },
@@ -99,6 +114,26 @@ async function conversarUnTurno({ pantalla, usuario }: AppMontada): Promise<HTML
   return zonaDe(pantalla);
 }
 
+function subirLaVista(zona: HTMLElement, posicion: number): void {
+  dom.act(() => {
+    zona.scrollTop = posicion;
+    zona.dispatchEvent(new Event(EVENTO_DESPLAZAMIENTO));
+  });
+}
+
+async function empezarSesionNueva({ pantalla, usuario }: AppMontada): Promise<HTMLElement> {
+  const abrir = pantalla.getByRole("button", { name: TEXTO_NUEVA_SESION.abrir });
+  await dom.esperar(() => expect(abrir.hasAttribute("disabled")).toBe(false));
+  await usuario.click(abrir);
+  await usuario.click(await pantalla.findByRole("button", { name: TEXTO_NUEVA_SESION.empezar }));
+  return esperarEstadoVacio(pantalla);
+}
+
+function esperarArribaSinIrAlFinal(pantalla: ConsultasDom, zona: HTMLElement): void {
+  expect(zona.scrollTop).toBe(0);
+  expect(pantalla.queryByRole("button", { name: TEXTO_CHAT.irAlFinal })).toBeNull();
+}
+
 describe("seguimiento al final con el estado vacío", () => {
   for (const medida of MEDIDAS_DEL_VACIO) {
     test(`al entrar a ${medida.ventana} el estado vacío queda arriba y sin Ir al final`, async () => {
@@ -137,5 +172,55 @@ describe("seguimiento al final con el estado vacío", () => {
     notificarCambioDeTamano();
 
     expect(zona.scrollTop).toBe(ALTO_CONVERSACION);
+  });
+
+  test("Nueva sesión con la vista pegada al final vuelve al estado vacío desde arriba", async () => {
+    const red = crearRedWeb({ nativos: dom.nativos, guiones: [turnoConRespuesta] });
+    const app = await montarApp(dom, red);
+    const conversacion = await conversarUnTurno(app);
+    simularAlturas(conversacion, ALTO_CONVERSACION, ZONA_1280X720);
+    notificarCambioDeTamano();
+    expect(conversacion.scrollTop).toBe(ALTO_CONVERSACION);
+
+    const zona = await empezarSesionNueva(app);
+    expect(zona.scrollTop).toBe(0);
+
+    simularAlturas(zona, ALTO_VACIO_1280X720, ZONA_1280X720);
+    notificarCambioDeTamano();
+    esperarArribaSinIrAlFinal(app.pantalla, zona);
+  });
+
+  test("Nueva sesión con la vista subida quita Ir al final y vuelve al estado vacío desde arriba", async () => {
+    const red = crearRedWeb({ nativos: dom.nativos, guiones: [turnoConRespuesta] });
+    const app = await montarApp(dom, red);
+    const conversacion = await conversarUnTurno(app);
+    simularAlturas(conversacion, ALTO_CONVERSACION, ZONA_1280X720);
+    notificarCambioDeTamano();
+    subirLaVista(conversacion, POSICION_DE_LECTURA);
+    simularAlturas(conversacion, ALTO_CONVERSACION_CRECIDA, ZONA_1280X720);
+    notificarCambioDeTamano();
+    expect(app.pantalla.getByRole("button", { name: TEXTO_CHAT.irAlFinal })).toBeDefined();
+
+    const zona = await empezarSesionNueva(app);
+    esperarArribaSinIrAlFinal(app.pantalla, zona);
+
+    simularAlturas(zona, ALTO_VACIO_1280X720, ZONA_1280X720);
+    notificarCambioDeTamano();
+    esperarArribaSinIrAlFinal(app.pantalla, zona);
+  });
+
+  test("al recargar una sesión sin turnos el estado vacío queda arriba", async () => {
+    localStorage.setItem(CLAVE_SESION_LOCAL, SESION);
+    const red = crearRedWeb({
+      nativos: dom.nativos,
+      rutas: { [RUTA_DE_LA_SESION]: { estado: RESPUESTA_HTTP.OK, cuerpo: SESION_SIN_TURNOS } },
+    });
+    const { pantalla } = await montarApp(dom, red);
+    const zona = await esperarEstadoVacio(pantalla);
+    expect(red.pedidosA(RUTA_DE_LA_SESION)).toHaveLength(1);
+
+    simularAlturas(zona, ALTO_VACIO_1280X720, ZONA_1280X720);
+    notificarCambioDeTamano();
+    esperarArribaSinIrAlFinal(pantalla, zona);
   });
 });

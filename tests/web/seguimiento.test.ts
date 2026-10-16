@@ -4,6 +4,7 @@ import {
   debeSeguirAlFinal,
   reducirSeguimiento,
   seguimientoInicial,
+  volvioAlVacio,
 } from "@web/features/chat/estado/seguimiento.ts";
 import type { EstadoSeguimiento, SenalSeguimiento } from "@web/types/ui.type.ts";
 
@@ -47,6 +48,8 @@ const SUBIDA_DE_RUEDA = 160;
 const PASO_DE_FLECHA_ABAJO = 20;
 const TURNOS_DE_UNA_CONVERSACION = 1;
 const SIN_TURNOS = 0;
+const TURNOS_PREVIOS = 2;
+const TURNOS_SIGUIENTES = 3;
 const DISTANCIAS_DEMO_375 = [
   310, 326, 340, 300, 355, 372, 388, 401, 415, 430, 424, 333, 347, 362, 391, 408,
 ] as const;
@@ -476,5 +479,24 @@ describe("seguimiento con el estado vacío", () => {
   test("con turnos sigue al final solo si la vista está pegada", () => {
     expect(debeSeguirAlFinal(seguimientoInicial, TURNOS_DE_UNA_CONVERSACION)).toBe(true);
     expect(debeSeguirAlFinal(despegado(), TURNOS_DE_UNA_CONVERSACION)).toBe(false);
+  });
+
+  test("volver al estado vacío devuelve el seguimiento inicial aunque hubiera contenido nuevo", () => {
+    expect(reducirSeguimiento(conContenidoNuevo(), { tipo: SENAL_SEGUIMIENTO.VACIO })).toEqual(
+      seguimientoInicial,
+    );
+  });
+
+  test("volver al estado vacío desde el seguimiento inicial conserva la misma referencia", () => {
+    expect(reducirSeguimiento(seguimientoInicial, { tipo: SENAL_SEGUIMIENTO.VACIO })).toBe(
+      seguimientoInicial,
+    );
+  });
+
+  test("solo se vuelve al vacío cuando había turnos y ya no hay ninguno", () => {
+    expect(volvioAlVacio(TURNOS_PREVIOS, SIN_TURNOS)).toBe(true);
+    expect(volvioAlVacio(SIN_TURNOS, SIN_TURNOS)).toBe(false);
+    expect(volvioAlVacio(SIN_TURNOS, TURNOS_DE_UNA_CONVERSACION)).toBe(false);
+    expect(volvioAlVacio(TURNOS_PREVIOS, TURNOS_SIGUIENTES)).toBe(false);
   });
 });
