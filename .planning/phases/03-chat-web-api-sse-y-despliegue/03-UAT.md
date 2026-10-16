@@ -3,7 +3,7 @@ status: testing
 phase: 03-chat-web-api-sse-y-despliegue
 source: [03-VERIFICATION.md]
 started: 2026-10-15T23:50:00Z
-updated: 2026-10-16T00:45:00Z
+updated: 2026-10-16T01:45:00Z
 ---
 
 ## Current Test
@@ -18,7 +18,8 @@ awaiting: user response
 
 ### 1. Push de main y redespliegue en Render
 expected: Hacer push de main (por delante de origin/main = 80c2b3d) y esperar el autoDeploy. El bundle servido contiene 'Comprobar de nuevo' y 'Volver a la sesión anterior' y ya no contiene 'bun run demo.ts'; health 200 sin claves; NEW_SESSIONS_PER_HOUR=20 en el panel; curl -N con Bearer recibe el SSE por trozos.
-result: [pending]
+result: pass
+reported: "QA T18 (11/11): el link público sirve el build de HEAD e953108 (index-CFlF9AfY.js, sha256 idéntico), con 'Comprobar de nuevo' y 'Volver a la sesión anterior' y sin 'bun run demo.ts'; health 200 sin claves; 401 sin cookie; acceso 204 con cookie HttpOnly/Secure/SameSite=Strict. render.yaml NEW_SESSIONS_PER_HOUR=20. Evidencia: .qa/evidence/03-chat-web-api-sse-y-despliegue/03-QA-EVIDENCE-2026-10-16T01-14-17Z.md"
 
 ### 2. Decidir los hallazgos del limitador y del aviso de envío cortado
 expected: Arreglar ahora, diferir o aceptarlos y registrarlo.
@@ -27,47 +28,66 @@ reported: "Decisión 2026-10-16: cortar el ciclo. Se revierte 71d8d20 (5f07e7c);
 
 ### 3. Receta T12 con el LLM falso: chip '¿Qué casos hay?'
 expected: El panel no agrega un bloque en blanco y la consola no registra GET /api/casos//archivos (G-03-17).
-result: [pending]
+result: pass
+reported: "QA T26 (3/3): sin bloque en blanco y sin GET /api/casos//archivos."
 
 ### 4. Receta T05: vista previa con mapeo.json borrado y con el archivo borrado
 expected: Procesar ec-corp-andina, borrar out/ec-corp-andina/mapeo.json y abrir 'Ver' en el formulario → 422 'Este archivo no tiene vista previa. Puedes descargarlo para revisarlo.' sin pista de reinicio ni aviso de disco; borrar el archivo y repetir → 404 con la pista y el aviso de disco efímero (G-03-10).
-result: [pending]
+result: pass
+reported: "QA T27 (2/2): 422 sin pista de reinicio ni aviso de disco; 404 con pista y aviso. Nota menor: tras el 404 el panel sigue listando el archivo borrado."
 
 ### 5. Recetas T09 y T10: health tras un 500 y tope diario
 expected: Forzar un 500 ('QA-500') y luego mandar un mensaje correcto → el encabezado pasa de 'No disponible' a 'Disponible' al terminar el turno; con AGENT_DAILY_TOKEN_BUDGET=1, el turno que cruza el tope termina mostrando 'Tope diario' (G-03-14).
-result: [pending]
+result: pass
+reported: "QA T28 (2/2): 'No disponible' → 'Disponible' sin recargar; el turno que cruza el tope termina en 'Tope diario'."
 
 ### 6. Receta T10: pausa del envío y banner (G-03-15 / LLM-06)
 expected: Con Playwright y el LLM falso, arrancar sin LLM_API_KEY; luego con FAKE_FORCE_STATUS=402; luego con AGENT_DAILY_TOKEN_BUDGET=1 y una tarjeta de confirmación abierta; reiniciar con clave y pulsar 'Comprobar de nuevo'. En sin_clave y tope_diario los controles de envío quedan deshabilitados, con la ayuda de pausa en el compositor (aria-describedby) y en la tarjeta; en saldo_agotado el compositor sigue habilitado; al volver a disponible todo se rehabilita sin recargar; 'Comprobar de nuevo' solo genera un GET /api/health; 'Nueva sesión', 'Detener respuesta', Ver, Descargar y Reintentar siguen disponibles en pausa.
-result: [pending]
+result: pass
+reported: "QA T29 (4/4): pausa en sin_clave y tope_diario con ayuda; saldo_agotado habilitado; 'Comprobar de nuevo' = 1 GET /api/health y rehabilitación sin recargar. Nota menor: el campo en pausa no se ve atenuado."
 
 ### 7. Receta T16: seguimiento de la línea de tiempo (D-78 y D-78.1)
 expected: Con Playwright y el LLM falso a 375×667 y 1280×720, 'Procesa el caso ec-corp-andina' y luego el chip 'Los 4 casos'. Sin tocar nada, la distancia al final es de 96 px o menos tras cada turno y no aparece 'Ir al final'. Durante el turno, la primera pulsación de flecha arriba ya despega y aparece 'Ir al final' de 40×40, igual con la rueda, la barra y PageUp con el foco en un mensaje. Enviar otro mensaje la vuelve a pegar. document.scrollingElement.scrollHeight == innerHeight.
-result: [pending]
+result: issue
+reported: "QA T30 a 375×667 (3/3 reproducciones): con un turno en curso, una flecha arriba despega 40 px pero con el siguiente evento la vista vuelve al fondo y 'Ir al final' nunca aparece; la rueda y PageUp sí despegan; a 1280×720 pasa 5/5. Traza: al despegarse overflow-anchor vuelve a auto, el scroll anchoring empuja la posición hacia abajo y desplazar() lo lee como bajada a ≤ 96 px del fondo y vuelve a pegar (rompe D-78 y D-78.1)."
+severity: major
 
 ### 8. Human-check de 03-42: sesión nueva, recarga y 'Volver a la sesión anterior' (D-73.5.2)
 expected: Procesar ec-corp-andina hasta la tarjeta de confirmación, 'Nueva sesión' → 'Empezar sesión nueva' y recargar → empieza sin sesión y sin la tarjeta anterior. Con NEW_SESSIONS_PER_HOUR=1, abrir una sesión nueva hasta el 429, pulsar 'Volver a la sesión anterior' → trae su historial sin ningún POST /api/chat, y la recarga posterior vuelve a esa sesión.
-result: [pending]
+result: pass
+reported: "QA T31 (3/3): la recarga tras 'Empezar sesión nueva' empieza limpia; 'Volver a la sesión anterior' trae el historial sin POST /api/chat y la recarga vuelve a esa sesión."
 
 ### 9. Render Events/Logs durante un turno SSE largo en el link público
 expected: Los health checks siguen pasando y no hay reinicio mientras corre el stream.
-result: [pending]
+result: pass
+reported: "Revisado por la usuaria en Render Events/Logs: health checks pasando y sin reinicio durante un turno SSE largo."
 
 ### 10. Prohibición de juicio de 03-35: tope de sesiones a 20
 expected: render.yaml no declara AGENT_DAILY_TOKEN_BUDGET ni el presupuesto por sesión (siguen en 2 M y 300 k), así que subir el tope de sesiones a 20 no debilita el tope diario global ni el presupuesto por sesión. Veredicto no autoritativo del verificador: se cumple.
-result: [pending]
+result: pass
+reported: "QA T32: render.yaml no declara AGENT_DAILY_TOKEN_BUDGET ni AGENT_SESSION_TOKEN_BUDGET; defaults 2 M y 300 k (agent.constants.ts:75-76). Veredicto de juicio de la usuaria: se cumple."
 
 ### 11. Prohibición de 03-32 sin prueba: no consultar /api/health por intervalo
 expected: obtenerSalud solo lo llama useSalud().refrescar; el único setInterval de web/src es el reintento de /api/config. Veredicto no autoritativo del verificador: se cumple.
-result: [pending]
+result: pass
+reported: "QA T33: obtenerSalud solo desde useSalud().refrescar (montaje, foco, 'Comprobar', fin de turno); único setInterval = reintento de /api/config; 0 pedidos en 70 s inactivo. Veredicto de la usuaria: se cumple."
 
 ## Summary
 
 total: 11
-passed: 1
-issues: 0
-pending: 10
+passed: 10
+issues: 1
+pending: 0
 skipped: 0
 blocked: 0
 
 ## Gaps
+
+- gap_id: G-03-7
+  truth: "Receta T16 (D-78 y D-78.1): a 375×667, cualquier subida de la usuaria (incluida una flecha de 40 px) despega la línea de tiempo mientras llegan eventos y aparece 'Ir al final'; el anclaje y el encogimiento no cambian el estado"
+  status: failed
+  reason: "User reported: QA T30 a 375×667 (3/3 reproducciones): con un turno en curso, una flecha arriba despega 40 px pero con el siguiente evento la vista vuelve al fondo y 'Ir al final' nunca aparece; la rueda y PageUp sí despegan; a 1280×720 pasa 5/5. Traza: al despegarse overflow-anchor vuelve a auto, el scroll anchoring empuja la posición hacia abajo y desplazar() lo lee como bajada a ≤ 96 px del fondo y vuelve a pegar (rompe D-78 y D-78.1)."
+  severity: major
+  test: 7
+  artifacts: []
+  missing: []

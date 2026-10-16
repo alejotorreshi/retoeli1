@@ -1,6 +1,6 @@
 {
   "phase": "03",
-  "generated_at": "2026-10-15T13:18:32Z",
+  "generated_at": "2026-10-16T01:14:07.178Z",
   "group": "03-chat-web-api-sse-y-despliegue",
   "setup": {
     "QA_SCRATCH": "session scratchpad dir /qa03 (orchestrator creates it)",
@@ -9,7 +9,9 @@
       "fake_llm": "FAKE_LLM_PORT=4023 bun .qa/evidence/03-chat-web-api-sse-y-despliegue/seeds/03-fake-llm.ts  (routing: 'casos hay' -> listar; 'QA-TEXTO' -> multiline text; 'QA-LENTO' -> 4 s per call; 'QA-402|500|503' -> provider status; 'Sí, envía X' -> simular_envio confirmado; 'Cancela el envío de X' -> text; else leer/mapear/generar/armar per case id)",
       "server": "cd $QA_SCRATCH/repo && PORT=3023 NODE_ENV=production LLM_PROVIDER=falso LLM_BASE_URL=http://127.0.0.1:4023 LLM_MODEL=modelo-falso LLM_API_KEY=clave-falsa-qa-centinela LLM_FALLBACK_ENABLED=false ACCESS_CODE=codigo-local-de-prueba ACCESS_TOKEN_SECRET=<synthetic 40 chars> FECHA_EJECUCION=2026-09-03 TZ_NEGOCIO=America/Bogota LOG_LEVEL=info bun --env-file=/dev/null src/server.ts",
       "base_url": "http://127.0.0.1:3023",
-      "access_code": "codigo-local-de-prueba (synthetic)"
+      "access_code": "codigo-local-de-prueba (synthetic)",
+      "variants": "local_stack: base 3023 (fake 4023); variantes 3041 sin_clave, 3042 AGENT_DAILY_TOKEN_BUDGET=1, 3043 proveedor 402 (fake 4043 FAKE_FORCE_STATUS=402), 3045 NEW_SESSIONS_PER_HOUR=1; la cookie 'acceso' sirve en todos los puertos (mismo ACCESS_TOKEN_SECRET)",
+      "runner_a_port": "3050 (aislado para T02r/T24r: el limitador de acceso no afecta al runner de navegador)"
     },
     "remote": {
       "base_url": "https://registro-proveedor-bfnt.onrender.com",
@@ -636,15 +638,162 @@
       "human_checks": [],
       "isolation": "repo",
       "recipe_replay": "cd <repo> && bun run test:vivo  (exit code + 'N pass / N fail' only)"
+    },
+    {
+      "id": "T26",
+      "uat_ref": [
+        3
+      ],
+      "name": "Chip '¿Qué casos hay?' sin bloque en blanco ni GET /api/casos//archivos (G-03-17)",
+      "kind": "browser",
+      "surface": "web (local_stack)",
+      "recipe": "Playwright 1280x720 en http://127.0.0.1:3023 (local_stack: base 3023 (fake 4023); variantes 3041 sin_clave, 3042 AGENT_DAILY_TOKEN_BUDGET=1, 3043 proveedor 402 (fake 4043 FAKE_FORCE_STATUS=402), 3045 NEW_SESSIONS_PER_HOUR=1; la cookie 'acceso' sirve en todos los puertos (mismo ACCESS_TOKEN_SECRET)). Acceso con el código sintético; chip '¿Qué casos hay?'; capturar todas las peticiones de red durante y después del turno; contar bloques del panel de casos antes y después.",
+      "asserts": [
+        "el panel no agrega un bloque vacío",
+        "ninguna petición a /api/casos//archivos (caso vacío)",
+        "la respuesta lista los 4 casos"
+      ],
+      "human_checks": [],
+      "isolation": "scratch-copy"
+    },
+    {
+      "id": "T27",
+      "uat_ref": [
+        4
+      ],
+      "name": "Vista previa: 422 sin pista de reinicio vs 404 con pista y aviso de disco (G-03-10)",
+      "kind": "browser",
+      "surface": "web (local_stack)",
+      "recipe": "Playwright en 3023: procesar ec-corp-andina; en la copia scratch borrar out/ec-corp-andina/mapeo.json y abrir 'Ver' del formulario → leer el texto del diálogo; luego borrar el archivo del formulario y repetir 'Ver'.",
+      "asserts": [
+        "422: 'Este archivo no tiene vista previa. Puedes descargarlo para revisarlo.' sin pista de reinicio ni aviso de disco",
+        "404: pista de reinicio y aviso de disco efímero"
+      ],
+      "human_checks": [
+        "el texto se lee bien en el diálogo"
+      ],
+      "isolation": "scratch-copy"
+    },
+    {
+      "id": "T28",
+      "uat_ref": [
+        5
+      ],
+      "name": "Encabezado: 'No disponible' → 'Disponible' tras QA-500 y 'Tope diario' al cruzar el tope (G-03-14)",
+      "kind": "browser",
+      "surface": "web (local_stack)",
+      "recipe": "Playwright: en 3023 mandar 'QA-500' (encabezado 'No disponible') y luego un mensaje correcto → al terminar el turno el encabezado dice 'Disponible' sin recargar. En 3042 (tope 1) mandar 'QA-TEXTO' → el turno que cruza el tope termina con 'Tope diario' en el encabezado.",
+      "asserts": [
+        "tras el turno correcto el encabezado vuelve a 'Disponible' sin recargar",
+        "el turno que cruza el tope termina mostrando 'Tope diario'"
+      ],
+      "human_checks": [],
+      "isolation": "scratch-copy"
+    },
+    {
+      "id": "T29",
+      "uat_ref": [
+        6
+      ],
+      "name": "Pausa del envío en sin_clave y tope_diario; compositor habilitado en saldo_agotado; rehabilitación sin recargar (G-03-15 / LLM-06)",
+      "kind": "browser",
+      "surface": "web (local_stack)",
+      "recipe": "Playwright: 3041 (sin_clave): campo, 'Enviar mensaje', chips y botones de tarjeta deshabilitados con ayuda (aria-describedby); 'Nueva sesión', 'Detener', Ver, Descargar y Reintentar disponibles. 3042 tras cruzar el tope con una tarjeta de confirmación abierta: igual pausa también en la tarjeta. 3043: tras un turno 402 el compositor sigue habilitado. Transición: con la pestaña de 3041 abierta, el orquestador provee ctl-3041-con-clave.sh (reinicia SOLO 3041 con clave); pulsar 'Comprobar de nuevo' → todo se rehabilita sin recargar y la red muestra un solo GET /api/health por pulsación. Nota de la corrida 2026-10-16: en 3041/3042 ningún turno real produce tarjeta de confirmación; la pausa de la tarjeta se verificó en 3023 con una tarjeta real abierta y /api/health interceptado (page.route) devolviendo sin_clave y luego tope_diario. La transición se hizo real con ctl-3041-con-clave.sh.",
+      "asserts": [
+        "sin_clave y tope_diario: controles de envío deshabilitados con ayuda",
+        "saldo_agotado: compositor habilitado",
+        "al volver a disponible se rehabilita sin recargar",
+        "'Comprobar de nuevo' = 1 GET /api/health"
+      ],
+      "human_checks": [
+        "banner y ayuda claros y bien ubicados"
+      ],
+      "isolation": "scratch-copy"
+    },
+    {
+      "id": "T30",
+      "uat_ref": [
+        7
+      ],
+      "name": "Seguimiento de la línea de tiempo a 375×667 y 1280×720 (D-78 y D-78.1)",
+      "kind": "browser",
+      "surface": "web (local_stack)",
+      "recipe": "Playwright en 3023 a 375x667 y 1280x720: 'Procesa el caso ec-corp-andina' y luego chip de los 4 casos con FAKE_DELAY por defecto; sin tocar, medir distancia al final tras cada turno; durante un turno 'QA-LENTO' o el de 4 casos pulsar ArrowUp de a una con el foco en la línea de tiempo mientras llegan eventos, luego rueda (mouse.wheel -120), luego PageUp; verificar 'Ir al final' 40×40 visible y que la vista no vuelve sola al fondo; mandar otro mensaje → vuelve a pegar. document.scrollingElement.scrollHeight == innerHeight. Nota de la corrida 2026-10-16: no-pass a 375×667 (flecha de 40 px re-pegada por el scroll anchoring; ver G-03-7). Reproducir con un turno de 4 casos y ArrowUp con el foco en la línea de tiempo mientras llegan eventos.",
+      "asserts": [
+        "sin tocar: distancia <= 96 px y sin 'Ir al final'",
+        "primera flecha arriba despega y aparece 'Ir al final' 40×40",
+        "no vuelve sola al fondo mientras llegan eventos",
+        "enviar vuelve a pegar",
+        "sin scroll de documento"
+      ],
+      "human_checks": [
+        "se siente natural"
+      ],
+      "isolation": "scratch-copy"
+    },
+    {
+      "id": "T31",
+      "uat_ref": [
+        8
+      ],
+      "name": "Nueva sesión + recarga y 'Volver a la sesión anterior' tras el 429 (D-73.5.2)",
+      "kind": "browser",
+      "surface": "web (local_stack)",
+      "recipe": "Playwright en 3045 (NEW_SESSIONS_PER_HOUR=1): procesar ec-corp-andina hasta la tarjeta de confirmación; 'Nueva sesión' → 'Empezar sesión nueva' y recargar → sin sesión ni tarjeta; abrir otra sesión nueva hasta el 429; pulsar 'Volver a la sesión anterior' → historial sin ningún POST /api/chat; recargar → vuelve a esa sesión. Nota de la corrida 2026-10-16: con tope 1, el escenario 1 consume la única sesión y la recarga pierde el id previo en memoria (D-73.5.2 lo acepta); para el escenario 2 se repuso el id de la sesión A en localStorage y se recargó.",
+      "asserts": [
+        "la primera recarga empieza sin sesión ni tarjeta",
+        "'Volver a la sesión anterior' trae el historial sin POST /api/chat",
+        "la recarga posterior vuelve a esa sesión"
+      ],
+      "human_checks": [],
+      "isolation": "scratch-copy"
+    },
+    {
+      "id": "T32",
+      "uat_ref": [
+        10
+      ],
+      "name": "Prohibición de juicio 03-35: subir sesiones a 20 no debilita el tope diario ni el presupuesto por sesión",
+      "kind": "contract",
+      "surface": "repo",
+      "recipe": "Leer render.yaml y src/config/constants (valores por defecto de AGENT_DAILY_TOKEN_BUDGET y AGENT_SESSION_TOKEN_BUDGET) y config/env.ts; confirmar que render.yaml no declara ninguno de los dos y que los valores por defecto son 2 M y 300 k.",
+      "asserts": [
+        "render.yaml no declara AGENT_DAILY_TOKEN_BUDGET ni AGENT_SESSION_TOKEN_BUDGET",
+        "por defecto 2 M y 300 k"
+      ],
+      "human_checks": [
+        "veredicto de juicio de la usuaria"
+      ],
+      "isolation": "repo"
+    },
+    {
+      "id": "T33",
+      "uat_ref": [
+        11
+      ],
+      "name": "Prohibición 03-32: no consultar /api/health por intervalo",
+      "kind": "contract",
+      "surface": "repo",
+      "recipe": "codegraph callers de obtenerSalud y búsqueda de setInterval/setTimeout recurrentes en web/src; además, en el navegador (3023) dejar la página 70 s inactiva y contar GET /api/health.",
+      "asserts": [
+        "obtenerSalud solo lo llama useSalud().refrescar",
+        "el único setInterval de web/src es el reintento de /api/config",
+        "0 GET /api/health en 70 s de inactividad visible"
+      ],
+      "human_checks": [
+        "veredicto de la usuaria"
+      ],
+      "isolation": "repo"
     }
   ],
   "last_run": {
-    "evidence": ".qa/evidence/03-chat-web-api-sse-y-despliegue/03-QA-EVIDENCE-2026-10-15T13-18-49Z.md",
-    "at": "2026-10-15T14:01:40Z",
-    "pass": 19,
-    "issues": 7,
-    "pending": [
-      "T21"
+    "evidence": ".qa/evidence/03-chat-web-api-sse-y-despliegue/03-QA-EVIDENCE-2026-10-16T01-14-17Z.md",
+    "at": "2026-10-16T01:45:00Z",
+    "pass": 12,
+    "issues": 1,
+    "pending": [],
+    "failed": [
+      "T30"
     ]
   }
 }
