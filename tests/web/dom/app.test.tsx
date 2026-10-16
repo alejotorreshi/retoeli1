@@ -207,6 +207,8 @@ describe("App en escritorio, con la red simulada en fetch", () => {
     expect(casos.compareDocumentPosition(acciones) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(pantalla.getByText(TEXTO_CHAT.vacioCuerpo)).toBeDefined();
     expect(TEXTO_CHAT.vacioCuerpo).toContain(`"procesa el caso ${CASO_GUION_PRD}"`);
+    expect(pantalla.getByPlaceholderText(TEXTO_CHAT.placeholder)).toBeDefined();
+    expect(TEXTO_CHAT.placeholder).toContain(`procesa el caso ${CASO_GUION_PRD}`);
   });
 
   test("con /api/config sin casos la sección Casos disponibles no se pinta y quedan el título, el cuerpo y los chips", async () => {
