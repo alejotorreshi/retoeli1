@@ -23,8 +23,8 @@ function promptDelPrd(): string {
 }
 
 describe("acciones rápidas (UI-07)", () => {
-  test("el chip de la demo manda el prompt literal del PRD §11 en un solo párrafo", () => {
-    expect(TEXTO_ACCIONES.demo).toBe("Demo §11: ec-corp-andina");
+  test("el chip de la demo manda el prompt literal de la sección 11 del PRD en un solo párrafo", () => {
+    expect(TEXTO_ACCIONES.demo).toBe("Demo del PRD: ec-corp-andina");
     expect(promptDelPrd()).toBe(TEXTO_ACCIONES.mensajeDemo);
   });
 
@@ -42,7 +42,7 @@ describe("acciones rápidas (UI-07)", () => {
   });
 
   test("las etiquetas cortas de la franja angosta salen de su nombre completo", () => {
-    expect(TEXTO_ACCIONES.demoCorto).toBe("Demo §11");
+    expect(TEXTO_ACCIONES.demoCorto).toBe("Demo del PRD");
     expect(TEXTO_ACCIONES.todosCorto(CASOS_FIXTURE.length)).toBe("Los 4 casos");
     expect(TEXTO_ACCIONES.todosCorto(0)).toBe("Los casos");
     expect(TEXTO_ACCIONES.demo.toLowerCase()).toContain(TEXTO_ACCIONES.demoCorto.toLowerCase());

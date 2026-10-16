@@ -39,6 +39,7 @@ import { ESTADO_LLM } from "@/config/constants/llm.constants.ts";
 import { ESTADO_CAMPO, REGLA_MAPEO } from "@/config/constants/mapping.constants.ts";
 import { ESTADO_SOPORTE, ESTADO_VIGENCIA } from "@/config/constants/supports.constants.ts";
 import { HERRAMIENTA, NOMBRE_VISIBLE } from "@/config/constants/tools.constants.ts";
+import { TEXTO_PREFLIGHT } from "@/config/strings.ts";
 import type { SseEvent } from "@/http/types/api.type.ts";
 import type { ResultadoVisible } from "@/loop/types/resultado-visible.type.ts";
 
@@ -77,6 +78,14 @@ const ALMACEN_LOCAL = /\blocalStorage\b/;
 const DUENO_DE_ALMACEN_LOCAL = "web/src/api/sesion-local.ts";
 
 const DUENO_DE_TEXTO = "web/src/config/strings.ts";
+
+const TEXTOS_DE_LA_CLI = "src/config/strings.ts";
+
+const PUNTO_DE_CODIGO_SECCION = 0xa7;
+
+const SIGNO_DE_SECCION = String.fromCodePoint(PUNTO_DE_CODIGO_SECCION);
+
+const MENSAJE_SIGNO_DE_SECCION = "usa el signo de sección en un texto visible; escríbelo con palabras";
 
 const INDEX_HTML = "web/index.html";
 
@@ -227,6 +236,7 @@ const VISTAS_MIGRADAS: readonly string[] = [
   "web/src/features/chat/acciones-rapidas/acciones-rapidas.tsx",
   "web/src/features/chat/linea-de-tiempo/linea-de-tiempo.tsx",
   "web/src/features/chat/estado-vacio/estado-vacio.tsx",
+  "web/src/features/chat/tarjeta-caso/tarjeta-caso.tsx",
   "web/src/features/casos/panel-casos/panel-casos.tsx",
   "web/src/features/casos/bloque-caso/bloque-caso.tsx",
   "web/src/features/archivos/lista-archivos/lista-archivos.tsx",
@@ -391,6 +401,14 @@ function violacionesDeTextoHtml(ruta: string, html: string): string[] {
     .map((linea) => linea.trim())
     .filter((linea) => TEXTO_LEGIBLE.test(linea))
     .map((linea) => `${ruta}: texto legible fuera de ${DUENO_DE_TEXTO}: ${linea}`);
+}
+
+function violacionesDeSignoDeSeccion(ruta: string, texto: string): string[] {
+  return texto
+    .split("\n")
+    .flatMap((linea, indice) =>
+      linea.includes(SIGNO_DE_SECCION) ? [`${ruta}:${indice + 1}: ${MENSAJE_SIGNO_DE_SECCION}`] : [],
+    );
 }
 
 function violacionesDeEnum(ruta: string, codigo: string): string[] {
@@ -774,6 +792,13 @@ describe("guardián de web/ sobre el código real", () => {
     expect(violacionesDeTextoHtml(INDEX_HTML, html)).toEqual([]);
   });
 
+  test("W19: ningún texto visible de la web ni de la CLI usa el signo de sección", () => {
+    expect(TEXTO_PREFLIGHT.turnoOk(1)).toBe("Turno 1 del guion de la sección 11 del PRD OK.");
+    for (const ruta of [DUENO_DE_TEXTO, TEXTOS_DE_LA_CLI, INDEX_HTML]) {
+      expect(violacionesDeSignoDeSeccion(ruta, leer(ruta))).toEqual([]);
+    }
+  });
+
   test("W9: sin enum de TypeScript", () => {
     expect(sobreElCodigo(violacionesDeEnum)).toEqual([]);
   });
@@ -1012,6 +1037,14 @@ describe("el guardián de web/ muerde sobre fuentes de muestra", () => {
       `${INDEX_HTML}: texto legible fuera de ${DUENO_DE_TEXTO}: Hola mundo`,
     ]);
     expect(violacionesDeTextoHtml(INDEX_HTML, `<title>${MARCADOR_TITULO}</title>`)).toEqual([]);
+  });
+
+  test("W19: reporta el signo de sección en un archivo de textos y acepta uno sin él", () => {
+    const conSigno = ['const A = "Demo";', `const B = "Demo ${SIGNO_DE_SECCION}11";`].join("\n");
+    expect(violacionesDeSignoDeSeccion(DUENO_DE_TEXTO, conSigno)).toEqual([
+      `${DUENO_DE_TEXTO}:2: ${MENSAJE_SIGNO_DE_SECCION}`,
+    ]);
+    expect(violacionesDeSignoDeSeccion(TEXTOS_DE_LA_CLI, 'const B = "sección 11 del PRD";')).toEqual([]);
   });
 
   test("W9: reporta un enum de TypeScript", () => {
