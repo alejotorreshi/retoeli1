@@ -175,6 +175,15 @@ describe("selectores del almacén", () => {
     expect(selectores.seleccionarDialogoAbierto(estado)).toBe(true);
   });
 
+  test("el envío queda deshabilitado mientras se hidrata la sesión, igual que en iniciarTurno", () => {
+    const guardada = estadoRaizInicial(SESION);
+    expect(selectores.seleccionarHidratando(guardada)).toBe(true);
+    expect(selectores.seleccionarEnCurso(guardada)).toBe(false);
+    expect(selectores.seleccionarEnvioEnPausa(guardada)).toBe(false);
+    expect(selectores.seleccionarEnvioDeshabilitado(guardada)).toBe(true);
+    expect(selectores.seleccionarEnvioDeshabilitado(estadoRaizInicial(null))).toBe(false);
+  });
+
   test("una sesión guardada queda por cargar aunque el acceso no esté concedido", () => {
     const guardada = estadoRaizInicial(SESION);
     expect(selectores.seleccionarHidratando(guardada)).toBe(true);

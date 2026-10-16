@@ -124,7 +124,7 @@ export function seleccionarEnvioEnPausa(estado: EstadoRaiz): boolean {
 }
 
 export function seleccionarEnvioDeshabilitado(estado: EstadoRaiz): boolean {
-  return estado.conversacion.enCurso || seleccionarEnvioEnPausa(estado);
+  return estado.conversacion.enCurso || estado.conversacion.hidratando || seleccionarEnvioEnPausa(estado);
 }
 
 export function seleccionarUsoDeSesion(estado: EstadoRaiz): UsoDeSesion | null {
