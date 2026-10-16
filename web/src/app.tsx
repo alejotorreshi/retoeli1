@@ -1,6 +1,5 @@
 import { AccionesRapidas } from "@web/components/acciones-rapidas.tsx";
 import { Compositor } from "@web/components/compositor.tsx";
-import { IndicadorPensando } from "@web/components/indicador-pensando.tsx";
 import { LineaDeTiempo } from "@web/components/linea-de-tiempo.tsx";
 import { PanelCasos } from "@web/components/panel-casos.tsx";
 import { PantallaAcceso } from "@web/components/pantalla-acceso.tsx";
@@ -15,6 +14,7 @@ import {
   TECLA_PESTANA,
 } from "@web/config/constants/ui.constants.ts";
 import { TEXTO_APP, TEXTO_PESTANAS } from "@web/config/strings.ts";
+import { IndicadorPensando } from "@web/features/chat/indicador-pensando/indicador-pensando.tsx";
 import { AvisoModelo } from "@web/features/encabezado/aviso-modelo/aviso-modelo.tsx";
 import { Encabezado } from "@web/features/encabezado/encabezado/encabezado.tsx";
 import { DialogoNuevaSesion } from "@web/features/sesion/dialogo-nueva-sesion/dialogo-nueva-sesion.tsx";

@@ -1,18 +1,11 @@
 import { IconoGirando, IconoReloj } from "@web/compartido/iconos/iconos.tsx";
-import estilos from "@web/components/indicador-pensando.module.css";
-import { ESPERA_DESPERTAR_MS } from "@web/config/constants/ui.constants.ts";
 import { TEXTO_CHAT } from "@web/config/strings.ts";
+import estilos from "@web/features/chat/indicador-pensando/indicador-pensando.module.css";
+import { useAvisoDespertar } from "@web/features/chat/indicador-pensando/usar-indicador-pensando.ts";
 import type { PropsIndicadorPensando } from "@web/types/ui.type.ts";
-import { useEffect, useState } from "react";
 
 function AvisoDespertar() {
-  const [visible, setVisible] = useState(false);
-
-  useEffect(() => {
-    const espera = setTimeout(() => setVisible(true), ESPERA_DESPERTAR_MS);
-    return () => clearTimeout(espera);
-  }, []);
-
+  const visible = useAvisoDespertar();
   return visible ? <span className={estilos.despertando}>{TEXTO_CHAT.despertando}</span> : null;
 }
 

@@ -1,6 +1,6 @@
-import estilos from "@web/components/mensaje.module.css";
 import { CLASE_GLOBAL } from "@web/config/constants/ui.constants.ts";
 import { TEXTO_CHAT } from "@web/config/strings.ts";
+import estilos from "@web/features/chat/mensaje/mensaje.module.css";
 import type { PropsMensaje } from "@web/types/ui.type.ts";
 
 export function MensajeUsuaria({ texto }: PropsMensaje) {

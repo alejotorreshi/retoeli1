@@ -26,7 +26,7 @@ import type {
   VistaPreviaUi,
 } from "@web/types/chat.type.ts";
 import type { InstanciaAlmacen } from "@web/types/store.type.ts";
-import type { ReactNode, RefObject } from "react";
+import type { ReactNode, RefObject, SyntheticEvent } from "react";
 import type { ESTADO_LLM } from "@/config/constants/llm.constants.ts";
 import type { ValorDe } from "@/config/types/valor-de.type.ts";
 
@@ -149,6 +149,17 @@ export type PropsGrupoHerramientas = {
 
 export type PropsTarjetaHerramienta = {
   readonly llamada: LlamadaDelTurno;
+};
+
+export type ControlGrupoHerramientas = {
+  readonly abierto: boolean;
+  readonly resumen: string;
+  readonly alAlternar: (evento: SyntheticEvent<HTMLDetailsElement>) => void;
+};
+
+export type ControlTarjetaHerramienta = {
+  readonly fallida: boolean;
+  readonly argumentos: string;
 };
 
 export type PropsIndicadorPensando = {

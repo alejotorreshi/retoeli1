@@ -1,9 +1,6 @@
 import { AvisoError, AvisoSistema } from "@web/compartido/aviso/aviso.tsx";
 import { IconoChevron } from "@web/compartido/iconos/iconos.tsx";
-import { GrupoHerramientas } from "@web/components/grupo-herramientas.tsx";
-import { IndicadorPensando } from "@web/components/indicador-pensando.tsx";
 import estilos from "@web/components/linea-de-tiempo.module.css";
-import { MensajeAgente, MensajeUsuaria } from "@web/components/mensaje.tsx";
 import { PilaConfirmaciones } from "@web/components/tarjeta-confirmacion.tsx";
 import { TarjetaResultado } from "@web/components/tarjeta-resultado.tsx";
 import { AVISO_SESION, CLASE_GLOBAL, SENAL_SEGUIMIENTO } from "@web/config/constants/ui.constants.ts";
@@ -11,7 +8,10 @@ import { TEXTO_AVISO, TEXTO_CHAT } from "@web/config/strings.ts";
 import { resultadosDelTurno } from "@web/features/casos/estado/casos.ts";
 import { anuncioDeEstado } from "@web/features/chat/estado/conversacion.ts";
 import { reducirSeguimiento, seguimientoInicial } from "@web/features/chat/estado/seguimiento.ts";
+import { IndicadorPensando } from "@web/features/chat/indicador-pensando/indicador-pensando.tsx";
+import { MensajeAgente, MensajeUsuaria } from "@web/features/chat/mensaje/mensaje.tsx";
 import { tarjetasDelTurno } from "@web/features/confirmacion/estado/confirmaciones.ts";
+import { GrupoHerramientas } from "@web/features/herramientas/grupo-herramientas/grupo-herramientas.tsx";
 import type {
   PropsAvisoInicial,
   PropsCuerpoLinea,

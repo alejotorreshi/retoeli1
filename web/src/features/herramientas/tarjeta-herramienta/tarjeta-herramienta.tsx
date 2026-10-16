@@ -5,10 +5,10 @@ import {
   IconoReloj,
   IconoX,
 } from "@web/compartido/iconos/iconos.tsx";
-import estilos from "@web/components/tarjeta-herramienta.module.css";
 import { ESTADO_HERRAMIENTA } from "@web/config/constants/ui.constants.ts";
 import { TEXTO_HERRAMIENTA } from "@web/config/strings.ts";
-import { argumentosLegibles } from "@web/features/chat/estado/conversacion.ts";
+import estilos from "@web/features/herramientas/tarjeta-herramienta/tarjeta-herramienta.module.css";
+import { useTarjetaHerramienta } from "@web/features/herramientas/tarjeta-herramienta/usar-tarjeta-herramienta.ts";
 import type { EstadoHerramienta } from "@web/types/chat.type.ts";
 import type { PropsIconoDeEstado, PropsTarjetaHerramienta } from "@web/types/ui.type.ts";
 
@@ -47,7 +47,7 @@ function IconoDeEstado({ estado }: PropsIconoDeEstado) {
 }
 
 export function TarjetaHerramienta({ llamada }: PropsTarjetaHerramienta) {
-  const fallida = llamada.estado === ESTADO_HERRAMIENTA.ERROR;
+  const { fallida, argumentos } = useTarjetaHerramienta(llamada);
   return (
     <li>
       <details className={estilos.tarjeta}>
@@ -69,7 +69,7 @@ export function TarjetaHerramienta({ llamada }: PropsTarjetaHerramienta) {
             <dd className={estilos.tecnico}>{llamada.herramienta}</dd>
             <dt className={estilos.termino}>{TEXTO_HERRAMIENTA.argumentos}</dt>
             <dd className={estilos.valor}>
-              <pre className={estilos.argumentos}>{argumentosLegibles(llamada.argumentos)}</pre>
+              <pre className={estilos.argumentos}>{argumentos}</pre>
             </dd>
             <dt className={estilos.termino}>{TEXTO_HERRAMIENTA.resultado}</dt>
             <dd className={estilos.resultado}>{llamada.resumen ?? TEXTO_HERRAMIENTA.sinResultado}</dd>
