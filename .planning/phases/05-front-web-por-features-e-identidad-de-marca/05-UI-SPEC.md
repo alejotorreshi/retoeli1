@@ -14,6 +14,7 @@ extends: ".planning/phases/03-chat-web-api-sse-y-despliegue/03-UI-SPEC.md"
 > Contrato visual y de interacción del front web (`web/`) para la identidad de marca de Periferia IT Group y el estado vacío con tarjetas de caso. Lo generó gsd-ui-researcher y lo verifica gsd-ui-checker.
 > Fuentes: 05-CONTEXT.md (D-100 a D-122, bloqueadas), REQUIREMENTS.md (FE-01 a FE-06; UI-01 a UI-09 no cambian), 03-UI-SPEC.md (contrato vigente), SEED-261014-8dq, `.claude/CLAUDE.md` (reglas de `web/`), los tokens de https://periferiaitgroup.com/assets/css/style.css medidos el 2026-10-16 y el estado actual de `web/src/styles/tokens.css`, `global.css`, `config/strings.ts` e `index.html`.
 > Los valores marcados **[Claude]** son discreción de esta fase (sección "Claude's Discretion" de 05-CONTEXT.md). La corrida es nocturna sin pausa (D-104): no se preguntó nada a la usuaria y todo lo demás sale de las decisiones bloqueadas.
+> Enmienda del 2026-10-16 (brecha 2 del UAT 05, ver .planning/debug/encabezado-angosto-titulo-partido.md): las medidas del encabezado angosto se recalcularon contra 288 px útiles a 320 px y 343 px en Montserrat a 375 px.
 
 ---
 
@@ -85,7 +86,7 @@ Cada componente vive en `web/src/features/<feature>/<componente>/` con `<compone
 |------------|---------|--------|-----------------------------|
 | `PantallaAcceso` | `features/acceso/pantalla-acceso` | se mueve | Fondo teal, logo y nombre de la app sobre la tarjeta; botón píldora |
 | `PantallaCarga` | `features/acceso/pantalla-carga` | se extrae de `app.tsx` | La pantalla "Cargando el agente…" con la misma superficie teal y el logo |
-| `Encabezado` | `features/encabezado/encabezado` | se mueve | Superficie teal, logo, divisor neón, título en Outfit, chips oscuros y "Nueva sesión" en píldora con borde neón |
+| `Encabezado` | `features/encabezado/encabezado` | se mueve | Superficie teal, logo, divisor neón, título en Outfit, chips oscuros y "Nueva sesión" en píldora con borde neón (solo con ícono en angosto) |
 | `AvisoModelo` | `features/encabezado/aviso-modelo` | se mueve | Botón "Comprobar de nuevo" en píldora |
 | `LineaDeTiempo` | `features/chat/linea-de-tiempo` | se mueve | Ninguno, salvo que el estado vacío pasa a su propio componente |
 | `EstadoVacio` | `features/chat/estado-vacio` | **nuevo** (extraído de `linea-de-tiempo.tsx`) | Título Display, cuerpo, grilla de `TarjetaCaso` y los chips debajo (D-111) |
@@ -129,12 +130,12 @@ Los breakpoints no cambian (`PUNTO_DE_QUIEBRE_PX`: `angosto` < 640 px, `medio` 6
 
 ```
 ┌───────────────────────────────────────────┐
-│ [logo 24 px] │ Registro como proveedor     │  línea 1: logo 96 × 24, divisor, h1 Outfit 16/600
-│ [2026-09-03] [● Sin clave válida] (Nueva sesión) │  línea 2: una fila sin partir, con elipsis
+│ [logo 20 px] │ Registro como proveedor     │  línea 1: logo 80 × 20, divisor 1 × 24 con 8 px a cada lado, h1 Outfit 16/600
+│ [2026-09-03] [● Sin clave válida] (+)       │  línea 2: una fila; la fecha no encoge y Nueva sesión va solo con ícono
 └───────────────────────────────────────────┘
 ```
 
-Igual que la Fase 3 (prefijos ocultos a la vista y presentes para lectores de pantalla, una sola fila con elipsis), con el logo a 24 px y el título a 16 px para que la línea 1 quepa en 343 px útiles a 375 px.
+Igual que la Fase 3 (prefijos ocultos a la vista y presentes para lectores de pantalla, una sola fila), con medidas calculadas contra el ancho útil más chico: 288 px a 320 px (320 menos 2 × 16 de padding) y 343 px a 375 px. Línea 1: logo 80 (20 px de alto) + 8 + divisor 1 + 8 + título Outfit 600 16 px (182,2 px) = 279,2 px, que cabe en 288 px; el título no se parte a 320 ni a 375 y la línea sigue en 24 px de alto (el divisor). Línea 2, en Montserrat 14 con cifras tabulares: chip de fecha de 105,1 px que no encoge (flex: none), chip del modelo de 32 px más la etiqueta (Sin saldo 62,6; Disponible 75,4; Tope diario 77,2; No disponible 97,1; Sin clave válida 105,5), Nueva sesión solo con ícono en una píldora de 40 × 40 y dos huecos de 8 px: de 255,7 a 298,6 px. A 375 px caben completos la fecha y los cinco estados del modelo. A 320 px la fecha se lee siempre completa y solo No disponible (290,2 px) y Sin clave válida (298,6 px) recortan la etiqueta del modelo con elipsis; nada se superpone.
 
 ### Pantalla de acceso y pantalla de carga
 
@@ -221,14 +222,14 @@ Declared values (must be multiples of 4). Sin cambios respecto de la Fase 3:
 | Token | Value | Usage |
 |-------|-------|-------|
 | xs | 4px | Gap entre ícono y texto, entre punto de estado y etiqueta, padding vertical de badges, gap entre el slug y la línea de acción de `TarjetaCaso` |
-| sm | 8px | Gap entre tarjetas de herramienta y entre `TarjetaCaso` en angosto, gap interno de `TarjetaCaso`, padding horizontal de badges y de la píldora de país, padding vertical de chips, separación entre rótulo y contenido del estado vacío, padding vertical del encabezado |
-| md | 16px | Padding de burbujas, tarjetas y `TarjetaCaso`, padding horizontal de botones y chips, gap de la grilla de casos en ancho y medio, separación a cada lado del divisor de marca, padding horizontal del encabezado |
+| sm | 8px | Gap entre tarjetas de herramienta y entre `TarjetaCaso` en angosto, gap interno de `TarjetaCaso`, padding horizontal de badges y de la píldora de país, padding vertical de chips, separación entre rótulo y contenido del estado vacío, padding vertical del encabezado, separación a cada lado del divisor de marca en angosto |
+| md | 16px | Padding de burbujas, tarjetas y `TarjetaCaso`, padding horizontal de botones y chips, gap de la grilla de casos en ancho y medio, separación a cada lado del divisor de marca en ≥ 640 px, padding horizontal del encabezado |
 | lg | 24px | Padding del panel y del compositor, separación entre bloques del estado vacío (cuerpo → casos → acciones), margen superior del estado vacío en angosto y de la pantalla de acceso en angosto, padding de diálogos |
 | xl | 32px | Padding de la tarjeta de acceso, separación entre el bloque de marca y la tarjeta de acceso, separación entre turnos |
 | 2xl | 48px | Margen superior del estado vacío en ancho y medio |
 | 3xl | 64px | Margen superior de la pantalla de acceso en ≥ 640 px |
 
-Dimensiones fijas nuevas (tamaños de caja, no espaciado; todas múltiplos de 4 salvo los trazos): logo del encabezado 32 px de alto (24 px en angosto); logo de acceso y carga 40 px; divisor de marca 1 × 24 px; píldora de país 24 px de alto; radio píldora `999px`. Se conservan las de la Fase 3: encabezado 56 px, pestañas 40 px, controles 40 px, panel 384 px, chat 768 px, tarjeta de acceso 400 px, compositor de 72 a 200 px y demás.
+Dimensiones fijas nuevas (tamaños de caja, no espaciado; todas múltiplos de 4 salvo los trazos): logo del encabezado 32 px de alto (20 px en angosto, 80 px de ancho); logo de acceso y carga 40 px; divisor de marca 1 × 24 px; píldora de país 24 px de alto; radio píldora `999px`; Nueva sesión en angosto: 40 × 40, solo con ícono. Se conservan las de la Fase 3: encabezado 56 px, pestañas 40 px, controles 40 px, panel 384 px, chat 768 px, tarjeta de acceso 400 px, compositor de 72 a 200 px y demás.
 
 Exceptions: el anillo de foco (2 px de grosor y 2 px de offset), el divisor de marca (1 px de ancho) y los bordes (1 px y 4 px de atención) son trazos, no espaciado de layout. No hay otros valores.
 
@@ -420,6 +421,7 @@ Hover solo con `@media (hover: hover)`, para que en pantallas táctiles no quede
 - Sin cambios de conducta (fecha del servidor, estado del modelo con punto y texto, "Nueva sesión" deshabilitado durante un turno).
 - Chips de fecha y modelo: fondo `--marca-elevada`, texto `--sobre-marca`, Label 14/400, radio 4 px, sin borde, 40 px de alto (con el padding compacto de la Fase 3 en angosto).
 - El `<h1>` lleva `font-family: var(--titulo-fuente)`.
+- En angosto, Nueva sesión es una píldora de 40 × 40 con el ícono más de 20 px (IconoMas, aria-hidden) y el borde neón; el texto Nueva sesión sigue dentro del botón con CLASE_GLOBAL.OCULTO, así que el nombre accesible, el diálogo de confirmación y el estado deshabilitado durante un turno no cambian. En ≥ 640 px el botón no cambia.
 
 ### PantallaAcceso y PantallaCarga
 
@@ -469,6 +471,7 @@ Esta fase no agrega acciones destructivas. Hacer clic en una tarjeta de caso no 
 - El foco es visible sobre claro (acento) y sobre teal (neón).
 - `TarjetaCaso`: `<button>` nativo con nombre accesible que contiene el texto visible (WCAG 2.5.3), decoración con `aria-hidden` y `disabled` nativo.
 - El logo lleva `alt` con el nombre de la empresa; el `<h1>` sigue siendo el nombre de la app.
+- Nueva sesión solo con ícono en angosto: el ícono va con `aria-hidden` y el texto Nueva sesión sigue dentro del botón con CLASE_GLOBAL.OCULTO, así que el nombre accesible es el mismo en todos los diseños.
 - `font-display: swap` con respaldo del sistema: el texto nunca queda invisible mientras cargan las fuentes.
 - `prefers-reduced-motion` apaga las transiciones y el giro.
 - `<html lang="es">` sin cambios; el `<title>` deja de estar vacío.
@@ -488,6 +491,7 @@ Con Playwright MCP, en local y en el link público, y comparando antes y despué
 7. Las tarjetas y los chips están deshabilitados durante un turno y con el envío en pausa.
 8. Con `prefers-reduced-motion: reduce` emulado no hay transiciones ni giro.
 9. Recorrido con Tab: encabezado (foco neón visible) → tarjetas de caso → chips → compositor (foco verde visible).
+10. Encabezado angosto a 320 × 568 y 375 × 667: el h1 ocupa una línea y no se superpone con el logo; a 375 × 667 la fecha y la etiqueta del modelo no llevan elipsis en ninguno de los cinco estados (forzados con la respuesta de /api/health); Nueva sesión se anuncia con su nombre.
 
 ---
 
@@ -506,18 +510,18 @@ Applicable state considerations resolved: 14 covered, 7 backstop, 1 dismissed, 0
 | long-text | TarjetaCaso (cliente o slug largos) | 🧪 backstop | `overflow-wrap: anywhere` en cliente y slug: la tarjeta crece en alto y nunca desborda su columna. Verificar con un slug de 60 caracteres a 375 × 667 y a 1280 × 720 |
 | loading | TarjetaCaso durante un turno o hidratación | ✅ covered | La tarjeta queda `disabled` con el estilo deshabilitado en las mismas condiciones que los chips (`envioDeshabilitado`) |
 | error | TarjetaCaso con el envío en pausa | ✅ covered | Con `sin_clave` o `tope_diario` la tarjeta queda deshabilitada y el banner y la ayuda del compositor explican la pausa, como en los chips |
-| overflow | Encabezado en angosto con logo | 🧪 backstop | Línea 1 con logo de 24 px, divisor y título Outfit 16 en 343 px útiles; la línea 2 sigue en una fila con elipsis. Verificar a 375 × 667 y a 320 × 568 que el título no se parte en dos líneas ni tapa el logo |
+| overflow | Encabezado en angosto con logo | 🧪 backstop | Línea 1 con logo de 20 px (80 × 20), divisor con 8 px a cada lado y título Outfit 16: 279,2 px en 288 px útiles a 320 px. Línea 2 en una fila: la fecha completa siempre y Nueva sesión solo con ícono (de 255,7 a 298,6 px según el estado del modelo). Verificar a 320 × 568 y 375 × 667 que el título no se parte en dos líneas ni tapa el logo; a 375 × 667, que la fecha y la etiqueta del modelo se leen completas en los cinco estados; a 320 × 568, que la fecha se lee completa y solo No disponible y Sin clave válida pueden recortar la etiqueta con elipsis |
 | overflow | Chips en píldora con Montserrat | 🧪 backstop | Montserrat es más ancha que la fuente del sistema: en la franja compacta a 375 px los chips pueden ocupar dos filas (máximo permitido en la Fase 3) y nunca hacen scroll horizontal. Verificar a 375 × 667 con historial |
 | error | Fuentes que no cargan | ✅ covered | Con `font-display: swap` y la pila del sistema en `--fuente-base` y `--fuente-titulos`, un `.woff2` ausente deja el texto legible con la fuente del sistema; las fuentes se sirven sin código de acceso |
 | error | Logo que no carga | ✅ covered | El `<img>` conserva su caja (248 × 62 escalada) y muestra el `alt` "Periferia IT Group" en `--sobre-marca` sobre el teal |
-| populated | Encabezado teal | ✅ covered | Logo, divisor neón, título Outfit, chips de fecha y modelo sobre `--marca-elevada` y "Nueva sesión" en píldora con borde neón; punto del modelo con los colores de encabezado y su etiqueta |
+| populated | Encabezado teal | ✅ covered | Logo, divisor neón, título Outfit, chips de fecha y modelo sobre `--marca-elevada` y "Nueva sesión" en píldora con borde neón (solo con ícono en angosto); punto del modelo con los colores de encabezado y su etiqueta |
 | populated | PantallaAcceso con marca | ✅ covered | Fondo teal, logo de 40 px, nombre de la app y tarjeta blanca con el campo enfocado al cargar; foco neón fuera de la tarjeta y verde dentro |
 | loading | PantallaCarga | ✅ covered | "Cargando el agente…" en blanco sobre teal con el logo y `role="status"`, sin destello claro antes del acceso |
 | empty | `<title>` y favicon | ✅ covered | El `<title>` deja de estar vacío ("Registro como proveedor · Periferia IT Group") y el favicon deja de ser `data:,` |
 | error | PantallaAcceso con marca (código errado o vencido) | 🧪 backstop | Los estados de error, envío y campo vacío de la Fase 3 no cambian; solo cambia la piel. El mensaje de error vive dentro de la tarjeta blanca con `--error-texto` (5.75:1). Verificar con un código errado que el mensaje se ve, se anuncia y el foco vuelve al campo |
 | loading | PantallaAcceso con marca (verificando el código) | 🧪 backstop | El botón "Entrar al agente" en píldora conserva el estado ocupado de la Fase 3 sobre la tarjeta blanca. Verificar que no hay doble envío y que el texto ocupado se lee |
 | empty | Encabezado sin salud ni fecha todavía | 🧪 backstop | Con `salud` o `fechaEjecucion` en `null`, la Fase 3 oculta el chip correspondiente; sobre el teal no queda un hueco ni un punto huérfano. Verificar durante la primera carga en frío del link público |
-| long-text | Encabezado (nombre del modelo largo) | 🧪 backstop | El prefijo del modelo se oculta en angosto (Fase 3) y el resto va con elipsis en la línea 2; verificar con el nombre real de `/api/health` a 320 × 568 |
+| long-text | Encabezado (nombre del modelo largo) | 🧪 backstop | El prefijo del modelo se oculta en angosto (Fase 3) y el resto solo puede ir con elipsis a 320 px (ver la fila overflow); verificar con el nombre real de `/api/health` a 320 × 568 |
 | empty | TarjetaCaso sin slug | ➖ dismissed | No aplica: `/api/config` valida `casos` como slugs no vacíos con el patrón de caso, así que una tarjeta nunca recibe un slug vacío |
 
 ---
