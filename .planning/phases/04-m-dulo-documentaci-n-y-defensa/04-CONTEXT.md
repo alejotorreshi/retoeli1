@@ -64,6 +64,13 @@ La numeración de decisiones sigue la de la Fase 3 (D-01 a D-78).
 - **D-94:** El **código de acceso va literal en el README**, como pide el §9.2. Solo lo ven los invitados (D-89) y se rota después de la evaluación (es la env var `ACCESS_CODE` de Render, `sync: false`). El README advierte que el valor tiene que coincidir con el de Render.
 - **D-95:** El ensayo del §11 sobre el link público (criterio 5) lo hace **eli-qa con Playwright**: una prueba de la suite de la Fase 4 en el navegador sobre Render, con capturas como evidencia. **Después la usuaria lo ensaya una vez a mano**, como en la defensa.
 
+### Decisiones tomadas en la corrida nocturna (pendientes de revisión de la usuaria)
+Las preguntas abiertas de 04-RESEARCH.md se resolvieron con el criterio rector de la fase: lo que mejor cumpla la letra del PRD.
+- **D-96:** Enmienda a D-83. OpenCode solo carga herramientas desde `.opencode/tools/`, así que se agrega `.opencode/tools/proveedor.ts`, una línea que re-exporta `modulo/tools/proveedor.ts`. Así el nombre visible sigue siendo `proveedor_<export>`. `opencode.json` registra la skill y el agente apuntando a `modulo/`. `modulo/` sigue siendo la fuente única, y `.opencode/` solo la enlaza. — **Reversibility:** reversible.
+- **D-97:** Por defecto, el pre-flight no gasta tokens: despierta el servicio y comprueba `/api/health` y el código de acceso con `GET /api/config`. El handshake SSE (encabezados sin buffering y eventos) se verifica en `--guion`, que de todos modos abre el stream. El README lo explica.
+- **D-98:** La evidencia del costo medido va en `docs/evidencia/costo-por-caso.json`, sin PII ni claves, y SOLUCION.md §4 la cita.
+- **D-99:** Invitar a los evaluadores (D-89) y rotar `ACCESS_CODE` después de la evaluación (D-94) son pasos manuales en GitHub y en Render. Quedan como pendientes humanos documentados en el README o la checklist de entrega, sin bloquear la corrida.
+
 ### Claude's Discretion
 - La estructura y el orden del `README.md`: badge, link y código, un comando, env vars desde `.env.example`, `demo.ts`, tests, pre-flight y `modulo/`.
 - Si `docs/arquitectura.md` absorbe, resume o enlaza `docs/estructura.md`, y cómo `docs/convenciones.md` se deriva de las reglas de `.claude/CLAUDE.md` sin duplicarlas a mano.

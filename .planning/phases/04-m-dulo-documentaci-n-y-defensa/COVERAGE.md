@@ -1,0 +1,1 @@
+No external API integration: Phase 4 reuses the existing DeepSeek adapter only for the opt-in cost run (D-86) and the app's own HTTP API for the pre-flight, adds CI and Render configuration files, and mentions SDKs only as discarded alternatives in SOLUCION.md §9.

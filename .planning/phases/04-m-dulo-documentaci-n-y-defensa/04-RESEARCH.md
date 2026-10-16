@@ -643,17 +643,21 @@ Constants quoted from `http.constants.ts:3, 66, 147-166` `[VERIFIED: "export con
 | A7 | GitHub renders the private-repo badge for logged-in collaborators | Pattern 4 | Badge broken for evaluators; the link to the Actions page still works |
 | A8 | Proposed file and constant names (`archivosDelModulo`, `construirAgente`, `MODO_AGENTE_MODULO`, `PREFLIGHT_*`, `COSTO_EN_VIVO`, `src/cli/`) | Patterns 1–6 | Naming only; planner may rename |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **Tools registration in OpenCode (D-83 cannot be met by `opencode.json` alone).**
    - What we know: tools load only from `.opencode/tools/` or global. The config has no tool-path key `[VERIFIED schema]`.
    - What's unclear: whether the user accepts an extra committed file.
    - Recommendation: add `.opencode/tools/proveedor.ts` with a single named re-export from `@/tools/proveedor.ts` (same identity test). Otherwise document the one-line step in `modulo/README.md`. Needs a user checkpoint because it amends D-83.
+   - **RESOLVED:** D-96 (CONTEXT.md). `.opencode/tools/proveedor.ts` re-exports `modulo/`.
 2. **"Sin gastar tokens" vs the SSE handshake (D-92).**
    - What we know: no endpoint streams without starting a model call. Aborting after `turn_start` costs at most one partial call.
    - Recommendation: accept "≈0 tokens" with that caveat in the README, or add a `--sin-sse` default. User confirmation.
+   - **RESOLVED:** D-97. The default mode spends no tokens; SSE is verified in `--guion`.
 3. **Where the cost run writes evidence.** The recommendation is `docs/evidencia/costo-por-caso.json` committed. Confirm the folder name with the user (D-86 only says "en el repo").
+   - **RESOLVED:** D-98. Evidence goes in `docs/evidencia/costo-por-caso.json`.
 4. **Collaborator invites and access-code rotation (D-89, D-94).** These are manual GitHub/Render settings outside the repo. The plan needs `checkpoint:human-action` tasks.
+   - **RESOLVED:** D-99. These are human to-dos in `docs/entrega.md`, not checkpoints, because the run is unattended.
 
 ## Environment Availability
 
