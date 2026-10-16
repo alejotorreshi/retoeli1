@@ -7,6 +7,7 @@ import {
   enlacesRelativos,
   enlacesRotos,
   leerDocumento,
+  VARIABLES_SECRETAS,
 } from "@tests/helpers/documentos.helper.ts";
 import { sensiblesDelProyecto } from "@tests/helpers/pii.helper.ts";
 import { TIPO_EVENTO } from "@/config/constants/agent.constants.ts";
@@ -28,6 +29,16 @@ const MODELOS_RETIRADOS = ["deepseek-chat", "deepseek-reasoner"];
 const PATRON_LINEA_CODIGO = /^Código de acceso: `([^`]+)`/m;
 const PATRON_VARIABLE_ENV = /^([A-Z][A-Z0-9_]*)=/gm;
 const PATRON_TAREA = /^- \[[ x]\] /m;
+const PATRON_NOMBRE_SECRETO = /(_API_KEY|_SECRET|ACCESS_CODE)$/;
+const PATRON_NOMBRE_ASIGNADO = /[A-Z][A-Z0-9_]*(?==)/;
+const ASIGNACIONES_DE_CONTROL = [
+  "LLM_API_KEY=sk-control-a",
+  "export DEEPSEEK_API_KEY=sk-control-b",
+  "`LLM_FALLBACK_API_KEY=sk-control-c`",
+  "- ACCESS_TOKEN_SECRET=secreto-de-control-0000000000000000",
+  'ACCESS_CODE="codigo-de-control"',
+  "* PREFLIGHT_ACCESS_CODE='codigo-de-control'",
+];
 const COMANDOS = [
   "bun install",
   "cp .env.example .env",
@@ -176,6 +187,28 @@ describe(`${ENTREGA} (D-99)`, () => {
 });
 
 describe("enlaces y secretos de la documentación de entrega", () => {
+  test(`el escáner de secretos cubre cada variable secreta de ${ENV_EJEMPLO}`, () => {
+    const variables = variablesDeEnvEjemplo();
+    const secretas = variables.filter((nombre) => PATRON_NOMBRE_SECRETO.test(nombre));
+    expect(secretas.length).toBeGreaterThan(0);
+    expect(secretas.filter((nombre) => !VARIABLES_SECRETAS.includes(nombre))).toEqual([]);
+    expect(VARIABLES_SECRETAS.filter((nombre) => !variables.includes(nombre))).toEqual([]);
+  });
+
+  test("el escáner detecta una asignación con valor en cada forma y para cada variable secreta", () => {
+    expect(asignacionesSecretas(ASIGNACIONES_DE_CONTROL.join("\n"))).toEqual(ASIGNACIONES_DE_CONTROL);
+    const cubiertas = VARIABLES_SECRETAS.filter((nombre) =>
+      ASIGNACIONES_DE_CONTROL.some((linea) => PATRON_NOMBRE_ASIGNADO.exec(linea)?.[0] === nombre),
+    );
+    expect(cubiertas).toEqual([...VARIABLES_SECRETAS]);
+  });
+
+  test(`el escáner no marca las variables vacías de ${ENV_EJEMPLO} ni la línea del código de acceso del ${README}`, () => {
+    expect(asignacionesSecretas(leer(ENV_EJEMPLO))).toEqual([]);
+    expect(codigoDeAcceso(leer(README)).length).toBeGreaterThan(0);
+    expect(asignacionesSecretas(leer(README))).toEqual([]);
+  });
+
   test.each([README, ENTREGA])("cada enlace relativo de %s apunta a una ruta que existe", (archivo) => {
     expect(leer(archivo).length).toBeGreaterThan(0);
     expect(enlacesRotos(RAIZ, archivo, [SOLUCION])).toEqual([]);

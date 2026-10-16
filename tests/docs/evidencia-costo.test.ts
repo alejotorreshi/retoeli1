@@ -195,6 +195,10 @@ describe("cálculo del costo por caso (D-86)", () => {
 
   test("clavesLlm toma solo las claves no vacías del entorno", () => {
     expect(clavesLlm({ LLM_API_KEY: " ", DEEPSEEK_API_KEY: "sk-uno" })).toEqual(["sk-uno"]);
+    expect(clavesLlm({ DEEPSEEK_API_KEY: "sk-uno", LLM_FALLBACK_API_KEY: "sk-dos" })).toEqual([
+      "sk-uno",
+      "sk-dos",
+    ]);
     expect(clavesLlm({})).toEqual([]);
   });
 });

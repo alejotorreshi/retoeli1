@@ -22,7 +22,7 @@ const BIOME = join(RAIZ_REPO, "node_modules", ".bin", "biome");
 const DECIMALES_USD = 4;
 const SANGRIA_JSON = 2;
 const ETIQUETA_CLAVE = "clave";
-const VARIABLES_CLAVE = ["LLM_API_KEY", "DEEPSEEK_API_KEY"] as const;
+export const VARIABLES_CLAVE = ["LLM_API_KEY", "DEEPSEEK_API_KEY", "LLM_FALLBACK_API_KEY"] as const;
 const SIN_USO: UsoAgregado = { entrada: 0, cacheHit: 0, salida: 0 };
 
 function tarifaDe(tarifa: {
