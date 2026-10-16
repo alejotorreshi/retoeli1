@@ -52,6 +52,7 @@ describe("sin comentarios en el código real", () => {
 
   test("el escáner encuentra archivos que revisar", () => {
     expect(listarFuentes()).toContain("tests/sin-comentarios.test.ts");
+    expect(listarFuentes()).toContain("tests/web/dom/app.test.tsx");
   });
 
   test("el escáner recorre modulo/ y .opencode/", () => {
@@ -91,6 +92,13 @@ describe("el escáner muerde sobre fuentes de muestra", () => {
   test("sigue el código dentro de una interpolación de plantilla", () => {
     const codigo = ["const t = `", "{valor ? `x", "{'//'}` : { a: 1 }.a}`; // tras plantilla\n"].join("$");
     expect(encontrarComentarios(codigo)).toEqual([{ linea: 1, tipo: "linea" }]);
+  });
+});
+
+describe("el escáner de pruebas .tsx muerde sobre fuentes de muestra", () => {
+  test("reporta un comentario JSX dentro de una prueba .tsx", () => {
+    const codigo = "const vista = <p>{/* nota */}{texto}</p>;\n";
+    expect(comentariosDe("tests/web/dom/x.test.tsx", codigo)).toEqual([{ linea: 1, tipo: "bloque" }]);
   });
 });
 

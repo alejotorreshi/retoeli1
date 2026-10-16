@@ -625,6 +625,10 @@ describe("reglas de capas sobre el código real", () => {
     expect(violaciones).toEqual([]);
   });
 
+  test("G1, G3, G4 y G5: el escáner de tests/ incluye las pruebas .tsx", () => {
+    expect(listarTodasLasFuentes()).toContain("tests/web/dom/app.test.tsx");
+  });
+
   test("G2: el grafo de importaciones resuelve los alias", () => {
     const grafo = grafoDeFuentes();
     expect(grafo.get("demo.ts")).toEqual(["src/demo/runners/ejecutar-demo.runner.ts"]);
@@ -901,6 +905,12 @@ describe("el escáner muerde sobre fuentes de muestra", () => {
     ]);
   });
 
+  test("G1: reporta una importación relativa en una prueba .tsx", () => {
+    expect(importacionesRelativas("tests/web/dom/x.test.tsx", 'import { a } from "../a.ts";\n')).toEqual([
+      "tests/web/dom/x.test.tsx: importación relativa ../a.ts",
+    ]);
+  });
+
   test("src no puede importar desde @tests/", () => {
     expect(violacionesDeCapas("src/domain/e.ts", 'import { f } from "@tests/helpers/f.ts";\n')).toEqual([
       "src/domain/e.ts: la capa domain no puede importar @tests/helpers/f.ts",
@@ -1072,12 +1082,21 @@ describe("el escáner muerde sobre fuentes de muestra", () => {
     ]);
   });
 
+  test("G5: acepta pruebas .test.tsx en kebab-case y reporta las demás .tsx de tests/", () => {
+    const rutas = ["tests/web/dom/app.test.tsx", "tests/web/dom/App.test.tsx", "tests/web/dom/app.tsx"];
+    expect(rutas.flatMap(violacionesDeNombre)).toEqual([
+      "tests/web/dom/App.test.tsx: el nombre no sigue la tabla de sufijos por carpeta",
+      "tests/web/dom/app.tsx: el nombre no sigue la tabla de sufijos por carpeta",
+    ]);
+  });
+
   test("G13: reporta archivos sueltos y deja pasar los fijados por el PRD y la usuaria", () => {
     const rutas = [
       "src/domain/mapeo.ts",
       "src/tools/entorno.wiring.ts",
       "src/infra/x.adapter.ts",
       "src/x.ts",
+      "src/x.tsx",
       "src/tools/proveedor.ts",
       "src/config/env.ts",
       "src/config/strings.ts",
@@ -1088,6 +1107,7 @@ describe("el escáner muerde sobre fuentes de muestra", () => {
       "src/tools/entorno.wiring.ts: archivo suelto en la raíz de su capa; va en una carpeta de rol",
       "src/infra/x.adapter.ts: archivo suelto en la raíz de su capa; va en una carpeta de rol",
       "src/x.ts: archivo suelto en la raíz de su capa; va en una carpeta de rol",
+      "src/x.tsx: archivo suelto en la raíz de su capa; va en una carpeta de rol",
     ]);
   });
 
