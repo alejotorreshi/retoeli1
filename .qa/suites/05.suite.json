@@ -1,0 +1,390 @@
+{
+  "phase": "05",
+  "generated_at": "2026-10-16T21:55:20Z",
+  "group": "05-front-web-por-features-e-identidad-de-marca",
+  "setup": {
+    "QA_SCRATCH": "session scratchpad dir /qa05 (orchestrator creates it)",
+    "phase_base": "b7446861767e3cad147c7450044a669e7a036da1 (commit that added 05-CONTEXT.md; last commit before the phase 5 front changes)",
+    "local_stack_after": {
+      "desc": "Orchestrator-owned. Scratch copy of the repo at HEAD (src, agent, reto-01, web, tsconfig.json, tsconfig.dom.json, package.json; node_modules symlinked), web/dist built in the repo with `bun run build:web` and copied. Fake LLM + production-mode server serving web/dist. 0 tokens.",
+      "fake_llm": "FAKE_LLM_PORT=4023 bun .qa/evidence/03-chat-web-api-sse-y-despliegue/seeds/03-fake-llm.ts (routing: 'casos hay' -> listar; 'QA-TEXTO' -> text; 'QA-LENTO' -> 4 s per call; 'QA-402|500|503' -> provider status; 'Sí, envía X' -> simular_envio confirmado; 'Cancela el envío de X' -> text; any message naming several case ids -> leer/mapear/generar/armar per case, in order)",
+      "server": "cd $QA_SCRATCH/after && PORT=3123 NODE_ENV=production LLM_PROVIDER=falso LLM_BASE_URL=http://127.0.0.1:4023 LLM_MODEL=modelo-falso LLM_API_KEY=clave-falsa-qa-centinela LLM_FALLBACK_ENABLED=false ACCESS_CODE=codigo-local-de-prueba ACCESS_TOKEN_SECRET=<synthetic 40 chars> FECHA_EJECUCION=2026-09-03 TZ_NEGOCIO=America/Bogota LOG_LEVEL=info bun --env-file=/dev/null src/server.ts",
+      "base_url": "http://127.0.0.1:3123",
+      "access_code": "codigo-local-de-prueba (synthetic)"
+    },
+    "local_stack_before": {
+      "desc": "Same server, but web/dist built from the pre-refactor front: `git archive b7446861 web package.json tsconfig.json | tar -x -C $QA_SCRATCH/before`, copy src/, agent/ and reto-01/ from HEAD, node_modules symlinked, `bun --bun vite build` there. src/ is HEAD (backend diff of the phase is one preflight string). Port 3124, same fake LLM.",
+      "base_url": "http://127.0.0.1:3124"
+    },
+    "variants": {
+      "3125": "LLM_MODEL=<long synthetic model name, 64 chars> (T07)",
+      "3126": "scratch copy whose fixtures add a synthetic case with a 60-char slug copied from co-industrias-delta (T08); seed .qa/evidence/05-front-web-por-features-e-identidad-de-marca/seeds/05-T08-slug-largo.sh",
+      "4043": "fake LLM with FAKE_FORCE_STATUS=402 behind server 3127 (T01a errores y avisos)"
+    },
+    "remote": {
+      "base_url": "https://registro-proveedor-bfnt.onrender.com",
+      "access_code": "read in memory from .qa/render.token (gitignored); never echo, never write to evidence"
+    },
+    "gotchas": [
+      "NEW_SESSIONS_PER_HOUR=5 per IP: browser runners set a distinct synthetic X-Forwarded-For per context (server trusts one proxy hop)",
+      "QA-500/402 runs leave health 'no disponible' until one successful turn (send QA-TEXTO)",
+      "the before copy needs agent/prompt.md or every turn fails"
+    ]
+  },
+  "tests": [
+    {
+      "id": "T00",
+      "uat_ref": [],
+      "name": "Compuertas de humo: check, test, build web y demo",
+      "kind": "cli",
+      "surface": "gate-check, gate-test, gate-build-web, demo-cli",
+      "recipe": "bun run check ; bun test ; bun run build:web ; bun run demo.ts (logs in .qa/logs/05-gate-*.log)",
+      "asserts": [
+        "all exit 0",
+        "bun test 0 fail",
+        "demo table ec-corp-andina pdf 13/1/1 BLOQUEADO"
+      ],
+      "human_checks": [],
+      "isolation": "repo"
+    },
+    {
+      "id": "T01a",
+      "uat_ref": [
+        1
+      ],
+      "name": "Flujos de D-116 en local, antes y después del refactor (LLM falso)",
+      "kind": "browser",
+      "surface": "web (local_stack_after 3123 + local_stack_before 3124)",
+      "recipe": "Run the same Playwright script against 3124 (before) then 3123 (after), 1280x720 and 375x667: acceso (wrong code, right code); estado vacío (tarjetas de caso / chips); 'procesa el caso ec-corp-andina' -> tool cards, progreso, tarjeta de resultado; 'Sí, envía ec-corp-andina' via confirmation card -> envío simulado; panel de casos; archivos: lista, descarga, vista previa enmascarada, Esc; Nueva sesión dialog (Seguir, Esc, focus); errores y avisos: 'QA-402' and server 3127 (402); at each step capture role/name snapshot of main regions and the request log (method+path+status). Diff before vs after ignoring brand-only text and CSS.",
+      "asserts": [
+        "same request sequence before/after per flow",
+        "same visible functional text (tool names, states, counts 13/1/1 BLOQUEADO)",
+        "no POST simular_envio without confirmation",
+        "no horizontal scroll at 375",
+        "no console errors"
+      ],
+      "human_checks": [
+        "visible differences are only the intended brand and card changes"
+      ],
+      "isolation": "scratch-copy"
+    },
+    {
+      "id": "T01b",
+      "uat_ref": [
+        1
+      ],
+      "name": "CI verde y ensayo de la sección 11 del PRD en el link público con el modelo real",
+      "kind": "browser",
+      "surface": "deploy",
+      "recipe": "Bundle check: GET / on remote -> asset hashes == local web/dist of HEAD. Playwright 1280x720 on remote: access with code from .qa/render.token (served in memory, never printed); send TEXTO_PREFLIGHT.mensajeGuion (case ec-corp-andina, 'No envíes nada todavía'); wait end; result card counts; confirm no simular_envio in SSE; then click Cancelar envío. Screenshots per step. ONE real-model run.",
+      "asserts": [
+        "remote bundle hashes == HEAD build",
+        "result 13 llenos / 1 faltante / 1 requiere_confirmacion, BLOQUEADO",
+        "no proveedor_simular_envio in the turn",
+        "no error card"
+      ],
+      "human_checks": [
+        "CI run on GitHub Actions green for HEAD (gh not installed; human confirms)",
+        "real-model wording acceptable"
+      ],
+      "isolation": "repo"
+    },
+    {
+      "id": "T02",
+      "uat_ref": [
+        2
+      ],
+      "name": "Encabezado angosto con logo a 375x667 y 320x568",
+      "kind": "browser",
+      "surface": "web (3123)",
+      "recipe": "After access, at 375x667 and 320x568: measure header line 1 (logo img box, divider, title) getBoundingClientRect: same top row, no overlap logo/title, logo height 24px, title font-family Outfit and 16px computed; line 2 single row with text-overflow ellipsis; screenshot header.",
+      "asserts": [
+        "line 1 elements share one row",
+        "logo not covered (no rect intersection)",
+        "line 2 height == one line"
+      ],
+      "human_checks": [
+        "looks right"
+      ],
+      "isolation": "scratch-copy"
+    },
+    {
+      "id": "T03",
+      "uat_ref": [
+        3
+      ],
+      "name": "Chips en píldora con Montserrat a 375x667 con historial",
+      "kind": "browser",
+      "surface": "web (3123)",
+      "recipe": "At 375x667 process one case so history exists; measure chips container: distinct row tops <= 2, scrollWidth == clientWidth on container and document; computed font-family Montserrat and document.fonts.check; screenshot.",
+      "asserts": [
+        "<= 2 rows",
+        "no horizontal scroll"
+      ],
+      "human_checks": [],
+      "isolation": "scratch-copy"
+    },
+    {
+      "id": "T04",
+      "uat_ref": [
+        4
+      ],
+      "name": "Acceso con código errado",
+      "kind": "browser",
+      "surface": "web (3123)",
+      "recipe": "Fresh context, wrong code + Enter: message inside the white card (rect containment), computed color == --error-texto token value, element in aria-live/role=alert region or aria-describedby, document.activeElement is the input, aria-invalid=true; contrast ratio of message vs card background computed; screenshot.",
+      "asserts": [
+        "message inside card",
+        "color == --error-texto",
+        "announced",
+        "focus back on input",
+        "contrast >= 4.5"
+      ],
+      "human_checks": [
+        "readable"
+      ],
+      "isolation": "scratch-copy"
+    },
+    {
+      "id": "T05",
+      "uat_ref": [
+        5
+      ],
+      "name": "Acceso mientras verifica el código",
+      "kind": "browser",
+      "surface": "web (3123)",
+      "recipe": "page.route POST access endpoint delayed 2 s; type right code, press Enter then click the pill twice and Enter again during the delay; capture pill text, aria-busy/disabled, screenshot mid-delay; count access POSTs.",
+      "asserts": [
+        "exactly 1 access POST",
+        "pill shows busy text and disabled/aria-busy",
+        "busy text contrast >= 4.5"
+      ],
+      "human_checks": [
+        "busy text readable"
+      ],
+      "isolation": "scratch-copy"
+    },
+    {
+      "id": "T06",
+      "uat_ref": [
+        6
+      ],
+      "name": "Primera carga en frío: encabezado sin salud ni fecha todavía",
+      "kind": "browser",
+      "surface": "web (3123) + deploy",
+      "recipe": "Local: page.route /api/health and /api/config delayed 8 s; screenshot header at 1280 and 375 before they resolve; check no orphan dot/separator element visible with empty text and no empty gap box. Remote: real cold start only after 15 min idle (spin-down); the run checks whether the service is cold when it starts and captures the first paint if so.",
+      "asserts": [
+        "no visible empty status dot or separator while health/date are pending"
+      ],
+      "human_checks": [
+        "no hole on the teal (screenshot)"
+      ],
+      "isolation": "scratch-copy"
+    },
+    {
+      "id": "T07",
+      "uat_ref": [
+        7
+      ],
+      "name": "Nombre largo del modelo a 320x568",
+      "kind": "browser",
+      "surface": "web (3125, LLM_MODEL long)",
+      "recipe": "Server 3125 with a 64-char synthetic LLM_MODEL; at 320x568 after access: model prefix element hidden (display none / zero width), model text has text-overflow ellipsis and scrollWidth > clientWidth, line 2 one row, no document horizontal scroll; screenshot.",
+      "asserts": [
+        "prefix hidden",
+        "ellipsis on model",
+        "no horizontal scroll"
+      ],
+      "human_checks": [],
+      "isolation": "scratch-copy"
+    },
+    {
+      "id": "T08",
+      "uat_ref": [
+        8
+      ],
+      "name": "Tarjeta de caso con slug de 60 caracteres a 375x667 y 1280x720",
+      "kind": "browser",
+      "surface": "web (3126, synthetic long-slug case)",
+      "recipe": "Scratch fixtures copy adds casos/co-<57 chars> copied from co-industrias-delta (seed script); empty state shows its card; at both viewports: card rect within its grid column, client and slug computed overflow-wrap anywhere, card scrollWidth == clientWidth, no document horizontal scroll; screenshot.",
+      "asserts": [
+        "card within column",
+        "overflow-wrap anywhere",
+        "no overflow"
+      ],
+      "human_checks": [],
+      "isolation": "scratch-copy"
+    },
+    {
+      "id": "T09a",
+      "uat_ref": [
+        9
+      ],
+      "name": "Interrumpir un turno en local, antes y después (Detener, recarga, Nueva sesión)",
+      "kind": "browser",
+      "surface": "web (3124 before, 3123 after)",
+      "recipe": "On both: send 'procesa el caso co-industrias-delta QA-LENTO'; at 6 s Detener -> no 'En curso', composer enabled, GET session ocupada=false; again, at 6 s reload -> timeline reconciles, no stuck card; again, at 6 s Nueva sesión -> dialog behavior and resulting state. Record DOM text + requests and diff before/after.",
+      "asserts": [
+        "same end state before/after for each of the 3 interruptions",
+        "composer usable after each"
+      ],
+      "human_checks": [],
+      "isolation": "scratch-copy"
+    },
+    {
+      "id": "T09b",
+      "uat_ref": [
+        9
+      ],
+      "name": "Interrumpir un turno en el link público con el modelo real",
+      "kind": "browser",
+      "surface": "deploy",
+      "recipe": "Remote, same session as T01b after it ends: send 'procesa el caso co-industrias-delta', press Detener after the first tool card; then a second short turn and reload during it. Compare end state with T09a. Real-model turns: 2 short partial turns.",
+      "asserts": [
+        "Detener ends turn, composer usable",
+        "reload reconciles"
+      ],
+      "human_checks": [],
+      "isolation": "repo"
+    },
+    {
+      "id": "T10",
+      "uat_ref": [
+        10
+      ],
+      "name": "Cortar /api/config después de entrar (WR-03)",
+      "kind": "browser",
+      "surface": "web (3123)",
+      "recipe": "page.route('**/api/config') abort after access; empty state: role=status contains the exact WR-03 text; chips and composer enabled and send works; unroute; wait for retry -> grid of case cards appears; screenshots before/after.",
+      "asserts": [
+        "exact text in role=status",
+        "chips/composer usable",
+        "grid appears after retry"
+      ],
+      "human_checks": [
+        "text reads well"
+      ],
+      "isolation": "scratch-copy"
+    },
+    {
+      "id": "T11",
+      "uat_ref": [
+        11
+      ],
+      "name": "El neón nunca como texto o control sobre superficie clara",
+      "kind": "browser",
+      "surface": "web (3123)",
+      "recipe": "On access screen, loading screen, chat (1280 and 375) and with keyboard focus walked over every focusable: for every element whose computed color, border-color, outline-color or background-color equals the neon (#6DFD8C / rgb(109,253,140)), resolve the nearest opaque ancestor background and report it; also inside the white access card check focus outline color == --acento.",
+      "asserts": [
+        "every neon use sits on the teal background",
+        "access-card focus == --acento"
+      ],
+      "human_checks": [
+        "confirm by eye on the screenshots"
+      ],
+      "isolation": "scratch-copy"
+    },
+    {
+      "id": "T12",
+      "uat_ref": [
+        12
+      ],
+      "name": "Revisión visual de la identidad de marca",
+      "kind": "human",
+      "surface": "web (3123) + deploy",
+      "recipe": "Screenshots: access, loading, empty state with 2x2 card grid at 1280x720, 1 column at 375x667, chat with history, result and confirmation cards, file preview; document.fonts list (Outfit, Montserrat loaded from /fuentes), favicon link resolves 200 same-origin, document.title; no third-party font/asset requests.",
+      "asserts": [
+        "fonts loaded same-origin",
+        "favicon 200",
+        "title == TEXTO_APP.tituloDocumento",
+        "grid 2 cols at 1280, 1 col at 375"
+      ],
+      "human_checks": [
+        "looks like Periferia IT Group, chat-first, light, per 05-UI-SPEC.md"
+      ],
+      "isolation": "scratch-copy"
+    },
+    {
+      "id": "T13",
+      "uat_ref": [
+        13
+      ],
+      "name": "Cadena de suministro de los 5 devDependencies y atribución de marca",
+      "kind": "cli",
+      "surface": "repo",
+      "recipe": "For each devDependency added in phase 5 (git diff b7446861..HEAD -- package.json): read node_modules/<pkg>/package.json scripts (preinstall/install/postinstall absent); `npm view <pkg>@<ver> time --json` (or registry fetch) for the publish time vs install commit time 36727e4; bun audit; grep SOLUCION.md for the brand attribution line.",
+      "asserts": [
+        "no install scripts",
+        "each version >= 7 days old at install",
+        "audit clean",
+        "attribution present"
+      ],
+      "human_checks": [
+        "accept that (b) has no automated guard, or ask for a test"
+      ],
+      "isolation": "repo"
+    },
+    {
+      "id": "T14",
+      "uat_ref": [
+        14
+      ],
+      "name": "Vista previa abierta mientras el agente procesa varios casos (WR-01)",
+      "kind": "browser",
+      "surface": "web (3123)",
+      "recipe": "Process ec-corp-andina first; then send 'procesa los casos ec-corp-andina co-industrias-delta QA-LENTO' — wait until A files exist, open 'Ver formulario.pdf' of A; while the agent moves to B: dialog stays visible (outside the collapsible), A block not collapsed, B progress advances; close with Esc -> focus returns to that 'Ver' button.",
+      "asserts": [
+        "dialog visible across case switch",
+        "A block open",
+        "focus back on Ver"
+      ],
+      "human_checks": [],
+      "isolation": "scratch-copy"
+    },
+    {
+      "id": "T15",
+      "uat_ref": [
+        15
+      ],
+      "name": "401 en /api/config tras código aceptado (IN-01) y chips/tarjetas durante la recarga de sesión (IN-07)",
+      "kind": "browser",
+      "surface": "web (3123)",
+      "recipe": "(a) page.route('**/api/config') fulfill 401 with the server's JSON error after a successful access POST: message shows as system notice above the field, input not aria-invalid, no field error text. (b) With history, page.route('**/api/sessions/*') delayed 3 s and reload: during hydration chips, case cards and 'procesar de nuevo' are disabled; enabled after.",
+      "asserts": [
+        "system notice not field error",
+        "controls disabled during hydration",
+        "enabled after"
+      ],
+      "human_checks": [],
+      "isolation": "scratch-copy"
+    },
+    {
+      "id": "R01",
+      "uat_ref": [],
+      "name": "Regresión: preflight local con el texto nuevo de la sección 11",
+      "kind": "cli",
+      "surface": "preflight-cli",
+      "recipe": "PREFLIGHT_ACCESS_CODE=codigo-local-de-prueba bun --no-env-file src/cli/runners/preflight.runner.ts --url http://127.0.0.1:3123 (fake LLM, no --guion)",
+      "asserts": [
+        "exit 0",
+        "no '§' in output"
+      ],
+      "human_checks": [],
+      "isolation": "scratch-copy"
+    }
+  ],
+  "last_run": {
+    "evidence": ".qa/evidence/05-front-web-por-features-e-identidad-de-marca/05-QA-EVIDENCE-2026-10-16T22-05-00Z.md",
+    "at": "2026-10-16T22:45:00Z",
+    "pass": 17,
+    "issues": 2,
+    "failed": [
+      "T01a",
+      "T02"
+    ],
+    "deferred": [
+      "T06 remote true cold start"
+    ],
+    "scripts": ".qa/evidence/05-front-web-por-features-e-identidad-de-marca/seeds/playwright-ab (T01a/T09a/402 templates: set BASE to 3124 before or 3123 after) and seeds/playwright-c (measurement helpers for T02/T11/T12; lib.head + body + lib.tail are concatenated into one browser_run_code_unsafe snippet)"
+  }
+}
