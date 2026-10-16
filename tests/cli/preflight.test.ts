@@ -14,6 +14,7 @@ import type {
   PlazosPreflight,
   ResultadoPreflight,
 } from "@/cli/types/preflight.type.ts";
+import { TIPO_EVENTO } from "@/config/constants/agent.constants.ts";
 import { FECHA_DEMO } from "@/config/constants/demo.constants.ts";
 import { ARCHIVOS_SALIDA } from "@/config/constants/files.constants.ts";
 import {
@@ -23,9 +24,10 @@ import {
   METODO_POST,
   RESPUESTA_HTTP,
   RUTA_API,
+  TIPO_CONTENIDO,
 } from "@/config/constants/http.constants.ts";
 import { ESTADO_LLM, PRESET_DEEPSEEK, PROVEEDOR_DEEPSEEK } from "@/config/constants/llm.constants.ts";
-import { CASO_GUION_PRD } from "@/config/constants/preflight.constants.ts";
+import { CASO_GUION_PRD, TIPO_BLOQUEO_GUION } from "@/config/constants/preflight.constants.ts";
 import { HERRAMIENTA, NOMBRE_VISIBLE } from "@/config/constants/tools.constants.ts";
 import { parsePreflightEnv, pinExecutionDate } from "@/config/env.ts";
 import { TEXTO_PREFLIGHT } from "@/config/strings.ts";
@@ -62,6 +64,8 @@ const PLAZOS_CON_SEPARACION: PlazosPreflight = {
 };
 
 const relojReal = () => performance.now();
+
+const TURNO_CORTO_MS = 300;
 
 type PedidoVisto = { readonly metodo: string; readonly ruta: string; readonly cuerpo: string | null };
 
@@ -345,6 +349,90 @@ const acumulandoElSse = reescribirChat(async (respuesta) => {
   return new Response(bytes, { status: respuesta.status, headers: respuesta.headers });
 });
 
+type FrameCrudo = { readonly evento: string; readonly datos: string };
+
+type DatosFrame = Record<string, unknown>;
+
+const SEPARADOR_FRAMES = "\n\n";
+const SALTO = "\n";
+const PREFIJO_EVENTO = "event: ";
+const PREFIJO_DATOS = "data: ";
+const MENSAJE_DE_ERROR = "El proveedor del modelo no respondió.";
+const DATOS_NO_JSON = "esto no es json";
+
+function campoDe(lineas: readonly string[], prefijo: string): string | undefined {
+  return lineas.find((linea) => linea.startsWith(prefijo))?.slice(prefijo.length);
+}
+
+function leerFrames(texto: string): FrameCrudo[] {
+  return texto.split(SEPARADOR_FRAMES).flatMap((bloque) => {
+    const lineas = bloque.split(SALTO);
+    const evento = campoDe(lineas, PREFIJO_EVENTO);
+    const datos = campoDe(lineas, PREFIJO_DATOS);
+    return evento === undefined || datos === undefined ? [] : [{ evento, datos }];
+  });
+}
+
+function escribirFrames(frames: readonly FrameCrudo[]): string {
+  return frames
+    .map(
+      ({ evento, datos }) => `${PREFIJO_EVENTO}${evento}${SALTO}${PREFIJO_DATOS}${datos}${SEPARADOR_FRAMES}`,
+    )
+    .join("");
+}
+
+function datosDe(frame: FrameCrudo): DatosFrame {
+  return JSON.parse(frame.datos);
+}
+
+function reescribirTurno(turno: number, transformar: (frames: FrameCrudo[]) => FrameCrudo[]): FetchPreflight {
+  let vistos = 0;
+  return reescribirChat(async (respuesta) => {
+    vistos += 1;
+    if (vistos !== turno) return respuesta;
+    const frames = transformar(leerFrames(await respuesta.text()));
+    return new Response(escribirFrames(frames), { status: respuesta.status, headers: respuesta.headers });
+  });
+}
+
+function antesDelFin(...extra: readonly FrameCrudo[]): (frames: FrameCrudo[]) => FrameCrudo[] {
+  return (frames) => {
+    const fin = frames.findIndex(({ evento }) => evento === TIPO_EVENTO.FIN_TURNO);
+    return [...frames.slice(0, fin), ...extra, ...frames.slice(fin)];
+  };
+}
+
+function sinEvento(evento: string): (frames: FrameCrudo[]) => FrameCrudo[] {
+  return (frames) => frames.filter((frame) => frame.evento !== evento);
+}
+
+function sinHerramienta(herramienta: string): (frames: FrameCrudo[]) => FrameCrudo[] {
+  return (frames) =>
+    frames.filter(
+      (frame) => frame.evento !== TIPO_EVENTO.FIN_HERRAMIENTA || datosDe(frame).herramienta !== herramienta,
+    );
+}
+
+function ajustarEvento(evento: string, ajustar: (datos: DatosFrame) => DatosFrame) {
+  return (frames: FrameCrudo[]): FrameCrudo[] =>
+    frames.map((frame) =>
+      frame.evento === evento ? { evento, datos: JSON.stringify(ajustar(datosDe(frame))) } : frame,
+    );
+}
+
+function reescribirArchivos(llamada: number, ajustar: (nombres: string[]) => string[]): FetchPreflight {
+  let vistas = 0;
+  return async (url, init) => {
+    const respuesta = await fetch(url, init);
+    if (url.pathname !== RUTA_ARCHIVOS_GUION) return respuesta;
+    vistas += 1;
+    if (vistas !== llamada) return respuesta;
+    const lista = archivosGuionSchema.parse(await respuesta.json());
+    const archivos = ajustar(lista.archivos.map(({ nombre }) => nombre)).map((nombre) => ({ nombre }));
+    return Response.json({ archivos }, { status: respuesta.status });
+  };
+}
+
 function turnosDelChat(pedidos: readonly PedidoVisto[]): { sessionId: string | null; message: string }[] {
   return pedidosA(pedidos, RUTA_API.CHAT).map((pedido) => JSON.parse(pedido.cuerpo ?? "null"));
 }
@@ -429,5 +517,123 @@ describe("pre-flight con --guion: PRD §11 en dos turnos SSE (D-92)", () => {
   test("el mensaje del guion es el del chip de la SPA (mensajeDemo) y la confirmación es envía", () => {
     expect(TEXTO_PREFLIGHT.mensajeGuion).toBe(TEXTO_ACCIONES.mensajeDemo);
     expect(TEXTO_PREFLIGHT.mensajeConfirmacion).toBe("envía");
+  });
+});
+
+describe("pre-flight con --guion: cada rama de falla del validador (WR-01)", () => {
+  async function correrGuion(envolver: FetchPreflight, plazos: PlazosPreflight = PLAZOS_PRUEBA) {
+    const url = await servir({}, guionPrd({ conPaquete: true }));
+    const corrida = await correr(url, { guion: true, envolver, plazos });
+    expect(corrida.resultado).toEqual({ fallido: true, tokens: null });
+    expect(corrida.lineas.at(-1)).toBe(TEXTO_PREFLIGHT.resultadoFallido);
+    return { lineas: corrida.lineas, turnos: turnosDelChat(corrida.pedidos).length };
+  }
+
+  test("si el modelo llama al envío en el turno 1, falla con envioAntesDeTiempo", async () => {
+    const envio = { herramienta: SIMULAR, caso: CASO_GUION_PRD, ok: false };
+    const { lineas, turnos } = await correrGuion(
+      reescribirTurno(1, antesDelFin({ evento: TIPO_EVENTO.FIN_HERRAMIENTA, datos: JSON.stringify(envio) })),
+    );
+    expect(lineas).toContain(TEXTO_PREFLIGHT.envioAntesDeTiempo);
+    expect(turnos).toBe(1);
+  });
+
+  test("si la confirmación pendiente no nombra el bloqueo tributario, falla con bloqueoAusente", async () => {
+    const { lineas, turnos } = await correrGuion(
+      reescribirTurno(
+        1,
+        ajustarEvento(TIPO_EVENTO.CONFIRMACION_REQUERIDA, (datos) => ({ ...datos, bloqueos: [] })),
+      ),
+    );
+    expect(lineas).toContain(TEXTO_PREFLIGHT.bloqueoAusente(TIPO_BLOQUEO_GUION));
+    expect(turnos).toBe(1);
+  });
+
+  test("si falta una herramienta del turno 1, falla nombrándola", async () => {
+    const { lineas, turnos } = await correrGuion(reescribirTurno(1, sinHerramienta(GENERAR)));
+    expect(lineas).toContain(TEXTO_PREFLIGHT.herramientaFaltante(GENERAR));
+    expect(turnos).toBe(1);
+  });
+
+  test("un evento error del agente falla con errorDelAgente", async () => {
+    const error = { evento: TIPO_EVENTO.ERROR, datos: JSON.stringify({ mensaje: MENSAJE_DE_ERROR }) };
+    const { lineas, turnos } = await correrGuion(reescribirTurno(1, antesDelFin(error)));
+    expect(lineas).toContain(TEXTO_PREFLIGHT.errorDelAgente(MENSAJE_DE_ERROR));
+    expect(turnos).toBe(1);
+  });
+
+  test("sin turn_end el turno queda incompleto", async () => {
+    const { lineas, turnos } = await correrGuion(reescribirTurno(1, sinEvento(TIPO_EVENTO.FIN_TURNO)));
+    expect(lineas).toContain(TEXTO_PREFLIGHT.turnoIncompleto);
+    expect(turnos).toBe(1);
+  });
+
+  test("sin turn_start el turno queda incompleto", async () => {
+    const { lineas, turnos } = await correrGuion(reescribirTurno(1, sinEvento(TIPO_EVENTO.INICIO_TURNO)));
+    expect(lineas).toContain(TEXTO_PREFLIGHT.turnoIncompleto);
+    expect(turnos).toBe(1);
+  });
+
+  test("un frame con datos que no son JSON falla con respuestaInvalida", async () => {
+    const roto = { evento: TIPO_EVENTO.FIN_HERRAMIENTA, datos: DATOS_NO_JSON };
+    const { lineas, turnos } = await correrGuion(reescribirTurno(1, antesDelFin(roto)));
+    expect(lineas).toContain(TEXTO_PREFLIGHT.respuestaInvalida(RUTA_API.CHAT));
+    expect(turnos).toBe(1);
+  });
+
+  test("un Content-Type que no es SSE falla nombrando la cabecera", async () => {
+    const { lineas, turnos } = await correrGuion(
+      conCabeceras((cabeceras) => cabeceras.set(CABECERA.TIPO_CONTENIDO, TIPO_CONTENIDO.JSON)),
+    );
+    expect(lineas).toContain(TEXTO_PREFLIGHT.cabeceraSse(CABECERA.TIPO_CONTENIDO));
+    expect(turnos).toBe(1);
+  });
+
+  test("si el envío simulado ya existe antes de confirmar, falla con archivoInesperado", async () => {
+    const { lineas, turnos } = await correrGuion(
+      reescribirArchivos(1, (nombres) => [...nombres, ARCHIVOS_SALIDA.ENVIO_SIMULADO]),
+    );
+    expect(lineas).toContain(TEXTO_PREFLIGHT.archivoInesperado(ARCHIVOS_SALIDA.ENVIO_SIMULADO));
+    expect(turnos).toBe(1);
+  });
+
+  test("si tras confirmar no hubo un envío exitoso, falla con envioFaltante", async () => {
+    const { lineas, turnos } = await correrGuion(reescribirTurno(2, sinHerramienta(SIMULAR)));
+    expect(lineas).toContain(TEXTO_PREFLIGHT.envioFaltante);
+    expect(turnos).toBe(2);
+  });
+
+  test("si tras el envío la conversación sigue pidiendo confirmación, falla con confirmacionAbierta", async () => {
+    const { lineas, turnos } = await correrGuion(
+      reescribirTurno(
+        2,
+        ajustarEvento(TIPO_EVENTO.FIN_TURNO, (datos) => ({ ...datos, needsConfirmation: true })),
+      ),
+    );
+    expect(lineas).toContain(TEXTO_PREFLIGHT.confirmacionAbierta);
+    expect(turnos).toBe(2);
+  });
+
+  test("si el envío simulado no aparece tras confirmar, falla con archivoFaltante", async () => {
+    const { lineas, turnos } = await correrGuion(
+      reescribirArchivos(2, (nombres) =>
+        nombres.filter((nombre) => nombre !== ARCHIVOS_SALIDA.ENVIO_SIMULADO),
+      ),
+    );
+    expect(lineas).toContain(TEXTO_PREFLIGHT.archivoFaltante(ARCHIVOS_SALIDA.ENVIO_SIMULADO));
+    expect(turnos).toBe(2);
+  });
+
+  test("un turno que no termina dentro de turnoMs se aborta y falla con errorDeRed", async () => {
+    const url = await servir({}, async () => [{ cuerpo: cuerpoConTexto("nunca llega"), colgar: true }]);
+    const inicio = performance.now();
+    const { resultado, lineas, pedidos } = await correr(url, {
+      guion: true,
+      plazos: { ...PLAZOS_PRUEBA, turnoMs: TURNO_CORTO_MS },
+    });
+    expect(performance.now() - inicio).toBeLessThan(PLAZOS_PRUEBA.turnoMs);
+    expect(resultado.fallido).toBe(true);
+    expect(lineas).toContain(TEXTO_PREFLIGHT.errorDeRed(RUTA_API.CHAT));
+    expect(turnosDelChat(pedidos)).toHaveLength(1);
   });
 });
