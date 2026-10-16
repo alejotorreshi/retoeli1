@@ -1,8 +1,8 @@
 {
-  "estado": "pendiente_de_corrida",
-  "fechaCorridaUtc": null,
-  "proveedor": null,
-  "modelo": null,
+  "estado": "medido",
+  "fechaCorridaUtc": "2026-10-16T04:54:20.125Z",
+  "proveedor": "deepseek",
+  "modelo": "deepseek-flash",
   "precios": {
     "fuente": "https://api-docs.deepseek.com/quick_start/pricing",
     "consultado": "2026-10-15",
@@ -19,6 +19,71 @@
       "salida": 0.6
     }
   },
-  "escenarios": [],
-  "total": null
+  "escenarios": [
+    {
+      "id": "co-industrias-delta",
+      "turnos": 1,
+      "llamadas": 5,
+      "entrada": 38788,
+      "cacheHit": 36480,
+      "cacheMiss": 2308,
+      "salida": 922,
+      "costoPicoUsd": 0.002018,
+      "costoValleUsd": 0.001009
+    },
+    {
+      "id": "ec-corp-andina",
+      "turnos": 1,
+      "llamadas": 5,
+      "entrada": 38322,
+      "cacheHit": 35584,
+      "cacheMiss": 2738,
+      "salida": 948,
+      "costoPicoUsd": 0.002173,
+      "costoValleUsd": 0.001086
+    },
+    {
+      "id": "hn-agroexport-sula",
+      "turnos": 1,
+      "llamadas": 5,
+      "entrada": 36937,
+      "cacheHit": 34688,
+      "cacheMiss": 2249,
+      "salida": 800,
+      "costoPicoUsd": 0.001843,
+      "costoValleUsd": 0.000921
+    },
+    {
+      "id": "pa-logistica-istmo",
+      "turnos": 1,
+      "llamadas": 5,
+      "entrada": 36194,
+      "cacheHit": 34304,
+      "cacheMiss": 1890,
+      "salida": 708,
+      "costoPicoUsd": 0.001622,
+      "costoValleUsd": 0.000811
+    },
+    {
+      "id": "guion-11",
+      "turnos": 2,
+      "llamadas": 7,
+      "entrada": 57710,
+      "cacheHit": 56320,
+      "cacheMiss": 1390,
+      "salida": 1082,
+      "costoPicoUsd": 0.002053,
+      "costoValleUsd": 0.001027
+    }
+  ],
+  "total": {
+    "turnos": 6,
+    "llamadas": 27,
+    "entrada": 207951,
+    "cacheHit": 197376,
+    "cacheMiss": 10575,
+    "salida": 4460,
+    "costoPicoUsd": 0.009709,
+    "costoValleUsd": 0.004854
+  }
 }
