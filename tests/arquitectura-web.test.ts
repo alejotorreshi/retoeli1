@@ -13,8 +13,18 @@ import {
   TEXTO_LEGIBLE,
   VALOR_EN_ARCHIVO_DE_TIPOS,
 } from "@tests/helpers/escaner-fuentes.helper.ts";
+import {
+  eventoConfirmacion,
+  eventoFin,
+  eventoInicio,
+  eventosDeHerramienta,
+  eventoTexto,
+} from "@tests/helpers/red-web.helper.ts";
 import type { Importacion } from "@tests/helpers/types/importacion.type.ts";
-import { ESTADO_ACCESO, TIPO_CAMPO_CODIGO } from "@web/config/constants/ui.constants.ts";
+import { ACCION_UI, ESTADO_ACCESO, TIPO_CAMPO_CODIGO } from "@web/config/constants/ui.constants.ts";
+import { estadoRaizInicial, reducirRaiz } from "@web/store/raiz.ts";
+import * as selectores from "@web/store/selectores.ts";
+import type { AccionRaiz, EstadoRaiz } from "@web/types/store.type.ts";
 import { CODIGO_AGENTE } from "@/config/constants/agent.constants.ts";
 import {
   DECISION_CONFIRMACION,
@@ -28,6 +38,8 @@ import { ESTADO_LLM } from "@/config/constants/llm.constants.ts";
 import { ESTADO_CAMPO, REGLA_MAPEO } from "@/config/constants/mapping.constants.ts";
 import { ESTADO_SOPORTE, ESTADO_VIGENCIA } from "@/config/constants/supports.constants.ts";
 import { HERRAMIENTA, NOMBRE_VISIBLE } from "@/config/constants/tools.constants.ts";
+import type { SseEvent } from "@/http/types/api.type.ts";
+import type { ResultadoVisible } from "@/loop/types/resultado-visible.type.ts";
 
 const RAIZ = join(import.meta.dir, "..");
 
@@ -72,6 +84,33 @@ const ARCHIVO_DE_TIPOS_WEB = /^web\/src\/types\/[a-z0-9-]+\.type\.ts$/;
 const COLOR_SUELTO = /#[0-9A-Fa-f]{3,8}\b|\b(?:rgba?|hsla?)\s*\(/;
 
 const LONGITUD_EN_PX = /\b\d+(?:\.\d+)?px\b/;
+
+const UNIDAD_SUELTA = /\b\d+(?:\.\d+)?(?:rem|em|dvh|svh|lvh|vh|vw|ms|s|deg)\b/;
+
+const PORCENTAJE_SUELTO = /(?<![\w.])(?!(?:0|50|100)%)\d+(?:\.\d+)?%/;
+
+const REGLA_MEDIA = "@media";
+
+const DUENO_DE_TOKENS = "web/src/styles/tokens.css";
+
+const PREFIJO_SELECTOR = "seleccionar";
+
+const SELECTOR_EN_LINEA = /\buseSeleccion\s*\(\s*(?![A-Za-z_$][\w$]*\s*\))/;
+
+const CASO_DE_MUESTRA = "co-industrias-delta";
+
+const SESION_DE_MUESTRA = "sesion-de-muestra";
+
+const RESULTADO_DE_MUESTRA: ResultadoVisible = {
+  herramienta: HERRAMIENTA.ARMAR_PAQUETE,
+  pais: "CO",
+  formato: null,
+  conteo: null,
+  listoParaFirma: false,
+  bloqueosLegibles: [],
+  ruta: `out/${CASO_DE_MUESTRA}/paquete`,
+  aviso: null,
+};
 
 const KEBAB = "[a-z0-9]+(?:-[a-z0-9]+)*";
 
@@ -259,6 +298,10 @@ function listarModulosCss(): string[] {
   return escanear(`${CARPETA_WEB}/**/*.module.css`);
 }
 
+function listarEstilos(): string[] {
+  return escanear(`${CARPETA_WEB}/**/*.css`).filter((ruta) => ruta !== DUENO_DE_TOKENS);
+}
+
 function listarTodoWeb(): string[] {
   return escanear(`${CARPETA_WEB}/**/*`);
 }
@@ -356,11 +399,79 @@ function violacionesDeRegex(ruta: string, codigo: string): string[] {
   return lineasQueCumplen(ruta, codigo, LITERAL_DE_REGEX, "declara una expresión regular fuera de patterns");
 }
 
+function sinReglasMedia(css: string): string {
+  return css
+    .split("\n")
+    .map((linea) => (linea.trim().startsWith(REGLA_MEDIA) ? "" : linea))
+    .join("\n");
+}
+
 function violacionesDeEstilos(ruta: string, css: string): string[] {
+  if (ruta === DUENO_DE_TOKENS) return [];
+  const revisable = sinReglasMedia(css);
   return [
-    ...lineasQueCumplen(ruta, css, COLOR_SUELTO, "color suelto; usa un var(--token) de tokens.css"),
-    ...lineasQueCumplen(ruta, css, LONGITUD_EN_PX, "tamaño en px suelto; usa un var(--token) de tokens.css"),
+    ...lineasQueCumplen(ruta, revisable, COLOR_SUELTO, "color suelto; usa un var(--token) de tokens.css"),
+    ...lineasQueCumplen(
+      ruta,
+      revisable,
+      LONGITUD_EN_PX,
+      "tamaño en px suelto; usa un var(--token) de tokens.css",
+    ),
+    ...lineasQueCumplen(ruta, revisable, UNIDAD_SUELTA, "unidad suelta; usa un var(--token) de tokens.css"),
+    ...lineasQueCumplen(
+      ruta,
+      revisable,
+      PORCENTAJE_SUELTO,
+      "porcentaje suelto; usa un var(--token) de tokens.css",
+    ),
+  ].sort(porLinea);
+}
+
+function violacionesDeSelectorEnLinea(ruta: string, codigo: string): string[] {
+  return lineasQueCumplen(
+    ruta,
+    codigo,
+    SELECTOR_EN_LINEA,
+    "useSeleccion recibe una función en línea; usa un selector con nombre de web/src/store/selectores.ts",
+  );
+}
+
+type Selector = (estado: EstadoRaiz) => unknown;
+
+function esSelector(valor: unknown): valor is Selector {
+  return typeof valor === "function";
+}
+
+function selectoresDe(modulo: Readonly<Record<string, unknown>>): readonly [string, Selector][] {
+  return Object.entries(modulo).flatMap(([nombre, valor]): [string, Selector][] =>
+    nombre.startsWith(PREFIJO_SELECTOR) && esSelector(valor) ? [[nombre, valor]] : [],
+  );
+}
+
+function selectoresInestables(modulo: Readonly<Record<string, unknown>>, estado: EstadoRaiz): string[] {
+  return selectoresDe(modulo)
+    .filter(([, seleccionar]) => !Object.is(seleccionar(estado), seleccionar(estado)))
+    .map(([nombre]) => `${nombre}: devuelve un valor nuevo en cada llamada; memoízalo por referencia`);
+}
+
+function eventoDeMuestra(evento: SseEvent): AccionRaiz {
+  return { tipo: ACCION_UI.EVENTO, evento };
+}
+
+function estadoDeMuestra(): EstadoRaiz {
+  const historia: readonly AccionRaiz[] = [
+    { tipo: ACCION_UI.ENVIAR, mensaje: CASO_DE_MUESTRA },
+    eventoDeMuestra(eventoInicio(SESION_DE_MUESTRA)),
+    ...eventosDeHerramienta(
+      NOMBRE_VISIBLE[HERRAMIENTA.ARMAR_PAQUETE],
+      CASO_DE_MUESTRA,
+      RESULTADO_DE_MUESTRA,
+    ).map(eventoDeMuestra),
+    eventoDeMuestra(eventoConfirmacion(CASO_DE_MUESTRA, [])),
+    eventoDeMuestra(eventoTexto(CASO_DE_MUESTRA)),
+    eventoDeMuestra(eventoFin(true)),
   ];
+  return historia.reduce(reducirRaiz, estadoRaizInicial(null));
 }
 
 function carpetaDe(ruta: string): string {
@@ -655,9 +766,11 @@ describe("guardián de web/ sobre el código real", () => {
     expect(sobreElCodigo(violacionesDeRegex)).toEqual([]);
   });
 
-  test("W12: los módulos CSS usan tokens para colores y tamaños", () => {
-    expect(listarModulosCss()).toContain("web/src/compartido/aviso/aviso.module.css");
-    expect(listarModulosCss().flatMap((ruta) => violacionesDeEstilos(ruta, leer(ruta)))).toEqual([]);
+  test("W12: todo CSS de web/src salvo tokens.css usa tokens para colores, tamaños, unidades y porcentajes", () => {
+    expect(listarEstilos()).toContain("web/src/compartido/aviso/aviso.module.css");
+    expect(listarEstilos()).toContain("web/src/styles/global.css");
+    expect(listarEstilos()).not.toContain(DUENO_DE_TOKENS);
+    expect(listarEstilos().flatMap((ruta) => violacionesDeEstilos(ruta, leer(ruta)))).toEqual([]);
   });
 
   test("W13: cada archivo de web/src está en su carpeta de rol con su sufijo", () => {
@@ -707,6 +820,16 @@ describe("guardián de web/ sobre el código real", () => {
     expect(CODIGOS_DE_NEGOCIO.has(ESTADO_CAMPO.FALTANTE)).toBe(true);
     expect(CODIGOS_DE_NEGOCIO.has(HERRAMIENTA.ARMAR_PAQUETE)).toBe(true);
     expect(sobreElCodigo(violacionesDeCodigosDeNegocio)).toEqual([]);
+  });
+
+  test("W21: los selectores de web/src/store son estables y useSeleccion solo recibe selectores con nombre", () => {
+    const estado = estadoDeMuestra();
+    expect(estado.conversacion.turnos).toHaveLength(1);
+    expect(estado.conversacion.tarjetasConfirmacion).toHaveLength(1);
+    expect(selectoresDe(selectores).length).toBeGreaterThan(0);
+    expect(selectoresInestables(selectores, estado)).toEqual([]);
+    expect(selectoresInestables(selectores, estadoRaizInicial(null))).toEqual([]);
+    expect(sobreElCodigo(violacionesDeSelectorEnLinea)).toEqual([]);
   });
 
   test("W20: createContext, useContext, useReducer y useSyncExternalStore viven en web/src/store", () => {
@@ -898,18 +1021,31 @@ describe("el guardián de web/ muerde sobre fuentes de muestra", () => {
     expect(violacionesDeRegex(DUENO_DE_REGEX, codigo)).toEqual([]);
   });
 
-  test("W12: reporta colores hex, rgb y longitudes en px dentro de un módulo CSS", () => {
+  test("W12: reporta colores, px, unidades y porcentajes sueltos en cualquier CSS, y salta @media y tokens.css", () => {
     const css = [
       ".aviso { color: #B42318; }",
       ".borde { border-color: rgb(0 0 0); }",
       ".caja { padding: 16px; }",
+      ".a { transform: rotate(90deg); }",
+      ".b { height: 100dvh; }",
+      ".c { transition: x 150ms; }",
+      ".d { max-width: 40%; }",
+      "@media (min-width: 40em) {",
+      ".e { width: 100%; border-radius: 50%; }",
       ".bien { color: var(--error-texto); padding: var(--espacio-md); line-height: 1.5; }",
     ].join("\n");
-    expect(violacionesDeEstilos("web/src/components/x.module.css", css)).toEqual([
-      "web/src/components/x.module.css:1: color suelto; usa un var(--token) de tokens.css",
-      "web/src/components/x.module.css:2: color suelto; usa un var(--token) de tokens.css",
-      "web/src/components/x.module.css:3: tamaño en px suelto; usa un var(--token) de tokens.css",
+    const ruta = "web/src/styles/global.css";
+    expect(violacionesDeEstilos(ruta, css)).toEqual([
+      `${ruta}:1: color suelto; usa un var(--token) de tokens.css`,
+      `${ruta}:2: color suelto; usa un var(--token) de tokens.css`,
+      `${ruta}:3: tamaño en px suelto; usa un var(--token) de tokens.css`,
+      `${ruta}:4: unidad suelta; usa un var(--token) de tokens.css`,
+      `${ruta}:5: unidad suelta; usa un var(--token) de tokens.css`,
+      `${ruta}:6: unidad suelta; usa un var(--token) de tokens.css`,
+      `${ruta}:7: porcentaje suelto; usa un var(--token) de tokens.css`,
     ]);
+    expect(violacionesDeEstilos("web/src/features/chat/x/x.module.css", css)).toHaveLength(7);
+    expect(violacionesDeEstilos(DUENO_DE_TOKENS, css)).toEqual([]);
   });
 
   test("W13: reporta archivos sueltos o con el sufijo equivocado en web/src", () => {
@@ -1162,5 +1298,28 @@ describe("el guardián de web/ muerde sobre fuentes de muestra", () => {
     expect(
       violacionesDeCodigosDeNegocio(DUENO_DE_TEXTO, 'export const T = { estado: "requiere_confirmacion" };'),
     ).toEqual([`${DUENO_DE_TEXTO}:1: ${MENSAJE_CODIGO_DE_NEGOCIO}`]);
+  });
+
+  test("W21: reporta un selector que crea un valor nuevo en cada llamada y una función en línea en useSeleccion", () => {
+    const muestra = {
+      seleccionarEstable: (estado: EstadoRaiz) => estado.conversacion.turnos,
+      seleccionarSinMemoizar: (estado: EstadoRaiz) => ({ turnos: estado.conversacion.turnos }),
+      memoizarPorReferencia: selectores.memoizarPorReferencia,
+    };
+    expect(selectoresInestables(muestra, estadoDeMuestra())).toEqual([
+      "seleccionarSinMemoizar: devuelve un valor nuevo en cada llamada; memoízalo por referencia",
+    ]);
+    const ruta = "web/src/features/chat/x/usar-x.ts";
+    const codigo = [
+      "const x = useSeleccion((estado) => estado.x);",
+      "const turnos = useSeleccion(seleccionarTurnos);",
+      "const y = useSeleccion(",
+      "  (estado) => estado.y,",
+      ");",
+    ].join("\n");
+    expect(violacionesDeSelectorEnLinea(ruta, codigo)).toEqual([
+      `${ruta}:1: useSeleccion recibe una función en línea; usa un selector con nombre de web/src/store/selectores.ts`,
+      `${ruta}:3: useSeleccion recibe una función en línea; usa un selector con nombre de web/src/store/selectores.ts`,
+    ]);
   });
 });
