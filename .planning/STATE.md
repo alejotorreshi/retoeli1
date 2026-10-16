@@ -2,17 +2,17 @@
 gsd_state_version: "1.0"
 current_phase: 5
 current_phase_name: front-web-por-features-e-identidad-de-marca
-status: executing
-stopped_at: Completed 05-08-PLAN.md
-last_updated: "2026-10-16T19:26:18.075Z"
+status: verifying
+stopped_at: Completed 05-09-PLAN.md
+last_updated: "2026-10-16T19:40:07.050Z"
 last_activity: 2026-10-16
 last_activity_desc: Phase 5 execution started
-state_head: 388c714776cc77424783216730d9c03f47c3601d
+state_head: e7099caae0982601e8a73495decf5c34f4e778f6
 progress:
   total_phases: 5
   completed_phases: 4
   total_plans: 103
-  completed_plans: 102
+  completed_plans: 103
   percent: 80
 ---
 
@@ -29,7 +29,7 @@ See: .planning/PROJECT.md (updated 2026-10-16)
 
 Phase: 5 (front-web-por-features-e-identidad-de-marca) — EXECUTING
 Plan: 9 of 9
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-10-16 — Phase 5 execution started
 
 Progress: [████████░░] 80%
@@ -161,6 +161,7 @@ Progress: [████████░░] 80%
 | Phase 05 P06 | 7min | 3 tasks | 25 files |
 | Phase 05 P07 | 13 min | 4 tasks | 33 files |
 | Phase 05 P08 | 12 min | 3 tasks | 44 files |
+| Phase 05 P09 | 11 min | 3 tasks | 26 files |
 
 ## Accumulated Context
 
@@ -409,6 +410,9 @@ Recent decisions affecting current work:
 - [Phase 05]: 05-07: only docs/convenciones.md and .claude/CLAUDE.md name a front guardian range (interim W1–W18 y W20–W23); the other docs point to the W table
 - [Phase 05]: 05-08: brand assets self-hosted in web/public, named by marca.constants.ts; the build-time title comes from TEXTO_APP.tituloDocumento via the titulo-del-documento Vite plugin
 - [Phase 05]: 05-08: global :focus-visible reads --foco-color directly so teal surfaces override it with --foco-color-marca (neon) and the access card resets it to --acento
+- [Phase 05]: 05-09: mensajeDemoDe is a generic template returning an as const literal, so mensajeDemo keeps the PRD literal type
+- [Phase 05]: 05-09: the empty state hands focus to the composer (ID_CAMPO_MENSAJE) from a useLayoutEffect cleanup when it unmounts with focus inside
+- [Phase 05]: 05-09: W19 guards the section sign in both strings.ts files and index.html; .claude/CLAUDE.md W1–W23 range and W19 bullet left for the user to apply
 
 ### Pending Todos
 
@@ -447,6 +451,6 @@ Items acknowledged and deferred at milestone close, most recent first:
 
 ## Session Continuity
 
-Last session: 2026-10-16T19:26:17.929Z
-Stopped at: Completed 05-08-PLAN.md
+Last session: 2026-10-16T19:40:06.906Z
+Stopped at: Completed 05-09-PLAN.md
 Resume file: None
