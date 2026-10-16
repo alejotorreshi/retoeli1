@@ -5,7 +5,7 @@ import { TEXTO_ACCIONES } from "@web/config/strings.ts";
 
 const RAIZ = join(import.meta.dir, "..", "..");
 const PRD = readFileSync(join(RAIZ, "reto-01", "PRD.md"), "utf8");
-const CARPETA_COMPONENTE = join(RAIZ, "web", "src", "features", "chat", "acciones-rapidas");
+const CARPETA_COMPONENTE = join(RAIZ, "web/src/features/chat/acciones-rapidas");
 const ARCHIVOS_COMPONENTE = ["acciones-rapidas.tsx", "usar-acciones-rapidas.ts"] as const;
 const CASOS_FIXTURE = readdirSync(join(RAIZ, "reto-01", "fixtures", "reto-01", "casos"), {
   withFileTypes: true,
