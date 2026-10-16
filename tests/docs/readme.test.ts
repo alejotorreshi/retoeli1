@@ -11,13 +11,12 @@ import {
 } from "@tests/helpers/documentos.helper.ts";
 import { sensiblesDelProyecto } from "@tests/helpers/pii.helper.ts";
 import { TIPO_EVENTO } from "@/config/constants/agent.constants.ts";
-import { ESTADO_EVIDENCIA_COSTO, RUTA_EVIDENCIA_COSTO } from "@/config/constants/costo.constants.ts";
+import { RUTA_EVIDENCIA_COSTO } from "@/config/constants/costo.constants.ts";
 import { LONGITUD_MINIMA_CODIGO_ACCESO, RUTA_API } from "@/config/constants/http.constants.ts";
 import { SEPARACION_MINIMA_SSE_MS } from "@/config/constants/preflight.constants.ts";
 
 const RAIZ = join(import.meta.dir, "..", "..");
 const README = "README.md";
-const ENTREGA = "docs/entrega.md";
 const SOLUCION = "SOLUCION.md";
 const ENV_EJEMPLO = ".env.example";
 const CARPETA_DOCS = "docs";
@@ -30,7 +29,6 @@ const MARCADOR_CODIGO = "__CODIGO_ACCESO__";
 const MODELOS_RETIRADOS = ["deepseek-chat", "deepseek-reasoner"];
 const PATRON_LINEA_CODIGO = /^Código de acceso: `([^`]+)`/m;
 const PATRON_VARIABLE_ENV = /^([A-Z][A-Z0-9_]*)=/gm;
-const PATRON_TAREA = /^- \[[ x]\] /m;
 const PATRON_NOMBRE_SECRETO = /(_API_KEY|_SECRET|ACCESS_CODE)$/;
 const PATRON_NOMBRE_ASIGNADO = /[A-Z][A-Z0-9_]*(?==)/;
 const ASIGNACIONES_DE_CONTROL = [
@@ -63,27 +61,14 @@ const ENLACES_README = [
   SOLUCION,
   "docs/arquitectura.md",
   "docs/convenciones.md",
-  ENTREGA,
   "modulo/README.md",
   "docs/estructura.md",
   "docs/limites-del-demo.md",
   RUTA_EVIDENCIA_COSTO,
 ];
-const PENDIENTES_ENTREGA = [
-  "colaboradores",
-  "ACCESS_CODE",
-  "rotar",
-  "CI",
-  "Render",
-  "eli-qa",
-  "ensayo",
-  "SOLUCION.md §9",
-  "bun run preflight",
-];
-const CORRIDA_ANTERIOR_ENTREGA = ["víspera", "corrida anterior", "ENVIO-SIMULADO.md", "out/<caso>/"];
-const VISPERA = "víspera";
 const ANTES_DE_LA_DEFENSA = "10 minutos antes";
-const SIN_GUION = "sin `--guion`";
+const MODO_POR_DEFECTO = "el modo por defecto";
+const GUION_LA_VISPERA = "El `--guion` se corre la víspera";
 
 function leer(ruta: string): string {
   return leerDocumento(RAIZ, ruta);
@@ -108,11 +93,6 @@ function versionesDeDependencias(): Array<[string, string]> {
   return Object.entries(manifiesto.dependencies ?? {});
 }
 
-function estadoDeEvidencia(): string {
-  const evidencia: { estado?: string } = JSON.parse(leer(RUTA_EVIDENCIA_COSTO));
-  return evidencia.estado ?? "";
-}
-
 describe(`${README} (DOC-01, DEMO-05)`, () => {
   test("la primera línea es el badge de la CI que enlaza al workflow", () => {
     const linea = primeraLineaConTexto(leer(README));
@@ -135,7 +115,7 @@ describe(`${README} (DOC-01, DEMO-05)`, () => {
     expect(COMANDOS.filter((comando) => !readme.includes(comando))).toEqual([]);
   });
 
-  test("enlaza la solución, la documentación de continuidad, la entrega y el módulo", () => {
+  test("enlaza la solución, la documentación de continuidad y el módulo", () => {
     const readme = leer(README);
     expect(ENLACES_README.filter((destino) => !enlacesRelativos(readme).includes(destino))).toEqual([]);
   });
@@ -163,34 +143,18 @@ describe(`${README} (DOC-01, DEMO-05)`, () => {
   });
 });
 
-describe(`${ENTREGA} (D-99)`, () => {
-  test("lista los pendientes humanos como tareas", () => {
-    const entrega = leer(ENTREGA);
-    expect(entrega.includes("## Pendientes humanos")).toBe(true);
-    expect(PATRON_TAREA.test(entrega)).toBe(true);
-    expect(PENDIENTES_ENTREGA.filter((pendiente) => !entrega.includes(pendiente))).toEqual([]);
-  });
-
-  test("pide correr el costo solo si la evidencia quedó pendiente", () => {
-    const entrega = leer(ENTREGA);
-    const pendiente = estadoDeEvidencia() === ESTADO_EVIDENCIA_COSTO.PENDIENTE;
-    expect(entrega.length).toBeGreaterThan(0);
-    expect(entrega.includes("bun run costo")).toBe(pendiente);
-  });
-
-  test("programa el --guion la víspera y avisa de los archivos de la corrida anterior (G-04-2)", () => {
-    const entrega = leer(ENTREGA);
-    const lineaAntesDeLaDefensa = entrega.split("\n").find((linea) => linea.includes(ANTES_DE_LA_DEFENSA));
-    expect(CORRIDA_ANTERIOR_ENTREGA.filter((mencion) => !entrega.includes(mencion))).toEqual([]);
-    expect(lineaAntesDeLaDefensa).toBeDefined();
-    expect(lineaAntesDeLaDefensa?.includes(SIN_GUION)).toBe(true);
-    expect(leer(README).includes(VISPERA)).toBe(true);
-  });
-});
-
-describe("el pre-flight documentado (IN-01)", () => {
+describe("el pre-flight documentado (IN-01, G-04-2)", () => {
   test.each([README, ESTRUCTURA])("%s nombra el umbral del SSE con el valor de su constante", (archivo) => {
     expect(leer(archivo)).toContain(`al menos ${SEPARACION_MINIMA_SSE_MS} ms`);
+  });
+
+  test("programa el modo por defecto 10 minutos antes y el --guion la víspera (G-04-2)", () => {
+    const lineaAntesDeLaDefensa = leer(README)
+      .split("\n")
+      .find((linea) => linea.includes(ANTES_DE_LA_DEFENSA));
+    expect(lineaAntesDeLaDefensa).toBeDefined();
+    expect(lineaAntesDeLaDefensa?.includes(MODO_POR_DEFECTO)).toBe(true);
+    expect(lineaAntesDeLaDefensa?.includes(GUION_LA_VISPERA)).toBe(true);
   });
 });
 
@@ -217,9 +181,9 @@ describe("enlaces y secretos de la documentación de entrega", () => {
     expect(asignacionesSecretas(leer(README))).toEqual([]);
   });
 
-  test.each([README, ENTREGA])("cada enlace relativo de %s apunta a una ruta que existe", (archivo) => {
-    expect(leer(archivo).length).toBeGreaterThan(0);
-    expect(enlacesRotos(RAIZ, archivo, [SOLUCION])).toEqual([]);
+  test(`cada enlace relativo de ${README} apunta a una ruta que existe`, () => {
+    expect(leer(README).length).toBeGreaterThan(0);
+    expect(enlacesRotos(RAIZ, README, [SOLUCION])).toEqual([]);
   });
 
   test.each([README, ...documentosMarkdown(RAIZ, CARPETA_DOCS), README_MODULO])(

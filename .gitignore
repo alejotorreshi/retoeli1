@@ -13,3 +13,4 @@ modulo/**/*.tmp
 .qa/evidence/**/screenshots/
 .qa/*.token
 .codegraph/
+.local/
