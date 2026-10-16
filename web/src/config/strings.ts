@@ -1,3 +1,4 @@
+import { PAIS } from "@web/config/constants/pais.constants.ts";
 import {
   ACCION_AVISO,
   CASO_DEMO_PRD,
@@ -24,7 +25,7 @@ import type {
   ResumenLlamadas,
   TipoArchivoUi,
 } from "@web/types/chat.type.ts";
-import type { EstadoModeloConAviso, PartesAvisoModelo, Pestana } from "@web/types/ui.type.ts";
+import type { EstadoModeloConAviso, Pais, PartesAvisoModelo, Pestana } from "@web/types/ui.type.ts";
 import { TIPO_ACCION } from "@/config/constants/confirmation.constants.ts";
 import { ARCHIVOS_SALIDA, TIPO_ARCHIVO_CASO } from "@/config/constants/files.constants.ts";
 import { FORMATO } from "@/config/constants/forms.constants.ts";
@@ -275,6 +276,10 @@ export const TEXTO_RESULTADO = {
 
 const DEMO_CORTO = "Demo §11";
 
+function mensajeDemoDe<Caso extends string>(caso: Caso) {
+  return `Procesa el caso "${caso}". Dime qué campos quedaron llenos, cuáles faltan, si el paquete está listo para firma y qué soportes debo actualizar. No envíes nada todavía.` as const;
+}
+
 function losCasos(cantidad: number): string {
   return cantidad === 0 ? "Los casos" : `Los ${cantidad} casos`;
 }
@@ -283,13 +288,30 @@ export const TEXTO_ACCIONES = {
   grupo: "Acciones rápidas",
   demo: `${DEMO_CORTO}: ${CASO_DEMO_PRD}`,
   demoCorto: DEMO_CORTO,
-  mensajeDemo: `Procesa el caso "${CASO_DEMO_PRD}". Dime qué campos quedaron llenos, cuáles faltan, si el paquete está listo para firma y qué soportes debo actualizar. No envíes nada todavía.`,
+  mensajeDemoDe,
+  mensajeDemo: mensajeDemoDe(CASO_DEMO_PRD),
   todos: (cantidad: number) => `Procesar ${losCasos(cantidad).toLowerCase()}`,
   todosCorto: losCasos,
   mensajeTodos: (casos: readonly string[]) =>
     `Procesa estos casos: ${casos.join(SEPARADOR_LISTA_CASOS)}. Dime el estado de cada uno. No envíes nada todavía.`,
   listar: "¿Qué casos hay?",
   mensajeListar: "¿Qué casos hay disponibles?",
+} as const;
+
+export const TEXTO_PAIS = {
+  [PAIS.CO]: "Colombia",
+  [PAIS.EC]: "Ecuador",
+  [PAIS.PE]: "Perú",
+  [PAIS.PA]: "Panamá",
+  [PAIS.HN]: "Honduras",
+} as const satisfies Record<Pais, string>;
+
+const PROCESAR_CASO = "Procesar caso";
+
+export const TEXTO_TARJETA_CASO = {
+  procesar: PROCESAR_CASO,
+  etiqueta: (cliente: string, pais: string, slug: string) => `${PROCESAR_CASO} ${cliente}, ${pais} (${slug})`,
+  etiquetaSoloSlug: (slug: string) => `${PROCESAR_CASO} ${slug}`,
 } as const;
 
 const ETIQUETA_DE_ETAPA = {

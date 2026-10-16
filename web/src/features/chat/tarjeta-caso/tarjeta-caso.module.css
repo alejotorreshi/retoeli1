@@ -1,0 +1,51 @@
+.tarjeta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--espacio-sm);
+  width: 100%;
+  min-height: var(--alto-control);
+  padding: var(--espacio-md);
+  font: inherit;
+  color: var(--texto);
+  text-align: start;
+  background: var(--dominante);
+  border: var(--borde-ancho) solid var(--borde);
+  border-radius: var(--radio);
+  cursor: pointer;
+}
+
+.pildora {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--alto-pildora-pais);
+  padding-inline: var(--espacio-sm);
+  font-size: var(--etiqueta-tamano);
+  font-weight: var(--etiqueta-peso-fuerte);
+  color: var(--acento);
+  background: var(--acento-tinte);
+  border-radius: var(--radio-pildora);
+}
+
+.cliente {
+  font-family: var(--titulo-fuente);
+  font-size: var(--titulo-tamano);
+  font-weight: var(--titulo-peso);
+  overflow-wrap: anywhere;
+}
+
+.slug {
+  font-family: var(--fuente-mono);
+  overflow-wrap: anywhere;
+}
+
+.accion {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espacio-xs);
+  color: var(--acento);
+}
+
+.tarjeta:disabled {
+  cursor: not-allowed;
+}

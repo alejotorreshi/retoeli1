@@ -1,4 +1,5 @@
 import type { VARIANTE_LOGO } from "@web/config/constants/marca.constants.ts";
+import type { PAIS } from "@web/config/constants/pais.constants.ts";
 import type {
   DISENO,
   PESTANA,
@@ -483,4 +484,36 @@ export type PropsAvisoDiscoEfimero = {
 
 export type PropsApp = {
   readonly instancia: InstanciaAlmacen;
+};
+
+export type Pais = ValorDe<typeof PAIS>;
+
+export type DatosTarjetaCaso = {
+  readonly slug: string;
+  readonly pais: Pais | null;
+  readonly codigo: string | null;
+  readonly nombrePais: string | null;
+  readonly cliente: string;
+};
+
+export type PropsTarjetaCaso = {
+  readonly slug: string;
+};
+
+export type PaisDeTarjeta = {
+  readonly codigo: string;
+  readonly nombre: string;
+};
+
+export type ControlTarjetaCaso = {
+  readonly slug: string;
+  readonly cliente: string;
+  readonly pais: PaisDeTarjeta | null;
+  readonly etiqueta: string;
+  readonly deshabilitada: boolean;
+  readonly alProcesar: () => void;
+};
+
+export type ControlEstadoVacio = {
+  readonly casos: readonly string[];
 };
