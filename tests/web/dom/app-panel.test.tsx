@@ -34,6 +34,7 @@ import type { ResultadoVisible } from "@/loop/types/resultado-visible.type.ts";
 
 const ANCHO_ESCRITORIO = 1280;
 const CASO = "co-industrias-delta";
+const OTRO_CASO = "ec-corp-andina";
 const SESION = "sesion-del-panel";
 const RESPUESTA = "El paquete de co-industrias-delta quedó armado.";
 const TEXTO_FORMULARIO = "Razón social: Periferia IT Group";
@@ -56,6 +57,7 @@ const ARCHIVO = {
 } as const;
 
 const RUTA_ARCHIVOS = RUTA_API.ARCHIVOS.replace(`:${PARAMETRO_CASO}`, CASO);
+const RUTA_ARCHIVOS_OTRO_CASO = RUTA_API.ARCHIVOS.replace(`:${PARAMETRO_CASO}`, OTRO_CASO);
 const RUTA_VISTA_PREVIA = RUTA_API.VISTA_PREVIA.replace(`:${PARAMETRO_CASO}`, CASO).replace(
   `:${PARAMETRO_ARCHIVO}`,
   ARCHIVO.nombre,
@@ -119,6 +121,55 @@ describe("App en escritorio: panel de casos y archivos", () => {
     const dialogo = await pantalla.findByRole("dialog", { name: ARCHIVO.nombre });
     expect(dialogo.hasAttribute("open")).toBe(true);
     expect(await pantalla.findByText(TEXTO_FORMULARIO)).toBeDefined();
+
+    await usuario.click(pantalla.getByRole("button", { name: TEXTO_VISTA_PREVIA.cerrar }));
+
+    expect(dialogo.hasAttribute("open")).toBe(false);
+    expect(document.activeElement).toBe(ver);
+  });
+
+  test("la vista previa abierta sobrevive a que el agente pase a otro caso, y su bloque no se pliega", async () => {
+    const red = crearRedWeb({
+      nativos: dom.nativos,
+      guiones: [
+        {
+          eventos: [
+            eventoInicio(SESION),
+            ...eventosDeHerramienta(NOMBRE_VISIBLE[HERRAMIENTA.ARMAR_PAQUETE], CASO, RESULTADO_PAQUETE),
+          ],
+          retenidos: [
+            ...eventosDeHerramienta(NOMBRE_VISIBLE[HERRAMIENTA.GENERAR_FORMULARIO], OTRO_CASO, null),
+            eventoTexto(RESPUESTA),
+            eventoFin(),
+          ],
+        },
+      ],
+      rutas: {
+        [RUTA_ARCHIVOS]: { estado: RESPUESTA_HTTP.OK, cuerpo: LISTA },
+        [RUTA_ARCHIVOS_OTRO_CASO]: { estado: RESPUESTA_HTTP.OK, cuerpo: { archivos: [] } },
+        [RUTA_VISTA_PREVIA]: { estado: RESPUESTA_HTTP.OK, cuerpo: VISTA },
+      },
+    });
+    const { pantalla, usuario } = await montarApp(dom, red);
+    const listar = await pantalla.findByRole("button", { name: TEXTO_ACCIONES.listar });
+    await dom.esperar(() => expect(listar.hasAttribute("disabled")).toBe(false));
+    await usuario.click(listar);
+    const ver = await pantalla.findByRole("button", { name: TEXTO_ARCHIVOS.verArchivo(ARCHIVO.nombre) });
+    await usuario.click(ver);
+    const dialogo = await pantalla.findByRole("dialog", { name: ARCHIVO.nombre });
+    expect(await pantalla.findByText(TEXTO_FORMULARIO)).toBeDefined();
+
+    await dom.act(async () => red.soltar());
+    await pantalla.findByText(RESPUESTA);
+    const panel = pantalla.getByRole("complementary", { name: TEXTO_PANEL.titulo });
+    const titulos = dom.dentroDe(panel).getAllByRole("heading", { level: 3 });
+    expect(titulos.map((titulo) => titulo.textContent)).toEqual([OTRO_CASO, CASO]);
+
+    expect(dialogo.isConnected).toBe(true);
+    expect(dialogo.hasAttribute("open")).toBe(true);
+    expect(dialogo.closest("details") === null).toBe(true);
+    expect(ver.closest("details")?.open).toBe(true);
+    expect(pantalla.getByText(TEXTO_FORMULARIO)).toBeDefined();
 
     await usuario.click(pantalla.getByRole("button", { name: TEXTO_VISTA_PREVIA.cerrar }));
 

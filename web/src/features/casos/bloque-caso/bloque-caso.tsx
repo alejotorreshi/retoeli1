@@ -39,14 +39,14 @@ export function BloqueCaso({ progreso, reciente, marca, envioDeshabilitado }: Pr
           ) : null}
           <ListaArchivos caso={progreso.caso} control={archivos} alVer={alVer} />
         </div>
-        <DialogoVistaPrevia
-          caso={progreso.caso}
-          abierta={vistaPrevia}
-          alCerrar={alCerrarVistaPrevia}
-          alDescargar={archivos.descargar}
-          alNoEncontrado={archivos.marcarBorrados}
-        />
       </details>
+      <DialogoVistaPrevia
+        caso={progreso.caso}
+        abierta={vistaPrevia}
+        alCerrar={alCerrarVistaPrevia}
+        alDescargar={archivos.descargar}
+        alNoEncontrado={archivos.marcarBorrados}
+      />
     </li>
   );
 }
