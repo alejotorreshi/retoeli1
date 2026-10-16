@@ -75,6 +75,27 @@ const CARPETA_RESERVADA = "estado";
 
 const MODULO_CSS = ".module.css";
 
+const HOOK_DE_COMPONENTE = new RegExp(`^usar-${KEBAB}\\.ts$`);
+
+const COMILLAS: ReadonlySet<string> = new Set(['"', "'", "`"]);
+
+const NUMERO_MAGICO = /(?<![\w$.])(?!(?:0|1)\b(?!\.))\d+(?:\.\d+)?/;
+
+const ATRIBUTO_STYLE = /\bstyle=/;
+
+const IMPORTACION_DE_REACT = /import\s+(?!type\b)\{([^}]*)\}\s+from\s+["']react["']/g;
+
+const PRIMITIVAS_DEL_ALMACEN: ReadonlySet<string> = new Set([
+  "createContext",
+  "useContext",
+  "useReducer",
+  "useSyncExternalStore",
+]);
+
+const PRIMITIVAS_PERMITIDAS: ReadonlyMap<string, ReadonlySet<string>> = new Map([
+  ["web/src/features/disposicion/columnas/usar-columnas.ts", new Set(["useSyncExternalStore"])],
+]);
+
 const VISTAS_MIGRADAS: readonly string[] = [
   "web/src/features/sesion/dialogo-nueva-sesion/dialogo-nueva-sesion.tsx",
   "web/src/features/encabezado/encabezado/encabezado.tsx",
@@ -309,16 +330,85 @@ function violacionesDeEstilosAjenos(ruta: string, codigo: string): string[] {
     );
 }
 
+function nombreDeArchivo(ruta: string): string {
+  return ruta.slice(ruta.lastIndexOf("/") + 1);
+}
+
+function puedeImportarLaApi(ruta: string): boolean {
+  return (
+    ruta.startsWith(`${CARPETA_WEB}/api/`) ||
+    ruta.startsWith(`${CARPETA_WEB}/store/`) ||
+    enMudanza(ruta) ||
+    HOOK_DE_COMPONENTE.test(nombreDeArchivo(ruta))
+  );
+}
+
 function violacionesDeApiTransversal(ruta: string, codigo: string): string[] {
-  return [ruta, codigo].filter(() => false);
+  if (puedeImportarLaApi(ruta)) return [];
+  return extraerImportacionesConTipo(codigo)
+    .filter(({ especificador }) => especificador.startsWith(`${ALIAS_WEB}api/`))
+    .map(({ especificador }) => `${ruta}: solo los hooks usar-*.ts y el almacén importan ${especificador}`);
+}
+
+function sinCadenas(codigo: string): string {
+  let resultado = "";
+  let comilla: string | null = null;
+  for (let indice = 0; indice < codigo.length; indice += 1) {
+    const caracter = codigo.charAt(indice);
+    if (comilla === null) {
+      if (COMILLAS.has(caracter)) comilla = caracter;
+      resultado += caracter;
+    } else if (caracter === "\\") {
+      indice += 1;
+    } else if (caracter === comilla) {
+      comilla = null;
+      resultado += caracter;
+    } else if (caracter === "\n") {
+      resultado += caracter;
+    }
+  }
+  return resultado;
 }
 
 function violacionesDeValoresMagicos(ruta: string, codigo: string): string[] {
-  return [ruta, codigo].filter(() => false);
+  if (!VISTA.test(ruta)) return [];
+  const sinTextos = sinCadenas(codigo);
+  return [
+    ...lineasQueCumplen(ruta, sinTextos, NUMERO_MAGICO, "número mágico en la vista; va en config/constants"),
+    ...lineasQueCumplen(
+      ruta,
+      sinTextos,
+      ATRIBUTO_STYLE,
+      "la vista usa style=; los estilos van en su módulo CSS",
+    ),
+    ...lineasQueCumplen(ruta, codigo, COLOR_SUELTO, "color suelto en la vista; usa un token de tokens.css"),
+  ].sort(porLinea);
+}
+
+function porLinea(a: string, b: string): number {
+  return numeroDeLinea(a) - numeroDeLinea(b);
+}
+
+function numeroDeLinea(violacion: string): number {
+  return Number(violacion.split(":")[1]);
+}
+
+function nombresImportadosDeReact(codigo: string): string[] {
+  return [...codigo.matchAll(IMPORTACION_DE_REACT)].flatMap((coincidencia) =>
+    (coincidencia[1] ?? "")
+      .split(",")
+      .map((nombre) => nombre.trim())
+      .filter((nombre) => nombre.length > 0 && !nombre.startsWith("type "))
+      .map((nombre) => nombre.split(/\s+as\s+/)[0] ?? nombre),
+  );
 }
 
 function violacionesDePrimitivasDelAlmacen(ruta: string, codigo: string): string[] {
-  return [ruta, codigo].filter(() => false);
+  if (ruta.startsWith(`${CARPETA_WEB}/store/`) || enMudanza(ruta)) return [];
+  const permitidas = PRIMITIVAS_PERMITIDAS.get(ruta) ?? new Set<string>();
+  return nombresImportadosDeReact(codigo)
+    .filter((nombre) => PRIMITIVAS_DEL_ALMACEN.has(nombre) && !permitidas.has(nombre))
+    .map((nombre) => `${ruta}: ${nombre} de react solo vive en web/src/store`);
 }
 
 function violacionesDeUbicacion(ruta: string): string[] {
@@ -760,8 +850,7 @@ describe("el guardián de web/ muerde sobre fuentes de muestra", () => {
       "web/src/features/chat/x/usar-x.ts",
       "web/src/store/dependencias.ts",
       "web/src/api/flujo-chat.ts",
-      "web/src/components/x.tsx",
-      "web/src/hooks/usar-x.ts",
+      ...CARPETAS_EN_MUDANZA.map((carpeta) => `${carpeta}x.tsx`),
     ]) {
       expect(violacionesDeApiTransversal(ruta, codigo)).toEqual([]);
     }
@@ -808,6 +897,9 @@ describe("el guardián de web/ muerde sobre fuentes de muestra", () => {
       "web/src/features/chat/x/usar-x.ts: useSyncExternalStore de react solo vive en web/src/store",
     ]);
     expect(violacionesDePrimitivasDelAlmacen("web/src/store/usar-almacen.ts", codigo)).toEqual([]);
+    for (const carpeta of CARPETAS_EN_MUDANZA) {
+      expect(violacionesDePrimitivasDelAlmacen(`${carpeta}usar-x.ts`, codigo)).toEqual([]);
+    }
     expect(
       violacionesDePrimitivasDelAlmacen("web/src/features/disposicion/columnas/usar-columnas.ts", codigo),
     ).toEqual([
