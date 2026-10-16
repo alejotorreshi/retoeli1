@@ -317,21 +317,6 @@ export type EstadoListaArchivos =
 
 export type GuardarDescarga = (cuerpo: Blob, nombre: string) => void;
 
-export type OpcionesArchivos = {
-  readonly caso: string;
-  readonly activo: boolean;
-  readonly marca: number;
-  readonly alVencerAcceso: (aviso: string) => void;
-};
-
-export type ControlArchivos = {
-  readonly estado: EstadoListaArchivos;
-  readonly borrados: boolean;
-  readonly reintentar: () => void;
-  readonly descargar: (archivo: ArchivoUi) => void;
-  readonly marcarBorrados: () => void;
-};
-
 export type VistaPreviaUi = PreviewResponse;
 
 export type VistaPreviaTablaUi = Extract<VistaPreviaUi, { readonly tipo: typeof TIPO_VISTA_PREVIA.TABLA }>;

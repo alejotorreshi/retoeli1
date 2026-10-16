@@ -12,13 +12,13 @@ import type {
   ArchivoUi,
   AvisoDeSesion,
   ContadorDeCaso,
-  ControlArchivos,
   ErrorVisible,
   EstadoCampoUi,
   EstadoEtapa,
   EstadoFilaVistaPrevia,
   EstadoFirma,
   EstadoHerramienta,
+  EstadoListaArchivos,
   EstadoModelo,
   LlamadaDelTurno,
   ProgresoDeCaso,
@@ -30,7 +30,7 @@ import type {
   VistaPreviaUi,
 } from "@web/types/chat.type.ts";
 import type { InstanciaAlmacen } from "@web/types/store.type.ts";
-import type { FormEvent, KeyboardEvent, ReactNode, RefObject, SyntheticEvent } from "react";
+import type { FormEvent, KeyboardEvent, MouseEvent, ReactNode, RefObject, SyntheticEvent } from "react";
 import type { ESTADO_LLM } from "@/config/constants/llm.constants.ts";
 import type { ValorDe } from "@/config/types/valor-de.type.ts";
 
@@ -298,24 +298,49 @@ export type PropsIconoDeEtapa = {
   readonly estado: EstadoEtapa;
 };
 
-export type PropsPanelCasos = {
-  readonly progresos: readonly ProgresoDeCaso[];
-  readonly marcas: ReadonlyMap<string, number>;
-  readonly envioDeshabilitado: boolean;
-  readonly alEnviar: (mensaje: string) => void;
-  readonly alVencerAcceso: (aviso: string) => void;
-};
-
-export type PropsBloqueCaso = {
+export type OpcionesBloqueCaso = {
   readonly progreso: ProgresoDeCaso;
   readonly reciente: boolean;
   readonly marca: number;
+};
+
+export type PropsBloqueCaso = OpcionesBloqueCaso & {
   readonly envioDeshabilitado: boolean;
-  readonly alEnviar: (mensaje: string) => void;
-  readonly alVencerAcceso: (aviso: string) => void;
+};
+
+export type ControlPanelCasos = {
+  readonly idTitulo: string;
+  readonly bloques: readonly PropsBloqueCaso[];
 };
 
 export type AlVerArchivo = (archivo: ArchivoUi, disparador: HTMLElement) => void;
+
+export type OpcionesArchivos = {
+  readonly caso: string;
+  readonly activo: boolean;
+  readonly marca: number;
+  readonly alVencerAcceso: (aviso: string) => void;
+};
+
+export type ControlArchivos = {
+  readonly estado: EstadoListaArchivos;
+  readonly borrados: boolean;
+  readonly reintentar: () => void;
+  readonly descargar: (archivo: ArchivoUi) => void;
+  readonly marcarBorrados: () => void;
+};
+
+export type ControlBloqueCaso = {
+  readonly abierto: boolean;
+  readonly alAlternar: (evento: SyntheticEvent<HTMLDetailsElement>) => void;
+  readonly archivos: ControlArchivos;
+  readonly vistaPrevia: VistaPreviaAbierta | null;
+  readonly alVer: AlVerArchivo;
+  readonly alCerrarVistaPrevia: () => void;
+  readonly discoBorrado: boolean;
+  readonly enviarTexto: (mensaje: string) => void;
+  readonly vencerAcceso: (aviso: string) => void;
+};
 
 export type PropsListaArchivos = {
   readonly caso: string;
@@ -328,6 +353,12 @@ export type PropsFilaArchivo = {
   readonly archivo: ArchivoUi;
   readonly alVer: AlVerArchivo;
   readonly alDescargar: (archivo: ArchivoUi) => void;
+};
+
+export type ControlFilaArchivo = {
+  readonly ruta: string;
+  readonly nombreDescarga: string;
+  readonly alPulsarDescargar: (evento: MouseEvent<HTMLAnchorElement>) => void;
 };
 
 export type Diseno = ValorDe<typeof DISENO>;

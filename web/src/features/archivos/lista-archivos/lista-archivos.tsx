@@ -1,16 +1,12 @@
-import { nombreDeDescarga, rutaDeDescarga } from "@web/api/cliente-api.ts";
 import { IconoDescargar, IconoOjo } from "@web/compartido/iconos/iconos.tsx";
-import estilos from "@web/components/lista-archivos.module.css";
 import { ESTADO_LISTA_ARCHIVOS } from "@web/config/constants/ui.constants.ts";
 import { TEXTO_ARCHIVOS } from "@web/config/strings.ts";
+import estilos from "@web/features/archivos/lista-archivos/lista-archivos.module.css";
+import { useFilaArchivo } from "@web/features/archivos/lista-archivos/usar-lista-archivos.ts";
 import type { PropsFilaArchivo, PropsListaArchivos } from "@web/types/ui.type.ts";
-import type { MouseEvent } from "react";
 
 function FilaArchivo({ caso, archivo, alVer, alDescargar }: PropsFilaArchivo) {
-  function alPulsarDescargar(evento: MouseEvent<HTMLAnchorElement>): void {
-    evento.preventDefault();
-    alDescargar(archivo);
-  }
+  const { ruta, nombreDescarga, alPulsarDescargar } = useFilaArchivo(caso, archivo, alDescargar);
 
   return (
     <li className={estilos.fila}>
@@ -32,8 +28,8 @@ function FilaArchivo({ caso, archivo, alVer, alDescargar }: PropsFilaArchivo) {
         ) : null}
         <a
           className={estilos.enlace}
-          href={rutaDeDescarga(caso, archivo.nombre)}
-          download={nombreDeDescarga(archivo.nombre)}
+          href={ruta}
+          download={nombreDescarga}
           aria-label={TEXTO_ARCHIVOS.descargarArchivo(archivo.nombre)}
           onClick={alPulsarDescargar}
         >

@@ -1,4 +1,3 @@
-import { PanelCasos } from "@web/components/panel-casos.tsx";
 import { PantallaAcceso } from "@web/components/pantalla-acceso.tsx";
 import {
   CLASE_GLOBAL,
@@ -10,6 +9,7 @@ import {
   TECLA_PESTANA,
 } from "@web/config/constants/ui.constants.ts";
 import { TEXTO_APP, TEXTO_PESTANAS } from "@web/config/strings.ts";
+import { PanelCasos } from "@web/features/casos/panel-casos/panel-casos.tsx";
 import { AccionesRapidas } from "@web/features/chat/acciones-rapidas/acciones-rapidas.tsx";
 import { Compositor } from "@web/features/chat/compositor/compositor.tsx";
 import { LineaDeTiempo } from "@web/features/chat/linea-de-tiempo/linea-de-tiempo.tsx";
@@ -22,10 +22,7 @@ import { ProveedorAlmacen } from "@web/store/proveedor-almacen.tsx";
 import {
   seleccionarAcceso,
   seleccionarConHistorial,
-  seleccionarEnvioDeshabilitado,
   seleccionarFirmaDelProgreso,
-  seleccionarMarcasDeArchivos,
-  seleccionarProgresos,
 } from "@web/store/selectores.ts";
 import { useAcciones, useSeleccion, useSincronizacion } from "@web/store/usar-almacen.ts";
 import type {
@@ -125,10 +122,7 @@ function Pantalla() {
   const acciones = useAcciones();
   const acceso = useSeleccion(seleccionarAcceso);
   const conHistorial = useSeleccion(seleccionarConHistorial);
-  const envioDeshabilitado = useSeleccion(seleccionarEnvioDeshabilitado);
-  const progresos = useSeleccion(seleccionarProgresos);
   const firmaDelProgreso = useSeleccion(seleccionarFirmaDelProgreso);
-  const marcas = useSeleccion(seleccionarMarcasDeArchivos);
   const diseno = useDiseno();
   const conPestanas = diseno !== DISENO.ANCHO;
   const pestanas = usePestanas(conPestanas, firmaDelProgreso);
@@ -176,13 +170,7 @@ function Pantalla() {
           className={CLASE_GLOBAL.VISTA_CASOS}
           {...atributosDeVista(conPestanas, pestanas, ids, PESTANA.CASOS)}
         >
-          <PanelCasos
-            progresos={progresos}
-            marcas={marcas}
-            envioDeshabilitado={envioDeshabilitado}
-            alEnviar={acciones.enviarTexto}
-            alVencerAcceso={acciones.vencerAcceso}
-          />
+          <PanelCasos />
         </div>
       </div>
       <DialogoNuevaSesion />

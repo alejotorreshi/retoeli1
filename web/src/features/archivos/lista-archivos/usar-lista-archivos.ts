@@ -1,14 +1,10 @@
-import { descargarArchivo, listarArchivos } from "@web/api/cliente-api.ts";
+import { descargarArchivo, listarArchivos, nombreDeDescarga, rutaDeDescarga } from "@web/api/cliente-api.ts";
 import { guardarEnElEquipo } from "@web/api/descarga-local.ts";
 import { ESTADO_LISTA_ARCHIVOS, RESULTADO_API } from "@web/config/constants/ui.constants.ts";
 import { esArchivoNoEncontrado } from "@web/features/casos/estado/casos.ts";
-import type {
-  ArchivoUi,
-  ControlArchivos,
-  EstadoListaArchivos,
-  OpcionesArchivos,
-} from "@web/types/chat.type.ts";
-import { useCallback, useEffect, useRef, useState } from "react";
+import type { ArchivoUi, EstadoListaArchivos } from "@web/types/chat.type.ts";
+import type { ControlArchivos, ControlFilaArchivo, OpcionesArchivos } from "@web/types/ui.type.ts";
+import { type MouseEvent, useCallback, useEffect, useRef, useState } from "react";
 
 const LISTA_CARGANDO: EstadoListaArchivos = { tipo: ESTADO_LISTA_ARCHIVOS.CARGANDO };
 
@@ -70,4 +66,21 @@ export function useArchivos({ caso, activo, marca, alVencerAcceso }: OpcionesArc
   );
 
   return { estado, borrados, reintentar, descargar, marcarBorrados };
+}
+
+export function useFilaArchivo(
+  caso: string,
+  archivo: ArchivoUi,
+  alDescargar: (archivo: ArchivoUi) => void,
+): ControlFilaArchivo {
+  function alPulsarDescargar(evento: MouseEvent<HTMLAnchorElement>): void {
+    evento.preventDefault();
+    alDescargar(archivo);
+  }
+
+  return {
+    ruta: rutaDeDescarga(caso, archivo.nombre),
+    nombreDescarga: nombreDeDescarga(archivo.nombre),
+    alPulsarDescargar,
+  };
 }
