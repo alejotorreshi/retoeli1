@@ -39,6 +39,8 @@ const FOTOGRAMAS_DE_LA_FLECHA_375 = [
 const DISTANCIA_TRAS_LA_FLECHA_375 = 41;
 const POSICION_TRAS_LA_FLECHA_375 = 8_108;
 const POSICION_TRAS_EL_ANCLAJE_375 = POSICION_TRAS_LA_FLECHA_375 + AJUSTE_DEL_ANCLAJE_375;
+const SUBIDA_DE_RUEDA = 160;
+const PASO_DE_FLECHA_ABAJO = 20;
 const DISTANCIAS_DEMO_375 = [
   310, 326, 340, 300, 355, 372, 388, 401, 415, 430, 424, 333, 347, 362, 391, 408,
 ] as const;
@@ -81,11 +83,13 @@ function posicionesDeInercia(): number[] {
 
 function secuenciaWr04(): SenalSeguimiento[] {
   const pulsaciones = Array.from({ length: PULSACIONES_WR_04 }, (_, indice) => {
-    const posicion = POSICION_INICIO_WR_04 + indice * CRECIMIENTO_ENTRE_PULSACIONES;
+    const posicionPrevia = POSICION_INICIO_WR_04 + indice * (CRECIMIENTO_ENTRE_PULSACIONES - PASO_DE_FLECHA);
+    const distancia = (indice + 1) * PASO_DE_FLECHA;
+    const trasLaFlecha = posicionPrevia - PASO_DE_FLECHA;
     return [
-      desplazamiento(posicion - PASO_DE_FLECHA, PASO_DE_FLECHA),
-      crecimiento(PASO_DE_FLECHA),
-      ajustePropio(posicion + CRECIMIENTO_ENTRE_PULSACIONES),
+      desplazamiento(trasLaFlecha, distancia),
+      crecimiento(distancia),
+      desplazamiento(trasLaFlecha + CRECIMIENTO_ENTRE_PULSACIONES, distancia),
     ];
   });
   return [ajustePropio(POSICION_INICIO_WR_04), ...pulsaciones.flat()];
@@ -278,7 +282,7 @@ describe("D-78: el seguimiento se despega con cualquier subida de la usuaria", (
 });
 
 describe("D-78.1: gana la dirección", () => {
-  test("WR-04: 10 flechas de 40 px con crecimiento y ajuste propio intercalados despegan en la primera y no vuelven a pegar", () => {
+  test("WR-04: 10 flechas de 40 px con crecimiento y scroll de anclaje intercalados despegan en la primera y no vuelven a pegar", () => {
     const estados = recorrer(seguimientoInicial, secuenciaWr04());
     const trasLaPrimeraFlecha = estados.slice(1);
     expect(trasLaPrimeraFlecha.length).toBe(PULSACIONES_WR_04 * 3);
@@ -336,6 +340,15 @@ describe("D-78.1: gana la dirección", () => {
   });
 });
 
+function subidaConAnclaje(posicion: number, subida: number): SenalSeguimiento[] {
+  return [
+    ajustePropio(posicion),
+    desplazamiento(posicion - subida, subida),
+    crecimiento(subida),
+    desplazamiento(posicion - subida + AJUSTE_DEL_ANCLAJE_375, subida),
+  ];
+}
+
 function secuenciaDelDiagnostico375(): SenalSeguimiento[] {
   return [
     ajustePropio(POSICION_ANTES_DE_LA_FLECHA_375),
@@ -363,5 +376,74 @@ describe("G-03-7: el anclaje con la vista despegada no la vuelve a pegar", () =>
       expect(estados.at(-1)?.contenidoNuevo).toBe(true);
       expect(estados.at(-1)?.posicion).toBe(POSICION_TRAS_EL_ANCLAJE_375);
     }
+  });
+
+  test("G-03-7 bordes con anclaje: subidas de 95, 96 y 97 px quedan despegadas", () => {
+    const bordes = [DISTANCIA_PEGADO_AL_FINAL - 1, DISTANCIA_PEGADO_AL_FINAL, DISTANCIA_PEGADO_AL_FINAL + 1];
+    for (const subida of bordes) {
+      const estado = aplicar(seguimientoInicial, subidaConAnclaje(POSICION_ANTES_DE_LA_FLECHA_375, subida));
+      expect(estado.pegado).toBe(false);
+      expect(estado.contenidoNuevo).toBe(true);
+    }
+  });
+
+  test("G-03-7 bajada real: despegada lejos tras el anclaje, a 97 px sigue despegada y a 96 px vuelve a pegar", () => {
+    const trasElAnclaje = aplicar(
+      seguimientoInicial,
+      subidaConAnclaje(POSICION_ANTES_DE_LA_FLECHA_375, SUBIDA_DE_RUEDA),
+    );
+    expect(trasElAnclaje.pegado).toBe(false);
+    expect(trasElAnclaje.contenidoNuevo).toBe(true);
+    const posicionTrasElAnclaje = POSICION_ANTES_DE_LA_FLECHA_375 - SUBIDA_DE_RUEDA + AJUSTE_DEL_ANCLAJE_375;
+    const fuera = DISTANCIA_PEGADO_AL_FINAL + 1;
+    const lejos = reducirSeguimiento(
+      trasElAnclaje,
+      desplazamiento(posicionTrasElAnclaje + SUBIDA_DE_RUEDA - fuera, fuera),
+    );
+    expect(lejos.pegado).toBe(false);
+    expect(lejos.contenidoNuevo).toBe(true);
+    const cerca = reducirSeguimiento(
+      lejos,
+      desplazamiento(
+        posicionTrasElAnclaje + SUBIDA_DE_RUEDA - DISTANCIA_PEGADO_AL_FINAL,
+        DISTANCIA_PEGADO_AL_FINAL,
+      ),
+    );
+    expect(cerca.pegado).toBe(true);
+    expect(cerca.contenidoNuevo).toBe(false);
+  });
+
+  test("G-03-7 flecha abajo de 20 px tras el anclaje vuelve a pegar", () => {
+    const trasElAnclaje = aplicar(seguimientoInicial, secuenciaDelDiagnostico375());
+    expect(trasElAnclaje.pegado).toBe(false);
+    const estado = reducirSeguimiento(
+      trasElAnclaje,
+      desplazamiento(
+        POSICION_TRAS_EL_ANCLAJE_375 + PASO_DE_FLECHA_ABAJO,
+        DISTANCIA_TRAS_LA_FLECHA_375 - PASO_DE_FLECHA_ABAJO,
+      ),
+    );
+    expect(estado.pegado).toBe(true);
+    expect(estado.contenidoNuevo).toBe(false);
+  });
+
+  test("G-03-7 crecimiento abajo sin anclaje: el crecimiento refresca la distancia y bajar a 81 px vuelve a pegar", () => {
+    const distanciaTrasCrecer = DISTANCIA_TRAS_LA_FLECHA_375 + CRECIMIENTO_DEBAJO;
+    const crecido = aplicar(seguimientoInicial, [
+      ajustePropio(POSICION_ANTES_DE_LA_FLECHA_375),
+      desplazamiento(POSICION_TRAS_LA_FLECHA_375, DISTANCIA_TRAS_LA_FLECHA_375),
+      crecimiento(distanciaTrasCrecer),
+    ]);
+    expect(crecido.pegado).toBe(false);
+    expect(crecido.contenidoNuevo).toBe(true);
+    expect(crecido.distancia).toBe(distanciaTrasCrecer);
+    const distanciaTrasBajar = distanciaTrasCrecer - PASO_DE_FLECHA;
+    expect(distanciaTrasBajar).toBeGreaterThan(DISTANCIA_TRAS_LA_FLECHA_375);
+    const estado = reducirSeguimiento(
+      crecido,
+      desplazamiento(POSICION_TRAS_LA_FLECHA_375 + PASO_DE_FLECHA, distanciaTrasBajar),
+    );
+    expect(estado.pegado).toBe(true);
+    expect(estado.contenidoNuevo).toBe(false);
   });
 });
