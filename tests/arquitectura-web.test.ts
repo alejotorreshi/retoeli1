@@ -14,6 +14,20 @@ import {
   VALOR_EN_ARCHIVO_DE_TIPOS,
 } from "@tests/helpers/escaner-fuentes.helper.ts";
 import type { Importacion } from "@tests/helpers/types/importacion.type.ts";
+import { ESTADO_ACCESO } from "@web/config/constants/ui.constants.ts";
+import { CODIGO_AGENTE } from "@/config/constants/agent.constants.ts";
+import {
+  DECISION_CONFIRMACION,
+  DESENLACE_ENVIO,
+  TIPO_ACCION,
+} from "@/config/constants/confirmation.constants.ts";
+import { CODIGO_ERROR } from "@/config/constants/errors.constants.ts";
+import { TIPO_ARCHIVO_CASO, TIPO_VISTA_PREVIA } from "@/config/constants/files.constants.ts";
+import { FORMATO } from "@/config/constants/forms.constants.ts";
+import { ESTADO_LLM } from "@/config/constants/llm.constants.ts";
+import { ESTADO_CAMPO, REGLA_MAPEO } from "@/config/constants/mapping.constants.ts";
+import { ESTADO_SOPORTE, ESTADO_VIGENCIA } from "@/config/constants/supports.constants.ts";
+import { HERRAMIENTA, NOMBRE_VISIBLE } from "@/config/constants/tools.constants.ts";
 
 const RAIZ = join(import.meta.dir, "..");
 
@@ -76,6 +90,66 @@ const MODULO_CSS = ".module.css";
 const HOOK_DE_COMPONENTE = new RegExp(`^usar-${KEBAB}\\.ts$`);
 
 const COMILLAS: ReadonlySet<string> = new Set(['"', "'", "`"]);
+
+const CARPETA_DE_CONSTANTES = "web/src/config/constants/";
+
+const CODIGO_DEL_FRONT = /^[a-z][a-z0-9]*(?:_[a-z0-9]+)*$/;
+
+const LITERAL_VACIO = '""';
+
+const LITERAL_CON_TEXTO = '"_"';
+
+const LITERAL_DE_PLANTILLA = "_plantilla_";
+
+const COMPARADOR = "(?:===|!==|==|!=)";
+
+const COMPARACION_TYPEOF = new RegExp(
+  [
+    `\\btypeof\\s+[\\w$.?\\[\\]]+\\s*${COMPARADOR}\\s*(["'\`])(?:string|number|boolean|object|undefined|function|bigint|symbol)\\1`,
+    `(["'\`])(?:string|number|boolean|object|undefined|function|bigint|symbol)\\2\\s*${COMPARADOR}\\s*typeof\\s+[\\w$.?\\[\\]]+`,
+  ].join("|"),
+  "g",
+);
+
+const PROPIEDAD_CONSULTADA = /(["'])[^"'\n]*\1\s+in\b/g;
+
+const LITERAL_COMPARADO = new RegExp(`${COMPARADOR}\\s*"_?"|"_?"\\s*${COMPARADOR}`);
+
+const ETIQUETA_LITERAL = /\bcase\s+"_?"\s*:/;
+
+const RAMA_TERNARIA_LITERAL = /(?<!\?)\?(?![?.])\s*"_"|(?<!\?)\?(?![?.:])[^{}?:]*:\s*"_"/;
+
+const RETORNO_LITERAL = /\breturn\s+"_"\s*;?\s*$/;
+
+const MENSAJE_LITERAL_DE_CODIGO =
+  "compara, etiqueta o devuelve un código con un literal; usa su objeto as const";
+
+const MENSAJE_CODIGO_DEL_FRONT = "escribe un código del front como literal; usa su objeto as const";
+
+const MENSAJE_CODIGO_DE_NEGOCIO =
+  "copia un código de negocio del servidor; importa su constante de src/config/constants";
+
+const FAMILIAS_DE_NEGOCIO: readonly Readonly<Record<string, string>>[] = [
+  ESTADO_CAMPO,
+  REGLA_MAPEO,
+  ESTADO_SOPORTE,
+  ESTADO_VIGENCIA,
+  FORMATO,
+  TIPO_ARCHIVO_CASO,
+  TIPO_VISTA_PREVIA,
+  HERRAMIENTA,
+  NOMBRE_VISIBLE,
+  TIPO_ACCION,
+  DECISION_CONFIRMACION,
+  DESENLACE_ENVIO,
+  ESTADO_LLM,
+  CODIGO_ERROR,
+  CODIGO_AGENTE,
+];
+
+const CODIGOS_DE_NEGOCIO: ReadonlySet<string> = new Set(
+  FAMILIAS_DE_NEGOCIO.flatMap((familia) => Object.values(familia)),
+);
 
 const NUMERO_MAGICO = /(?<![\w$.])(?!(?:0|1)\b(?!\.))\d+(?:\.\d+)?/;
 
@@ -152,6 +226,30 @@ function escanear(patron: string): string[] {
   if (!existsSync(join(RAIZ, CARPETA_WEB))) return [];
   return normalizar([...new Bun.Glob(patron).scanSync({ cwd: RAIZ })]);
 }
+
+function esFamiliaDeCodigos(valor: unknown): valor is Readonly<Record<string, string>> {
+  if (typeof valor !== "object" || valor === null || Object.getPrototypeOf(valor) !== Object.prototype) {
+    return false;
+  }
+  const valores = Object.values(valor);
+  return (
+    valores.length > 0 &&
+    valores.every((miembro) => typeof miembro === "string" && CODIGO_DEL_FRONT.test(miembro))
+  );
+}
+
+async function codigosDelFront(): Promise<ReadonlySet<string>> {
+  const codigos = new Set<string>();
+  for (const ruta of escanear(`${CARPETA_DE_CONSTANTES}*.constants.ts`)) {
+    const modulo: Record<string, unknown> = await import(join(RAIZ, ruta));
+    for (const exportado of Object.values(modulo)) {
+      if (esFamiliaDeCodigos(exportado)) for (const valor of Object.values(exportado)) codigos.add(valor);
+    }
+  }
+  return codigos;
+}
+
+const CODIGOS_DEL_FRONT = await codigosDelFront();
 
 function listarCodigoWeb(): string[] {
   return normalizar([...escanear(`${CARPETA_WEB}/**/*.ts`), ...escanear(`${CARPETA_WEB}/**/*.tsx`)]);
@@ -398,6 +496,71 @@ function violacionesDeValoresMagicos(ruta: string, codigo: string): string[] {
   ].sort(porLinea);
 }
 
+function finDeLiteral(linea: string, inicio: number): number {
+  const comilla = linea.charAt(inicio);
+  let indice = inicio + 1;
+  while (indice < linea.length && linea.charAt(indice) !== comilla) {
+    indice += linea.charAt(indice) === "\\" ? 2 : 1;
+  }
+  return Math.min(indice + 1, linea.length);
+}
+
+function conLiteralesNormalizados(linea: string): string {
+  let resultado = "";
+  let indice = 0;
+  while (indice < linea.length) {
+    const caracter = linea.charAt(indice);
+    if (!COMILLAS.has(caracter)) {
+      resultado += caracter;
+      indice += 1;
+      continue;
+    }
+    const fin = finDeLiteral(linea, indice);
+    const cuerpo = linea.slice(indice + 1, fin - 1);
+    if (caracter === "`" && cuerpo.includes("${")) resultado += LITERAL_DE_PLANTILLA;
+    else resultado += cuerpo.length === 0 ? LITERAL_VACIO : LITERAL_CON_TEXTO;
+    indice = fin;
+  }
+  return resultado;
+}
+
+function sinComprobacionesPermitidas(linea: string): string {
+  return linea.replace(COMPARACION_TYPEOF, " ").replace(PROPIEDAD_CONSULTADA, " ");
+}
+
+function usaLiteralEnPosicionDeCodigo(linea: string): boolean {
+  const normalizada = conLiteralesNormalizados(linea);
+  return [LITERAL_COMPARADO, ETIQUETA_LITERAL, RAMA_TERNARIA_LITERAL, RETORNO_LITERAL].some((patron) =>
+    patron.test(normalizada),
+  );
+}
+
+function escribeAlgunCodigo(linea: string, codigos: ReadonlySet<string>): boolean {
+  return literalesDeTexto(linea).some((literal) => codigos.has(literal));
+}
+
+function violacionesDeLiteralesDeCodigo(ruta: string, codigo: string): string[] {
+  if (ruta === DUENO_DE_TEXTO || ruta.startsWith(CARPETA_DE_CONSTANTES)) return [];
+  return codigo.split("\n").flatMap((linea, indice) => {
+    const permitida = sinComprobacionesPermitidas(linea);
+    if (usaLiteralEnPosicionDeCodigo(permitida))
+      return [`${ruta}:${indice + 1}: ${MENSAJE_LITERAL_DE_CODIGO}`];
+    if (escribeAlgunCodigo(permitida, CODIGOS_DEL_FRONT))
+      return [`${ruta}:${indice + 1}: ${MENSAJE_CODIGO_DEL_FRONT}`];
+    return [];
+  });
+}
+
+function violacionesDeCodigosDeNegocio(ruta: string, codigo: string): string[] {
+  return codigo
+    .split("\n")
+    .flatMap((linea, indice) =>
+      escribeAlgunCodigo(linea.replace(PROPIEDAD_CONSULTADA, " "), CODIGOS_DE_NEGOCIO)
+        ? [`${ruta}:${indice + 1}: ${MENSAJE_CODIGO_DE_NEGOCIO}`]
+        : [],
+    );
+}
+
 function porLinea(a: string, b: string): number {
   return numeroDeLinea(a) - numeroDeLinea(b);
 }
@@ -532,6 +695,17 @@ describe("guardián de web/ sobre el código real", () => {
   test("W18: las vistas no llevan números mágicos, style= ni colores sueltos", () => {
     expect(listarCodigoWeb().filter((ruta) => VISTA.test(ruta)).length).toBeGreaterThan(0);
     expect(sobreElCodigo(violacionesDeValoresMagicos)).toEqual([]);
+  });
+
+  test("W22: web/src compara, etiqueta, devuelve y asigna códigos solo con su objeto as const", () => {
+    expect(CODIGOS_DEL_FRONT.has(ESTADO_ACCESO.PEDIDO)).toBe(true);
+    expect(sobreElCodigo(violacionesDeLiteralesDeCodigo)).toEqual([]);
+  });
+
+  test("W23: web/src no copia como literal los códigos de negocio de src/config/constants", () => {
+    expect(CODIGOS_DE_NEGOCIO.has(ESTADO_CAMPO.FALTANTE)).toBe(true);
+    expect(CODIGOS_DE_NEGOCIO.has(HERRAMIENTA.ARMAR_PAQUETE)).toBe(true);
+    expect(sobreElCodigo(violacionesDeCodigosDeNegocio)).toEqual([]);
   });
 
   test("W20: createContext, useContext, useReducer y useSyncExternalStore viven en web/src/store", () => {
@@ -925,5 +1099,67 @@ describe("el guardián de web/ muerde sobre fuentes de muestra", () => {
       "web/src/features/disposicion/columnas/usar-columnas.ts: useContext de react solo vive en web/src/store",
       "web/src/features/disposicion/columnas/usar-columnas.ts: useReducer de react solo vive en web/src/store",
     ]);
+  });
+
+  test("W22: reporta literales en comparaciones, case, ternarios, retornos y códigos del front, y acepta typeof, in y las constantes", () => {
+    const ruta = "web/src/features/chat/x/usar-x.ts";
+    const codigo = [
+      'if (estado.tipo === "verificando") return;',
+      'if ("pedido" !== acceso.tipo) return;',
+      'switch (pestana) { case "chat": break; }',
+      'const clase = activa ? "abierta" : "cerrada";',
+      '  return "tenue";',
+      'if (codigo === "") return;',
+      'despachar({ tipo: "enviar" });',
+      'const orden = ["chat", "casos"];',
+      'if (typeof valor === "string") return;',
+      "if (estado.tipo === ESTADO_ACCESO.VERIFICANDO) return;",
+      'if ("ok" in valor) return;',
+      "const tipo = visible ? TIPO_CAMPO_CODIGO.VISIBLE : TIPO_CAMPO_CODIGO.OCULTO;",
+      ["const id = `$", "{base}-$", "{pestana}`;"].join(""),
+      '<button type="button" aria-hidden="true" />',
+      '  return "";',
+      'const anuncio = llamada === null ? "" : TEXTO_X.anuncio;',
+      'const vista = abierta ? { role: "tabpanel" } : {};',
+    ].join("\n");
+    expect(violacionesDeLiteralesDeCodigo(ruta, codigo)).toEqual([
+      `${ruta}:1: ${MENSAJE_LITERAL_DE_CODIGO}`,
+      `${ruta}:2: ${MENSAJE_LITERAL_DE_CODIGO}`,
+      `${ruta}:3: ${MENSAJE_LITERAL_DE_CODIGO}`,
+      `${ruta}:4: ${MENSAJE_LITERAL_DE_CODIGO}`,
+      `${ruta}:5: ${MENSAJE_LITERAL_DE_CODIGO}`,
+      `${ruta}:6: ${MENSAJE_LITERAL_DE_CODIGO}`,
+      `${ruta}:7: ${MENSAJE_CODIGO_DEL_FRONT}`,
+      `${ruta}:8: ${MENSAJE_CODIGO_DEL_FRONT}`,
+    ]);
+    expect(violacionesDeLiteralesDeCodigo("web/src/config/constants/ui.constants.ts", codigo)).toEqual([]);
+    expect(violacionesDeLiteralesDeCodigo(DUENO_DE_TEXTO, codigo)).toEqual([]);
+  });
+
+  test("W23: reporta un código de negocio copiado en un hook, en config/constants y en strings.ts, y acepta la constante importada", () => {
+    const ruta = "web/src/features/casos/x/usar-x.ts";
+    const codigo = [
+      'if (campo.estado === "faltante") return;',
+      'const herramienta = "armar_paquete";',
+      'const formato = pdf ? FORMATO.PDF : "xlsx";',
+      'const etiqueta = "Faltante";',
+      'if ("formulario" in valor) return;',
+      "if (campo.estado === ESTADO_CAMPO.FALTANTE) return;",
+    ].join("\n");
+    expect(violacionesDeCodigosDeNegocio(ruta, codigo)).toEqual([
+      `${ruta}:1: ${MENSAJE_CODIGO_DE_NEGOCIO}`,
+      `${ruta}:2: ${MENSAJE_CODIGO_DE_NEGOCIO}`,
+      `${ruta}:3: ${MENSAJE_CODIGO_DE_NEGOCIO}`,
+    ]);
+    const constantes = "web/src/config/constants/x.constants.ts";
+    expect(
+      violacionesDeCodigosDeNegocio(
+        constantes,
+        'export const ESTADO_CAMPO_COPIA = { FALTANTE: "faltante" } as const;',
+      ),
+    ).toEqual([`${constantes}:1: ${MENSAJE_CODIGO_DE_NEGOCIO}`]);
+    expect(
+      violacionesDeCodigosDeNegocio(DUENO_DE_TEXTO, 'export const T = { estado: "requiere_confirmacion" };'),
+    ).toEqual([`${DUENO_DE_TEXTO}:1: ${MENSAJE_CODIGO_DE_NEGOCIO}`]);
   });
 });
