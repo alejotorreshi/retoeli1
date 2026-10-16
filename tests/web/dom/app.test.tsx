@@ -13,12 +13,13 @@ import {
 } from "@tests/helpers/red-web.helper.ts";
 import type { GuionChat } from "@tests/helpers/types/red-web.type.ts";
 import { PAIS } from "@web/config/constants/pais.constants.ts";
-import { CLAVE_SESION_LOCAL } from "@web/config/constants/ui.constants.ts";
+import { CASO_DEMO_PRD, CLAVE_SESION_LOCAL, EVENTO_VISIBILIDAD } from "@web/config/constants/ui.constants.ts";
 import {
   TEXTO_ACCIONES,
   TEXTO_APP,
   TEXTO_CHAT,
   TEXTO_CONFIRMACION,
+  TEXTO_ESTADO_VACIO,
   TEXTO_MODELO,
   TEXTO_NUEVA_SESION,
   TEXTO_PAIS,
@@ -187,6 +188,88 @@ describe("App en escritorio, con la red simulada en fetch", () => {
     for (const tarjeta of tarjetas) await usuario.click(tarjeta);
     expect(red.pedidosA(RUTA_API.CHAT, METODO_POST)).toEqual([]);
   });
+
+  test("el estado vacío tiene las secciones Casos disponibles y Acciones rápidas con rótulos h3 visibles", async () => {
+    const red = crearRedWeb({ nativos: dom.nativos });
+    const { pantalla } = await montarApp(dom, red);
+    await pantalla.findByRole("button", { name: TARJETA_DEMO });
+
+    const rotuloCasos = pantalla.getByRole("heading", { level: 3, name: TEXTO_ESTADO_VACIO.casos });
+    const rotuloAcciones = pantalla.getByRole("heading", { level: 3, name: TEXTO_ESTADO_VACIO.acciones });
+    const casos = pantalla.getByRole("region", { name: TEXTO_ESTADO_VACIO.casos });
+    const acciones = pantalla.getByRole("region", { name: TEXTO_ESTADO_VACIO.acciones });
+    expect(casos.getAttribute("aria-labelledby")).toBe(rotuloCasos.id);
+    expect(acciones.getAttribute("aria-labelledby")).toBe(rotuloAcciones.id);
+    expect(casos.contains(pantalla.getByRole("button", { name: TARJETA_DEMO }))).toBe(true);
+    expect(acciones.contains(pantalla.getByRole("group", { name: TEXTO_ACCIONES.grupo }))).toBe(true);
+    expect(TEXTO_ESTADO_VACIO.acciones).toBe(TEXTO_ACCIONES.grupo);
+    expect(casos.compareDocumentPosition(acciones) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(pantalla.getByText(TEXTO_CHAT.vacioCuerpo)).toBeDefined();
+    expect(TEXTO_CHAT.vacioCuerpo).toContain(`"procesa el caso ${CASO_DEMO_PRD}"`);
+  });
+
+  test("con /api/config sin casos la sección Casos disponibles no se pinta y quedan el título, el cuerpo y los chips", async () => {
+    const red = crearRedWeb({ nativos: dom.nativos, config: { ...CONFIG_DE_PRUEBA, casos: [] } });
+    const { pantalla } = await montarApp(dom, red);
+    expect(await pantalla.findByRole("heading", { name: TEXTO_CHAT.vacioTitulo })).toBeDefined();
+
+    await dom.esperar(() => expect(pantalla.queryByText(TEXTO_ESTADO_VACIO.cargandoCasos)).toBeNull());
+    expect(pantalla.queryByRole("heading", { name: TEXTO_ESTADO_VACIO.casos })).toBeNull();
+    expect(pantalla.queryAllByRole("button", { name: esTarjetaDeCaso })).toEqual([]);
+    expect(pantalla.getByText(TEXTO_CHAT.vacioCuerpo)).toBeDefined();
+    expect(pantalla.getByRole("button", { name: TEXTO_ACCIONES.demo })).toBeDefined();
+    expect(pantalla.getByRole("button", { name: TEXTO_ACCIONES.listar })).toBeDefined();
+  });
+
+  test("mientras /api/config no responde se lee Cargando los casos y la lista aparece cuando responde", async () => {
+    const red = crearRedWeb({ nativos: dom.nativos, configDisponible: false });
+    const { pantalla } = await montarApp(dom, red);
+
+    expect(await pantalla.findByText(TEXTO_ESTADO_VACIO.cargandoCasos)).toBeDefined();
+    expect(pantalla.getByRole("heading", { level: 3, name: TEXTO_ESTADO_VACIO.casos })).toBeDefined();
+    expect(pantalla.queryAllByRole("button", { name: esTarjetaDeCaso })).toEqual([]);
+    const demo = pantalla.getByRole("button", { name: TEXTO_ACCIONES.demo });
+    await dom.esperar(() => expect(habilitado(demo)).toBe(true));
+
+    red.fijarConfigDisponible(true);
+    await dom.act(async () => {
+      document.dispatchEvent(new Event(EVENTO_VISIBILIDAD));
+      await Bun.sleep(PAUSA_TRAS_SOLTAR_MS);
+    });
+
+    expect(await pantalla.findByRole("button", { name: TARJETA_DEMO })).toBeDefined();
+    expect(pantalla.queryByText(TEXTO_ESTADO_VACIO.cargandoCasos)).toBeNull();
+    expect(pantalla.getAllByRole("button", { name: esTarjetaDeCaso })).toHaveLength(
+      NOMBRES_DE_TARJETAS.length,
+    );
+  });
+
+  for (const origen of [TARJETA_DEMO, TEXTO_ACCIONES.demo]) {
+    test(`activar con Enter "${origen}" en el estado vacío deja el foco en el campo del mensaje`, async () => {
+      const red = crearRedWeb({
+        nativos: dom.nativos,
+        guiones: [{ eventos: [eventoInicio(SESION)], retenidos: [eventoTexto(RESPUESTA), eventoFin()] }],
+      });
+      const { pantalla, usuario } = await montarApp(dom, red);
+      const boton = await pantalla.findByRole("button", { name: origen });
+      await dom.esperar(() => expect(habilitado(boton)).toBe(true));
+      dom.act(() => boton.focus());
+      expect(document.activeElement).toBe(boton);
+
+      await usuario.keyboard("{Enter}");
+
+      await dom.esperar(() => expect(red.pedidosA(RUTA_API.CHAT, METODO_POST)).toHaveLength(1));
+      expect(pantalla.queryByRole("heading", { name: TEXTO_CHAT.vacioTitulo })).toBeNull();
+      expect(document.activeElement).toBe(
+        pantalla.getByRole("textbox", { name: TEXTO_CHAT.etiquetaMensaje }),
+      );
+      await dom.act(async () => {
+        red.soltar();
+        await Bun.sleep(PAUSA_TRAS_SOLTAR_MS);
+      });
+      expect(await pantalla.findByText(RESPUESTA)).toBeDefined();
+    });
+  }
 
   test("Enter en el compositor envía el borrador", async () => {
     const red = crearRedWeb({ nativos: dom.nativos, guiones: [turnoConRespuesta] });

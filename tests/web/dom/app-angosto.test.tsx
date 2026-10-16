@@ -9,8 +9,15 @@ import {
   eventoTexto,
 } from "@tests/helpers/red-web.helper.ts";
 import type { GuionChat } from "@tests/helpers/types/red-web.type.ts";
+import { PAIS } from "@web/config/constants/pais.constants.ts";
 import { ORDEN_PESTANAS } from "@web/config/constants/ui.constants.ts";
-import { TEXTO_ACCIONES, TEXTO_PESTANAS } from "@web/config/strings.ts";
+import {
+  TEXTO_ACCIONES,
+  TEXTO_ESTADO_VACIO,
+  TEXTO_PAIS,
+  TEXTO_PESTANAS,
+  TEXTO_TARJETA_CASO,
+} from "@web/config/strings.ts";
 import type { Pestana } from "@web/types/ui.type.ts";
 import { METODO_POST, RUTA_API } from "@/config/constants/http.constants.ts";
 
@@ -32,7 +39,29 @@ function vistaDe(pestana: HTMLElement): HTMLElement {
   return vista;
 }
 
+const NOMBRES_DE_TARJETAS = [
+  TEXTO_TARJETA_CASO.etiqueta("Industrias Delta", TEXTO_PAIS[PAIS.CO], "co-industrias-delta"),
+  TEXTO_TARJETA_CASO.etiqueta("Corp Andina", TEXTO_PAIS[PAIS.EC], "ec-corp-andina"),
+  TEXTO_TARJETA_CASO.etiqueta("Agroexport Sula", TEXTO_PAIS[PAIS.HN], "hn-agroexport-sula"),
+  TEXTO_TARJETA_CASO.etiqueta("Logistica Istmo", TEXTO_PAIS[PAIS.PA], "pa-logistica-istmo"),
+];
+
 describe("App en un teléfono de 375 px", () => {
+  test("las cuatro tarjetas de caso se pintan con los mismos nombres accesibles", async () => {
+    const red = crearRedWeb({ nativos: dom.nativos });
+    const { pantalla } = await montarApp(dom, red);
+    const casos = await pantalla.findByRole("region", { name: TEXTO_ESTADO_VACIO.casos });
+    await dom.esperar(() =>
+      expect(
+        dom
+          .dentroDe(casos)
+          .getAllByRole("button")
+          .map((tarjeta) => tarjeta.getAttribute("aria-label")),
+      ).toEqual(NOMBRES_DE_TARJETAS),
+    );
+    expect(CASOS_DE_PRUEBA).toHaveLength(NOMBRES_DE_TARJETAS.length);
+  });
+
   test("las pestañas se recorren con flechas, Inicio y Fin, y solo se ve la vista elegida", async () => {
     const red = crearRedWeb({ nativos: dom.nativos });
     const { pantalla, usuario } = await montarApp(dom, red);

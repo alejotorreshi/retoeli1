@@ -142,6 +142,7 @@ export function crearRedWeb(opciones: OpcionesRedWeb): RedWeb {
   const config = opciones.config ?? CONFIG_DE_PRUEBA;
   const codificador = new TextEncoder();
   let salud: LlmHealthState = opciones.salud ?? ESTADO_LLM.DISPONIBLE;
+  let configDisponible = opciones.configDisponible ?? true;
   let accesoConcedido = opciones.codigoAcceso === undefined;
   let soltarRetenido: (() => void) | null = null;
 
@@ -217,7 +218,11 @@ export function crearRedWeb(opciones: OpcionesRedWeb): RedWeb {
       return json(RESPUESTA_HTTP.OK, respuesta);
     }
     if (ruta === RUTA_API.ACCESO && metodo === METODO_POST) return responderAcceso(cuerpo);
-    if (ruta === RUTA_API.CONFIG) return json(RESPUESTA_HTTP.OK, config);
+    if (ruta === RUTA_API.CONFIG) {
+      return configDisponible
+        ? json(RESPUESTA_HTTP.OK, config)
+        : json(RESPUESTA_HTTP.NO_DISPONIBLE, { mensaje: MENSAJE_HTTP.errorInterno });
+    }
     if (ruta === RUTA_API.CHAT && metodo === METODO_POST) return responderChat(signal);
     const fija = rutas.get(ruta);
     if (fija !== undefined) return json(fija.estado, fija.cuerpo);
@@ -248,6 +253,9 @@ export function crearRedWeb(opciones: OpcionesRedWeb): RedWeb {
     },
     fijarRuta: (ruta, respuesta) => {
       rutas.set(ruta, respuesta);
+    },
+    fijarConfigDisponible: (disponible) => {
+      configDisponible = disponible;
     },
     soltar: () => {
       const soltar = soltarRetenido;

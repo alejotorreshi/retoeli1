@@ -25,6 +25,7 @@ export type GuionChat = {
 export type OpcionesRedWeb = {
   readonly nativos: RespuestasNativas;
   readonly config?: ConfigResponse;
+  readonly configDisponible?: boolean;
   readonly salud?: LlmHealthState;
   readonly codigoAcceso?: string;
   readonly guiones?: readonly GuionChat[];
@@ -38,5 +39,6 @@ export type RedWeb = {
   readonly encolarGuion: (guion: GuionChat) => void;
   readonly fijarSalud: (estado: LlmHealthState) => void;
   readonly fijarRuta: (ruta: string, respuesta: RespuestaFalsa) => void;
+  readonly fijarConfigDisponible: (disponible: boolean) => void;
   readonly soltar: () => void;
 };
