@@ -2,7 +2,7 @@ import estilos from "@web/components/grupo-herramientas.module.css";
 import { IconoChevron } from "@web/components/icons/iconos.tsx";
 import { TarjetaHerramienta } from "@web/components/tarjeta-herramienta.tsx";
 import { TEXTO_HERRAMIENTA } from "@web/config/strings.ts";
-import { grupoSeCierraAlTerminar, resumenDeLlamadas } from "@web/state/conversacion.ts";
+import { grupoSeCierraAlTerminar, resumenDeLlamadas } from "@web/features/chat/estado/conversacion.ts";
 import type { PropsGrupoHerramientas } from "@web/types/ui.type.ts";
 import { type SyntheticEvent, useEffect, useState } from "react";
 

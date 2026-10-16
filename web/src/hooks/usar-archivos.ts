@@ -1,7 +1,7 @@
 import { descargarArchivo, listarArchivos } from "@web/api/cliente-api.ts";
 import { guardarEnElEquipo } from "@web/api/descarga-local.ts";
 import { ESTADO_LISTA_ARCHIVOS, RESULTADO_API } from "@web/config/constants/ui.constants.ts";
-import { esArchivoNoEncontrado } from "@web/state/casos.ts";
+import { esArchivoNoEncontrado } from "@web/features/casos/estado/casos.ts";
 import type {
   ArchivoUi,
   ControlArchivos,

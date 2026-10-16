@@ -6,7 +6,7 @@ import {
   SEPARADOR_RUTA,
 } from "@web/config/constants/ui.constants.ts";
 import { TEXTO_ACCESO } from "@web/config/strings.ts";
-import { sigueOcupada } from "@web/state/hidratacion.ts";
+import { sigueOcupada } from "@web/features/sesion/estado/hidratacion.ts";
 import type {
   ArchivoUi,
   EstadoModelo,

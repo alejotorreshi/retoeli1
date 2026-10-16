@@ -2,8 +2,8 @@ import { obtenerVistaPrevia } from "@web/api/cliente-api.ts";
 import estilos from "@web/components/dialogo-vista-previa.module.css";
 import { ESTADO_VISTA_PREVIA, RESULTADO_API } from "@web/config/constants/ui.constants.ts";
 import { TEXTO_VISTA_PREVIA } from "@web/config/strings.ts";
-import { esArchivoNoEncontrado } from "@web/state/casos.ts";
-import { estadoDeVistaPreviaFallida } from "@web/state/vista-previa.ts";
+import { estadoDeVistaPreviaFallida } from "@web/features/archivos/estado/vista-previa.ts";
+import { esArchivoNoEncontrado } from "@web/features/casos/estado/casos.ts";
 import type { EstadoFilaVistaPrevia, EstadoVistaPrevia } from "@web/types/chat.type.ts";
 import type {
   PropsBadgeDeFila,

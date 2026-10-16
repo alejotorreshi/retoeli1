@@ -1,7 +1,7 @@
 import estilos from "@web/components/tarjeta-resultado.module.css";
 import { ESTADO_FIRMA } from "@web/config/constants/ui.constants.ts";
 import { TEXTO_RESULTADO } from "@web/config/strings.ts";
-import { contadoresDe, estadoDeFirma } from "@web/state/casos.ts";
+import { contadoresDe, estadoDeFirma } from "@web/features/casos/estado/casos.ts";
 import type { ContadorDeCaso, EstadoCampoUi, EstadoFirma } from "@web/types/chat.type.ts";
 import type { PropsBloqueosResultado, PropsTarjetaResultado } from "@web/types/ui.type.ts";
 import { useId } from "react";

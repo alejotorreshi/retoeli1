@@ -11,13 +11,13 @@ import {
   TOKENS_POR_MILES,
 } from "@web/config/constants/ui.constants.ts";
 import { TEXTO_CHAT, TEXTO_CONFIRMACION, TEXTO_ERROR, TEXTO_HERRAMIENTA } from "@web/config/strings.ts";
-import { casoDelPanel } from "@web/state/casos.ts";
+import { casoDelPanel } from "@web/features/casos/estado/casos.ts";
 import {
   casosAbiertosEnTurno,
   marcarEnviando,
   reducirConfirmaciones,
   soltarEnvios,
-} from "@web/state/confirmaciones.ts";
+} from "@web/features/confirmacion/estado/confirmaciones.ts";
 import type {
   AccionDeAviso,
   AccionEnviar,

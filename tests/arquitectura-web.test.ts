@@ -30,8 +30,6 @@ const SRC_DE_VALOR = /^@\/config\/(?:constants|types)\//;
 
 const SRC_DE_SOLO_TIPO = /^@\/http\/types\//;
 
-const CARPETA_DE_ESTADO = "web/src/state/";
-
 const NUCLEO_PURO_DEL_ALMACEN: ReadonlySet<string> = new Set([
   "web/src/store/almacen.ts",
   "web/src/store/raiz.ts",
@@ -62,14 +60,23 @@ const LONGITUD_EN_PX = /\b\d+(?:\.\d+)?px\b/;
 
 const KEBAB = "[a-z0-9]+(?:-[a-z0-9]+)*";
 
+const ESTADO_DE_FEATURE = new RegExp(`^web/src/features/${KEBAB}/estado/`);
+
+function carpetaDeComponente(raiz: string): RegExp {
+  return new RegExp(`^web/src/${raiz}/(${KEBAB})/(?:\\1\\.tsx|usar-\\1\\.ts|\\1\\.module\\.css)$`);
+}
+
 const UBICACIONES_WEB: readonly RegExp[] = [
   /^web\/src\/(?:main|app)\.tsx$/,
   /^web\/src\/config\/strings\.ts$/,
   new RegExp(`^web/src/config/constants/${KEBAB}\\.constants\\.ts$`),
   new RegExp(`^web/src/types/${KEBAB}\\.type\\.ts$`),
-  new RegExp(`^web/src/(?:api|state|hooks)/${KEBAB}\\.tsx?$`),
+  new RegExp(`^web/src/(?:api|hooks)/${KEBAB}\\.tsx?$`),
   new RegExp(`^web/src/store/${KEBAB}\\.ts$`),
   /^web\/src\/store\/proveedor-almacen\.tsx$/,
+  new RegExp(`^web/src/features/${KEBAB}/estado/${KEBAB}\\.ts$`),
+  carpetaDeComponente(`features/${KEBAB}`),
+  carpetaDeComponente("compartido"),
   new RegExp(`^web/src/components/(?:icons/)?${KEBAB}\\.(?:tsx|module\\.css)$`),
   new RegExp(`^web/src/styles/${KEBAB}\\.css$`),
 ];
@@ -132,7 +139,7 @@ function violacionesDeAliasSrc(ruta: string, codigo: string): string[] {
 }
 
 function esEstadoPuro(ruta: string): boolean {
-  return ruta.startsWith(CARPETA_DE_ESTADO) || NUCLEO_PURO_DEL_ALMACEN.has(ruta);
+  return ESTADO_DE_FEATURE.test(ruta) || NUCLEO_PURO_DEL_ALMACEN.has(ruta);
 }
 
 function violacionesDeEstado(ruta: string, codigo: string): string[] {

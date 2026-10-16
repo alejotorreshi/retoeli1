@@ -1,6 +1,6 @@
 import { ACCION_UI, ESTADO_HERRAMIENTA, RESULTADO_API } from "@web/config/constants/ui.constants.ts";
 import { TEXTO_CONFIRMACION, TEXTO_ERROR } from "@web/config/strings.ts";
-import { reducirConfirmaciones } from "@web/state/confirmaciones.ts";
+import { reducirConfirmaciones } from "@web/features/confirmacion/estado/confirmaciones.ts";
 import type {
   AccionUi,
   EstadoHidratado,

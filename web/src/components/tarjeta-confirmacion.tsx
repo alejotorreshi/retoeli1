@@ -6,7 +6,7 @@ import {
   TAMANO_ICONO,
 } from "@web/config/constants/ui.constants.ts";
 import { TEXTO_CONFIRMACION, TEXTO_RESULTADO } from "@web/config/strings.ts";
-import { estadoDeFirma, listoParaFirmaHasta } from "@web/state/casos.ts";
+import { estadoDeFirma, listoParaFirmaHasta } from "@web/features/casos/estado/casos.ts";
 import type { EstadoFirma, EstadoTarjetaConfirmacion, TipoAccion } from "@web/types/chat.type.ts";
 import type { PropsPilaConfirmaciones, PropsTarjetaConfirmacion } from "@web/types/ui.type.ts";
 import { useId } from "react";

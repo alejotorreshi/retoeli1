@@ -1,3 +1,4 @@
+import type { ACCION_DIALOGO_SESION, ACCION_SALUD } from "@web/config/constants/ui.constants.ts";
 import type {
   AccionUi,
   Despachar,
@@ -13,11 +14,31 @@ export type Almacen<E, A> = {
   readonly despachar: (accion: A) => void;
 };
 
-export type EstadoRaiz = {
-  readonly conversacion: EstadoConversacion;
+export type EstadoSalud = {
+  readonly salud: HealthResponse | null;
+  readonly comprobando: boolean;
 };
 
-export type AccionRaiz = AccionUi;
+export type AccionSalud =
+  | { readonly tipo: typeof ACCION_SALUD.COMPROBANDO }
+  | { readonly tipo: typeof ACCION_SALUD.RECIBIDA; readonly salud: HealthResponse }
+  | { readonly tipo: typeof ACCION_SALUD.TERMINADA };
+
+export type EstadoDialogoSesion = {
+  readonly abierto: boolean;
+};
+
+export type AccionDialogoSesion =
+  | { readonly tipo: typeof ACCION_DIALOGO_SESION.ABRIR }
+  | { readonly tipo: typeof ACCION_DIALOGO_SESION.CERRAR };
+
+export type EstadoRaiz = {
+  readonly conversacion: EstadoConversacion;
+  readonly salud: EstadoSalud;
+  readonly dialogoSesion: EstadoDialogoSesion;
+};
+
+export type AccionRaiz = AccionUi | AccionSalud | AccionDialogoSesion;
 
 export type AlmacenRaiz = Almacen<EstadoRaiz, AccionRaiz>;
 

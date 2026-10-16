@@ -3,7 +3,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { TONO, TONO_DEL_MODELO } from "@web/config/constants/ui.constants.ts";
 import { TEXTO_APP, TEXTO_CHAT, TEXTO_CONFIRMACION, TEXTO_MODELO } from "@web/config/strings.ts";
-import { envioEnPausa } from "@web/state/modelo.ts";
+import { envioEnPausa } from "@web/features/encabezado/estado/modelo.ts";
 import { CODIGO_AGENTE } from "@/config/constants/agent.constants.ts";
 import { ESTADO_LLM } from "@/config/constants/llm.constants.ts";
 import { MENSAJE_AGENTE } from "@/config/strings.ts";
@@ -145,9 +145,9 @@ const AVISO_MODELO = readFileSync(
 );
 
 describe("botón Comprobar de nuevo", () => {
-  test("el banner no importa el chat, la API ni el estado: solo recibe alComprobar", () => {
+  test("el banner no importa el chat, la API, el almacén ni el estado: solo recibe alComprobar", () => {
     const importaciones = AVISO_MODELO.split("\n").filter((linea) => linea.startsWith("import "));
-    for (const prohibido of ["@web/api/", "@web/hooks/", "@web/state/"]) {
+    for (const prohibido of ["@web/api/", "@web/hooks/", "@web/store/", "/estado/"]) {
       expect(importaciones.filter((linea) => linea.includes(prohibido))).toEqual([]);
     }
     expect(AVISO_MODELO).toContain("onClick={alComprobar}");

@@ -19,14 +19,19 @@ import {
   TECLA_PESTANA,
 } from "@web/config/constants/ui.constants.ts";
 import { TEXTO_APP, TEXTO_PESTANAS } from "@web/config/strings.ts";
+import { firmaDelProgreso, marcasDeArchivos, progresoPorCaso } from "@web/features/casos/estado/casos.ts";
+import {
+  etiquetaPensando,
+  eventosDelTurno,
+  faltaConfig,
+  usoDeSesion,
+} from "@web/features/chat/estado/conversacion.ts";
+import { envioEnPausa } from "@web/features/encabezado/estado/modelo.ts";
 import { useChat } from "@web/hooks/usar-chat.ts";
 import { useDiseno } from "@web/hooks/usar-diseno.ts";
 import { usePestanas } from "@web/hooks/usar-pestanas.ts";
 import { useReintentoConfig } from "@web/hooks/usar-reintento-config.ts";
 import { useSalud } from "@web/hooks/usar-salud.ts";
-import { firmaDelProgreso, marcasDeArchivos, progresoPorCaso } from "@web/state/casos.ts";
-import { etiquetaPensando, eventosDelTurno, faltaConfig, usoDeSesion } from "@web/state/conversacion.ts";
-import { envioEnPausa } from "@web/state/modelo.ts";
 import type { AccionDeAviso } from "@web/types/chat.type.ts";
 import type { ControlPestanas, IdsDePestanas, Pestana, PropsBarraDePestanas } from "@web/types/ui.type.ts";
 import { type HTMLAttributes, type KeyboardEvent, useEffect, useId, useRef, useState } from "react";

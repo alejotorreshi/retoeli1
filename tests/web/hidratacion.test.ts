@@ -10,15 +10,20 @@ import {
   RESULTADO_API,
 } from "@web/config/constants/ui.constants.ts";
 import { TEXTO_CONFIRMACION, TEXTO_ERROR } from "@web/config/strings.ts";
-import { progresoPorCaso, resultadosPorCaso } from "@web/state/casos.ts";
-import { tarjetasDelTurno } from "@web/state/confirmaciones.ts";
+import { progresoPorCaso, resultadosPorCaso } from "@web/features/casos/estado/casos.ts";
 import {
   estadoAlCargar,
   estadoInicialConversacion,
   reducirConversacion,
   sesionDelEvento,
-} from "@web/state/conversacion.ts";
-import { accionDeSesion, estadoDesdeVista, olvidaLaSesion, sigueOcupada } from "@web/state/hidratacion.ts";
+} from "@web/features/chat/estado/conversacion.ts";
+import { tarjetasDelTurno } from "@web/features/confirmacion/estado/confirmaciones.ts";
+import {
+  accionDeSesion,
+  estadoDesdeVista,
+  olvidaLaSesion,
+  sigueOcupada,
+} from "@web/features/sesion/estado/hidratacion.ts";
 import type {
   AccionUi,
   EstadoConversacion,

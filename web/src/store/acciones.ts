@@ -1,5 +1,5 @@
 import { ACCION_UI } from "@web/config/constants/ui.constants.ts";
-import { sesionDelEvento } from "@web/state/conversacion.ts";
+import { sesionDelEvento } from "@web/features/chat/estado/conversacion.ts";
 import type { AccionDeTarjeta, Despachar, EstadoConversacion } from "@web/types/chat.type.ts";
 import type { Acciones, AlmacenRaiz, Dependencias } from "@web/types/store.type.ts";
 

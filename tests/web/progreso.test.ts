@@ -7,14 +7,14 @@ import {
   ORDEN_ETAPAS,
 } from "@web/config/constants/ui.constants.ts";
 import { TEXTO_CHAT, TEXTO_HERRAMIENTA, TEXTO_PANEL, TEXTO_PROGRESO } from "@web/config/strings.ts";
-import { firmaDelProgreso, marcasDeArchivos, progresoPorCaso } from "@web/state/casos.ts";
+import { firmaDelProgreso, marcasDeArchivos, progresoPorCaso } from "@web/features/casos/estado/casos.ts";
 import {
   anuncioDeEstado,
   estadoInicialConversacion,
   etiquetaPensando,
   reducirConversacion,
-} from "@web/state/conversacion.ts";
-import { estadoDesdeVista } from "@web/state/hidratacion.ts";
+} from "@web/features/chat/estado/conversacion.ts";
+import { estadoDesdeVista } from "@web/features/sesion/estado/hidratacion.ts";
 import type {
   AccionUi,
   EstadoConversacion,

@@ -1,6 +1,6 @@
 import { ESTADO_VISTA_PREVIA, RESULTADO_API } from "@web/config/constants/ui.constants.ts";
 import { TEXTO_VISTA_PREVIA } from "@web/config/strings.ts";
-import { esArchivoNoEncontrado } from "@web/state/casos.ts";
+import { esArchivoNoEncontrado } from "@web/features/casos/estado/casos.ts";
 import type { EstadoVistaPrevia, ResultadoFallido } from "@web/types/chat.type.ts";
 
 function textoDelFallo(resultado: ResultadoFallido): string {

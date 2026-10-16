@@ -1,6 +1,6 @@
 import { obtenerConfig } from "@web/api/cliente-api.ts";
 import { REINTENTO_CONFIG_MS } from "@web/config/constants/ui.constants.ts";
-import { configResuelta } from "@web/state/conversacion.ts";
+import { configResuelta } from "@web/features/chat/estado/conversacion.ts";
 import type { ResultadoApi } from "@web/types/chat.type.ts";
 import { useEffect } from "react";
 import type { ConfigResponse } from "@/http/types/api.type.ts";

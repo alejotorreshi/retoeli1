@@ -2,8 +2,12 @@ import { afterEach, describe, expect, spyOn, test } from "bun:test";
 import { enviarMensaje } from "@web/api/flujo-chat.ts";
 import { ACCION_UI, ESTADO_TARJETA_CONFIRMACION } from "@web/config/constants/ui.constants.ts";
 import { TEXTO_CHAT, TEXTO_CONFIRMACION } from "@web/config/strings.ts";
-import { reducirConfirmaciones, tarjetasDelTurno } from "@web/state/confirmaciones.ts";
-import { anuncioDeEstado, estadoInicialConversacion, reducirConversacion } from "@web/state/conversacion.ts";
+import {
+  anuncioDeEstado,
+  estadoInicialConversacion,
+  reducirConversacion,
+} from "@web/features/chat/estado/conversacion.ts";
+import { reducirConfirmaciones, tarjetasDelTurno } from "@web/features/confirmacion/estado/confirmaciones.ts";
 import type {
   AccionDeTarjeta,
   AccionUi,

@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { DISTANCIA_PEGADO_AL_FINAL, SENAL_SEGUIMIENTO } from "@web/config/constants/ui.constants.ts";
-import { reducirSeguimiento, seguimientoInicial } from "@web/state/seguimiento.ts";
+import { reducirSeguimiento, seguimientoInicial } from "@web/features/chat/estado/seguimiento.ts";
 import type { EstadoSeguimiento, SenalSeguimiento } from "@web/types/ui.type.ts";
 
 const POSICION_DE_LECTURA = 1_000;

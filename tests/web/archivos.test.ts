@@ -17,13 +17,13 @@ import {
   RESULTADO_API,
 } from "@web/config/constants/ui.constants.ts";
 import { TEXTO_ARCHIVOS, TEXTO_DISCO, TEXTO_VISTA_PREVIA } from "@web/config/strings.ts";
+import { estadoDeVistaPreviaFallida } from "@web/features/archivos/estado/vista-previa.ts";
 import {
   archivosFaltantes,
   discoBorrado,
   esArchivoNoEncontrado,
   marcasDeArchivos,
-} from "@web/state/casos.ts";
-import { estadoDeVistaPreviaFallida } from "@web/state/vista-previa.ts";
+} from "@web/features/casos/estado/casos.ts";
 import type {
   ArchivoUi,
   EstadoEtapa,

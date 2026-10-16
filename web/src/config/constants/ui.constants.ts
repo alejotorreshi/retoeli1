@@ -24,6 +24,21 @@ export const ACCION_UI = {
   VOLVER_SESION_ANTERIOR: "volver_sesion_anterior",
 } as const;
 
+export const ACCION_SALUD = {
+  COMPROBANDO: "salud_comprobando",
+  RECIBIDA: "salud_recibida",
+  TERMINADA: "salud_terminada",
+} as const;
+
+export const ACCIONES_DE_SALUD: ReadonlySet<string> = new Set(Object.values(ACCION_SALUD));
+
+export const ACCION_DIALOGO_SESION = {
+  ABRIR: "dialogo_sesion_abrir",
+  CERRAR: "dialogo_sesion_cerrar",
+} as const;
+
+export const ACCIONES_DE_DIALOGO_SESION: ReadonlySet<string> = new Set(Object.values(ACCION_DIALOGO_SESION));
+
 export const ACCION_AVISO = {
   RECARGAR: "recargar",
   NUEVA_SESION: "nueva_sesion",

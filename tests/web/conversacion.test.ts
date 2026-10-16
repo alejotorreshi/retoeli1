@@ -17,7 +17,7 @@ import {
   reducirConversacion,
   sesionGuardadaTras,
   usoDeSesion,
-} from "@web/state/conversacion.ts";
+} from "@web/features/chat/estado/conversacion.ts";
 import type { AccionUi, EstadoConversacion, EstadoHidratado } from "@web/types/chat.type.ts";
 import { ACCION, CODIGO_AGENTE, MOTIVO_FIN, TIPO_EVENTO } from "@/config/constants/agent.constants.ts";
 import { TIPO_ACCION } from "@/config/constants/confirmation.constants.ts";

@@ -8,10 +8,10 @@ import { PilaConfirmaciones } from "@web/components/tarjeta-confirmacion.tsx";
 import { TarjetaResultado } from "@web/components/tarjeta-resultado.tsx";
 import { AVISO_SESION, CLASE_GLOBAL, SENAL_SEGUIMIENTO } from "@web/config/constants/ui.constants.ts";
 import { TEXTO_AVISO, TEXTO_CHAT } from "@web/config/strings.ts";
-import { resultadosDelTurno } from "@web/state/casos.ts";
-import { tarjetasDelTurno } from "@web/state/confirmaciones.ts";
-import { anuncioDeEstado } from "@web/state/conversacion.ts";
-import { reducirSeguimiento, seguimientoInicial } from "@web/state/seguimiento.ts";
+import { resultadosDelTurno } from "@web/features/casos/estado/casos.ts";
+import { anuncioDeEstado } from "@web/features/chat/estado/conversacion.ts";
+import { reducirSeguimiento, seguimientoInicial } from "@web/features/chat/estado/seguimiento.ts";
+import { tarjetasDelTurno } from "@web/features/confirmacion/estado/confirmaciones.ts";
 import type {
   PropsAvisoInicial,
   PropsCuerpoLinea,

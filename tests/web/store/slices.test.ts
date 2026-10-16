@@ -7,9 +7,9 @@ import {
   ACCIONES_DE_SALUD,
 } from "@web/config/constants/ui.constants.ts";
 import { estadoInicialConversacion } from "@web/features/chat/estado/conversacion.ts";
-import { estadoInicialSalud, reducirSalud } from "@web/features/encabezado/estado/salud.ts";
+import { estadoSaludInicial, reducirSalud } from "@web/features/encabezado/estado/salud.ts";
 import {
-  estadoInicialDialogoSesion,
+  estadoDialogoSesionInicial,
   reducirDialogoSesion,
 } from "@web/features/sesion/estado/dialogo-sesion.ts";
 import { estadoRaizInicial, reducirRaiz } from "@web/store/raiz.ts";
@@ -26,18 +26,18 @@ const SALUD: HealthResponse = {
 
 describe("slice salud", () => {
   test("arranca sin respuesta y sin comprobación en curso", () => {
-    expect(estadoInicialSalud).toEqual({ salud: null, comprobando: false });
+    expect(estadoSaludInicial).toEqual({ salud: null, comprobando: false });
   });
 
   test("COMPROBANDO marca la comprobación en curso", () => {
-    expect(reducirSalud(estadoInicialSalud, { tipo: ACCION_SALUD.COMPROBANDO })).toEqual({
+    expect(reducirSalud(estadoSaludInicial, { tipo: ACCION_SALUD.COMPROBANDO })).toEqual({
       salud: null,
       comprobando: true,
     });
   });
 
   test("RECIBIDA guarda la respuesta de health sin tocar comprobando", () => {
-    const comprobando = reducirSalud(estadoInicialSalud, { tipo: ACCION_SALUD.COMPROBANDO });
+    const comprobando = reducirSalud(estadoSaludInicial, { tipo: ACCION_SALUD.COMPROBANDO });
     expect(reducirSalud(comprobando, { tipo: ACCION_SALUD.RECIBIDA, salud: SALUD })).toEqual({
       salud: SALUD,
       comprobando: true,
@@ -56,26 +56,26 @@ describe("slice salud", () => {
   });
 
   test("una acción que no cambia nada devuelve la misma referencia", () => {
-    expect(reducirSalud(estadoInicialSalud, { tipo: ACCION_SALUD.TERMINADA })).toBe(estadoInicialSalud);
-    const comprobando = reducirSalud(estadoInicialSalud, { tipo: ACCION_SALUD.COMPROBANDO });
+    expect(reducirSalud(estadoSaludInicial, { tipo: ACCION_SALUD.TERMINADA })).toBe(estadoSaludInicial);
+    const comprobando = reducirSalud(estadoSaludInicial, { tipo: ACCION_SALUD.COMPROBANDO });
     expect(reducirSalud(comprobando, { tipo: ACCION_SALUD.COMPROBANDO })).toBe(comprobando);
   });
 });
 
 describe("slice dialogoSesion", () => {
   test("arranca cerrado", () => {
-    expect(estadoInicialDialogoSesion).toEqual({ abierto: false });
+    expect(estadoDialogoSesionInicial).toEqual({ abierto: false });
   });
 
   test("ABRIR lo abre y CERRAR lo cierra", () => {
-    const abierto = reducirDialogoSesion(estadoInicialDialogoSesion, { tipo: ACCION_DIALOGO_SESION.ABRIR });
+    const abierto = reducirDialogoSesion(estadoDialogoSesionInicial, { tipo: ACCION_DIALOGO_SESION.ABRIR });
     expect(abierto).toEqual({ abierto: true });
     expect(reducirDialogoSesion(abierto, { tipo: ACCION_DIALOGO_SESION.CERRAR })).toEqual({ abierto: false });
   });
 
   test("CERRAR sobre un diálogo cerrado devuelve la misma referencia", () => {
-    expect(reducirDialogoSesion(estadoInicialDialogoSesion, { tipo: ACCION_DIALOGO_SESION.CERRAR })).toBe(
-      estadoInicialDialogoSesion,
+    expect(reducirDialogoSesion(estadoDialogoSesionInicial, { tipo: ACCION_DIALOGO_SESION.CERRAR })).toBe(
+      estadoDialogoSesionInicial,
     );
   });
 });
@@ -92,8 +92,8 @@ describe("reducirRaiz", () => {
   test("el estado inicial combina la conversación, la salud y el diálogo cerrado", () => {
     expect(estadoRaizInicial(null)).toEqual({
       conversacion: estadoInicialConversacion,
-      salud: estadoInicialSalud,
-      dialogoSesion: estadoInicialDialogoSesion,
+      salud: estadoSaludInicial,
+      dialogoSesion: estadoDialogoSesionInicial,
     });
   });
 

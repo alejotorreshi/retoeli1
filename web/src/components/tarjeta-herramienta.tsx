@@ -2,7 +2,7 @@ import { IconoCheck, IconoChevron, IconoGirando, IconoReloj, IconoX } from "@web
 import estilos from "@web/components/tarjeta-herramienta.module.css";
 import { ESTADO_HERRAMIENTA } from "@web/config/constants/ui.constants.ts";
 import { TEXTO_HERRAMIENTA } from "@web/config/strings.ts";
-import { argumentosLegibles } from "@web/state/conversacion.ts";
+import { argumentosLegibles } from "@web/features/chat/estado/conversacion.ts";
 import type { EstadoHerramienta } from "@web/types/chat.type.ts";
 import type { PropsIconoDeEstado, PropsTarjetaHerramienta } from "@web/types/ui.type.ts";
 

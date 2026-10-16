@@ -6,7 +6,12 @@ import {
   MAXIMO_TARJETAS_ABIERTAS,
 } from "@web/config/constants/ui.constants.ts";
 import { TEXTO_CHAT, TEXTO_HERRAMIENTA, TEXTO_RESULTADO } from "@web/config/strings.ts";
-import { contadoresDe, estadoDeFirma, resultadosDelTurno, resultadosPorCaso } from "@web/state/casos.ts";
+import {
+  contadoresDe,
+  estadoDeFirma,
+  resultadosDelTurno,
+  resultadosPorCaso,
+} from "@web/features/casos/estado/casos.ts";
 import {
   anuncioDeEstado,
   argumentosLegibles,
@@ -17,7 +22,7 @@ import {
   llamadaEnCurso,
   reducirConversacion,
   resumenDeLlamadas,
-} from "@web/state/conversacion.ts";
+} from "@web/features/chat/estado/conversacion.ts";
 import type { AccionUi, EstadoConversacion, ResultadoVisibleUi } from "@web/types/chat.type.ts";
 import { MOTIVO_FIN, TIPO_EVENTO } from "@/config/constants/agent.constants.ts";
 import { CODIGO_ERROR } from "@/config/constants/errors.constants.ts";
