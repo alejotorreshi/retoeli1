@@ -271,10 +271,11 @@ const NOMBRES_CON_ROL: readonly RegExp[] = [
   new RegExp(`^src/infra/${KEBAB}/(?:${KEBAB}/)*${KEBAB}\\.(?:adapter|util)\\.ts$`),
   new RegExp(`^tests/unit/${KEBAB}\\.(?:${ROLES_DE_PRUEBA})\\.test\\.ts$`),
   new RegExp(`^tests/(?!unit/)(?:${KEBAB}/)*${KEBAB}\\.test\\.ts$`),
+  new RegExp(`^tests/(?!unit/)(?:${KEBAB}/)*${KEBAB}\\.test\\.tsx$`),
   new RegExp(`^tests/helpers/${KEBAB}\\.helper\\.ts$`),
 ];
 
-const SUELTO_EN_CAPA = /^src\/(?:[^/]+\/)?[^/]+\.ts$/;
+const SUELTO_EN_CAPA = /^src\/(?:[^/]+\/)?[^/]+\.tsx?$/;
 
 const SUELTOS_PERMITIDOS: ReadonlySet<string> = new Set([
   "src/tools/proveedor.ts",
@@ -513,7 +514,7 @@ function violacionesDeShell(ruta: string, codigo: string): string[] {
 function escanearCarpetas(carpetas: readonly string[]): string[] {
   return carpetas
     .filter((carpeta) => existsSync(join(RAIZ, carpeta)))
-    .flatMap((carpeta) => [...new Bun.Glob(`${carpeta}/**/*.ts`).scanSync({ cwd: RAIZ })]);
+    .flatMap((carpeta) => [...new Bun.Glob(`${carpeta}/**/*.{ts,tsx}`).scanSync({ cwd: RAIZ })]);
 }
 
 function listarFuentes(): string[] {
