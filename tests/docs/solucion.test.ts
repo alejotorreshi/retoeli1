@@ -1,7 +1,12 @@
 import { describe, expect, test } from "bun:test";
 import { join } from "node:path";
 import { casosEn, clavesLlm, formatoUsd, fugasDeEvidencia } from "@tests/helpers/costo.helper.ts";
-import { enlacesRelativos, enlacesRotos, leerDocumento } from "@tests/helpers/documentos.helper.ts";
+import {
+  asignacionesSecretas,
+  enlacesRelativos,
+  enlacesRotos,
+  leerDocumento,
+} from "@tests/helpers/documentos.helper.ts";
 import { sensiblesDelProyecto } from "@tests/helpers/pii.helper.ts";
 import type { CostoAcumulado, EvidenciaCosto } from "@tests/helpers/types/costo.type.ts";
 import { ESTADO_EVIDENCIA_COSTO, RUTA_EVIDENCIA_COSTO } from "@/config/constants/costo.constants.ts";
@@ -202,6 +207,7 @@ describe(`${SOLUCION} (DOC-02, PRD §9.1)`, () => {
     const sensibles = await sensiblesDelProyecto(RAIZ);
     expect(texto.length).toBeGreaterThan(0);
     expect(MODELOS_RETIRADOS.filter((modelo) => texto.includes(modelo))).toEqual([]);
+    expect(asignacionesSecretas(texto)).toEqual([]);
     expect(fugasDeEvidencia(texto, sensibles, clavesLlm(process.env))).toEqual([]);
   });
 });

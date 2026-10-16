@@ -1,7 +1,13 @@
 import { describe, expect, test } from "bun:test";
 import { join } from "node:path";
 import { clavesLlm, fugasDeEvidencia } from "@tests/helpers/costo.helper.ts";
-import { enlacesRelativos, enlacesRotos, leerDocumento } from "@tests/helpers/documentos.helper.ts";
+import {
+  asignacionesSecretas,
+  documentosMarkdown,
+  enlacesRelativos,
+  enlacesRotos,
+  leerDocumento,
+} from "@tests/helpers/documentos.helper.ts";
 import { sensiblesDelProyecto } from "@tests/helpers/pii.helper.ts";
 import { TIPO_EVENTO } from "@/config/constants/agent.constants.ts";
 import { ESTADO_EVIDENCIA_COSTO, RUTA_EVIDENCIA_COSTO } from "@/config/constants/costo.constants.ts";
@@ -12,12 +18,13 @@ const README = "README.md";
 const ENTREGA = "docs/entrega.md";
 const SOLUCION = "SOLUCION.md";
 const ENV_EJEMPLO = ".env.example";
+const CARPETA_DOCS = "docs";
+const README_MODULO = "modulo/README.md";
 const WORKFLOW_CI = "https://github.com/alejotorreshi/retoeli1/actions/workflows/ci.yml";
 const BADGE_CI = `${WORKFLOW_CI}/badge.svg?branch=main`;
 const URL_RENDER = "https://registro-proveedor-bfnt.onrender.com";
 const MARCADOR_CODIGO = "__CODIGO_ACCESO__";
 const MODELOS_RETIRADOS = ["deepseek-chat", "deepseek-reasoner"];
-const VARIABLES_SECRETAS = ["LLM_API_KEY", "DEEPSEEK_API_KEY", "ACCESS_TOKEN_SECRET"];
 const PATRON_LINEA_CODIGO = /^Código de acceso: `([^`]+)`/m;
 const PATRON_VARIABLE_ENV = /^([A-Z][A-Z0-9_]*)=/gm;
 const PATRON_TAREA = /^- \[[ x]\] /m;
@@ -76,15 +83,6 @@ function primeraLineaConTexto(texto: string): string {
 function variablesDeEnvEjemplo(): string[] {
   return [...leer(ENV_EJEMPLO).matchAll(PATRON_VARIABLE_ENV)].flatMap((coincidencia) =>
     coincidencia[1] === undefined ? [] : [coincidencia[1]],
-  );
-}
-
-function asignacionesSecretas(texto: string): string[] {
-  return texto.split("\n").filter((linea) =>
-    VARIABLES_SECRETAS.some((variable) => {
-      const resto = linea.trim().startsWith(`${variable}=`) ? linea.trim().slice(variable.length + 1) : "";
-      return resto.trim() !== "";
-    }),
   );
 }
 
@@ -183,7 +181,7 @@ describe("enlaces y secretos de la documentación de entrega", () => {
     expect(enlacesRotos(RAIZ, archivo, [SOLUCION])).toEqual([]);
   });
 
-  test.each([README, ENTREGA])(
+  test.each([README, ...documentosMarkdown(RAIZ, CARPETA_DOCS), README_MODULO])(
     "%s no trae modelos retirados, claves, secretos ni datos del maestro",
     async (archivo) => {
       const texto = leer(archivo);
