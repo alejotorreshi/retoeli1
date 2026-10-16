@@ -139,6 +139,7 @@
 
 :global([data-diseno="angosto"]) .marca {
   flex-basis: 100%;
+  gap: 0 var(--espacio-sm);
 }
 
 :global([data-diseno="angosto"]) .titulo {
