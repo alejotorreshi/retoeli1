@@ -38,7 +38,6 @@ const RESPUESTA = "Listo: ec-corp-andina quedó mapeado y faltan dos soportes.";
 const RESPUESTA_TARDIA = "Este texto llegó después de detener el turno.";
 const CASO_CONFIRMADO = "ec-corp-andina";
 const BLOQUEO = "Certificado bancario vencido";
-const PAUSA_TRAS_SOLTAR_MS = 30;
 const MENSAJE_DE_ERROR = "El proveedor tardó demasiado en responder. Intenta de nuevo.";
 
 const dom = await prepararDom({ ancho: ANCHO_ESCRITORIO });
@@ -128,10 +127,7 @@ describe("App en escritorio, con la red simulada en fetch", () => {
     const pensando = await pantalla.findByText(TEXTO_CHAT.pensando);
     expect(linea.contains(pensando)).toBe(true);
     expect(pensando.closest("[role='status']")).not.toBeNull();
-    await dom.act(async () => {
-      red.soltar();
-      await Bun.sleep(PAUSA_TRAS_SOLTAR_MS);
-    });
+    await dom.act(async () => red.soltar());
     expect(await pantalla.findByText(RESPUESTA)).toBeDefined();
     expect(pantalla.queryByText(TEXTO_CHAT.pensando)).toBeNull();
   });
@@ -168,10 +164,7 @@ describe("App en escritorio, con la red simulada en fetch", () => {
     ]);
     expect(TEXTO_ACCIONES.mensajeDemoDe("ec-corp-andina")).toBe(TEXTO_ACCIONES.mensajeDemo);
     expect(pantalla.queryAllByRole("button", { name: esTarjetaDeCaso }).some(habilitado)).toBe(false);
-    await dom.act(async () => {
-      red.soltar();
-      await Bun.sleep(PAUSA_TRAS_SOLTAR_MS);
-    });
+    await dom.act(async () => red.soltar());
     expect(await pantalla.findByText(RESPUESTA)).toBeDefined();
     expect(red.pedidosA(RUTA_API.CHAT, METODO_POST)).toHaveLength(1);
   });
@@ -238,7 +231,6 @@ describe("App en escritorio, con la red simulada en fetch", () => {
     red.fijarConfigDisponible(true);
     await dom.act(async () => {
       document.dispatchEvent(new Event(EVENTO_VISIBILIDAD));
-      await Bun.sleep(PAUSA_TRAS_SOLTAR_MS);
     });
 
     expect(await pantalla.findByRole("button", { name: TARJETA_DEMO })).toBeDefined();
@@ -267,10 +259,7 @@ describe("App en escritorio, con la red simulada en fetch", () => {
       expect(document.activeElement).toBe(
         pantalla.getByRole("textbox", { name: TEXTO_CHAT.etiquetaMensaje }),
       );
-      await dom.act(async () => {
-        red.soltar();
-        await Bun.sleep(PAUSA_TRAS_SOLTAR_MS);
-      });
+      await dom.act(async () => red.soltar());
       expect(await pantalla.findByText(RESPUESTA)).toBeDefined();
     });
   }
@@ -320,10 +309,7 @@ describe("App en escritorio, con la red simulada en fetch", () => {
     expect(red.pedidosA(RUTA_API.CHAT, METODO_POST)).toHaveLength(1);
 
     await usuario.click(detener);
-    await dom.act(async () => {
-      red.soltar();
-      await Bun.sleep(PAUSA_TRAS_SOLTAR_MS);
-    });
+    await dom.act(async () => red.soltar());
 
     expect(pantalla.queryByText(RESPUESTA_TARDIA)).toBeNull();
     const enviar = await pantalla.findByRole("button", { name: TEXTO_CHAT.enviar });
