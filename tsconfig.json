@@ -21,8 +21,9 @@
     "paths": {
       "@/*": ["./src/*"],
       "@tests/*": ["./tests/*"],
-      "@web/*": ["./web/src/*"]
+      "@web/*": ["./web/src/*"],
+      "@modulo/*": ["./modulo/*"]
     }
   },
-  "include": ["src", "tests", "modulo", "demo.ts"]
+  "include": ["src", "tests", "modulo", ".opencode/**/*.ts", "demo.ts"]
 }

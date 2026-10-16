@@ -60,6 +60,8 @@ import * as STRINGS from "@/config/strings.ts";
 
 const RAIZ = join(import.meta.dir, "..");
 
+const DIRECTORIO_OPENCODE = ".opencode";
+
 const HERRAMIENTAS_DEL_MODULO = "modulo/tools/proveedor.ts";
 
 const ENLACE_OPENCODE = ".opencode/tools/proveedor.ts";
@@ -128,6 +130,7 @@ const PERMITIDOS: Readonly<Record<string, readonly string[]>> = {
   servidor: ["wiring-http", "node"],
   cli: DESTINOS_CLI,
   modulo: ["proveedor"],
+  opencode: ["modulo"],
 };
 
 const CONFIG_PURA = /^src\/config\/(?:constants\/.+|types\/.+|strings)$/;
@@ -253,6 +256,7 @@ const NOMBRES_CON_ROL: readonly RegExp[] = [
   /^demo\.ts$/,
   /^src\/tools\/proveedor\.ts$/,
   /^modulo\/tools\/proveedor\.ts$/,
+  /^\.opencode\/tools\/proveedor\.ts$/,
   /^src\/config\/(?:strings|env)\.ts$/,
   /^src\/server\.ts$/,
   new RegExp(`^src/config/constants/${KEBAB}\\.constants\\.ts$`),
@@ -328,6 +332,7 @@ function capaDeRuta(ruta: string): string {
   if (base === "src/tools/proveedor") return "proveedor";
   if (base.startsWith("tests/")) return "tests";
   if (base.startsWith(`${DIRECTORIO_MODULO}/`)) return "modulo";
+  if (base.startsWith(`${DIRECTORIO_OPENCODE}/`)) return "opencode";
   if (CONFIG_PURA.test(base)) return "config-pure";
   if (base === "src/config/env") return "config-env";
   const capa = /^src\/(domain|application|infra|tools|demo|llm|loop|http|cli)\//.exec(base)?.[1];
@@ -338,6 +343,7 @@ const ALIAS: readonly (readonly [string, string])[] = [
   ["@/", "src/"],
   ["@tests/", "tests/"],
   ["@web/", "web/src/"],
+  ["@modulo/", `${DIRECTORIO_MODULO}/`],
 ];
 
 function rutaLocal(origen: string, especificador: string): string | null {
@@ -511,7 +517,7 @@ function escanearCarpetas(carpetas: readonly string[]): string[] {
 }
 
 function listarFuentes(): string[] {
-  const rutas = escanearCarpetas(["src", DIRECTORIO_MODULO]);
+  const rutas = escanearCarpetas(["src", DIRECTORIO_MODULO, DIRECTORIO_OPENCODE]);
   if (existsSync(join(RAIZ, "demo.ts"))) rutas.push("demo.ts");
   return rutas.map((ruta) => ruta.split("\\").join("/")).sort();
 }
@@ -569,7 +575,7 @@ function dependenciasLocales(ruta: string, codigo: string): string[] {
 }
 
 function listarTodasLasFuentes(): string[] {
-  const rutas = escanearCarpetas(["src", "tests", DIRECTORIO_MODULO]);
+  const rutas = escanearCarpetas(["src", "tests", DIRECTORIO_MODULO, DIRECTORIO_OPENCODE]);
   if (existsSync(join(RAIZ, "demo.ts"))) rutas.push("demo.ts");
   return rutas.map((ruta) => ruta.split("\\").join("/")).sort();
 }

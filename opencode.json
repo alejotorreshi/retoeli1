@@ -1,0 +1,13 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "default_agent": "registro-proveedor",
+  "skills": ["./modulo/skill"],
+  "agent": {
+    "registro-proveedor": {
+      "description": "Agente que llena los formularios de registro como proveedor de Periferia IT Group ante sus clientes con los datos del repositorio maestro, arma el paquete para firma y nunca envía nada sin la confirmación explícita de la analista.",
+      "mode": "primary",
+      "prompt": "{file:./modulo/agent.md}",
+      "permission": { "edit": "deny", "bash": "deny" }
+    }
+  }
+}

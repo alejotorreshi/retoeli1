@@ -109,6 +109,20 @@ Reglas del guardián para `modulo/`:
 - `tsconfig.json` incluye `modulo`, así que `tsc` lo comprueba, y `tests/sin-comentarios.test.ts` también lo recorre.
 - Ninguna capa de `src/` importa `modulo/`.
 
+### Enlace de OpenCode (`.opencode/` y `opencode.json`)
+
+OpenCode solo carga herramientas desde `.opencode/tools/` y agentes en markdown desde `.opencode/agents/`, así que el repo agrega dos archivos que apuntan a `modulo/` sin duplicarlo:
+
+| Archivo | Qué hace | Qué lo prueba |
+|---|---|---|
+| `.opencode/tools/proveedor.ts` | Reexporta con nombre las cinco herramientas de `@modulo/tools/proveedor.ts`. OpenCode nombra cada export `<archivo>_<export>`, así que expone los mismos `proveedor_<export>` que el servidor. | `tests/modulo/herramientas.test.ts`: misma referencia que la app, importación con el entorno vacío y nombres iguales a `NOMBRE_VISIBLE`. |
+| `opencode.json` | Declara `$schema`, `default_agent: "registro-proveedor"`, `skills: ["./modulo/skill"]` y el agente `registro-proveedor` con `prompt` `{file:./modulo/agent.md}` y la misma descripción, el mismo modo y los mismos permisos que el frontmatter de `modulo/agent.md`. | `tests/modulo/opencode.test.ts`: esquema estricto, igualdad con el frontmatter y con `TEXTO_MODULO.descripcionAgente`, y existencia de cada ruta. |
+
+- `.opencode/tools/proveedor.ts` es la capa `opencode` del guardián: solo puede importar `@modulo/…`. Un import directo de `@/tools/proveedor.ts` se reporta, así que `.opencode/` nunca se salta `modulo/`.
+- El alias `@modulo/*` → `./modulo/*` vive en `tsconfig.json` y en la tabla de alias del guardián. Solo lo usa `.opencode/`.
+- `tsconfig.json` incluye `.opencode/**/*.ts` con el glob explícito, porque `tsc` ignora una carpeta que empieza con punto si se nombra sola. El guardián y `tests/sin-comentarios.test.ts` la recorren con su propio patrón `.opencode/**/*.ts`.
+- `modulo/README.md` explica cómo montar el módulo y sus límites: fuera del servidor nadie escribe la pregunta de confirmación (D-80), y el formato se verificó contra la documentación de OpenCode sin ensayarlo en vivo (D-83).
+
 ## Front web (`web/`)
 
 El chat del navegador vive en `web/` (Vite + React) y tiene su propio guardián, `tests/arquitectura-web.test.ts` (W1–W13), con una prueba de violación por regla. `tests/sin-comentarios.test.ts` también recorre `web/**/*.{ts,tsx,css}` y `web/index.html`, sin contar `web/dist`.
