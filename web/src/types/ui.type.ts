@@ -8,6 +8,7 @@ import type {
   TIPO_CAMPO_CODIGO,
   TONO,
   TONO_CONTADOR,
+  TONO_DEL_MODELO,
 } from "@web/config/constants/ui.constants.ts";
 import type {
   AccionDeAviso,
@@ -51,6 +52,8 @@ export type TamanoIcono = ValorDe<typeof TAMANO_ICONO>;
 export type PropsIcono = {
   readonly tamano?: TamanoIcono;
 };
+
+export type ComponenteIcono = (props: PropsIcono) => ReactNode;
 
 export type PropsSvgIcono = {
   readonly tamano: TamanoIcono;
@@ -283,6 +286,8 @@ export type ControlDialogoNuevaSesion = {
 export type Tono = ValorDe<typeof TONO>;
 
 export type EstadoModeloConAviso = Exclude<EstadoModelo, typeof ESTADO_LLM.DISPONIBLE>;
+
+export type TonoDelAvisoModelo = (typeof TONO_DEL_MODELO)[EstadoModeloConAviso];
 
 export type PartesAvisoModelo = {
   readonly titulo: string;

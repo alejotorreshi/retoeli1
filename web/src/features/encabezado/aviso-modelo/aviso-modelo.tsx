@@ -3,12 +3,12 @@ import { TAMANO_ICONO, TONO, TONO_DEL_MODELO } from "@web/config/constants/ui.co
 import { TEXTO_MODELO } from "@web/config/strings.ts";
 import estilos from "@web/features/encabezado/aviso-modelo/aviso-modelo.module.css";
 import { useAvisoModelo } from "@web/features/encabezado/aviso-modelo/usar-aviso-modelo.ts";
-import type { PropsCuerpoAvisoModelo } from "@web/types/ui.type.ts";
+import type { PropsCuerpoAvisoModelo, TonoDelAvisoModelo } from "@web/types/ui.type.ts";
 
 const CLASE_DE_TONO = {
   [TONO.ATENCION]: estilos.atencion,
   [TONO.ERROR]: estilos.error,
-} as const;
+} as const satisfies Record<TonoDelAvisoModelo, string | undefined>;
 
 function CuerpoAvisoModelo({ estado, zona, comprobando, alComprobar }: PropsCuerpoAvisoModelo) {
   const partes = TEXTO_MODELO.aviso(estado, zona);

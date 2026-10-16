@@ -10,7 +10,7 @@ import { TEXTO_HERRAMIENTA } from "@web/config/strings.ts";
 import estilos from "@web/features/herramientas/tarjeta-herramienta/tarjeta-herramienta.module.css";
 import { controlTarjetaHerramienta } from "@web/features/herramientas/tarjeta-herramienta/usar-tarjeta-herramienta.ts";
 import type { EstadoHerramienta } from "@web/types/chat.type.ts";
-import type { PropsIconoDeEstado, PropsTarjetaHerramienta } from "@web/types/ui.type.ts";
+import type { ComponenteIcono, PropsIconoDeEstado, PropsTarjetaHerramienta } from "@web/types/ui.type.ts";
 
 const CLASE_DE_ESTADO = {
   [ESTADO_HERRAMIENTA.EN_CURSO]: estilos.enCurso,
@@ -18,32 +18,32 @@ const CLASE_DE_ESTADO = {
   [ESTADO_HERRAMIENTA.ERROR]: estilos.error,
 } as const satisfies Record<EstadoHerramienta, string | undefined>;
 
+function IconoHerramientaEnCurso() {
+  return (
+    <>
+      <span className={estilos.giro}>
+        <IconoGirando />
+      </span>
+      <span className={estilos.quieto}>
+        <IconoReloj />
+      </span>
+    </>
+  );
+}
+
+const ICONO_DE_ESTADO = {
+  [ESTADO_HERRAMIENTA.EN_CURSO]: IconoHerramientaEnCurso,
+  [ESTADO_HERRAMIENTA.CORRECTA]: IconoCheck,
+  [ESTADO_HERRAMIENTA.ERROR]: IconoX,
+} as const satisfies Record<EstadoHerramienta, ComponenteIcono>;
+
 function IconoDeEstado({ estado }: PropsIconoDeEstado) {
-  switch (estado) {
-    case ESTADO_HERRAMIENTA.EN_CURSO:
-      return (
-        <span className={`${estilos.icono} ${estilos.enCurso}`}>
-          <span className={estilos.giro}>
-            <IconoGirando />
-          </span>
-          <span className={estilos.quieto}>
-            <IconoReloj />
-          </span>
-        </span>
-      );
-    case ESTADO_HERRAMIENTA.CORRECTA:
-      return (
-        <span className={`${estilos.icono} ${estilos.correcta}`}>
-          <IconoCheck />
-        </span>
-      );
-    default:
-      return (
-        <span className={`${estilos.icono} ${estilos.error}`}>
-          <IconoX />
-        </span>
-      );
-  }
+  const Icono = ICONO_DE_ESTADO[estado];
+  return (
+    <span className={`${estilos.icono} ${CLASE_DE_ESTADO[estado]}`}>
+      <Icono />
+    </span>
+  );
 }
 
 export function TarjetaHerramienta({ llamada }: PropsTarjetaHerramienta) {
