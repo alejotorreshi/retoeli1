@@ -4,6 +4,7 @@ import { join } from "node:path";
 import { z } from "zod";
 import { FECHA_DEMO } from "@/config/constants/demo.constants.ts";
 import {
+  DISPARADOR_DESPLIEGUE_RENDER,
   ENTORNO_APP,
   RUTA_API,
   SALTOS_PROXY_RENDER,
@@ -67,7 +68,7 @@ const servicioRender = z.object({
   plan: z.string(),
   dockerfilePath: z.string(),
   healthCheckPath: z.string(),
-  autoDeploy: z.boolean(),
+  autoDeployTrigger: z.string(),
   envVars: z.array(variableRender),
 });
 
@@ -120,6 +121,13 @@ function origenesCopiados(etapa: Etapa): string[] {
 function blueprint(): z.output<typeof blueprintRender> {
   const leido = blueprintRender.safeParse(Bun.YAML.parse(leer("render.yaml")));
   return leido.success ? leido.data : { services: [] };
+}
+
+function servicioSinValidar(): object {
+  const leido = z
+    .object({ services: z.array(z.looseObject({})) })
+    .safeParse(Bun.YAML.parse(leer("render.yaml")));
+  return leido.success ? (leido.data.services[0] ?? {}) : {};
 }
 
 function nombresDeEnvExample(): string[] {
@@ -252,8 +260,13 @@ describe("render.yaml (DEP-02)", () => {
       plan: "free",
       dockerfilePath: "./Dockerfile",
       healthCheckPath: RUTA_API.SALUD,
-      autoDeploy: true,
+      autoDeployTrigger: DISPARADOR_DESPLIEGUE_RENDER,
     });
+  });
+
+  test("despliega solo cuando pasan los checks de la CI y ya no lleva el campo booleano obsoleto (D-91)", () => {
+    expect(servicio?.autoDeployTrigger).toBe(DISPARADOR_DESPLIEGUE_RENDER);
+    expect(Object.hasOwn(servicioSinValidar(), "autoDeploy")).toBe(false);
   });
 
   test("fija la fecha de ejecución, la zona, el entorno, el nivel de log, los saltos del proxy y el tope de sesiones nuevas", () => {
