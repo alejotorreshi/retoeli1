@@ -48,7 +48,7 @@ Direcciones permitidas:
 - `loop` importa `loop`, `llm`, dominio, aplicación, los tipos de las herramientas, la config pura y zod. Nunca importa infra, `config/env.ts` ni `tools/proveedor.ts`: el módulo de herramientas le llega inyectado.
 - `loop/wiring/agente.wiring.ts` es el segundo composition root. Además de lo anterior puede importar infra, `config/env.ts` y `tools/proveedor.ts`. Cualquier otro archivo de `loop/wiring/` sigue las reglas de `loop`.
 - pino solo se importa desde infra.
-- `config/env.ts` lo importan infra, tools, demo, `loop/wiring/agente.wiring.ts` y `http/wiring/server.wiring.ts`.
+- `config/env.ts` lo importan infra, tools, demo, `cli`, `loop/wiring/agente.wiring.ts` y `http/wiring/server.wiring.ts`.
 
 ## Capa HTTP
 
@@ -80,9 +80,9 @@ Los comandos de línea de comandos viven en la capa `cli`. El guardián de capas
 
 | Carpeta | Sufijo | Rol |
 |---|---|---|
-| `cli/runners/` | `.runner.ts` | Un comando por archivo, con funciones exportadas que se prueban sin proceso y la entrada del comando bajo `import.meta.main`: el generador de `modulo/` que corre `bun run modulo` (`generar-modulo`). Lee los bytes crudos de `agent/prompt.md` y del conocimiento del proceso, les antepone el frontmatter de OpenCode con el builder `modulo` y escribe `modulo/agent.md` y `modulo/skill/registro-proveedor/SKILL.md`. Se niega a correr fuera de la raíz del proyecto y, si una fuente falta o está vacía, sale con código 1 sin escribir nada. `tests/modulo/generador.test.ts` compara byte a byte lo commiteado con su salida, así que editar el prompt o el conocimiento sin regenerar hace fallar la CI. |
-| `cli/schemas/` | `.schema.ts` | Validación zod de lo que un comando lee de afuera, con `satisfies z.ZodType<T>`. |
-| `cli/types/` | `.type.ts` | Solo tipos, con `import type` (`modulo`: `ArchivoModulo`, `LecturaModulo`, `OpcionesGeneracion` y `ResultadoGeneracion`). |
+| `cli/runners/` | `.runner.ts` | Un comando por archivo, con funciones exportadas que se prueban sin proceso y la entrada del comando bajo `import.meta.main`: el generador de `modulo/` que corre `bun run modulo` (`generar-modulo`). Lee los bytes crudos de `agent/prompt.md` y del conocimiento del proceso, les antepone el frontmatter de OpenCode con el builder `modulo` y escribe `modulo/agent.md` y `modulo/skill/registro-proveedor/SKILL.md`. Se niega a correr fuera de la raíz del proyecto y, si una fuente falta o está vacía, sale con código 1 sin escribir nada. `tests/modulo/generador.test.ts` compara byte a byte lo commiteado con su salida, así que editar el prompt o el conocimiento sin regenerar hace fallar la CI. El pre-flight de la defensa que corre `bun run preflight -- --url <url>` (`preflight`) despierta el servicio pidiendo `GET /api/health` cada 5 s hasta que responda 200 o pasen 180 s, exige el modelo `disponible` y prueba el código de acceso una sola vez con `GET /api/config` y `Authorization: Bearer`: un 401 o un 429 cortan sin reintentar, para no bloquear la IP. Comprueba que la fecha de ejecución sea `2026-09-03` y que esté el caso `ec-corp-andina`, y en este modo nunca abre un turno del chat, así que no gasta tokens del modelo. Con `--guion` corre además el guion del PRD §11 en dos turnos SSE. La URL llega por `--url` o `PREFLIGHT_URL`, y el código solo por `PREFLIGHT_ACCESS_CODE`, leído con `config/env.ts`. El comando no acepta el código como argumento y nunca lo imprime. Cualquier paso fallido imprime una línea en español y sale con código 1. `tests/cli/preflight.test.ts` lo prueba contra un socket real de la app con un proveedor falso. |
+| `cli/schemas/` | `.schema.ts` | Validación zod de lo que un comando lee de afuera, con `satisfies z.ZodType<T>` (`preflight`: la salud, la configuración, la lista de archivos y los frames SSE que lee el pre-flight; los objetos no son estrictos, así que un campo de más no rompe la lectura). |
+| `cli/types/` | `.type.ts` | Solo tipos, con `import type` (`modulo`: `ArchivoModulo`, `LecturaModulo`, `OpcionesGeneracion` y `ResultadoGeneracion`; `preflight`: `OpcionesPreflight`, `PlazosPreflight`, `ResultadoPreflight`, `UsoGuion` y los frames que el pre-flight lee del SSE). |
 
 Idioma: los identificadores de `src/cli` van en español, como el dominio y la demo.
 

@@ -497,7 +497,8 @@ export const TEXTO_PREFLIGHT = {
   estadoInesperado: (paso: string, estado: number): string => `${paso} respondió con el estado ${estado}.`,
   errorDeRed: (paso: string): string => `No pude conectar con ${paso} o se agotó el tiempo de espera.`,
   faltaUrl: "Falta la URL del servicio: pásala con --url o en PREFLIGHT_URL.",
-  entornoInvalido: (detalle: string): string => `La configuración del pre-flight no es válida: ${detalle}`,
+  entornoInvalido: (variables: readonly (readonly [string, string])[]): string =>
+    `La configuración del pre-flight no es válida: ${variables.map(([variable, mensaje]) => `${variable}: ${mensaje}`).join("; ")}`,
   resultadoOk: "Pre-flight OK.",
   resultadoFallido: "Pre-flight fallido.",
   mensajeGuion: `Procesa el caso "${CASO_GUION_PRD}". Dime qué campos quedaron llenos, cuáles faltan, si el paquete está listo para firma y qué soportes debo actualizar. No envíes nada todavía.`,

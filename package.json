@@ -13,6 +13,7 @@
     "start": "bun src/server.ts",
     "demo": "bun run demo.ts",
     "modulo": "bun src/cli/runners/generar-modulo.runner.ts",
+    "preflight": "bun src/cli/runners/preflight.runner.ts",
     "test": "bun test",
     "test:vivo": "LLM_EN_VIVO=1 bun test tests/live",
     "typecheck": "tsc --noEmit",
