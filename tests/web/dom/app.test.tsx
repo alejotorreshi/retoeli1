@@ -2,6 +2,7 @@ import { describe, expect, test } from "bun:test";
 import { montarApp } from "@tests/helpers/app-dom.helper.ts";
 import { prepararDom } from "@tests/helpers/dom.helper.ts";
 import {
+  CASOS_DE_PRUEBA,
   CONFIG_DE_PRUEBA,
   crearRedWeb,
   eventoConfirmacion,
@@ -11,6 +12,7 @@ import {
   TURNO_DE_PRUEBA,
 } from "@tests/helpers/red-web.helper.ts";
 import type { GuionChat } from "@tests/helpers/types/red-web.type.ts";
+import { PAIS } from "@web/config/constants/pais.constants.ts";
 import { CLAVE_SESION_LOCAL } from "@web/config/constants/ui.constants.ts";
 import {
   TEXTO_ACCIONES,
@@ -19,6 +21,8 @@ import {
   TEXTO_CONFIRMACION,
   TEXTO_MODELO,
   TEXTO_NUEVA_SESION,
+  TEXTO_PAIS,
+  TEXTO_TARJETA_CASO,
 } from "@web/config/strings.ts";
 import { CODIGO_AGENTE, TIPO_EVENTO } from "@/config/constants/agent.constants.ts";
 import { TIPO_ACCION } from "@/config/constants/confirmation.constants.ts";
@@ -46,6 +50,19 @@ function valorDe(elemento: HTMLElement): string {
 
 function habilitado(elemento: HTMLElement): boolean {
   return !elemento.hasAttribute("disabled");
+}
+
+const NOMBRES_DE_TARJETAS = [
+  TEXTO_TARJETA_CASO.etiqueta("Industrias Delta", TEXTO_PAIS[PAIS.CO], "co-industrias-delta"),
+  TEXTO_TARJETA_CASO.etiqueta("Corp Andina", TEXTO_PAIS[PAIS.EC], "ec-corp-andina"),
+  TEXTO_TARJETA_CASO.etiqueta("Agroexport Sula", TEXTO_PAIS[PAIS.HN], "hn-agroexport-sula"),
+  TEXTO_TARJETA_CASO.etiqueta("Logistica Istmo", TEXTO_PAIS[PAIS.PA], "pa-logistica-istmo"),
+];
+
+const TARJETA_DEMO = TEXTO_TARJETA_CASO.etiqueta("Corp Andina", TEXTO_PAIS[PAIS.EC], "ec-corp-andina");
+
+function esTarjetaDeCaso(nombre: string): boolean {
+  return nombre.startsWith(TEXTO_TARJETA_CASO.procesar);
 }
 
 describe("App en escritorio, con la red simulada en fetch", () => {
@@ -115,6 +132,60 @@ describe("App en escritorio, con la red simulada en fetch", () => {
     });
     expect(await pantalla.findByText(RESPUESTA)).toBeDefined();
     expect(pantalla.queryByText(TEXTO_CHAT.pensando)).toBeNull();
+  });
+
+  test("el estado vacío muestra una tarjeta por caso de /api/config, en su orden y dentro de una lista", async () => {
+    const red = crearRedWeb({ nativos: dom.nativos });
+    const { pantalla } = await montarApp(dom, red);
+
+    await pantalla.findByRole("button", { name: TARJETA_DEMO });
+    const tarjetas = pantalla.getAllByRole("button", { name: esTarjetaDeCaso });
+    expect(CASOS_DE_PRUEBA).toHaveLength(NOMBRES_DE_TARJETAS.length);
+    expect(tarjetas.map((tarjeta) => tarjeta.getAttribute("aria-label"))).toEqual(NOMBRES_DE_TARJETAS);
+    const lista = tarjetas[0]?.closest("ul");
+    expect(lista).not.toBeNull();
+    expect(tarjetas.every((tarjeta) => tarjeta.closest("ul") === lista)).toBe(true);
+    expect(lista?.querySelectorAll(":scope > li")).toHaveLength(NOMBRES_DE_TARJETAS.length);
+    for (const tarjeta of tarjetas) expect(tarjeta.getAttribute("type")).toBe("button");
+  });
+
+  test("la tarjeta de ec-corp-andina manda el pedido del PRD para su caso, sin acción y una sola vez con doble clic", async () => {
+    const red = crearRedWeb({
+      nativos: dom.nativos,
+      guiones: [{ eventos: [eventoInicio(SESION)], retenidos: [eventoTexto(RESPUESTA), eventoFin()] }],
+    });
+    const { pantalla, usuario } = await montarApp(dom, red);
+    const tarjeta = await pantalla.findByRole("button", { name: TARJETA_DEMO });
+    await dom.esperar(() => expect(habilitado(tarjeta)).toBe(true));
+
+    await usuario.dblClick(tarjeta);
+
+    await dom.esperar(() => expect(red.pedidosA(RUTA_API.CHAT, METODO_POST)).toHaveLength(1));
+    expect(red.pedidosA(RUTA_API.CHAT, METODO_POST).map((pedido) => pedido.cuerpo)).toEqual([
+      { sessionId: null, message: TEXTO_ACCIONES.mensajeDemoDe("ec-corp-andina") },
+    ]);
+    expect(TEXTO_ACCIONES.mensajeDemoDe("ec-corp-andina")).toBe(TEXTO_ACCIONES.mensajeDemo);
+    expect(pantalla.queryAllByRole("button", { name: esTarjetaDeCaso }).some(habilitado)).toBe(false);
+    await dom.act(async () => {
+      red.soltar();
+      await Bun.sleep(PAUSA_TRAS_SOLTAR_MS);
+    });
+    expect(await pantalla.findByText(RESPUESTA)).toBeDefined();
+    expect(red.pedidosA(RUTA_API.CHAT, METODO_POST)).toHaveLength(1);
+  });
+
+  test("con el envío en pausa por sin_clave todas las tarjetas de caso quedan deshabilitadas", async () => {
+    const red = crearRedWeb({ nativos: dom.nativos, salud: ESTADO_LLM.SIN_CLAVE });
+    const { pantalla, usuario } = await montarApp(dom, red);
+    const aviso = TEXTO_MODELO.aviso(ESTADO_LLM.SIN_CLAVE, CONFIG_DE_PRUEBA.zona);
+    expect(await pantalla.findByText(aviso.titulo)).toBeDefined();
+    await pantalla.findByRole("button", { name: TARJETA_DEMO });
+
+    const tarjetas = pantalla.getAllByRole("button", { name: esTarjetaDeCaso });
+    expect(tarjetas).toHaveLength(NOMBRES_DE_TARJETAS.length);
+    await dom.esperar(() => expect(tarjetas.some(habilitado)).toBe(false));
+    for (const tarjeta of tarjetas) await usuario.click(tarjeta);
+    expect(red.pedidosA(RUTA_API.CHAT, METODO_POST)).toEqual([]);
   });
 
   test("Enter en el compositor envía el borrador", async () => {
