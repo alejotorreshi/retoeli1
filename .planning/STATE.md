@@ -3,16 +3,16 @@ gsd_state_version: "1.0"
 current_phase: 5
 current_phase_name: front-web-por-features-e-identidad-de-marca
 status: executing
-stopped_at: Completed 05-05-PLAN.md
-last_updated: "2026-10-16T18:39:35.133Z"
+stopped_at: Completed 05-06-PLAN.md
+last_updated: "2026-10-16T18:49:18.226Z"
 last_activity: 2026-10-16
 last_activity_desc: Phase 5 execution started
-state_head: ccbbfcf146f60510adb527b158bc291776380c70
+state_head: ed2b03dac10b5fc7885df0e3c911cc1051b8210f
 progress:
   total_phases: 5
   completed_phases: 4
   total_plans: 103
-  completed_plans: 99
+  completed_plans: 100
   percent: 80
 ---
 
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-10-16)
 ## Current Position
 
 Phase: 5 (front-web-por-features-e-identidad-de-marca) — EXECUTING
-Plan: 6 of 9
+Plan: 7 of 9
 Status: Ready to execute
 Last activity: 2026-10-16 — Phase 5 execution started
 
@@ -158,6 +158,7 @@ Progress: [████████░░] 80%
 | Phase 05 P03 | 9 min | 3 tasks | 25 files |
 | Phase 05 P04 | 6min | 3 tasks | 33 files |
 | Phase 05 P05 | 6min | 3 tasks | 21 files |
+| Phase 05 P06 | 7min | 3 tasks | 25 files |
 
 ## Accumulated Context
 
@@ -398,6 +399,9 @@ Recent decisions affecting current work:
 - [Phase 05]: 05-05: chat containers (compositor, acciones-rapidas, linea-de-tiempo) read their slice with useSeleccion and named selectors in their own hook; app.tsx passes them only layout flags
 - [Phase 05]: 05-05: EstadoVacio is its own feature component and renders the full-label chips itself
 - [Phase 05]: 05-05: useLineaDeTiempo returns per-turn TurnoEnLinea with ready PilaConfirmaciones props, and decides the thinking indicator (moved from a Pantalla child)
+- [Phase 05]: 05-06: usePanelCasos returns ready PropsBloqueCaso per case; the panel view only spreads them
+- [Phase 05]: 05-06: OpcionesArchivos and ControlArchivos moved to ui.type.ts as hook types
+- [Phase 05]: 05-06: useBloqueCaso and useDialogoVistaPrevia read vencerAcceso from useAcciones instead of a prop
 
 ### Pending Todos
 
@@ -436,6 +440,6 @@ Items acknowledged and deferred at milestone close, most recent first:
 
 ## Session Continuity
 
-Last session: 2026-10-16T18:39:34.991Z
-Stopped at: Completed 05-05-PLAN.md
+Last session: 2026-10-16T18:49:18.010Z
+Stopped at: Completed 05-06-PLAN.md
 Resume file: None
