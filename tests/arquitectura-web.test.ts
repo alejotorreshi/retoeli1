@@ -62,7 +62,8 @@ const NUCLEO_PURO_DEL_ALMACEN: ReadonlySet<string> = new Set([
   "web/src/store/selectores.ts",
 ]);
 
-const API_DEL_NAVEGADOR = /\b(?:document|window|localStorage|sessionStorage|fetch)\b/;
+const API_DEL_NAVEGADOR =
+  /\b(?:document|window|localStorage|sessionStorage|fetch|matchMedia|ResizeObserver|navigator|globalThis|setTimeout|setInterval|requestAnimationFrame|URL\.(?:createObjectURL|revokeObjectURL))\b/;
 
 const INYECCION_DE_HTML = /\b(?:dangerouslySetInnerHTML|innerHTML|outerHTML|insertAdjacentHTML)\b/;
 
@@ -227,10 +228,7 @@ const NUMERO_MAGICO = /(?<![\w$.])(?!(?:0|1)\b(?!\.))\d+(?:\.\d+)?/;
 
 const ATRIBUTO_STYLE = /\bstyle=/;
 
-const FUNCION_EN_ATRIBUTO =
-  /\b[A-Za-z][\w-]*=\{\s*(?:async\s+)?(?:function\b|(?:\([^()]*\)|[A-Za-z_$][\w$]*)\s*=>)/;
-
-const IMPORTACION_DE_REACT = /import\s+(?!type\b)\{([^}]*)\}\s+from\s+["']react["']/g;
+const FUNCION_EN_ATRIBUTO = /\b[A-Za-z][\w-]*=\{[^{}]*?(?:=>|\bfunction\b|\.bind\()/g;
 
 const PRIMITIVAS_DEL_ALMACEN: ReadonlySet<string> = new Set([
   "createContext",
@@ -238,6 +236,8 @@ const PRIMITIVAS_DEL_ALMACEN: ReadonlySet<string> = new Set([
   "useReducer",
   "useSyncExternalStore",
 ]);
+
+const USO_DE_PRIMITIVA_DEL_ALMACEN = new RegExp(`\\b(?:${[...PRIMITIVAS_DEL_ALMACEN].join("|")})\\b`, "g");
 
 const PRIMITIVAS_PERMITIDAS: ReadonlyMap<string, ReadonlySet<string>> = new Map([
   ["web/src/features/disposicion/columnas/usar-columnas.ts", new Set(["useSyncExternalStore"])],
@@ -748,13 +748,16 @@ function violacionesDeValoresMagicos(ruta: string, codigo: string): string[] {
   ].sort(porLinea);
 }
 
+function lineaDelIndice(codigo: string, indice: number): number {
+  return codigo.slice(0, indice).split("\n").length;
+}
+
 function violacionesDeFuncionesEnAtributos(ruta: string, codigo: string): string[] {
   if (!VISTA.test(ruta)) return [];
-  return lineasQueCumplen(
-    ruta,
-    sinCadenas(codigo),
-    FUNCION_EN_ATRIBUTO,
-    "la vista declara una función en un atributo JSX; el manejador llega listo de su hook",
+  const sinTextos = sinCadenas(codigo);
+  return [...sinTextos.matchAll(FUNCION_EN_ATRIBUTO)].map(
+    (coincidencia) =>
+      `${ruta}:${lineaDelIndice(sinTextos, coincidencia.index)}: la vista declara una función en un atributo JSX; el manejador llega listo de su hook`,
   );
 }
 
@@ -831,21 +834,17 @@ function numeroDeLinea(violacion: string): number {
   return Number(violacion.split(":")[1]);
 }
 
-function nombresImportadosDeReact(codigo: string): string[] {
-  return [...codigo.matchAll(IMPORTACION_DE_REACT)].flatMap((coincidencia) =>
-    (coincidencia[1] ?? "")
-      .split(",")
-      .map((nombre) => nombre.trim())
-      .filter((nombre) => nombre.length > 0 && !nombre.startsWith("type "))
-      .map((nombre) => nombre.split(/\s+as\s+/)[0] ?? nombre),
-  );
+function primitivasDelAlmacenUsadas(codigo: string): string[] {
+  return [
+    ...new Set([...sinCadenas(codigo).matchAll(USO_DE_PRIMITIVA_DEL_ALMACEN)].map(([nombre]) => nombre)),
+  ];
 }
 
 function violacionesDePrimitivasDelAlmacen(ruta: string, codigo: string): string[] {
   if (ruta.startsWith(`${CARPETA_WEB}/store/`)) return [];
   const permitidas = PRIMITIVAS_PERMITIDAS.get(ruta) ?? new Set<string>();
-  return nombresImportadosDeReact(codigo)
-    .filter((nombre) => PRIMITIVAS_DEL_ALMACEN.has(nombre) && !permitidas.has(nombre))
+  return primitivasDelAlmacenUsadas(codigo)
+    .filter((nombre) => !permitidas.has(nombre))
     .map((nombre) => `${ruta}: ${nombre} de react solo vive en web/src/store`);
 }
 
@@ -1018,7 +1017,7 @@ describe("guardián de web/ sobre el código real", () => {
 
   test("W20: createContext, useContext, useReducer y useSyncExternalStore viven en web/src/store", () => {
     const columnas = "web/src/features/disposicion/columnas/usar-columnas.ts";
-    expect(nombresImportadosDeReact(leer(columnas))).toContain("useSyncExternalStore");
+    expect(primitivasDelAlmacenUsadas(leer(columnas))).toContain("useSyncExternalStore");
     expect(violacionesDePrimitivasDelAlmacen(columnas, leer(columnas))).toEqual([]);
     expect(sobreElCodigo(violacionesDePrimitivasDelAlmacen)).toEqual([]);
   });
@@ -1081,12 +1080,21 @@ describe("el guardián de web/ muerde sobre fuentes de muestra", () => {
       "const guardado = localStorage.getItem(clave);",
       "const respuesta = await fetch(ruta);",
       "const estado = { sesionId: null };",
+      'const angosto = matchMedia("(max-width: 1px)").matches;',
+      "const observador = new ResizeObserver(medir);",
+      "const idioma = navigator.language;",
+      "const raizGlobal = globalThis.location;",
+      "const espera = setTimeout(avisar, 0);",
+      "const latido = setInterval(avisar, 1);",
+      "const enlace = URL.createObjectURL(datos);",
+      "URL.revokeObjectURL(enlace);",
+      "const cuadro = requestAnimationFrame(pintar);",
     ].join("\n");
     expect(violacionesDeEstado("web/src/features/chat/estado/x.ts", codigo)).toEqual([
       "web/src/features/chat/estado/x.ts: el estado no importa react",
-      "web/src/features/chat/estado/x.ts:2: el estado toca el navegador",
-      "web/src/features/chat/estado/x.ts:3: el estado toca el navegador",
-      "web/src/features/chat/estado/x.ts:4: el estado toca el navegador",
+      ...[2, 3, 4, 6, 7, 8, 9, 10, 11, 12, 13, 14].map(
+        (linea) => `web/src/features/chat/estado/x.ts:${linea}: el estado toca el navegador`,
+      ),
     ]);
     expect(violacionesDeEstado("web/src/api/x.ts", codigo)).toEqual([]);
     expect(violacionesDeEstado("web/src/features/chat/compositor/usar-compositor.ts", codigo)).toEqual([]);
@@ -1496,14 +1504,20 @@ describe("el guardián de web/ muerde sobre fuentes de muestra", () => {
       "<button onClick={alConfirmar} disabled={deshabilitado}>",
       "{casos.map((slug) => (",
       '<p title="a => b">{TEXTO.flecha}</p>',
+      "<button onClick={cerrado ? () => abrir() : undefined}>",
+      "<button onClick={",
+      "  () => abrir()",
+      "}>",
+      "<input onChange={(",
+      "  evento,",
+      ") => alCambiar(evento)} />",
+      "<button onClick={responder.bind(null, TIPO_ACCION.CONFIRMAR)}>",
+      "<button disabled={a >= b} aria-hidden={a <= b}>",
     ].join("\n");
-    expect(violacionesDeFuncionesEnAtributos(vista, codigo)).toEqual([
-      `${vista}:1: la vista declara una función en un atributo JSX; el manejador llega listo de su hook`,
-      `${vista}:2: la vista declara una función en un atributo JSX; el manejador llega listo de su hook`,
-      `${vista}:3: la vista declara una función en un atributo JSX; el manejador llega listo de su hook`,
-      `${vista}:4: la vista declara una función en un atributo JSX; el manejador llega listo de su hook`,
-      `${vista}:5: la vista declara una función en un atributo JSX; el manejador llega listo de su hook`,
-    ]);
+    const motivo = "la vista declara una función en un atributo JSX; el manejador llega listo de su hook";
+    expect(violacionesDeFuncionesEnAtributos(vista, codigo)).toEqual(
+      [1, 2, 3, 4, 5, 9, 10, 13, 16].map((linea) => `${vista}:${linea}: ${motivo}`),
+    );
     expect(violacionesDeFuncionesEnAtributos("web/src/features/chat/x/usar-x.ts", codigo)).toEqual([]);
   });
 
@@ -1518,6 +1532,28 @@ describe("el guardián de web/ muerde sobre fuentes de muestra", () => {
     ]);
     expect(violacionesDePrimitivasDelAlmacen("web/src/store/usar-almacen.ts", codigo)).toEqual([]);
     expect(violacionesDePrimitivasDelAlmacen("web/src/hooks/usar-x.ts", codigo)).toHaveLength(4);
+    const conEspacioDeNombres = [
+      'import * as React from "react";',
+      "const valor = React.useSyncExternalStore(suscribir, leer);",
+    ].join("\n");
+    expect(
+      violacionesDePrimitivasDelAlmacen("web/src/features/chat/x/usar-x.ts", conEspacioDeNombres),
+    ).toEqual([
+      "web/src/features/chat/x/usar-x.ts: useSyncExternalStore de react solo vive en web/src/store",
+    ]);
+    const porDefecto = ['import React from "react";', "const Contexto = React.createContext(null);"].join(
+      "\n",
+    );
+    expect(violacionesDePrimitivasDelAlmacen("web/src/features/chat/x/usar-x.ts", porDefecto)).toEqual([
+      "web/src/features/chat/x/usar-x.ts: createContext de react solo vive en web/src/store",
+    ]);
+    const conAlias = 'import { useReducer as reducir } from "react";\nconst [a, b] = reducir(f, 0);';
+    expect(violacionesDePrimitivasDelAlmacen("web/src/features/chat/x/usar-x.ts", conAlias)).toEqual([
+      "web/src/features/chat/x/usar-x.ts: useReducer de react solo vive en web/src/store",
+    ]);
+    expect(
+      violacionesDePrimitivasDelAlmacen("web/src/features/chat/x/usar-x.ts", 'const nota = "useContext";'),
+    ).toEqual([]);
     expect(
       violacionesDePrimitivasDelAlmacen("web/src/features/disposicion/columnas/usar-columnas.ts", codigo),
     ).toEqual([
