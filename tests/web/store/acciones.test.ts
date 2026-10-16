@@ -276,6 +276,19 @@ describe("acciones del almacén: detener", () => {
   });
 });
 
+describe("acciones del almacén: foco del campo del mensaje", () => {
+  test("enfocarCampoDelMensaje enfoca el campo registrado y no hace nada sin campo", () => {
+    const instancia = crearInstancia(crearFalsos().dependencias);
+    let enfoques = 0;
+    instancia.acciones.enfocarCampoDelMensaje();
+    instancia.acciones.registrarCampoDelMensaje({ focus: () => (enfoques += 1) });
+    instancia.acciones.enfocarCampoDelMensaje();
+    instancia.acciones.registrarCampoDelMensaje(null);
+    instancia.acciones.enfocarCampoDelMensaje();
+    expect(enfoques).toBe(1);
+  });
+});
+
 describe("acciones del almacén: sesiones", () => {
   test("nuevaSesion y volverASesionAnterior no hacen nada mientras hay un turno activo", async () => {
     const retenido = turnoRetenido();

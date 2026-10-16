@@ -62,6 +62,8 @@ export type Dependencias = {
   readonly olvidarSesion: () => void;
 };
 
+export type CampoEnfocable = { readonly focus: () => void };
+
 export type Acciones = {
   readonly cambiarBorrador: (borrador: string) => void;
   readonly enviar: () => void;
@@ -80,6 +82,8 @@ export type Acciones = {
   readonly cancelarSalud: () => void;
   readonly abrirNuevaSesion: () => void;
   readonly cerrarNuevaSesion: () => void;
+  readonly registrarCampoDelMensaje: (campo: CampoEnfocable | null) => void;
+  readonly enfocarCampoDelMensaje: () => void;
 };
 
 export type InstanciaAlmacen = {

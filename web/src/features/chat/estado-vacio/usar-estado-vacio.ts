@@ -1,12 +1,10 @@
-import { ID_CAMPO_MENSAJE } from "@web/config/constants/ui.constants.ts";
 import { seleccionarCasos, seleccionarFaltaConfig } from "@web/store/selectores.ts";
-import { useSeleccion } from "@web/store/usar-almacen.ts";
+import { useAcciones, useSeleccion } from "@web/store/usar-almacen.ts";
 import type { ControlEstadoVacio } from "@web/types/ui.type.ts";
 import { useId, useLayoutEffect, useRef } from "react";
 
-function pasarElFocoAlCompositor(contenedor: HTMLDivElement | null): void {
-  if (contenedor === null || !contenedor.contains(document.activeElement)) return;
-  document.getElementById(ID_CAMPO_MENSAJE)?.focus();
+function tieneElFoco(contenedor: HTMLDivElement | null): boolean {
+  return contenedor?.contains(document.activeElement) ?? false;
 }
 
 export function useEstadoVacio(): ControlEstadoVacio {
@@ -15,11 +13,14 @@ export function useEstadoVacio(): ControlEstadoVacio {
   const idCasos = useId();
   const idAcciones = useId();
   const contenedor = useRef<HTMLDivElement>(null);
+  const { enfocarCampoDelMensaje } = useAcciones();
 
   useLayoutEffect(() => {
     const nodo = contenedor.current;
-    return () => pasarElFocoAlCompositor(nodo);
-  }, []);
+    return () => {
+      if (tieneElFoco(nodo)) enfocarCampoDelMensaje();
+    };
+  }, [enfocarCampoDelMensaje]);
 
   return {
     contenedor,

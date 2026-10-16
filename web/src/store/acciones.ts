@@ -20,12 +20,13 @@ import type {
   EstadoConversacion,
   ResultadoApi,
 } from "@web/types/chat.type.ts";
-import type { Acciones, AlmacenRaiz, Dependencias } from "@web/types/store.type.ts";
+import type { Acciones, AlmacenRaiz, CampoEnfocable, Dependencias } from "@web/types/store.type.ts";
 import type { ConfigResponse } from "@/http/types/api.type.ts";
 
 export function crearAcciones(almacen: AlmacenRaiz, dependencias: Dependencias): Acciones {
   let turnoActivo: AbortController | null = null;
   let pedidoDeSalud: AbortController | null = null;
+  let campoDelMensaje: CampoEnfocable | null = null;
 
   function conversacion(): EstadoConversacion {
     return almacen.leer().conversacion;
@@ -158,5 +159,9 @@ export function crearAcciones(almacen: AlmacenRaiz, dependencias: Dependencias):
     cancelarSalud,
     abrirNuevaSesion: () => almacen.despachar({ tipo: ACCION_DIALOGO_SESION.ABRIR }),
     cerrarNuevaSesion: () => almacen.despachar({ tipo: ACCION_DIALOGO_SESION.CERRAR }),
+    registrarCampoDelMensaje: (campo) => {
+      campoDelMensaje = campo;
+    },
+    enfocarCampoDelMensaje: () => campoDelMensaje?.focus(),
   };
 }

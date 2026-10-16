@@ -236,6 +236,7 @@ export type ContadorCompositor = {
 
 export type ControlCompositor = {
   readonly idCampo: string;
+  readonly registrarCampo: (campo: HTMLTextAreaElement | null) => void;
   readonly idAyuda: string;
   readonly idContador: string;
   readonly descritoPor: string;

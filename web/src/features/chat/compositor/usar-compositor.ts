@@ -1,4 +1,4 @@
-import { ID_CAMPO_MENSAJE, MARGEN_AVISO_CONTADOR, TECLA_ENVIAR } from "@web/config/constants/ui.constants.ts";
+import { MARGEN_AVISO_CONTADOR, TECLA_ENVIAR } from "@web/config/constants/ui.constants.ts";
 import { TEXTO_CHAT } from "@web/config/strings.ts";
 import {
   seleccionarBorrador,
@@ -32,7 +32,8 @@ export function useCompositor(): ControlCompositor {
   const bloqueado = useSeleccion(seleccionarHidratando);
   const pausado = useSeleccion(seleccionarEnvioEnPausa);
   const uso = useSeleccion(seleccionarUsoDeSesion);
-  const { cambiarBorrador, enviar, detener } = useAcciones();
+  const { cambiarBorrador, enviar, detener, registrarCampoDelMensaje } = useAcciones();
+  const idCampo = useId();
   const idAyuda = useId();
   const idContador = useId();
   const contador = contadorDe(valor.length, maximo);
@@ -54,7 +55,8 @@ export function useCompositor(): ControlCompositor {
   }
 
   return {
-    idCampo: ID_CAMPO_MENSAJE,
+    idCampo,
+    registrarCampo: registrarCampoDelMensaje,
     idAyuda,
     idContador,
     descritoPor: contador === null ? idAyuda : `${idAyuda} ${idContador}`,
