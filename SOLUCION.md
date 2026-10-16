@@ -239,7 +239,8 @@ Se acepta en el reto por cuatro motivos: es una sola instancia gratuita, la clav
 - reservar tokens antes de cada llamada para que la concurrencia no pase el tope diario;
 - límites y alertas de gasto en la clave del proveedor, con una clave de servicio en lugar de una personal;
 - una instancia paga siempre activa, o varias instancias con estado compartido;
-- almacenamiento de objetos persistente para `out/`, con URLs firmadas y vencimiento.
+- almacenamiento de objetos persistente para `out/`, con URLs firmadas y vencimiento;
+- `out/` separado por sesión o por usuario, por ejemplo `out/<sesión>/<caso>/`, o un prefijo por sesión en el almacenamiento de objetos, para que una sesión nunca liste los archivos de otra.
 
 El detalle, incluidos el tope por IP aproximado, el recibo por reserva y el plazo de lectura del cuerpo de `/api/acceso` que quedaron como trabajo futuro, está en [docs/limites-del-demo.md](docs/limites-del-demo.md).
 
@@ -255,10 +256,11 @@ El detalle, incluidos el tope por IP aproximado, el recibo por reserva y el plaz
 - **T-02-41.** Sobre la pregunta del servidor pueden quedar líneas del modelo que no son pregunta. La compuerta solo autoriza el caso pendiente, y el último párrafo siempre es la pregunta del servidor con el caso y sus bloqueos.
 - **SEG-02.** En `.planning/REQUIREMENTS.md` figura como parcial. El código actual aplica una única `redactar()` (`src/domain/policies/redaccion.policy.ts`) a los logs, a los resúmenes de tool calls, a la respuesta JSON de `/api/chat` y a cada evento SSE, y hay escaneos de PII en las pruebas. Falta cerrarlo formalmente con una verificación que actualice la trazabilidad.
 - **D-80 y el módulo.** Fuera del servidor (OpenCode) nadie escribe la pregunta de confirmación. La red de seguridad es la skill, que exige una confirmación explícita, y la herramienta, que rechaza sin `confirmado: true`. El módulo no se ensayó en vivo en OpenCode (D-83). Como trabajo futuro queda un paquete distribuible construido con `bun build`.
+- **`out/<caso>/` compartido entre sesiones.** El PRD fija las salidas en `out/<caso>/`, así que todas las sesiones que procesan el mismo caso leen y escriben la misma carpeta, y `out/<caso>/log.jsonl` junta las llamadas de todas. Una sesión nueva puede ver en el panel de casos el paquete y el `ENVIO-SIMULADO.md` que dejó otra sesión, hasta que su turno 1 los reconstruye. No se envía nada, porque la compuerta solo pide confirmación por un paquete armado en la misma sesión. Se acepta en el reto (una analista, una instancia, y cambiarlo es conducta de la API y de la SPA), y en la defensa el pre-flight con `--guion` y los ensayos se corren la víspera ([docs/entrega.md](docs/entrega.md)).
 - **Seguimientos menores de la QA de la Fase 3:**
   - el panel puede listar un archivo ya borrado hasta recibir el 404;
   - un campo en pausa no se atenúa;
   - los 401 y 429 no dejan una línea de log;
   - a 375×667, el control para seguir el final de la conversación queda como una sola flecha de 40 px;
   - mientras un caso está pendiente, su tarjeta sigue visible entre turnos. Cancelar en la tarjeta quita solo ese caso (D-69), pero un rechazo por texto cancela todos los pendientes (AR-02-06).
-- **Operación de la defensa.** Render duerme y tarda cerca de un minuto en despertar, así que se corre `bun run preflight` unos 10 minutos antes. La clave es prepaga, así que se revisa el saldo. El código de acceso se rota después de la evaluación ([docs/entrega.md](docs/entrega.md)).
+- **Operación de la defensa.** Render duerme y tarda cerca de un minuto en despertar, así que se corre `bun run preflight` unos 10 minutos antes. El modo `--guion` se corre la víspera y no justo antes de la defensa. La clave es prepaga, así que se revisa el saldo. El código de acceso se rota después de la evaluación ([docs/entrega.md](docs/entrega.md)).

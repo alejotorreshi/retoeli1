@@ -60,6 +60,10 @@ const PENDIENTES_ENTREGA = [
   "SOLUCION.md §9",
   "bun run preflight",
 ];
+const CORRIDA_ANTERIOR_ENTREGA = ["víspera", "corrida anterior", "ENVIO-SIMULADO.md", "out/<caso>/"];
+const VISPERA = "víspera";
+const ANTES_DE_LA_DEFENSA = "10 minutos antes";
+const SIN_GUION = "sin `--guion`";
 
 function leer(ruta: string): string {
   return leerDocumento(RAIZ, ruta);
@@ -161,6 +165,15 @@ describe(`${ENTREGA} (D-99)`, () => {
     const pendiente = estadoDeEvidencia() === ESTADO_EVIDENCIA_COSTO.PENDIENTE;
     expect(entrega.length).toBeGreaterThan(0);
     expect(entrega.includes("bun run costo")).toBe(pendiente);
+  });
+
+  test("programa el --guion la víspera y avisa de los archivos de la corrida anterior (G-04-2)", () => {
+    const entrega = leer(ENTREGA);
+    const lineaAntesDeLaDefensa = entrega.split("\n").find((linea) => linea.includes(ANTES_DE_LA_DEFENSA));
+    expect(CORRIDA_ANTERIOR_ENTREGA.filter((mencion) => !entrega.includes(mencion))).toEqual([]);
+    expect(lineaAntesDeLaDefensa).toBeDefined();
+    expect(lineaAntesDeLaDefensa?.includes(SIN_GUION)).toBe(true);
+    expect(leer(README).includes(VISPERA)).toBe(true);
   });
 });
 
