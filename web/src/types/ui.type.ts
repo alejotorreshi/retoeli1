@@ -452,6 +452,11 @@ export type VistaPreviaAbierta = {
   readonly disparador: HTMLElement;
 };
 
+export type VistaPreviaDeApertura = {
+  readonly abierta: VistaPreviaAbierta;
+  readonly estado: EstadoVistaPrevia;
+};
+
 export type OpcionesDialogoVistaPrevia = {
   readonly caso: string;
   readonly abierta: VistaPreviaAbierta | null;
