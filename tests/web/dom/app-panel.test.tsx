@@ -9,7 +9,13 @@ import {
   eventoTexto,
 } from "@tests/helpers/red-web.helper.ts";
 import type { RespuestaFalsa } from "@tests/helpers/types/red-web.type.ts";
-import { TEXTO_ACCIONES, TEXTO_ARCHIVOS, TEXTO_PANEL, TEXTO_VISTA_PREVIA } from "@web/config/strings.ts";
+import {
+  TEXTO_ACCESO,
+  TEXTO_ACCIONES,
+  TEXTO_ARCHIVOS,
+  TEXTO_PANEL,
+  TEXTO_VISTA_PREVIA,
+} from "@web/config/strings.ts";
 import { ARCHIVOS_SALIDA, TIPO_ARCHIVO_CASO, TIPO_VISTA_PREVIA } from "@/config/constants/files.constants.ts";
 import {
   PARAMETRO_ARCHIVO,
@@ -55,7 +61,12 @@ const VISTA: PreviewResponse = { tipo: TIPO_VISTA_PREVIA.TEXTO, texto: TEXTO_FOR
 
 const dom = await prepararDom({ ancho: ANCHO_ESCRITORIO });
 
-function redConVistaPrevia(vistaPrevia: RespuestaFalsa) {
+const ACCESO_VENCIDO: RespuestaFalsa = {
+  estado: RESPUESTA_HTTP.NO_AUTORIZADO,
+  cuerpo: { mensaje: MENSAJE_HTTP.accesoVencido },
+};
+
+function redConVistaPrevia(vistaPrevia: RespuestaFalsa, lista: RespuestaFalsa) {
   return crearRedWeb({
     nativos: dom.nativos,
     guiones: [
@@ -69,18 +80,23 @@ function redConVistaPrevia(vistaPrevia: RespuestaFalsa) {
       },
     ],
     rutas: {
-      [RUTA_ARCHIVOS]: { estado: RESPUESTA_HTTP.OK, cuerpo: LISTA },
+      [RUTA_ARCHIVOS]: lista,
       [RUTA_VISTA_PREVIA]: vistaPrevia,
     },
   });
 }
 
-async function procesarCaso(vistaPrevia: RespuestaFalsa) {
-  const red = redConVistaPrevia(vistaPrevia);
+async function pedirElListado(vistaPrevia: RespuestaFalsa, lista: RespuestaFalsa) {
+  const red = redConVistaPrevia(vistaPrevia, lista);
   const app = await montarApp(dom, red);
   const listar = await app.pantalla.findByRole("button", { name: TEXTO_ACCIONES.listar });
   await dom.esperar(() => expect(listar.hasAttribute("disabled")).toBe(false));
   await app.usuario.click(listar);
+  return app;
+}
+
+async function procesarCaso(vistaPrevia: RespuestaFalsa) {
+  const app = await pedirElListado(vistaPrevia, { estado: RESPUESTA_HTTP.OK, cuerpo: LISTA });
   await app.pantalla.findByText(RESPUESTA);
   return app;
 }
@@ -117,5 +133,12 @@ describe("App en escritorio: panel de casos y archivos", () => {
 
     const alerta = await pantalla.findByRole("alert");
     expect(alerta.textContent).toBe(TEXTO_VISTA_PREVIA.error);
+  });
+
+  test("un 401 al listar los archivos devuelve a la pantalla de acceso con el aviso del servidor", async () => {
+    const { pantalla } = await pedirElListado({ estado: RESPUESTA_HTTP.OK, cuerpo: VISTA }, ACCESO_VENCIDO);
+
+    expect(await pantalla.findByRole("heading", { name: TEXTO_ACCESO.titulo })).toBeDefined();
+    expect(await pantalla.findByText(MENSAJE_HTTP.accesoVencido)).toBeDefined();
   });
 });
