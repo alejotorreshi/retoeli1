@@ -3,7 +3,7 @@ status: complete
 phase: 04-m-dulo-documentaci-n-y-defensa
 source: [04-VERIFICATION.md, 04-REVIEW-FIX.md]
 started: 2026-10-16T05:53:02Z
-updated: 2026-10-16T06:30:00Z
+updated: 2026-10-16T07:10:00Z
 ---
 
 ## Current Test
@@ -40,7 +40,7 @@ previous_report: "En una copia sin .git (como un ZIP descargado de GitHub), bun 
 ### 6. Render sirve HEAD tras checksPass y el acceso sigue cerrado
 expected: health 200 sin secretos, el bundle servido es igual al build local de HEAD y las rutas protegidas responden 401.
 result: pass
-note: "Pendiente humano: confirmar en la UI de GitHub Actions la corrida verde y el badge, y en Render Events que el deploy esperó los checks. La evidencia indirecta de que la CI pasó es que Render ya sirve el bundle de dec6481."
+note: "Las aserciones pasan: el bundle servido es igual al build de HEAD, health da 200 y las rutas protegidas devuelven 401. Corrección del verifier (re-verificación del 2026-10-16): esto NO prueba que la CI esté en verde, porque web/ no cambia desde la fase 3 y ese bundle ya se servía antes de checksPass. Pendiente humano: confirmar en GitHub Actions el job Verificar en verde sobre 7186c2b o posterior, el badge, y en Render Events que el deploy esperó los checks."
 
 ### 7. Pre-flight por defecto contra el link público con el código del README
 expected: exit 0; health, acceso, fecha 2026-09-03 y caso ec-corp-andina; el código no aparece en la salida.
