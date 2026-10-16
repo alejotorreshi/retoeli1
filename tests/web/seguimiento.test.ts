@@ -27,6 +27,18 @@ const CRECIMIENTO_ENTRE_PULSACIONES = 50;
 const PASO_DE_TRACKPAD_LENTO = 4;
 const POSICION_FRACCIONARIA_AL_FONDO = 1_000.5;
 const DISTANCIA_FRACCIONARIA_AL_FONDO = 0.5;
+const CRECIMIENTO_DEBAJO = 80;
+const DISTANCIA_TRAS_CRECER = DISTANCIA_DE_LECTURA + CRECIMIENTO_DEBAJO;
+const POSICION_ANTES_DE_LA_FLECHA_375 = 8_149;
+const AJUSTE_DEL_ANCLAJE_375 = 80;
+const FOTOGRAMAS_DE_LA_FLECHA_375 = [
+  { posicion: 8_147, distancia: 2 },
+  { posicion: 8_143, distancia: 5 },
+  { posicion: 8_108, distancia: 41 },
+] as const;
+const DISTANCIA_TRAS_LA_FLECHA_375 = 41;
+const POSICION_TRAS_LA_FLECHA_375 = 8_108;
+const POSICION_TRAS_EL_ANCLAJE_375 = POSICION_TRAS_LA_FLECHA_375 + AJUSTE_DEL_ANCLAJE_375;
 const DISTANCIAS_DEMO_375 = [
   310, 326, 340, 300, 355, 372, 388, 401, 415, 430, 424, 333, 347, 362, 391, 408,
 ] as const;
@@ -39,7 +51,9 @@ function desplazamiento(posicion: number, distancia: number): SenalSeguimiento {
   return { tipo: SENAL_SEGUIMIENTO.DESPLAZAMIENTO, posicion, distancia };
 }
 
-const CRECIMIENTO: SenalSeguimiento = { tipo: SENAL_SEGUIMIENTO.CRECIMIENTO };
+function crecimiento(distancia: number): SenalSeguimiento {
+  return { tipo: SENAL_SEGUIMIENTO.CRECIMIENTO, distancia };
+}
 
 function aplicar(estado: EstadoSeguimiento, senales: readonly SenalSeguimiento[]): EstadoSeguimiento {
   return senales.reduce(reducirSeguimiento, estado);
@@ -70,7 +84,7 @@ function secuenciaWr04(): SenalSeguimiento[] {
     const posicion = POSICION_INICIO_WR_04 + indice * CRECIMIENTO_ENTRE_PULSACIONES;
     return [
       desplazamiento(posicion - PASO_DE_FLECHA, PASO_DE_FLECHA),
-      CRECIMIENTO,
+      crecimiento(PASO_DE_FLECHA),
       ajustePropio(posicion + CRECIMIENTO_ENTRE_PULSACIONES),
     ];
   });
@@ -85,7 +99,7 @@ function despegado(): EstadoSeguimiento {
 }
 
 function conContenidoNuevo(): EstadoSeguimiento {
-  return reducirSeguimiento(despegado(), CRECIMIENTO);
+  return reducirSeguimiento(despegado(), crecimiento(DISTANCIA_TRAS_CRECER));
 }
 
 describe("reducirSeguimiento", () => {
@@ -93,6 +107,7 @@ describe("reducirSeguimiento", () => {
     expect(seguimientoInicial.pegado).toBe(true);
     expect(seguimientoInicial.contenidoNuevo).toBe(false);
     expect(seguimientoInicial.posicion).toBeNull();
+    expect(seguimientoInicial.distancia).toBeNull();
   });
 
   test("el ajuste propio solo anota la posición que fijó la bajada", () => {
@@ -106,9 +121,10 @@ describe("reducirSeguimiento", () => {
     const estado = despegado();
     expect(estado.pegado).toBe(false);
     expect(estado.contenidoNuevo).toBe(false);
-    const conNuevo = reducirSeguimiento(estado, CRECIMIENTO);
+    const conNuevo = reducirSeguimiento(estado, crecimiento(DISTANCIA_TRAS_CRECER));
     expect(conNuevo.pegado).toBe(false);
     expect(conNuevo.contenidoNuevo).toBe(true);
+    expect(conNuevo.distancia).toBe(DISTANCIA_TRAS_CRECER);
   });
 
   test("bajar hasta el umbral vuelve a pegar y apaga el contenido nuevo", () => {
@@ -137,7 +153,9 @@ describe("reducirSeguimiento", () => {
   });
 
   test("las señales que no cambian nada devuelven el mismo estado", () => {
-    expect(reducirSeguimiento(seguimientoInicial, CRECIMIENTO)).toBe(seguimientoInicial);
+    expect(reducirSeguimiento(seguimientoInicial, crecimiento(DISTANCIA_DE_LECTURA))).toBe(
+      seguimientoInicial,
+    );
     expect(reducirSeguimiento(seguimientoInicial, { tipo: SENAL_SEGUIMIENTO.ENVIO })).toBe(
       seguimientoInicial,
     );
@@ -145,7 +163,7 @@ describe("reducirSeguimiento", () => {
     expect(reducirSeguimiento(anotado, ajustePropio(POSICION_TIPO_A))).toBe(anotado);
     expect(reducirSeguimiento(anotado, desplazamiento(POSICION_TIPO_A, DISTANCIA_TIPO_A))).toBe(anotado);
     const conNuevo = conContenidoNuevo();
-    expect(reducirSeguimiento(conNuevo, CRECIMIENTO)).toBe(conNuevo);
+    expect(reducirSeguimiento(conNuevo, crecimiento(DISTANCIA_TRAS_CRECER))).toBe(conNuevo);
   });
 });
 
@@ -159,7 +177,7 @@ describe("D-78: el seguimiento se despega con cualquier subida de la usuaria", (
     expect(primerTramo.pegado).toBe(false);
     const segundoTramo = reducirSeguimiento(primerTramo, desplazamiento(900, 100));
     expect(segundoTramo.pegado).toBe(false);
-    const conNuevo = reducirSeguimiento(segundoTramo, CRECIMIENTO);
+    const conNuevo = reducirSeguimiento(segundoTramo, crecimiento(100));
     expect(conNuevo.pegado).toBe(false);
     expect(conNuevo.contenidoNuevo).toBe(true);
   });
@@ -185,10 +203,10 @@ describe("D-78: el seguimiento se despega con cualquier subida de la usuaria", (
 
   test("inercia táctil: los scrolls hacia arriba despegan, la vista no vuelve al final y aparece contenido nuevo", () => {
     const posiciones = posicionesDeInercia();
-    const senales = posiciones.flatMap((posicion, indice) => [
-      CRECIMIENTO,
-      desplazamiento(posicion, POSICION_INICIO_INERCIA - posicion + indice * CRECIMIENTO_DURANTE_INERCIA),
-    ]);
+    const senales = posiciones.flatMap((posicion, indice) => {
+      const distancia = POSICION_INICIO_INERCIA - posicion + indice * CRECIMIENTO_DURANTE_INERCIA;
+      return [crecimiento(distancia), desplazamiento(posicion, distancia)];
+    });
     const estados = recorrer(seguimientoInicial, [ajustePropio(POSICION_INICIO_INERCIA), ...senales]);
     const despegue = estados.findIndex((estado) => !estado.pegado);
     expect(despegue).toBeGreaterThan(0);
@@ -200,7 +218,7 @@ describe("D-78: el seguimiento se despega con cualquier subida de la usuaria", (
   test("auto-scroll propio (tipo A): el scroll de la bajada tras un crecimiento de 326 px no despega", () => {
     const estado = aplicar(seguimientoInicial, [
       ajustePropio(POSICION_TIPO_A),
-      CRECIMIENTO,
+      crecimiento(DISTANCIA_TIPO_A),
       desplazamiento(POSICION_TIPO_A, DISTANCIA_TIPO_A),
     ]);
     expect(estado.pegado).toBe(true);
@@ -245,11 +263,11 @@ describe("D-78: el seguimiento se despega con cualquier subida de la usuaria", (
   test("regresión de 2 o más casos a 375×667: 16 crecimientos con sus scrolls propios dejan la vista pegada", () => {
     const senales = DISTANCIAS_DEMO_375.flatMap((distancia, indice) => {
       const posicion = POSICION_INICIAL_DEMO_375 + indice * PASO_DE_POSICION_DEMO_375;
-      return [ajustePropio(posicion), CRECIMIENTO, desplazamiento(posicion, distancia)];
+      return [ajustePropio(posicion), crecimiento(distancia), desplazamiento(posicion, distancia)];
     });
     const ultima = POSICION_INICIAL_DEMO_375 + (DISTANCIAS_DEMO_375.length - 1) * PASO_DE_POSICION_DEMO_375;
     const cierreTipoB = [
-      CRECIMIENTO,
+      crecimiento(DISTANCIA_TIPO_B),
       desplazamiento(ultima + POSICION_TRAS_EL_ANCLAJE - POSICION_ANTES_DEL_ANCLAJE, DISTANCIA_TIPO_B),
     ];
     const estado = aplicar(seguimientoInicial, [...senales, ...cierreTipoB]);
@@ -270,7 +288,7 @@ describe("D-78.1: gana la dirección", () => {
   test("trackpad lento: una subida de 4 px con crecimiento intercalado despega", () => {
     const estado = aplicar(seguimientoInicial, [
       ajustePropio(POSICION_INICIO_WR_04),
-      CRECIMIENTO,
+      crecimiento(PASO_DE_TRACKPAD_LENTO),
       desplazamiento(POSICION_INICIO_WR_04 - PASO_DE_TRACKPAD_LENTO, PASO_DE_TRACKPAD_LENTO),
     ]);
     expect(estado.pegado).toBe(false);
@@ -305,14 +323,44 @@ describe("D-78.1: gana la dirección", () => {
   test("UI-08: con crecimientos intercalados, ni el ajuste propio ni el crecimiento vuelven a pegar; ENVIO sí", () => {
     const anterior = despegado();
     const estados = recorrer(anterior, [
-      CRECIMIENTO,
+      crecimiento(DISTANCIA_TRAS_CRECER),
       ajustePropio(POSICION_DE_LECTURA),
-      CRECIMIENTO,
+      crecimiento(DISTANCIA_TRAS_CRECER),
       ajustePropio(POSICION_INICIO_WR_04),
     ]);
     expect(estados.every((estado) => !estado.pegado)).toBe(true);
     const enviado = reducirSeguimiento(estados.at(-1) ?? anterior, { tipo: SENAL_SEGUIMIENTO.ENVIO });
     expect(enviado.pegado).toBe(true);
     expect(enviado.contenidoNuevo).toBe(false);
+  });
+});
+
+function secuenciaDelDiagnostico375(): SenalSeguimiento[] {
+  return [
+    ajustePropio(POSICION_ANTES_DE_LA_FLECHA_375),
+    desplazamiento(POSICION_TRAS_LA_FLECHA_375, DISTANCIA_TRAS_LA_FLECHA_375),
+    crecimiento(DISTANCIA_TRAS_LA_FLECHA_375),
+    desplazamiento(POSICION_TRAS_EL_ANCLAJE_375, DISTANCIA_TRAS_LA_FLECHA_375),
+  ];
+}
+
+function trazaCompleta375(): SenalSeguimiento[] {
+  return [
+    ajustePropio(POSICION_ANTES_DE_LA_FLECHA_375),
+    ...FOTOGRAMAS_DE_LA_FLECHA_375.map(({ posicion, distancia }) => desplazamiento(posicion, distancia)),
+    crecimiento(DISTANCIA_TRAS_LA_FLECHA_375),
+    desplazamiento(POSICION_TRAS_EL_ANCLAJE_375, DISTANCIA_TRAS_LA_FLECHA_375),
+  ];
+}
+
+describe("G-03-7: el anclaje con la vista despegada no la vuelve a pegar", () => {
+  test("G-03-7 diagnóstico a 375×667: flecha arriba, crecimiento y scroll de anclaje de +80 px dejan la vista despegada con contenido nuevo", () => {
+    for (const senales of [secuenciaDelDiagnostico375(), trazaCompleta375()]) {
+      const estados = recorrer(seguimientoInicial, senales);
+      const desdeLaFlecha = estados.slice(1);
+      expect(desdeLaFlecha.every((estado) => !estado.pegado)).toBe(true);
+      expect(estados.at(-1)?.contenidoNuevo).toBe(true);
+      expect(estados.at(-1)?.posicion).toBe(POSICION_TRAS_EL_ANCLAJE_375);
+    }
   });
 });
