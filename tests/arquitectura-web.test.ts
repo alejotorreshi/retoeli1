@@ -26,18 +26,9 @@ import { ACCION_UI, ESTADO_ACCESO, TIPO_CAMPO_CODIGO } from "@web/config/constan
 import { estadoRaizInicial, reducirRaiz } from "@web/store/raiz.ts";
 import * as selectores from "@web/store/selectores.ts";
 import type { AccionRaiz, EstadoRaiz } from "@web/types/store.type.ts";
-import { CODIGO_AGENTE } from "@/config/constants/agent.constants.ts";
-import {
-  DECISION_CONFIRMACION,
-  DESENLACE_ENVIO,
-  TIPO_ACCION,
-} from "@/config/constants/confirmation.constants.ts";
-import { CODIGO_ERROR } from "@/config/constants/errors.constants.ts";
-import { TIPO_ARCHIVO_CASO, TIPO_VISTA_PREVIA } from "@/config/constants/files.constants.ts";
-import { FORMATO } from "@/config/constants/forms.constants.ts";
-import { ESTADO_LLM } from "@/config/constants/llm.constants.ts";
-import { ESTADO_CAMPO, REGLA_MAPEO } from "@/config/constants/mapping.constants.ts";
-import { ESTADO_SOPORTE, ESTADO_VIGENCIA } from "@/config/constants/supports.constants.ts";
+import { TIPO_EVENTO } from "@/config/constants/agent.constants.ts";
+import { ESTADO_CAMPO } from "@/config/constants/mapping.constants.ts";
+import { CASO_GUION_PRD, TIPO_BLOQUEO_GUION } from "@/config/constants/preflight.constants.ts";
 import { HERRAMIENTA, NOMBRE_VISIBLE } from "@/config/constants/tools.constants.ts";
 import { TEXTO_PREFLIGHT } from "@/config/strings.ts";
 import type { SseEvent } from "@/http/types/api.type.ts";
@@ -109,7 +100,14 @@ const DUENO_DE_TOKENS = "web/src/styles/tokens.css";
 
 const PREFIJO_SELECTOR = "seleccionar";
 
-const SELECTOR_EN_LINEA = /\buseSeleccion\s*\(\s*(?![A-Za-z_$][\w$]*\s*\))/;
+const SELECTOR_EN_LINEA = /\buseSeleccion\s*\((?!\s*[A-Za-z_$][\w$]*\s*\))/;
+
+const SELECTOR_CON_NOMBRE = /\buseSeleccion\s*\(\s*([A-Za-z_$][\w$]*)\s*\)/;
+
+const IMPORTACION_DE_SELECTORES = /import\s*\{([^}]*)\}\s*from\s*["']@web\/store\/selectores\.ts["']/g;
+
+const MENSAJE_SELECTOR_EN_LINEA =
+  "useSeleccion recibe una función en línea; usa un selector con nombre de web/src/store/selectores.ts";
 
 const CASO_DE_MUESTRA = "co-industrias-delta";
 
@@ -130,6 +128,8 @@ const KEBAB = "[a-z0-9]+(?:-[a-z0-9]+)*";
 
 const ESTADO_DE_FEATURE = new RegExp(`^web/src/features/${KEBAB}/estado/`);
 
+const HOOK_EN_SU_CARPETA = new RegExp(`^web/src/(?:features/${KEBAB}|compartido)/(${KEBAB})/usar-\\1\\.ts$`);
+
 const VISTA = new RegExp(`^web/src/(?:features/${KEBAB}|compartido)/(${KEBAB})/\\1\\.tsx$`);
 
 const ARCHIVO_EN_CARPETA_DE_COMPONENTE = new RegExp(
@@ -139,8 +139,6 @@ const ARCHIVO_EN_CARPETA_DE_COMPONENTE = new RegExp(
 const CARPETA_RESERVADA = "estado";
 
 const MODULO_CSS = ".module.css";
-
-const HOOK_DE_COMPONENTE = new RegExp(`^usar-${KEBAB}\\.ts$`);
 
 const COMILLAS: ReadonlySet<string> = new Set(['"', "'", "`"]);
 
@@ -182,27 +180,24 @@ const MENSAJE_CODIGO_DEL_FRONT = "escribe un código del front como literal; usa
 const MENSAJE_CODIGO_DE_NEGOCIO =
   "copia un código de negocio del servidor; importa su constante de src/config/constants";
 
-const FAMILIAS_DE_NEGOCIO: readonly Readonly<Record<string, string>>[] = [
-  ESTADO_CAMPO,
-  REGLA_MAPEO,
-  ESTADO_SOPORTE,
-  ESTADO_VIGENCIA,
-  FORMATO,
-  TIPO_ARCHIVO_CASO,
-  TIPO_VISTA_PREVIA,
-  HERRAMIENTA,
-  NOMBRE_VISIBLE,
-  TIPO_ACCION,
-  DECISION_CONFIRMACION,
-  DESENLACE_ENVIO,
-  ESTADO_LLM,
-  CODIGO_ERROR,
-  CODIGO_AGENTE,
-];
+const CARPETA_DE_CONSTANTES_DEL_SERVIDOR = "src/config/constants/";
 
-const CODIGOS_DE_NEGOCIO: ReadonlySet<string> = new Set(
-  FAMILIAS_DE_NEGOCIO.flatMap((familia) => Object.values(familia)),
-);
+const CODIGO_COMPUESTO = /^[a-z][a-z0-9]*(?:[_-][a-z0-9]+)+$/;
+
+const PALABRAS_GENERICAS: ReadonlySet<string> = new Set([
+  "string",
+  "boolean",
+  "true",
+  "false",
+  "none",
+  "ok",
+  "error",
+  "text",
+  "lista",
+  "pendiente",
+  "envio",
+  "herramientas",
+]);
 
 const NUMERO_MAGICO = /(?<![\w$.])(?!(?:0|1)\b(?!\.))\d+(?:\.\d+)?/;
 
@@ -264,7 +259,7 @@ const UBICACIONES_WEB: readonly RegExp[] = [
   new RegExp(`^web/src/api/${KEBAB}\\.ts$`),
   new RegExp(`^web/src/store/${KEBAB}\\.ts$`),
   /^web\/src\/store\/proveedor-almacen\.tsx$/,
-  new RegExp(`^web/src/features/${KEBAB}/estado/${KEBAB}\\.ts$`),
+  new RegExp(`^web/src/features/${KEBAB}/estado/(?!usar-)${KEBAB}\\.ts$`),
   carpetaDeComponente(`features/${KEBAB}`),
   carpetaDeComponente("compartido"),
   new RegExp(`^web/src/styles/${KEBAB}\\.css$`),
@@ -307,6 +302,25 @@ async function codigosDelFront(): Promise<ReadonlySet<string>> {
 }
 
 const CODIGOS_DEL_FRONT = await codigosDelFront();
+
+function codigosExportados(exportado: unknown): readonly string[] {
+  if (typeof exportado === "string") return CODIGO_COMPUESTO.test(exportado) ? [exportado] : [];
+  return esFamiliaDeCodigos(exportado) ? Object.values(exportado) : [];
+}
+
+async function codigosDeNegocio(): Promise<ReadonlySet<string>> {
+  const codigos = new Set<string>();
+  for (const ruta of escanear(`${CARPETA_DE_CONSTANTES_DEL_SERVIDOR}*.constants.ts`)) {
+    const modulo: Record<string, unknown> = await import(join(RAIZ, ruta));
+    for (const exportado of Object.values(modulo)) {
+      for (const codigo of codigosExportados(exportado))
+        if (!PALABRAS_GENERICAS.has(codigo)) codigos.add(codigo);
+    }
+  }
+  return codigos;
+}
+
+const CODIGOS_DE_NEGOCIO = await codigosDeNegocio();
 
 function listarCodigoWeb(): string[] {
   return normalizar([...escanear(`${CARPETA_WEB}/**/*.ts`), ...escanear(`${CARPETA_WEB}/**/*.tsx`)]);
@@ -464,13 +478,31 @@ function violacionesDeEstilos(ruta: string, css: string): string[] {
   ].sort(porLinea);
 }
 
-function violacionesDeSelectorEnLinea(ruta: string, codigo: string): string[] {
-  return lineasQueCumplen(
-    ruta,
-    codigo,
-    SELECTOR_EN_LINEA,
-    "useSeleccion recibe una función en línea; usa un selector con nombre de web/src/store/selectores.ts",
+function selectoresImportados(codigo: string): ReadonlySet<string> {
+  return new Set(
+    [...codigo.matchAll(IMPORTACION_DE_SELECTORES)].flatMap((coincidencia) =>
+      (coincidencia[1] ?? "")
+        .split(",")
+        .map((nombre) => nombre.trim())
+        .filter((nombre) => nombre.length > 0 && !nombre.startsWith("type "))
+        .map((nombre) => nombre.split(/\s+as\s+/).at(-1) ?? nombre),
+    ),
   );
+}
+
+function violacionDeSelector(linea: string, importados: ReadonlySet<string>): string | null {
+  if (SELECTOR_EN_LINEA.test(linea)) return MENSAJE_SELECTOR_EN_LINEA;
+  const nombre = SELECTOR_CON_NOMBRE.exec(linea)?.[1];
+  if (nombre === undefined || importados.has(nombre)) return null;
+  return `useSeleccion recibe ${nombre}, que no se importa de web/src/store/selectores.ts`;
+}
+
+function violacionesDeSelectorEnLinea(ruta: string, codigo: string): string[] {
+  const importados = selectoresImportados(codigo);
+  return codigo.split("\n").flatMap((linea, indice) => {
+    const motivo = violacionDeSelector(linea, importados);
+    return motivo === null ? [] : [`${ruta}:${indice + 1}: ${motivo}`];
+  });
 }
 
 type Selector = (estado: EstadoRaiz) => unknown;
@@ -590,15 +622,11 @@ function violacionesDeEstilosAjenos(ruta: string, codigo: string): string[] {
     );
 }
 
-function nombreDeArchivo(ruta: string): string {
-  return ruta.slice(ruta.lastIndexOf("/") + 1);
-}
-
 function puedeImportarLaApi(ruta: string): boolean {
   return (
     ruta.startsWith(`${CARPETA_WEB}/api/`) ||
     ruta.startsWith(`${CARPETA_WEB}/store/`) ||
-    HOOK_DE_COMPONENTE.test(nombreDeArchivo(ruta))
+    HOOK_EN_SU_CARPETA.test(ruta)
   );
 }
 
@@ -883,6 +911,10 @@ describe("guardián de web/ sobre el código real", () => {
   test("W23: web/src no copia como literal los códigos de negocio de src/config/constants", () => {
     expect(CODIGOS_DE_NEGOCIO.has(ESTADO_CAMPO.FALTANTE)).toBe(true);
     expect(CODIGOS_DE_NEGOCIO.has(HERRAMIENTA.ARMAR_PAQUETE)).toBe(true);
+    expect(CODIGOS_DE_NEGOCIO.has(TIPO_EVENTO.FIN_TURNO)).toBe(true);
+    expect(CODIGOS_DE_NEGOCIO.has(CASO_GUION_PRD)).toBe(true);
+    expect(CODIGOS_DE_NEGOCIO.has(TIPO_BLOQUEO_GUION)).toBe(true);
+    for (const generica of PALABRAS_GENERICAS) expect(CODIGOS_DE_NEGOCIO.has(generica)).toBe(false);
     expect(sobreElCodigo(violacionesDeCodigosDeNegocio)).toEqual([]);
   });
 
@@ -1161,6 +1193,7 @@ describe("el guardián de web/ muerde sobre fuentes de muestra", () => {
       "web/src/features/chat/a/b.tsx",
       "web/src/features/chat/compositor/usar-otro.ts",
       "web/src/features/chat/estado/vista.tsx",
+      "web/src/features/chat/estado/usar-conversacion.ts",
       "web/src/compartido/aviso.tsx",
     ];
     expect(rutas.flatMap(violacionesDeUbicacion)).toEqual([
@@ -1180,6 +1213,7 @@ describe("el guardián de web/ muerde sobre fuentes de muestra", () => {
       "web/src/features/chat/a/b.tsx: no está en una carpeta de rol de web/src con su sufijo",
       "web/src/features/chat/compositor/usar-otro.ts: no está en una carpeta de rol de web/src con su sufijo",
       "web/src/features/chat/estado/vista.tsx: no está en una carpeta de rol de web/src con su sufijo",
+      "web/src/features/chat/estado/usar-conversacion.ts: no está en una carpeta de rol de web/src con su sufijo",
       "web/src/compartido/aviso.tsx: no está en una carpeta de rol de web/src con su sufijo",
     ]);
   });
@@ -1259,6 +1293,15 @@ describe("el guardián de web/ muerde sobre fuentes de muestra", () => {
     expect(violacionesDeApiTransversal("web/src/components/x.tsx", codigo)).toEqual([
       "web/src/components/x.tsx: solo los hooks usar-*.ts y el almacén importan @web/api/cliente-api.ts",
     ]);
+    for (const ruta of [
+      "web/src/features/chat/estado/usar-x.ts",
+      "web/src/features/chat/x/usar-y.ts",
+      "web/src/hooks/usar-x.ts",
+    ]) {
+      expect(violacionesDeApiTransversal(ruta, codigo)).toEqual([
+        `${ruta}: solo los hooks usar-*.ts y el almacén importan @web/api/cliente-api.ts`,
+      ]);
+    }
     for (const ruta of [
       "web/src/features/chat/x/usar-x.ts",
       "web/src/store/dependencias.ts",
@@ -1385,11 +1428,16 @@ describe("el guardián de web/ muerde sobre fuentes de muestra", () => {
       'const etiqueta = "Faltante";',
       'if ("formulario" in valor) return;',
       "if (campo.estado === ESTADO_CAMPO.FALTANTE) return;",
+      'despachar({ tipo: "turn_end" });',
+      'const caso = "ec-corp-andina";',
+      'const tipo = visible ? "text" : "password";',
     ].join("\n");
     expect(violacionesDeCodigosDeNegocio(ruta, codigo)).toEqual([
       `${ruta}:1: ${MENSAJE_CODIGO_DE_NEGOCIO}`,
       `${ruta}:2: ${MENSAJE_CODIGO_DE_NEGOCIO}`,
       `${ruta}:3: ${MENSAJE_CODIGO_DE_NEGOCIO}`,
+      `${ruta}:7: ${MENSAJE_CODIGO_DE_NEGOCIO}`,
+      `${ruta}:8: ${MENSAJE_CODIGO_DE_NEGOCIO}`,
     ]);
     const constantes = "web/src/config/constants/x.constants.ts";
     expect(
@@ -1419,10 +1467,15 @@ describe("el guardián de web/ muerde sobre fuentes de muestra", () => {
       "const y = useSeleccion(",
       "  (estado) => estado.y,",
       ");",
+      'import { seleccionarEnCurso, seleccionarTurnos } from "@web/store/selectores.ts";',
+      "const seleccionarLocal = (estado: EstadoRaiz) => ({ turnos: estado.conversacion.turnos });",
+      "const local = useSeleccion(seleccionarLocal);",
+      "const enCurso = useSeleccion( seleccionarEnCurso );",
     ].join("\n");
     expect(violacionesDeSelectorEnLinea(ruta, codigo)).toEqual([
       `${ruta}:1: useSeleccion recibe una función en línea; usa un selector con nombre de web/src/store/selectores.ts`,
       `${ruta}:3: useSeleccion recibe una función en línea; usa un selector con nombre de web/src/store/selectores.ts`,
+      `${ruta}:8: useSeleccion recibe seleccionarLocal, que no se importa de web/src/store/selectores.ts`,
     ]);
   });
 });

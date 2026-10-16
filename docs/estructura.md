@@ -148,7 +148,7 @@ Direcciones permitidas:
 - El texto del modelo y del servidor se pinta como nodo de texto de React con `white-space: pre-wrap`. Nunca `dangerouslySetInnerHTML`, `innerHTML` ni markdown.
 - `sessionStorage` está prohibido y `localStorage` solo vive en `web/src/api/sesion-local.ts`.
 - Ningún CSS de `web/src` salvo `tokens.css` lleva colores hex, `rgb()`, `px`, otras unidades ni porcentajes sueltos (solo `0%`, `50%` y `100%`): todo valor sale de un `var(--…)` de `tokens.css`.
-- Las vistas no importan la api, el almacén ni el estado: todo llega por su hook. La api solo la importan los hooks `usar-*.ts` y el almacén.
+- Las vistas no importan la api, el almacén ni el estado: todo llega por su hook. La api solo la importan el hook `usar-<c>.ts` de cada carpeta de componente y el almacén.
 - Los códigos y estados se comparan, etiquetan, devuelven y asignan con el miembro de su objeto `as const`, nunca con el literal (W22), y los códigos de negocio del servidor se importan de `src/config/constants` y nunca se copian (W23): el servidor decide y el front presenta.
 
 Idioma: los identificadores del front van en español, con los nombres de componente de la UI-SPEC.
