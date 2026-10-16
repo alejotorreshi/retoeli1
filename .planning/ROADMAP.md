@@ -295,14 +295,14 @@ Plans:
   4. GitHub Actions corre `bun test`, `bun run demo.ts`, `tsc --noEmit` y lint en verde, y el README muestra el badge.
   5. El script de pre-flight calienta el servicio en Render y verifica health y SSE, y el guion §11 completo se ensaya con éxito sobre el link público.
 
-**Plans:** 1/7 plans executed
+**Plans:** 2/7 plans executed
 
 Plans:
 **Wave 1**
 - [x] 04-01-PLAN.md — Generador de `modulo/` (agent.md y SKILL.md byte a byte desde el prompt y el conocimiento) y la capa `src/cli` con su guardián
 
 **Wave 2** *(blocked on Wave 1 completion)*
-- [ ] 04-02-PLAN.md — `modulo/tools/proveedor.ts` como re-export con identidad de referencia, `.opencode/tools`, `opencode.json` y `modulo/README.md`
+- [x] 04-02-PLAN.md — `modulo/tools/proveedor.ts` como re-export con identidad de referencia, `.opencode/tools`, `opencode.json` y `modulo/README.md`
 - [ ] 04-03-PLAN.md — CI de GitHub Actions (check sin audit, test, demo, build; audit aparte que no bloquea) y Render con `autoDeployTrigger: checksPass`
 
 **Wave 3** *(blocked on Wave 2 completion)*
@@ -329,4 +329,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 | 1. Núcleo determinista | 15/15 | Complete    | 2026-10-13 |
 | 2. Agente y compuerta de confirmación | 24/24 | Complete    | 2026-10-14 |
 | 3. Chat web, API SSE y despliegue | 47/47 | Complete    | 2026-10-15 |
-| 4. Módulo, documentación y defensa | 1/7 | In Progress | - |
+| 4. Módulo, documentación y defensa | 2/7 | In Progress | - |

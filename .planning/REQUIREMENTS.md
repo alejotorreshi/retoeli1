@@ -135,8 +135,8 @@ Fuente vinculante: `reto-01/PRD.md`, sin modificar. Fixtures: `reto-01/fixtures/
 
 ### Bonus: módulo reutilizable (§9.4)
 
-- [ ] **MOD-01**: `modulo/` contiene `agent.md` (frontmatter `description`, `mode: primary`, `permission {edit: deny, bash: deny}` y como cuerpo el prompt), `tools/proveedor.ts` y `skill/registro-proveedor/SKILL.md` (frontmatter `name` y `description`, y como cuerpo el conocimiento).
-- [ ] **MOD-02**: `modulo/` es fuente única. Un script genera `agent.md` y `SKILL.md` desde `agent/prompt.md` y `src/knowledge/`, y `tools/proveedor.ts` re-exporta las herramientas de la app. Hay tests de igualdad byte a byte, de identidad de referencia y de importación sin env.
+- [x] **MOD-01**: `modulo/` contiene `agent.md` (frontmatter `description`, `mode: primary`, `permission {edit: deny, bash: deny}` y como cuerpo el prompt), `tools/proveedor.ts` y `skill/registro-proveedor/SKILL.md` (frontmatter `name` y `description`, y como cuerpo el conocimiento).
+- [x] **MOD-02**: `modulo/` es fuente única. Un script genera `agent.md` y `SKILL.md` desde `agent/prompt.md` y `src/knowledge/`, y `tools/proveedor.ts` re-exporta las herramientas de la app. Hay tests de igualdad byte a byte, de identidad de referencia y de importación sin env.
 
 ## v2 Requirements
 
@@ -246,8 +246,8 @@ Cada requisito v1 está asignado a exactamente una fase del roadmap (`.planning/
 | DEP-03 | Phase 4 | Pending |
 | DOC-01 | Phase 4 | Pending |
 | DOC-02 | Phase 4 | Pending |
-| MOD-01 | Phase 4 | Pending |
-| MOD-02 | Phase 4 | Pending |
+| MOD-01 | Phase 4 | Complete |
+| MOD-02 | Phase 4 | Complete |
 
 **Coverage:**
 - v1 requirements: 73 total
