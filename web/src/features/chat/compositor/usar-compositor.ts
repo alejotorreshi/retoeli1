@@ -33,7 +33,6 @@ export function useCompositor(): ControlCompositor {
   const pausado = useSeleccion(seleccionarEnvioEnPausa);
   const uso = useSeleccion(seleccionarUsoDeSesion);
   const { cambiarBorrador, enviar, detener, registrarCampoDelMensaje } = useAcciones();
-  const idCampo = useId();
   const idAyuda = useId();
   const idContador = useId();
   const contador = contadorDe(valor.length, maximo);
@@ -55,7 +54,6 @@ export function useCompositor(): ControlCompositor {
   }
 
   return {
-    idCampo,
     registrarCampo: registrarCampoDelMensaje,
     idAyuda,
     idContador,
