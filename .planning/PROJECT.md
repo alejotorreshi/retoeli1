@@ -36,12 +36,14 @@ El agente **nunca inventa un dato**. Cada valor de un formulario sale de una her
 - ✓ Protección de PII: redacción en logs, API y resúmenes de tool calls, más minimización hacia el LLM (el modelo ve rutas y valores enmascarados; las herramientas escriben el valor real solo en los archivos de salida). — Phase 2 (agente) y Phase 3 (API, SSE, vistas previas enmascaradas; escaneo PII de la QA)
 - ✓ Seguridad y costo: la clave de DeepSeek solo vive en una env var del backend, el link público lleva código de acceso, y hay rate limit, tope de tokens por sesión y timeout al proveedor. — Phase 3 (03-SECURITY.md: 87/87 amenazas cerradas; el tope de 5 intentos por IP es aproximado y está documentado en docs/limites-del-demo.md)
 - ✓ Despliegue público en Render (free) con Dockerfile portable como plan B, y `.env.example` sin valores. — Phase 3 (link público sirviendo HEAD e953108, verificado por QA T18)
+- ✓ Bonus `modulo/`: `agent.md` y `SKILL.md` generados byte a byte desde `agent/prompt.md` y `src/knowledge/` (`bun run modulo`), y `tools/proveedor.ts` re-exporta las mismas herramientas de la app (`===`). Lo cubren tests de igualdad, deriva e importación sin env; además hay `.opencode/tools` y `opencode.json`. — Phase 4 (no se ensayó en vivo en OpenCode, D-83)
+- ✓ Tests: unitarios de dominio, contrato de herramientas, ciclo del agente con LLM falso, `demo.ts` como e2e determinista y guardianes; la CI de GitHub Actions los corre en verde (CI #5 sobre ace1a4d). — Phases 1–4
+- ✓ Documentación: `README.md` (badge, un comando, env vars, demo, link y código de acceso), `SOLUCION.md` con las 10 secciones del PRD §9.1 y el costo medido del `usage` real, y continuidad en `docs/arquitectura.md` y `docs/convenciones.md`. — Phase 4
+- ✓ Defensa: `bun run preflight` (por defecto no gasta tokens; `--guion` corre el §11 por SSE) y ensayo del §11 sobre el link público con Playwright, en verde. Render despliega solo con `checksPass`. — Phase 4
 
 ### Active
 
-- [ ] Bonus `modulo/`: `agent.md`, `tools/proveedor.ts` y `skill/registro-proveedor/SKILL.md` como la **misma fuente** que consume la app (generados o enlazados, no copias divergentes).
-- [ ] Tests: unitarios de dominio (mapeo, reglas de país, vigencias), contrato de herramientas, ciclo del agente con LLM falso y `demo.ts` como e2e determinista.
-- [ ] Documentación: `README.md` (un comando para levantar, env vars, demo, link y clave de acceso) y `SOLUCION.md` con las 10 secciones obligatorias del PRD, incluido el diseño del portal web y el uso de IA.
+- (ninguno: el alcance v1 del reto está completo)
 
 ### Out of Scope
 
@@ -99,6 +101,9 @@ El agente **nunca inventa un dato**. Cada valor de un formulario sale de una her
 | Ids canónicos de soporte en datos de herramientas y en la consola de la demo; nombres en español solo en checklist, borrador y ENVIO | Contrato v1 estable; el PRD §6.6 solo pide "un resumen por caso" | ✓ Good — decisión humana en UAT (WR-03); documentar en SOLUCION.md |
 | La compuerta de confirmación la decide el servidor; el rechazo por texto libre se acota con la regla de primera palabra (D-63.11) y se deja de iterar la gramática | Los planes 02-22 a 02-24 corregían un lado y abrían el otro; la propiedad de seguridad (nunca enviar sin confirmación explícita) se mantuvo siempre | ✓ Good — Fase 2, aceptado en UAT (HV3, D5); los casos límite van a SOLUCION.md y el botón de la Fase 3 (D-39) los evita |
 | Cortar el ciclo de cierres de brechas del limitador de acceso: revertir la separación de reservas en vuelo (71d8d20) y aceptar con override el tope por IP aproximado, el aviso tras un envío confirmado fallido y truncado, y la flecha de 40 px a 375×667 | Cada parche del limitador destapaba un caso adversarial más rebuscado; ninguno afectaba el objetivo de la fase, el Core Value ni la SPA, y el riesgo real para el reto era el despliegue desactualizado | ✓ Good — Fase 3 cerrada con verificación passed, UAT 11/11 y SECURITY 87/87; los límites van en docs/limites-del-demo.md y en SOLUCION.md como trabajo futuro |
+| `modulo/` es fuente única: generador byte a byte más re-export por identidad; `.opencode/tools/proveedor.ts` enlaza el módulo porque OpenCode solo carga herramientas desde ahí (D-79..D-83, D-96) | El §9.4 pide las mismas piezas que usa la app, no copias divergentes | Hecho, Phase 4 |
+| CI con la auditoría en un job aparte que no bloquea, y Render con `autoDeployTrigger: checksPass` (D-90, D-91) | Un aviso de terceros la víspera no debe poner el badge en rojo, y solo se despliega lo que pasó la CI | Verde, Phase 4 |
+| Pre-flight sin tokens por defecto y `--guion` para el §11; el chequeo SSE no exige X-Accel-Buffering porque el borde de Render la quita (D-92, D-97, CR-01) | Calentar el servicio sin gastar la clave y no fallar sobre el link público | Verde en vivo, Phase 4 |
 
 ## Evolution
 
@@ -118,4 +123,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-10-16 after Phase 3*
+*Last updated: 2026-10-16 after Phase 4*

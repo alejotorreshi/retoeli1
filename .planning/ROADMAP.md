@@ -15,7 +15,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 1: Núcleo determinista** - Dominio puro, las 5 herramientas `proveedor_*`, formularios xlsx/pdf/portal, paquete para firma, logs y `demo.ts` con golden tests, sin LLM (completed 2026-10-13)
 - [x] **Phase 2: Agente y compuerta de confirmación** - Adaptador DeepSeek con resiliencia, ciclo propio con topes, sesiones y compuerta de confirmación decidida por el servidor (completed 2026-10-14)
 - [x] **Phase 3: Chat web, API SSE y despliegue** - API Hono con SSE y código de acceso, chat React con tool calls visibles y link público activo en Render (completed 2026-10-15)
-- [ ] **Phase 4: Módulo, documentación y defensa** - Bonus `modulo/` como fuente única, README, SOLUCION.md, CI y pre-flight de la defensa
+- [x] **Phase 4: Módulo, documentación y defensa** - Bonus `modulo/` como fuente única, README, SOLUCION.md, CI y pre-flight de la defensa (completed 2026-10-16)
 
 ## Phase Details
 
@@ -295,7 +295,7 @@ Plans:
   4. GitHub Actions corre `bun test`, `bun run demo.ts`, `tsc --noEmit` y lint en verde, y el README muestra el badge.
   5. El script de pre-flight calienta el servicio en Render y verifica health y SSE, y el guion §11 completo se ensaya con éxito sobre el link público.
 
-**Plans:** 8/8 plans executed
+**Plans:** 8/8 plans complete
 
 Plans:
 **Wave 1**
@@ -332,4 +332,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 | 1. Núcleo determinista | 15/15 | Complete    | 2026-10-13 |
 | 2. Agente y compuerta de confirmación | 24/24 | Complete    | 2026-10-14 |
 | 3. Chat web, API SSE y despliegue | 47/47 | Complete    | 2026-10-15 |
-| 4. Módulo, documentación y defensa | 8/8 | In Progress | - |
+| 4. Módulo, documentación y defensa | 8/8 | Complete    | 2026-10-16 |
