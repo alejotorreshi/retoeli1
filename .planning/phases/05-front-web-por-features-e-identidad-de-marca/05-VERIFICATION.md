@@ -1,223 +1,218 @@
 ---
 phase: 05-front-web-por-features-e-identidad-de-marca
-verified: 2026-10-16T20:45:25Z
-status: human_needed
-score: 19/20 must-haves verified
-covered_files: [".claude/CLAUDE.md",".gitattributes",".planning/phases/05-front-web-por-features-e-identidad-de-marca/05-01-PLAN.md",".planning/phases/05-front-web-por-features-e-identidad-de-marca/05-01-SUMMARY.md",".planning/phases/05-front-web-por-features-e-identidad-de-marca/05-02-PLAN.md",".planning/phases/05-front-web-por-features-e-identidad-de-marca/05-02-SUMMARY.md",".planning/phases/05-front-web-por-features-e-identidad-de-marca/05-03-PLAN.md",".planning/phases/05-front-web-por-features-e-identidad-de-marca/05-03-SUMMARY.md",".planning/phases/05-front-web-por-features-e-identidad-de-marca/05-04-PLAN.md",".planning/phases/05-front-web-por-features-e-identidad-de-marca/05-04-SUMMARY.md",".planning/phases/05-front-web-por-features-e-identidad-de-marca/05-05-PLAN.md",".planning/phases/05-front-web-por-features-e-identidad-de-marca/05-05-SUMMARY.md",".planning/phases/05-front-web-por-features-e-identidad-de-marca/05-06-PLAN.md",".planning/phases/05-front-web-por-features-e-identidad-de-marca/05-06-SUMMARY.md",".planning/phases/05-front-web-por-features-e-identidad-de-marca/05-07-PLAN.md",".planning/phases/05-front-web-por-features-e-identidad-de-marca/05-07-SUMMARY.md",".planning/phases/05-front-web-por-features-e-identidad-de-marca/05-08-PLAN.md",".planning/phases/05-front-web-por-features-e-identidad-de-marca/05-08-SUMMARY.md",".planning/phases/05-front-web-por-features-e-identidad-de-marca/05-09-PLAN.md",".planning/phases/05-front-web-por-features-e-identidad-de-marca/05-09-SUMMARY.md","SOLUCION.md","bun.lock","docs/arquitectura.md","docs/convenciones.md","docs/estructura.md","package.json","src/config/strings.ts","tests/architecture.test.ts","tests/arquitectura-web.test.ts","tests/docs/solucion.test.ts","tests/globales-nativos.test.ts","tests/helpers/app-dom.helper.ts","tests/helpers/dom.helper.ts","tests/helpers/red-web.helper.ts","tests/helpers/types/dom.type.ts","tests/helpers/types/red-web.type.ts","tests/http/estatico.test.ts","tests/sin-comentarios.test.ts","tests/web/acciones-rapidas.test.ts","tests/web/archivos.test.ts","tests/web/confirmaciones.test.ts","tests/web/conversacion.test.ts","tests/web/dom/app-acceso.test.tsx","tests/web/dom/app-angosto.test.tsx","tests/web/dom/app-panel.test.tsx","tests/web/dom/app.test.tsx","tests/web/estado-del-modelo.test.ts","tests/web/herramientas.test.ts","tests/web/hidratacion.test.ts","tests/web/marca.test.ts","tests/web/pestanas.test.ts","tests/web/progreso.test.ts","tests/web/seguimiento.test.ts","tests/web/store/acciones.test.ts","tests/web/store/almacen.test.ts","tests/web/store/app-con-almacen.test.tsx","tests/web/store/selectores.test.ts","tests/web/store/slices.test.ts","tests/web/tarjeta-caso.test.ts","tsconfig.dom.json","tsconfig.json","web/index.html","web/public/fuentes/OFL-Montserrat.txt","web/public/fuentes/OFL-Outfit.txt","web/public/fuentes/montserrat-latin-400.woff2","web/public/fuentes/montserrat-latin-600.woff2","web/public/fuentes/outfit-latin-600.woff2","web/public/marca/favicon.jpg","web/public/marca/periferia-it-group.webp","web/src/api/cliente-api.ts","web/src/app.tsx","web/src/compartido/aviso/aviso.module.css","web/src/compartido/aviso/aviso.tsx","web/src/compartido/iconos/iconos.tsx","web/src/compartido/logo-marca/logo-marca.module.css","web/src/compartido/logo-marca/logo-marca.tsx","web/src/config/constants/marca.constants.ts","web/src/config/constants/pais.constants.ts","web/src/config/constants/ui.constants.ts","web/src/config/strings.ts","web/src/features/acceso/pantalla-acceso/pantalla-acceso.module.css","web/src/features/acceso/pantalla-acceso/pantalla-acceso.tsx","web/src/features/acceso/pantalla-acceso/usar-pantalla-acceso.ts","web/src/features/acceso/pantalla-carga/pantalla-carga.module.css","web/src/features/acceso/pantalla-carga/pantalla-carga.tsx","web/src/features/archivos/aviso-disco-efimero/aviso-disco-efimero.module.css","web/src/features/archivos/aviso-disco-efimero/aviso-disco-efimero.tsx","web/src/features/archivos/aviso-disco-efimero/usar-aviso-disco-efimero.ts","web/src/features/archivos/dialogo-vista-previa/dialogo-vista-previa.module.css","web/src/features/archivos/dialogo-vista-previa/dialogo-vista-previa.tsx","web/src/features/archivos/dialogo-vista-previa/usar-dialogo-vista-previa.ts","web/src/features/archivos/estado/vista-previa.ts","web/src/features/archivos/lista-archivos/lista-archivos.module.css","web/src/features/archivos/lista-archivos/lista-archivos.tsx","web/src/features/archivos/lista-archivos/usar-lista-archivos.ts","web/src/features/casos/bloque-caso/bloque-caso.module.css","web/src/features/casos/bloque-caso/bloque-caso.tsx","web/src/features/casos/bloque-caso/usar-bloque-caso.ts","web/src/features/casos/estado/casos.ts","web/src/features/casos/panel-casos/panel-casos.module.css","web/src/features/casos/panel-casos/panel-casos.tsx","web/src/features/casos/panel-casos/usar-panel-casos.ts","web/src/features/casos/progreso-caso/progreso-caso.module.css","web/src/features/casos/progreso-caso/progreso-caso.tsx","web/src/features/casos/tarjeta-resultado/tarjeta-resultado.module.css","web/src/features/casos/tarjeta-resultado/tarjeta-resultado.tsx","web/src/features/casos/tarjeta-resultado/usar-tarjeta-resultado.ts","web/src/features/chat/acciones-rapidas/acciones-rapidas.module.css","web/src/features/chat/acciones-rapidas/acciones-rapidas.tsx","web/src/features/chat/acciones-rapidas/usar-acciones-rapidas.ts","web/src/features/chat/compositor/compositor.module.css","web/src/features/chat/compositor/compositor.tsx","web/src/features/chat/compositor/usar-compositor.ts","web/src/features/chat/estado-vacio/estado-vacio.module.css","web/src/features/chat/estado-vacio/estado-vacio.tsx","web/src/features/chat/estado-vacio/usar-estado-vacio.ts","web/src/features/chat/estado/conversacion.ts","web/src/features/chat/estado/seguimiento.ts","web/src/features/chat/estado/tarjeta-caso.ts","web/src/features/chat/indicador-pensando/indicador-pensando.module.css","web/src/features/chat/indicador-pensando/indicador-pensando.tsx","web/src/features/chat/indicador-pensando/usar-indicador-pensando.ts","web/src/features/chat/linea-de-tiempo/linea-de-tiempo.module.css","web/src/features/chat/linea-de-tiempo/linea-de-tiempo.tsx","web/src/features/chat/linea-de-tiempo/usar-linea-de-tiempo.ts","web/src/features/chat/mensaje/mensaje.module.css","web/src/features/chat/mensaje/mensaje.tsx","web/src/features/chat/tarjeta-caso/tarjeta-caso.module.css","web/src/features/chat/tarjeta-caso/tarjeta-caso.tsx","web/src/features/chat/tarjeta-caso/usar-tarjeta-caso.ts","web/src/features/confirmacion/estado/confirmaciones.ts","web/src/features/confirmacion/tarjeta-confirmacion/tarjeta-confirmacion.module.css","web/src/features/confirmacion/tarjeta-confirmacion/tarjeta-confirmacion.tsx","web/src/features/confirmacion/tarjeta-confirmacion/usar-tarjeta-confirmacion.ts","web/src/features/disposicion/barra-pestanas/barra-pestanas.module.css","web/src/features/disposicion/barra-pestanas/barra-pestanas.tsx","web/src/features/disposicion/barra-pestanas/usar-barra-pestanas.ts","web/src/features/disposicion/columnas/columnas.module.css","web/src/features/disposicion/columnas/columnas.tsx","web/src/features/disposicion/columnas/usar-columnas.ts","web/src/features/disposicion/estado/pestanas.ts","web/src/features/encabezado/aviso-modelo/aviso-modelo.module.css","web/src/features/encabezado/aviso-modelo/aviso-modelo.tsx","web/src/features/encabezado/aviso-modelo/usar-aviso-modelo.ts","web/src/features/encabezado/encabezado/encabezado.module.css","web/src/features/encabezado/encabezado/encabezado.tsx","web/src/features/encabezado/encabezado/usar-encabezado.ts","web/src/features/encabezado/estado/modelo.ts","web/src/features/encabezado/estado/salud.ts","web/src/features/herramientas/grupo-herramientas/grupo-herramientas.module.css","web/src/features/herramientas/grupo-herramientas/grupo-herramientas.tsx","web/src/features/herramientas/grupo-herramientas/usar-grupo-herramientas.ts","web/src/features/herramientas/tarjeta-herramienta/tarjeta-herramienta.module.css","web/src/features/herramientas/tarjeta-herramienta/tarjeta-herramienta.tsx","web/src/features/herramientas/tarjeta-herramienta/usar-tarjeta-herramienta.ts","web/src/features/sesion/dialogo-nueva-sesion/dialogo-nueva-sesion.module.css","web/src/features/sesion/dialogo-nueva-sesion/dialogo-nueva-sesion.tsx","web/src/features/sesion/dialogo-nueva-sesion/usar-dialogo-nueva-sesion.ts","web/src/features/sesion/estado/dialogo-sesion.ts","web/src/features/sesion/estado/hidratacion.ts","web/src/main.tsx","web/src/store/acciones.ts","web/src/store/almacen.ts","web/src/store/dependencias.ts","web/src/store/instancia.ts","web/src/store/proveedor-almacen.tsx","web/src/store/raiz.ts","web/src/store/selectores.ts","web/src/store/usar-almacen.ts","web/src/styles/global.css","web/src/styles/tokens.css","web/src/types/chat.type.ts","web/src/types/store.type.ts","web/src/types/ui.type.ts","web/vite.config.ts"]
-covered_digest: "v3:sha256:bf1b27430ee54494019bc0d6bfc629987b6dbfcc88f67c4300f7df6fc5727acd"
+verified: 2026-10-16T23:49:30Z
+status: passed
+score: 29/29 must-haves verified
+covered_files: [".claude/CLAUDE.md",".gitattributes",".planning/phases/05-front-web-por-features-e-identidad-de-marca/05-01-PLAN.md",".planning/phases/05-front-web-por-features-e-identidad-de-marca/05-01-SUMMARY.md",".planning/phases/05-front-web-por-features-e-identidad-de-marca/05-02-PLAN.md",".planning/phases/05-front-web-por-features-e-identidad-de-marca/05-02-SUMMARY.md",".planning/phases/05-front-web-por-features-e-identidad-de-marca/05-03-PLAN.md",".planning/phases/05-front-web-por-features-e-identidad-de-marca/05-03-SUMMARY.md",".planning/phases/05-front-web-por-features-e-identidad-de-marca/05-04-PLAN.md",".planning/phases/05-front-web-por-features-e-identidad-de-marca/05-04-SUMMARY.md",".planning/phases/05-front-web-por-features-e-identidad-de-marca/05-05-PLAN.md",".planning/phases/05-front-web-por-features-e-identidad-de-marca/05-05-SUMMARY.md",".planning/phases/05-front-web-por-features-e-identidad-de-marca/05-06-PLAN.md",".planning/phases/05-front-web-por-features-e-identidad-de-marca/05-06-SUMMARY.md",".planning/phases/05-front-web-por-features-e-identidad-de-marca/05-07-PLAN.md",".planning/phases/05-front-web-por-features-e-identidad-de-marca/05-07-SUMMARY.md",".planning/phases/05-front-web-por-features-e-identidad-de-marca/05-08-PLAN.md",".planning/phases/05-front-web-por-features-e-identidad-de-marca/05-08-SUMMARY.md",".planning/phases/05-front-web-por-features-e-identidad-de-marca/05-09-PLAN.md",".planning/phases/05-front-web-por-features-e-identidad-de-marca/05-09-SUMMARY.md",".planning/phases/05-front-web-por-features-e-identidad-de-marca/05-10-PLAN.md",".planning/phases/05-front-web-por-features-e-identidad-de-marca/05-10-SUMMARY.md",".planning/phases/05-front-web-por-features-e-identidad-de-marca/05-11-PLAN.md",".planning/phases/05-front-web-por-features-e-identidad-de-marca/05-11-SUMMARY.md",".planning/phases/05-front-web-por-features-e-identidad-de-marca/05-UAT.md",".planning/phases/05-front-web-por-features-e-identidad-de-marca/05-UI-SPEC.md",".qa/evidence/05-front-web-por-features-e-identidad-de-marca/05-QA-EVIDENCE-2026-10-16T22-05-00Z.md",".qa/evidence/05-front-web-por-features-e-identidad-de-marca/05-QA-EVIDENCE-2026-10-17T00-05-00Z.md","SOLUCION.md","bun.lock","docs/arquitectura.md","docs/convenciones.md","docs/estructura.md","package.json","src/config/strings.ts","tests/architecture.test.ts","tests/arquitectura-web.test.ts","tests/docs/solucion.test.ts","tests/globales-nativos.test.ts","tests/helpers/app-dom.helper.ts","tests/helpers/dom.helper.ts","tests/helpers/red-web.helper.ts","tests/helpers/types/dom.type.ts","tests/helpers/types/red-web.type.ts","tests/http/estatico.test.ts","tests/sin-comentarios.test.ts","tests/web/acciones-rapidas.test.ts","tests/web/archivos.test.ts","tests/web/confirmaciones.test.ts","tests/web/conversacion.test.ts","tests/web/dom/app-acceso.test.tsx","tests/web/dom/app-angosto.test.tsx","tests/web/dom/app-panel.test.tsx","tests/web/dom/app.test.tsx","tests/web/dom/seguimiento-vacio.test.tsx","tests/web/estado-del-modelo.test.ts","tests/web/herramientas.test.ts","tests/web/hidratacion.test.ts","tests/web/marca.test.ts","tests/web/pestanas.test.ts","tests/web/progreso.test.ts","tests/web/seguimiento.test.ts","tests/web/store/acciones.test.ts","tests/web/store/almacen.test.ts","tests/web/store/app-con-almacen.test.tsx","tests/web/store/selectores.test.ts","tests/web/store/slices.test.ts","tests/web/tarjeta-caso.test.ts","tsconfig.dom.json","tsconfig.json","web/index.html","web/public/fuentes/OFL-Montserrat.txt","web/public/fuentes/OFL-Outfit.txt","web/public/fuentes/montserrat-latin-400.woff2","web/public/fuentes/montserrat-latin-600.woff2","web/public/fuentes/outfit-latin-600.woff2","web/public/marca/favicon.jpg","web/public/marca/periferia-it-group.webp","web/src/api/cliente-api.ts","web/src/app.tsx","web/src/compartido/aviso/aviso.module.css","web/src/compartido/aviso/aviso.tsx","web/src/compartido/iconos/iconos.tsx","web/src/compartido/logo-marca/logo-marca.module.css","web/src/compartido/logo-marca/logo-marca.tsx","web/src/config/constants/marca.constants.ts","web/src/config/constants/pais.constants.ts","web/src/config/constants/ui.constants.ts","web/src/config/strings.ts","web/src/features/acceso/pantalla-acceso/pantalla-acceso.module.css","web/src/features/acceso/pantalla-acceso/pantalla-acceso.tsx","web/src/features/acceso/pantalla-acceso/usar-pantalla-acceso.ts","web/src/features/acceso/pantalla-carga/pantalla-carga.module.css","web/src/features/acceso/pantalla-carga/pantalla-carga.tsx","web/src/features/archivos/aviso-disco-efimero/aviso-disco-efimero.module.css","web/src/features/archivos/aviso-disco-efimero/aviso-disco-efimero.tsx","web/src/features/archivos/aviso-disco-efimero/usar-aviso-disco-efimero.ts","web/src/features/archivos/dialogo-vista-previa/dialogo-vista-previa.module.css","web/src/features/archivos/dialogo-vista-previa/dialogo-vista-previa.tsx","web/src/features/archivos/dialogo-vista-previa/usar-dialogo-vista-previa.ts","web/src/features/archivos/estado/vista-previa.ts","web/src/features/archivos/lista-archivos/lista-archivos.module.css","web/src/features/archivos/lista-archivos/lista-archivos.tsx","web/src/features/archivos/lista-archivos/usar-lista-archivos.ts","web/src/features/casos/bloque-caso/bloque-caso.module.css","web/src/features/casos/bloque-caso/bloque-caso.tsx","web/src/features/casos/bloque-caso/usar-bloque-caso.ts","web/src/features/casos/estado/casos.ts","web/src/features/casos/panel-casos/panel-casos.module.css","web/src/features/casos/panel-casos/panel-casos.tsx","web/src/features/casos/panel-casos/usar-panel-casos.ts","web/src/features/casos/progreso-caso/progreso-caso.module.css","web/src/features/casos/progreso-caso/progreso-caso.tsx","web/src/features/casos/tarjeta-resultado/tarjeta-resultado.module.css","web/src/features/casos/tarjeta-resultado/tarjeta-resultado.tsx","web/src/features/casos/tarjeta-resultado/usar-tarjeta-resultado.ts","web/src/features/chat/acciones-rapidas/acciones-rapidas.module.css","web/src/features/chat/acciones-rapidas/acciones-rapidas.tsx","web/src/features/chat/acciones-rapidas/usar-acciones-rapidas.ts","web/src/features/chat/compositor/compositor.module.css","web/src/features/chat/compositor/compositor.tsx","web/src/features/chat/compositor/usar-compositor.ts","web/src/features/chat/estado-vacio/estado-vacio.module.css","web/src/features/chat/estado-vacio/estado-vacio.tsx","web/src/features/chat/estado-vacio/usar-estado-vacio.ts","web/src/features/chat/estado/conversacion.ts","web/src/features/chat/estado/seguimiento.ts","web/src/features/chat/estado/tarjeta-caso.ts","web/src/features/chat/indicador-pensando/indicador-pensando.module.css","web/src/features/chat/indicador-pensando/indicador-pensando.tsx","web/src/features/chat/indicador-pensando/usar-indicador-pensando.ts","web/src/features/chat/linea-de-tiempo/linea-de-tiempo.module.css","web/src/features/chat/linea-de-tiempo/linea-de-tiempo.tsx","web/src/features/chat/linea-de-tiempo/usar-linea-de-tiempo.ts","web/src/features/chat/mensaje/mensaje.module.css","web/src/features/chat/mensaje/mensaje.tsx","web/src/features/chat/tarjeta-caso/tarjeta-caso.module.css","web/src/features/chat/tarjeta-caso/tarjeta-caso.tsx","web/src/features/chat/tarjeta-caso/usar-tarjeta-caso.ts","web/src/features/confirmacion/estado/confirmaciones.ts","web/src/features/confirmacion/tarjeta-confirmacion/tarjeta-confirmacion.module.css","web/src/features/confirmacion/tarjeta-confirmacion/tarjeta-confirmacion.tsx","web/src/features/confirmacion/tarjeta-confirmacion/usar-tarjeta-confirmacion.ts","web/src/features/disposicion/barra-pestanas/barra-pestanas.module.css","web/src/features/disposicion/barra-pestanas/barra-pestanas.tsx","web/src/features/disposicion/barra-pestanas/usar-barra-pestanas.ts","web/src/features/disposicion/columnas/columnas.module.css","web/src/features/disposicion/columnas/columnas.tsx","web/src/features/disposicion/columnas/usar-columnas.ts","web/src/features/disposicion/estado/pestanas.ts","web/src/features/encabezado/aviso-modelo/aviso-modelo.module.css","web/src/features/encabezado/aviso-modelo/aviso-modelo.tsx","web/src/features/encabezado/aviso-modelo/usar-aviso-modelo.ts","web/src/features/encabezado/encabezado/encabezado.module.css","web/src/features/encabezado/encabezado/encabezado.tsx","web/src/features/encabezado/encabezado/usar-encabezado.ts","web/src/features/encabezado/estado/modelo.ts","web/src/features/encabezado/estado/salud.ts","web/src/features/herramientas/grupo-herramientas/grupo-herramientas.module.css","web/src/features/herramientas/grupo-herramientas/grupo-herramientas.tsx","web/src/features/herramientas/grupo-herramientas/usar-grupo-herramientas.ts","web/src/features/herramientas/tarjeta-herramienta/tarjeta-herramienta.module.css","web/src/features/herramientas/tarjeta-herramienta/tarjeta-herramienta.tsx","web/src/features/herramientas/tarjeta-herramienta/usar-tarjeta-herramienta.ts","web/src/features/sesion/dialogo-nueva-sesion/dialogo-nueva-sesion.module.css","web/src/features/sesion/dialogo-nueva-sesion/dialogo-nueva-sesion.tsx","web/src/features/sesion/dialogo-nueva-sesion/usar-dialogo-nueva-sesion.ts","web/src/features/sesion/estado/dialogo-sesion.ts","web/src/features/sesion/estado/hidratacion.ts","web/src/main.tsx","web/src/store/acciones.ts","web/src/store/almacen.ts","web/src/store/dependencias.ts","web/src/store/instancia.ts","web/src/store/proveedor-almacen.tsx","web/src/store/raiz.ts","web/src/store/selectores.ts","web/src/store/usar-almacen.ts","web/src/styles/global.css","web/src/styles/tokens.css","web/src/types/chat.type.ts","web/src/types/store.type.ts","web/src/types/ui.type.ts","web/vite.config.ts"]
+covered_digest: "v3:sha256:c6655971bd709587db38a58715f490a3556ce45a489230d638c20a855bb74d36"
 behavior_unverified: 0
 overrides_applied: 0
-human_verification:
-  - test: "Subir los 108 commits de la fase 5 a origin/main, esperar la CI y el autodeploy de Render, y correr con Playwright MCP (eli-qa) el ensayo del pedido de la sección 11 del PRD sobre el link público, más todos los flujos de D-116 (acceso, estado vacío y tarjetas, turno con herramientas, confirmación, panel de casos, archivos y vista previa, nueva sesión, errores y avisos, layouts ancho y angosto), en local y en el link público, comparando la conducta antes y después del refactor"
-    expected: "La CI pasa en verde; el ensayo de la sección 11 da el mismo resultado que en la Fase 3 y 4 (ec-corp-andina BLOQUEADO 13/1/1, sin envío sin confirmación); ningún flujo cambia de conducta"
-    why_human: "Criterio de éxito 5 del ROADMAP y FE-06. HEAD está 108 commits por delante de origin/main, así que ni la CI ni Render han visto la fase 5. Requiere navegador, red y el despliegue público"
-  - test: "Encabezado angosto con logo a 375 x 667 y 320 x 568"
-    expected: "La línea 1 (logo de 24 px, divisor neón, título Outfit 16) cabe en una sola línea sin tapar el logo; la línea 2 sigue en una fila con elipsis"
-    why_human: "Verdad backstop del plan 05-08 (insufficient_spec): depende del render real de la fuente y del ancho; no hay prueba que lo ejercite"
-  - test: "Chips compactos en píldora con Montserrat a 375 x 667 con historial"
-    expected: "Ocupan como máximo dos filas y nunca hacen scroll horizontal"
-    why_human: "Verdad backstop del plan 05-08 (insufficient_spec): depende de la métrica real de Montserrat"
-  - test: "Pantalla de acceso con marca: escribir un código errado"
-    expected: "El mensaje se ve dentro de la tarjeta blanca en --error-texto, se anuncia y el foco vuelve al campo"
-    why_human: "Verdad backstop del plan 05-08: la prueba DOM cubre el mensaje y aria-invalid, pero no la visibilidad ni el contraste sobre la tarjeta"
-  - test: "Pantalla de acceso con marca mientras verifica el código"
-    expected: "La píldora Entrar al agente conserva el estado ocupado, no hay doble envío y el texto ocupado se lee"
-    why_human: "Verdad backstop del plan 05-08 (insufficient_spec)"
-  - test: "Primera carga en frío del link público (encabezado sin salud ni fecha todavía)"
-    expected: "Sobre el teal no queda un hueco ni un punto huérfano"
-    why_human: "Verdad backstop del plan 05-08: solo se ve con el arranque en frío real de Render"
-  - test: "Nombre largo del modelo de /api/health a 320 x 568"
-    expected: "El prefijo se oculta y el resto va con elipsis en la línea 2"
-    why_human: "Verdad backstop del plan 05-08 (insufficient_spec)"
-  - test: "Tarjeta de caso con un slug de 60 caracteres a 375 x 667 y 1280 x 720"
-    expected: "overflow-wrap anywhere en cliente y slug: la tarjeta crece en alto y nunca desborda su columna"
-    why_human: "Verdad backstop del plan 05-09 (insufficient_spec)"
-  - test: "Interrumpir un turno que transmite (Detener, recargar la página y Nueva sesión durante el turno), en local y en el link público"
-    expected: "La conducta es la misma que en la Fase 3 (comparación antes y después)"
-    why_human: "Verdad backstop del plan 05-09: la prueba DOM cubre Detener y el doble envío, pero no la recarga ni la comparación antes y después en el navegador real"
-  - test: "Cortar /api/config después de entrar (revisión WR-03) y mirar el estado vacío"
-    expected: "Se ve y se anuncia (role=status) 'No se pudieron cargar los casos. Se vuelve a intentar en unos segundos; mientras tanto puedes escribir la instrucción.'; los chips y el compositor siguen usables; la grilla aparece cuando el reintento responde"
-    why_human: "El fixer marcó WR-03 como 'requiere verificación humana': cambia un texto visible y la lógica de un estado. La prueba DOM lo cubre, falta la lectura humana del texto"
-  - test: "Revisar en el navegador que el neón #6DFD8C nunca se usa como texto o control sobre una superficie clara"
-    expected: "El neón solo aparece en el teal (divisor, punto Disponible, borde de Nueva sesión, foco en el encabezado y en las pantallas teal de acceso y carga); dentro de la tarjeta blanca de acceso el foco es --acento"
-    why_human: "Prohibición de nivel judgment del plan 05-08. Veredicto no autoritativo del verificador: cumple por lectura estática (var(--neon) solo en encabezado.module.css y en --foco-color-marca, reasignado a --acento en .tarjeta). Requiere confirmación humana"
-  - test: "Revisión visual de la identidad de marca (logo, encabezado teal, Outfit y Montserrat cargadas, píldoras, grilla de tarjetas 2 x 2 en ancho y 1 columna en angosto, favicon y título de la pestaña)"
-    expected: "La app se reconoce como de Periferia IT Group, chat-first y en claro, como describe 05-UI-SPEC.md"
-    why_human: "Apariencia visual: siempre requiere humano. La presencia y el cableado están verificados"
-  - test: "Reconocer dos prohibiciones de nivel test sin una prueba que las haga cumplir: (a) la compuerta de cadena de suministro (sin versiones de menos de 7 días ni scripts de instalación) y (b) la atribución de marca en SOLUCION.md"
-    expected: "(a) El verificador comprobó en este pase que los 5 paquetes no declaran preinstall/install/postinstall y que el más reciente (happy-dom 20.14.6, 2026-10-08T23:18Z) tenía 7 d 18 h al instalarse (36727e4, 2026-10-16T17:42Z). (b) La atribución está en SOLUCION.md:137, pero ninguna prueba la exige"
-    why_human: "Disposición fail-closed de prohibiciones test-tier sin enforcement cableado: unverified-prohibition, se recomienda revisión humana (o una prueba en tests/docs/solucion.test.ts para la atribución)"
+re_verification:
+  previous_status: human_needed
+  previous_score: 19/20
+  gaps_closed:
+    - "SC5b / FE-06: la CI y el ensayo de la sección 11 con Playwright sobre el link público pasan (T01b: CI verde confirmada por la usuaria; ec-corp-andina 13/1/1 BLOQUEADO; simular_envio 0 veces sin confirmación)"
+    - "UAT brecha 1 (mayor): el estado vacío abre arriba, sin Ir al final, al entrar, con la grilla tardía, tras Nueva sesión pegada o subida y al recargar sin turnos (05-10: 6a8a96a, ac1a050; T01a-r pass)"
+    - "UAT brecha 2 (menor): la línea 1 del encabezado cabe en una fila a 320 px y la línea 2 muestra la fecha y la etiqueta del modelo completas a 375 px (05-11: c06a5b7, e8c9d84, 2dd45a9; T02-r pass)"
+    - "Las 13 verificaciones humanas del informe anterior: ejecutadas en el navegador por eli-qa y aceptadas por la usuaria (05-UAT.md 15/15 pass)"
+  gaps_remaining: []
+  regressions: []
+deferred:
+  - truth: "El arreglo de las brechas 05-10 y 05-11 corre en el link público de Render"
+    addressed_in: "Push a origin/main autorizado por la usuaria, inmediatamente después de esta verificación (autodeploy del Blueprint de Render)"
+    evidence: "HEAD va 15 commits por delante de origin/main. El link público sirve hoy el bundle anterior (index-BgNdkC22.js, T01b); la corrida T01a-r/T02-r se hizo en local sobre el build de HEAD (index-BsZ58Qrt.js, el mismo hash que produce mi build:web)"
+  - truth: "La primera pintura en el arranque en frío real de Render (más de 15 min inactivo) no deja hueco ni punto huérfano sobre el teal"
+    addressed_in: "Chequeo antes de la defensa (05-UAT.md test 6, nota de la usuaria)"
+    evidence: "UAT 6 pass con frío simulado en local y en el link; T06-r pass sobre HEAD; el frío real queda diferido explícitamente"
 ---
 
 # Fase 5: Front web por features e identidad de marca. Informe de verificación
 
 **Objetivo de la fase:** El front se puede mantener y defender como código de nivel industria: organizado por features y componentes, con la vista separada de la lógica, un estado predecible en un store propio, cero valores hardcodeados y una identidad de marca propia. Todo sin cambiar la conducta que ya pasó la QA.
-**Verificado:** 2026-10-16T20:45:25Z
-**Estado:** human_needed
-**Re-verificación:** No, es la verificación inicial.
+**Verificado:** 2026-10-16T23:49:30Z
+**Estado:** passed
+**Re-verificación:** Sí, después del cierre de brechas (planes 05-10 y 05-11) y de la QA en navegador (dos corridas de eli-qa).
 
 ## Logro del objetivo
 
-El código cumple el objetivo, y lo comprobé leyendo el árbol y corriendo las compuertas yo mismo, no a partir de los SUMMARY. `web/src` está organizado por feature, el store propio funciona sobre `useSyncExternalStore`, las vistas solo presentan, los guardianes W1–W27 muerden y la marca está cableada. Lo único que no puedo cerrar es la parte de navegador y del link público del criterio 5 (FE-06). La fase 5 todavía **no está en origin/main** (108 commits por delante), así que ni la CI ni Render la han visto. Ese ensayo es justamente la corrida de eli-qa que D-116 programa para después de esta verificación.
+El objetivo se cumple. No me basé en los SUMMARY: leí el código de los dos planes de cierre, corrí las cuatro compuertas yo mismo y crucé la evidencia de navegador con el build de HEAD.
+
+- Las brechas 1 y 2 del UAT están cerradas en el código. Hay pruebas puras y DOM que fallaban antes del arreglo (la evidencia RED quedó en los commits `bcb3f71` y `252bd61`) y que hoy pasan. La conducta también se confirmó en un navegador real (T01a-r y T02-r), con el veredicto de la usuaria.
+- El único UNCERTAIN del informe anterior (la CI y el link público) quedó resuelto: la usuaria confirmó la CI en verde y el ensayo de la sección 11 sobre Render dio 13/1/1 BLOQUEADO, sin ningún envío sin confirmación (T01b).
+- Las 8 verdades backstop de 05-08 y 05-09 y las 4 de 05-10 y 05-11 tienen evidencia explícita de navegador (Playwright MCP) con veredicto humano. Por eso no hay abstenciones pendientes.
+- El bundle que probó eli-qa en el re-run (`index-BsZ58Qrt.js`) tiene el mismo hash que el que genera mi `bun run build:web` sobre HEAD, así que la QA probó exactamente este código. El commit posterior, `3d19183`, solo agrega evidencia de QA.
 
 ### Verdades observables
 
+Las verdades 1 a 20 vienen del informe anterior y les hice una comprobación de regresión. Las verdades 21 a 29 son las de los planes de cierre, verificadas por completo.
+
 | # | Verdad | Estado | Evidencia |
 |---|--------|--------|-----------|
-| 1 | SC1: `web/src` está organizado por feature, con una carpeta por componente (vista, hook y CSS). Un guardián falla si un componente queda suelto o si una vista importa red o estado fuera de su hook | VERIFIED | `find web/src`: solo `main.tsx` y `app.tsx` sueltos; `components/`, `hooks/` y `state/` ya no existen; 9 features según D-119 más `compartido/`. W13 (rol y sufijo), W14 (carpeta sin vista), W15 (imports de la vista), W16 (api solo desde hooks y store) y W27 (la api no importa features), cada uno con su muestra negativa en `tests/arquitectura-web.test.ts:1289-1456`. Mi grep: ninguna `.tsx` de features/compartido importa `@web/api`, `@web/store`, `/estado/` ni `react` |
-| 2 | SC2: el estado vive en un store propio con `useSyncExternalStore` y selectores, los reductores puros conservan sus pruebas y no hay dependencias de runtime nuevas (las devDeps de prueba están fijadas y justificadas, D-115) | VERIFIED | `store/almacen.ts` (`Object.is` evita notificaciones), `raiz.ts` (tres slices), `usar-almacen.ts:23-26` (`useSyncExternalStore`), `main.tsx:10` crea la instancia fuera del render. `git diff ebeaeff~1 HEAD -- package.json`: `dependencies` sin cambios, +5 devDeps exactas. Reductores en `features/*/estado/`, probados sin React (`tests/web/*.test.ts`, `tests/web/store/*`). Ningún `bunfig.toml` |
-| 3 | SC3: ningún componente tiene literales de texto, colores, tamaños ni valores mágicos, y los guardianes W lo comprueban | VERIFIED | W8 (texto), W12 (CSS solo con tokens), W18 (números y colores en vistas), W22 (códigos `as const`), W24 (sin funciones en línea), W25 y W26. Mi grep: 0 `style=` en `.tsx`; 0 hex, `rgb()` o `px` en CSS fuera de `tokens.css` y `@media` |
-| 4 | SC4: el chat muestra la identidad de marca del UI-SPEC (logo, acento, tipografía y estado vacío con los 4 casos) | VERIFIED (código) | `LogoMarca` en el encabezado, el acceso y la carga; paleta de `tokens.css:34-78`; 3 `@font-face` con `swap`; `--radio-pildora: 999px`; `EstadoVacio` con `TarjetaCaso` por slug. Pruebas DOM: logo antes del título (`app.test.tsx:92`) y 4 tarjetas en orden (`:135`). La apariencia visual queda para revisión humana |
-| 5 | SC5a: la regresión local (`bun run check`, `bun test`, `demo.ts`, `build:web`) pasa sin cambios de conducta | VERIFIED | La corrí yo: check exit 0 (516 archivos); `bun test` 2642 pass / 2 skip / 0 fail; demo co LISTO 17/0/0, ec BLOQUEADO 13/1/1, hn BLOQUEADO 9/1/1, pa LISTO 8/0/1; build:web exit 0 con el `<title>` real y `web/dist/{marca,fuentes}` |
-| 6 | SC5b: la CI y el ensayo de la sección 11 con Playwright sobre el link público pasan | UNCERTAIN | No se puede verificar: `main` va 108 commits por delante de `origin/main`. Pasa a verificación humana (eli-qa, D-116) |
-| 7 | D-115: devDeps de prueba fijadas, documentadas en SOLUCION.md §6, con compuerta de cadena de suministro | VERIFIED | `package.json:34-46`. Sin scripts de instalación (leí `node_modules/*/package.json`). Fechas de npm de 7 días o más al instalar (happy-dom 2026-10-08T23:18Z frente a 36727e4 2026-10-16T17:42Z). `tests/docs/solucion.test.ts` exige una fila por dependencia |
-| 8 | Pitfall 1: happy-dom se registra por archivo y el backend ve el `fetch` nativo | VERIFIED | Centinela `tests/globales-nativos.test.ts`; corrí `bun test --parallel=2` sobre tests/web, http, el centinela y arquitectura-web: 627 pass, 0 fail. El orquestador corrió `--isolate` |
-| 9 | FE-06: la caracterización monta el `App` real con solo `fetch` falso, y sus aserciones sobreviven al refactor | VERIFIED | `tests/helpers/app-dom.helper.ts`. `git diff 484fd88 HEAD -- tests/web/dom tests/helpers/...`: las líneas borradas son de arnés (montaje con instancia, pausas de IN-09) y ninguna aserción se debilitó |
-| 10 | FE-02 (concurrencia): Detener descarta los eventos tardíos; no hay segundo POST con el turno en curso (chip, Enter o doble clic en la tarjeta) | VERIFIED | `app.test.tsx:292` (turno retenido y Detener), `:150` (doble clic, un solo POST), `acciones.test.ts:190` (ENVIAR antes de `enviarTurno`). Todo pasa en la suite |
-| 11 | FE-02 / W21: selectores memoizados y `useSeleccion` solo con selectores con nombre importados de `selectores.ts` | VERIFIED | `memoizarPorReferencia` (corregido en IN-02) y W21 con muestra negativa (`arquitectura-web.test.ts:1597`) |
-| 12 | El código de acceso nunca entra al store ni al storage | VERIFIED | `usar-pantalla-acceso.ts` con estado local; `localStorage` solo en `api/sesion-local.ts` (grep); `app-acceso.test.tsx:65` |
-| 13 | D-123 / D-124: los códigos se comparan con su `as const` y el front no copia códigos de negocio; el estado de firma sale del servidor | VERIFIED | W22 y W23 (W23 derivado de `src/config/constants`, WR-06). `estadoDeFirma` solo proyecta el `listoParaFirma` que manda el servidor (`features/casos/estado/casos.ts:118-130`) |
-| 14 | D-105 / D-107 / D-108: activos de marca autoalojados, título en build, sin URLs absolutas y MIME correctos sin cookie | VERIFIED | Bytes mágicos que verifiqué yo (RIFF…WEBP, FF D8 FF, wOF2 ×3); `file`: favicon de 512×512; `grep https?://` en web/src e index.html sin resultados; plugin `titulo-del-documento` en `vite.config.ts:27-33`; `tests/http/estatico.test.ts`; el Dockerfile copia `web/` y `src/config` al build |
-| 15 | D-106 / D-109 / D-110: paleta de Periferia, estados reajustados (éxito jade, info pizarra) y píldoras | VERIFIED (estático) | `tokens.css` coincide con el UI-SPEC; neón solo sobre el teal (ver verificación humana 11) |
-| 16 | D-111 a D-114: estado vacío con tarjetas derivadas del slug que mandan el pedido de la demo, se deshabilitan como los chips y pasan el foco al compositor | VERIFIED | `features/chat/estado/tarjeta-caso.ts` (puro, `PAIS`, `indexOf`, `length`); `usar-tarjeta-caso.ts:25` llama `enviarTexto(TEXTO_ACCIONES.mensajeDemoDe(slug))` sin `accion`; `seleccionarEnvioDeshabilitado`; pruebas DOM `app.test.tsx:135-265` y `tarjeta-caso.test.ts` |
-| 17 | D-118: sin "§" en los textos visibles de la web ni de la CLI, con W19 | VERIFIED | grep de `§` en `web/src`, `web/index.html` y `src/config/strings.ts`: sin resultados; W19 en `arquitectura-web.test.ts:912,1179` |
-| 18 | CAL-05: CLAUDE.md y docs describen features/, compartido/, store/ y W1–W27 | VERIFIED | `docs/convenciones.md` nombra W1…W27; `.claude/CLAUDE.md:240` W1–W27; ningún doc vigente apunta a `web/src/components`, `hooks` o `state` (solo la evidencia QA congelada de la Fase 3) |
-| 19 | FE-06 / D-113: el contrato de la API y la conducta del backend no cambian | VERIFIED | `git diff ebeaeff~1 HEAD -- src/ reto-01/ demo.ts modulo/`: solo `src/config/strings.ts`, una línea (`turnoOk`, D-118). `/api/config` sigue con `casos: string[]` |
-| 20 | WR-03: un fallo de `/api/config` se anuncia en el estado vacío y no queda "Cargando…" para siempre | VERIFIED | `conversacion.ts:86,192`: solo `recibirConfig` concede el acceso, así que una config nula dentro del estado vacío siempre es un fallo; `estado-vacio.tsx:18-21` con `role="status"`; `app.test.tsx:220`. El texto queda para revisión humana |
+| 1 | SC1: `web/src` está organizado por feature, con carpeta por componente, y los guardianes de estructura y separación muerden | VERIFIED (regresión) | `bun test` completo verde, con W13–W16 y W27 dentro de `tests/arquitectura-web.test.ts`. Los planes de cierre no agregan carpetas: solo editan componentes existentes |
+| 2 | SC2: store propio con `useSyncExternalStore` y selectores; reductores puros probados; sin dependencias de runtime nuevas | VERIFIED (regresión) | `git diff 3b51af9 HEAD -- package.json bun.lock` vacío; la regla nueva de seguimiento vive en un reductor puro (verdad 24) |
+| 3 | SC3: sin literales de texto, colores, tamaños ni valores mágicos en los componentes, con guardianes W | VERIFIED | Los tamaños nuevos son tokens (`--alto-logo-encabezado-angosto: 20px` en `tokens.css:99`, `var(--espacio-sm)`, `var(--alto-control)`); W8, W12, W18, W22, W24, W25 y W26 en verde |
+| 4 | SC4: el chat muestra la identidad de marca del UI-SPEC (logo, acento, tipografía y estado vacío con los 4 casos) | VERIFIED | Código como en el informe anterior; revisión visual de la usuaria: UAT 12 pass y T12-r pass (parte del encabezado) |
+| 5 | SC5a: la regresión local (`check`, `bun test`, `demo.ts`, `build:web`) pasa | VERIFIED | Corrida propia: check exit 0 (520 archivos); `bun test` 2668 pass / 2 skip / 0 fail en 132 archivos; demo co 17/0/0 LISTO, ec 13/1/1 BLOQUEADO, hn 9/1/1 BLOQUEADO, pa 8/0/1 LISTO; build:web exit 0 |
+| 6 | SC5b: la CI y el ensayo de la sección 11 con Playwright sobre el link público pasan sin cambios de conducta | VERIFIED (evidencia humana) | `05-QA-EVIDENCE-2026-10-16T22-05-00Z.md` T01b: el bundle remoto coincide con el HEAD de entonces; cuatro herramientas en orden; 13/1/1 BLOQUEADO; Cancelar no registra envío (simular_envio 0); veredicto "pass (CI verde confirmada por la usuaria)". El despliegue del arreglo de 05-10/05-11 queda diferido (ver Diferidos) |
+| 7 | D-115: devDeps de prueba fijadas, documentadas y con compuerta de cadena de suministro | VERIFIED | Sin cambios en `package.json`; UAT 13 pass: 0 scripts de instalación, happy-dom con 7,77 d al instalarse, audit limpio |
+| 8 | Pitfall 1: happy-dom por archivo, y el backend ve el `fetch` nativo | VERIFIED (regresión) | Suite completa verde, centinela `tests/globales-nativos.test.ts` incluido. El archivo DOM nuevo instala y restaura su `ResizeObserver` en `beforeEach`/`afterEach` |
+| 9 | FE-06: la caracterización monta el `App` real y sus aserciones sobreviven | VERIFIED | `git diff 3b51af9 HEAD` sobre `tests/web/seguimiento.test.ts`, `app.test.tsx` y `app-angosto.test.tsx`: solo se borraron imports y la firma del helper `crecimiento`; ninguna aserción |
+| 10 | FE-02 (concurrencia): Detener descarta eventos tardíos y no hay segundo POST con turno en curso | VERIFIED | Pruebas DOM en verde; T09a-r pass (Detener, recarga y Nueva sesión durante un turno sobre HEAD) |
+| 11 | W21: `useSeleccion` solo con selectores con nombre y memoizados | VERIFIED (regresión) | Guardián en verde; los hooks tocados usan selectores de `store/selectores.ts` |
+| 12 | El código de acceso nunca entra al store ni al storage | VERIFIED (regresión) | Sin cambios en el acceso; `app-acceso.test.tsx` en verde |
+| 13 | D-123 / D-124: los códigos se comparan con su `as const` y no se copian códigos de negocio | VERIFIED | `SENAL_SEGUIMIENTO.VACIO` se agrega a la constante (`ui.constants.ts:93`) y se usa por miembro (`seguimiento.ts`, `usar-linea-de-tiempo.ts`); W22/W23 en verde |
+| 14 | D-105 / D-107 / D-108: activos de marca autoalojados, título en build y MIME correctos | VERIFIED (regresión) | `web/dist/index.html` con el título; sin URLs a terceros |
+| 15 | D-106 / D-109 / D-110: paleta, estados y píldoras; el neón solo sobre el teal | VERIFIED | UAT 11 pass y T11-r pass (incluye la píldora de solo ícono, con borde neón sobre el teal) |
+| 16 | D-111 a D-114: tarjetas del estado vacío derivadas del slug, que envían el pedido de la demo | VERIFIED | Pruebas DOM en verde; T01a-r: 4 tarjetas visibles desde arriba |
+| 17 | D-118: sin "§" en los textos visibles | VERIFIED (regresión) | W19 en verde |
+| 18 | CAL-05: CLAUDE.md y docs al día con W1–W27 | VERIFIED (regresión) | Sin guardianes nuevos en 05-10/05-11 |
+| 19 | FE-06 / D-113: el contrato de la API y el backend no cambian | VERIFIED | `git diff --stat 3b51af9 HEAD -- src reto-01 demo.ts modulo` vacío |
+| 20 | WR-03: un fallo de `/api/config` se anuncia y la grilla llega con el reintento | VERIFIED | UAT 10 pass; T01a-r (d): con el reintento, la grilla llega con scrollTop 0 |
+| 21 | 05-10 / UAT brecha 1 (entrada y grilla tardía): sin turnos, el seguimiento al final nunca escribe `scrollTop`, ni en el primer aviso del `ResizeObserver` ni en uno posterior | VERIFIED | `seguimiento.ts`: `crecer` devuelve el mismo estado sin turnos y `debeSeguirAlFinal(estado, turnos)` exige turnos y `pegado`; `usar-linea-de-tiempo.ts` lee `turnosVistos.current` una vez y solo llama a `seguirAlFinal` si `debeSeguirAlFinal` es verdadero. Pruebas DOM `seguimiento-vacio.test.tsx` (678/495, 789/330 y 495/495 → 678/495) en verde, rojas antes del arreglo (`bcb3f71`). Navegador T01a-r: scrollTop 0 de 183 (1280×720) y 0 de 459 (375×667), con el título a la vista |
+| 22 | 05-10 / UAT brecha 1 (regreso al vacío): Nueva sesión con la vista pegada o subida, y la recarga sin turnos, vuelven al estado vacío desde arriba y sin Ir al final | VERIFIED | `volvioAlVacio(anteriores, actuales)` despacha `SENAL_SEGUIMIENTO.VACIO` (vuelve a `seguimientoInicial`, con la misma referencia si nada cambia) y llama a `subirAlInicio`. Pruebas puras y DOM en verde, rojas antes del arreglo (`f5f313f`: se recibían 2400 y 1000). T01a-r (a), (b) y (c): 0/183 y 0/459, Ir al final 0 |
+| 23 | 05-10 / FE-06: con turnos, el seguimiento no cambia | VERIFIED | Prueba DOM "con un turno la conversación sigue al final cuando crece" (scrollTop = 2400); los 28 tests previos de `seguimiento.test.ts` intactos (hoy son 35); T01a-r: con turnos, 738,5/739 y 1368/1368, e Ir al final aparece al subir durante un turno lento |
+| 24 | 05-10 / FE-02: la regla vive en el módulo puro y se prueba sin React | VERIFIED | `features/chat/estado/seguimiento.ts` sin React ni DOM (W4 en verde); exporta `debeSeguirAlFinal` y `volvioAlVacio`; el bloque del estado vacío de `seguimiento.test.ts` pasa |
+| 25 | 05-11: la UI-SPEC se enmendó antes que el código, con las medidas contra 288 px y 343 px | VERIFIED | `c06a5b7` es ancestro de `e8c9d84`; en `05-UI-SPEC.md`: `279,2` ×2, `298,6` ×2, `288 px` ×3; la redacción vieja ("Línea 1 con logo de 24 px", "96 × 24") ×0 |
+| 26 | 05-11 / FE-05: en angosto, la línea 1 lleva el logo de 20 px y 8 px a cada lado del divisor, y el h1 Outfit 16 cabe en una línea | VERIFIED | `tokens.css:99` `--alto-logo-encabezado-angosto: 20px`; la regla angosta de `.marca` usa `gap: 0 var(--espacio-sm)`; `logo-marca.module.css:17` lee el token. T02-r: logo 80×20, título de 19,2 px de alto en una línea y encabezado de 88 px a 320 y a 375 (antes, 38,4 px y 102 px) |
+| 27 | 05-11 / FE-05 / FE-06: la fecha no encoge y Nueva sesión va solo con ícono en angosto, con el mismo nombre accesible, el mismo diálogo y el mismo deshabilitado | VERIFIED | `encabezado.tsx`: `IconoMas` dentro de `.iconoNuevaSesion` y el texto en un span con `claseOcultaEnAngosto` (`CLASE_GLOBAL.OCULTO`), sin `aria-label`; CSS `.fecha { flex: none }` en angosto. Pruebas DOM `app-angosto.test.tsx:128` y `app.test.tsx:412`, rojas antes del arreglo (`252bd61`). T02-r: a 375, fecha y etiqueta completas en los 5 estados; a 320 solo se recortan Sin clave válida y No disponible, como permite la UI-SPEC; el diálogo abre con el foco en "Seguir en esta sesión" y el botón queda deshabilitado durante un turno |
+| 28 | 05-11 / FE-03: todo tamaño nuevo es un token y W12, W18, W25 y W26 siguen en verde | VERIFIED | Ningún `px` ni color en el CSS del encabezado; `CONSULTA_DE_ANCHO` sin cambios; suite completa en verde |
+| 29 | 05-11: el encabezado de 640 px en adelante no cambia | VERIFIED | `.iconoNuevaSesion { display: none }` fuera de `[data-diseno="angosto"]`, y las demás reglas nuevas tienen el alcance de angosto. T02-r: diff de píxeles de la franja del encabezado a 1280 contra la captura previa: 0 píxeles distintos |
 
-**Puntaje:** 19 de 20 verdades verificadas (1 UNCERTAIN: CI y link público). Hay 0 presentes con conducta sin verificar, y 8 verdades backstop se abstuvieron con `insufficient_spec` y pasan a verificación humana.
+**Puntaje:** 29 de 29 verdades verificadas (0 presentes con conducta sin verificar y 0 overrides).
 
-**Desviación documentada (no es una brecha):** dos verdades "covered" del plan 05-09 ("Cargando los casos…" mientras no hay config y mientras el reintento corre) quedaron reemplazadas por la corrección WR-03 de la revisión de código (aplicada porque la usuaria pidió código "muy muy limpio" y que se corrigieran todos los hallazgos). `05-UI-SPEC.md` se actualizó en el mismo commit (35978f4): la fila `loading` pasó a dismissed porque no se puede alcanzar, cosa que confirmé en el código, y la fila `error` ahora usa el aviso `role="status"`. Verifiqué contra el contrato vigente.
+### Verdades backstop (confirmadas con evidencia explícita de navegador)
 
-### Verdades backstop (abstención, `insufficient_spec`)
+| Plan | Verdad | Evidencia | Veredicto humano |
+|------|--------|-----------|------------------|
+| 05-08 | Encabezado angosto con logo a 375 y 320 | T02 (no-pass) → 05-11 → T02-r pass | pass (2026-10-17 batch "aceptar") |
+| 05-08 | Chips en píldora con Montserrat, como máximo 2 filas | T03 | pass |
+| 05-08 | Acceso con código errado | T04 | pass |
+| 05-08 | Acceso mientras verifica | T05 | pass |
+| 05-08 | Encabezado en frío sin hueco ni punto huérfano | T06 (local y link, frío simulado), T06-r | pass (el frío real de Render queda diferido) |
+| 05-08 | Nombre largo del modelo a 320 | T07, T07-r | pass |
+| 05-09 | Tarjeta con un slug de 60 caracteres | T08 | pass |
+| 05-09 | Interrumpir un turno, igual que en la Fase 3 | T09a, T09b, T09a-r | pass (la recarga durante el stream remoto no se corrió: presupuesto de 3 turnos) |
+| 05-10 | Estado vacío arriba en el navegador a 1280×720 y 375×667 por todos los caminos | T01a-r | pass |
+| 05-11 | Línea 1 en una fila a 320 y 375 | T02-r | pass |
+| 05-11 | Línea 2 a 375 con los 5 estados completos, y a 320 solo 2 recortados | T02-r | pass |
+| 05-11 | Encabezado a 1280 y 800 sin cambios | T02-r (diff de píxeles en 0 a 1280; a 800, medidas iguales sin captura de referencia) | pass |
 
-| Plan | Verdad | Disposición |
-|------|--------|-------------|
-| 05-08 | Encabezado angosto con logo a 375 y 320 px | abstención → humano |
-| 05-08 | Chips en píldora con Montserrat, como máximo 2 filas | abstención → humano |
-| 05-08 | Acceso con código errado: mensaje visible, anunciado y con foco | abstención → humano |
-| 05-08 | Acceso verificando: estado ocupado sin doble envío | abstención → humano |
-| 05-08 | Encabezado en frío sin hueco ni punto huérfano | abstención → humano |
-| 05-08 | Nombre largo del modelo con elipsis a 320 px | abstención → humano |
-| 05-09 | Tarjeta con un slug de 60 caracteres sin desbordar | abstención → humano |
-| 05-09 | Interrumpir un turno: igual que en la Fase 3, en local y en el link público | abstención → humano |
+Evidencia: `.qa/evidence/05-front-web-por-features-e-identidad-de-marca/05-QA-EVIDENCE-2026-10-16T22-05-00Z.md` (19 pruebas) y `.../05-QA-EVIDENCE-2026-10-17T00-05-00Z.md` (7 pruebas, todas pass), con 24 capturas `05r-*` en `screenshots/`.
 
 ### Prohibiciones (must-NOT)
 
 | Plan | Prohibición | Nivel | Disposición |
 |------|-------------|-------|-------------|
-| 05-01 | Instalar versiones de menos de 7 días o con scripts de instalación | test | **flagged (unverified-prohibition)**: no hay prueba cableada. Evidencia directa de este pase: cumple |
-| 05-01 / 05-02 | Agregar o cambiar dependencias de runtime | test | Verde: diff de `package.json`; W2 (web solo react, react-dom y eventsource-parser) y G-paquetes de `architecture.test.ts:73` impiden importarlas |
-| 05-02 / 05-07 | Código de acceso en el store, el closure o el storage | test | Verde: `app-acceso.test.tsx:65` y W7 |
-| 05-02 | Cambiar el orden o el contenido de lo que envía el front | test | Verde: `acciones.test.ts:190` y la caracterización DOM |
-| 05-03 | Perder nombres accesibles, roles o foco | test | Verde: pruebas DOM (diálogo, pestañas, acceso) |
-| 05-03 | Debilitar un guardián | test | Verde: escaneos no vacíos (`arquitectura-web.test.ts:863`) y muestras negativas |
-| 05-05 | Enviar durante un turno, una hidratación o una pausa | test | Verde: `app.test.tsx:172,292` |
-| 05-06 | Ampliar lo que se descarga o previsualiza | test | Verde: rutas solo en `cliente-api.ts` y W16/W27 |
-| 05-08 | Pedidos a terceros en tiempo de ejecución | test | Verde: `marca.test.ts` (sin URLs absolutas) y CSP `'self'`. Nota del auditor: no detecta URLs `//` |
-| 05-08 | Neón como texto o control sobre claro | judgment | **flagged**: veredicto no autoritativo, cumple por lectura estática. Revisión humana |
-| 05-08 | Logo sin la atribución de marca en SOLUCION.md | test | **flagged (unverified-prohibition)**: la atribución existe (`SOLUCION.md:137`), pero ninguna prueba la exige |
-| 05-09 | Que una tarjeta dispare una acción externa o saltee la confirmación | test | Verde: `app.test.tsx:150-167` (cuerpo `{sessionId, message}` sin `accion`) |
-| 05-09 | Cambiar el contrato de la API para alimentar las tarjetas | test | Verde: diff de `src/` vacío salvo D-118; tipo `ConfigResponse` intacto |
-| 05-09 | Inventar datos del cliente en la tarjeta | test | Verde: `tarjeta-caso.test.ts` |
+| 05-01 | Versiones de menos de 7 días o con scripts de instalación | test | Resuelta por la usuaria (UAT 13a pass). No hay prueba cableada; la marca de prohibición sin verificación automática queda registrada |
+| 05-01 / 05-02 | Agregar o cambiar dependencias de runtime | test | Verde (diff de `package.json` vacío desde el informe anterior; W2) |
+| 05-02 / 05-07 | Código de acceso en el store, el closure o el storage | test | Verde |
+| 05-02 | Cambiar el orden o el contenido de lo que envía el front | test | Verde (pruebas DOM; T01a-r: cuerpos POST idénticos antes y después) |
+| 05-03 | Perder nombres accesibles, roles o foco | test | Verde |
+| 05-03 | Debilitar un guardián | test | Verde |
+| 05-05 | Enviar durante un turno, una hidratación o una pausa | test | Verde |
+| 05-06 | Ampliar lo que se descarga o previsualiza | test | Verde |
+| 05-08 | Pedidos a terceros en tiempo de ejecución | test | Verde |
+| 05-08 | Neón como texto o control sobre claro | judgment | Resuelta por la usuaria (UAT 11 pass, T11-r pass) |
+| 05-08 | Logo sin la atribución en SOLUCION.md | test | Resuelta por la usuaria (UAT 13b pass; la atribución está en `SOLUCION.md:137`). Sin prueba que la exija: seguimiento opcional en `tests/docs/solucion.test.ts` |
+| 05-09 | Una tarjeta que dispare una acción externa o saltee la confirmación | test | Verde |
+| 05-09 | Cambiar el contrato de la API | test | Verde (`src/` sin cambios) |
+| 05-09 | Inventar datos del cliente en la tarjeta | test | Verde |
+| 05-10 | Cambiar cómo la línea de tiempo sigue una conversación con turnos | test | Verde: los 28 tests previos de `seguimiento.test.ts` intactos y la prueba DOM con turnos (2400) |
+| 05-11 | Cambiar el nombre accesible, el deshabilitado o el diálogo de Nueva sesión | test | Verde: `app-angosto.test.tsx:128`, `app.test.tsx:385,412` y T02-r |
 
-### Artefactos requeridos
+### Artefactos requeridos (planes de cierre)
 
 | Artefacto | Esperado | Estado | Detalle |
 |-----------|----------|--------|---------|
-| `web/src/store/{almacen,raiz,selectores,acciones,instancia,dependencias,usar-almacen}.ts`, `proveedor-almacen.tsx` | Store propio | VERIFIED | Sustantivos y cableados desde `main.tsx` y `app.tsx` |
-| `web/src/features/**/usar-*.ts` (25 hooks) | Lógica por componente | VERIFIED | Cada hook lo importa su vista. Las 6 vistas sin hook (`mensaje`, `progreso-caso`, `pantalla-carga`, `logo-marca`, `iconos`, `aviso`) son presentación pura, como permite el plan |
-| `web/src/features/*/estado/*.ts` | Reductores puros por feature | VERIFIED | W4 los guarda |
-| `tsconfig.dom.json` + tercer `tsc` en `check` | Tipado de las pruebas DOM | VERIFIED | `package.json:24` |
-| `tests/helpers/{dom,app-dom,red-web}.helper.ts` | Arnés DOM | VERIFIED | Usado por 4 archivos DOM y por `app-con-almacen.test.tsx` |
-| `web/src/compartido/logo-marca/logo-marca.tsx`, `config/constants/marca.constants.ts`, `config/constants/pais.constants.ts` | Marca y países | VERIFIED | Cableados |
-| `web/public/marca/*`, `web/public/fuentes/*` | Activos autoalojados | VERIFIED | Bytes mágicos y OFL correctos; llegan a `web/dist` |
-| `web/vite.config.ts` (plugin del título) | Título en build | VERIFIED | `<title>Registro como proveedor · Periferia IT Group</title>` en `web/dist/index.html` |
-| `tests/arquitectura-web.test.ts` W1–W27 | Guardianes | VERIFIED | 27 ids, cada uno con su prueba sobre el código real y su muestra negativa |
+| `web/src/features/chat/estado/seguimiento.ts` | `reducirSeguimiento` con VACIO y CRECIMIENTO con turnos; `debeSeguirAlFinal`, `volvioAlVacio` | VERIFIED | `verify.artifacts` 3/3 (05-10); sustantivo y cableado al hook |
+| `web/src/features/chat/linea-de-tiempo/usar-linea-de-tiempo.ts` | El observador solo sigue con turnos; el regreso al vacío reinicia | VERIFIED | Cableado a la vista `linea-de-tiempo.tsx` |
+| `tests/web/dom/seguimiento-vacio.test.tsx` | Regresión DOM con `ResizeObserver` controlable y alturas simuladas | VERIFIED | 6 declaraciones `test(` y 7 casos ejecutados |
+| `05-UI-SPEC.md` | Contrato angosto recalculado | VERIFIED | `verify.artifacts` 5/5 (05-11) |
+| `web/src/styles/tokens.css` | `--alto-logo-encabezado-angosto: 20px` | VERIFIED | Línea 99 |
+| `web/src/compartido/iconos/iconos.tsx` | `IconoMas` | VERIFIED | Sobre `SvgIcono` (aria-hidden); lo usa `encabezado.tsx` |
+| `web/src/features/encabezado/encabezado/{encabezado.tsx,usar-encabezado.ts}` | Nueva sesión con solo ícono en angosto; `claseOcultaEnAngosto` | VERIFIED | Cableados |
+
+Los artefactos de los planes 05-01 a 05-09 los verificó el informe anterior, y la suite completa en verde confirma que no regresaron.
 
 ### Verificación de enlaces clave
 
 | Desde | Hacia | Vía | Estado |
 |-------|-------|-----|--------|
-| `main.tsx` | `store/instancia.ts` | `crearInstancia(dependenciasReales)` antes de `createRoot` | WIRED |
-| `app.tsx` | `disposicion/columnas` | `ProveedorAlmacen` → `Columnas` | WIRED |
-| `store/raiz.ts` | `features/chat/estado/conversacion.ts` | `reducirConversacion` | WIRED |
-| `store/dependencias.ts` | `api/flujo-chat.ts` | `enviarTurno` | WIRED |
-| `usar-columnas.ts` | `store/usar-almacen.ts` | una sola llamada a `useSincronizacion` | WIRED |
-| `usar-pantalla-acceso.ts` | `api/cliente-api.ts` | `entrar` | WIRED |
-| `usar-dialogo-vista-previa.ts` | `api/cliente-api.ts` | `obtenerVistaPrevia` | WIRED |
-| `estado-vacio.tsx` | `tarjeta-caso.tsx` | `TarjetaCaso` por slug dentro de un `ul` | WIRED |
-| `usar-tarjeta-caso.ts` | `config/strings.ts` | `mensajeDemoDe(slug)` | WIRED |
-| `web/config/strings.ts` | `src/config/strings.ts` | `mensajeDemo === TEXTO_PREFLIGHT.mensajeGuion` (`preflight.test.ts:642`) y el texto literal del PRD (`acciones-rapidas.test.ts:28`) | WIRED |
-| `vite.config.ts` | `strings.ts` | `TEXTO_APP.tituloDocumento` | WIRED |
-| `global.css` / `index.html` | `web/public/fuentes`, `web/public/marca` | `@font-face url(...)`, `rel=icon`, `preload` | WIRED |
+| `usar-linea-de-tiempo.ts` | `estado/seguimiento.ts` | `debeSeguirAlFinal(seguimiento.current, turnosActuales)` antes de `seguirAlFinal` | WIRED |
+| `usar-linea-de-tiempo.ts` | `config/constants/ui.constants.ts` | `SENAL_SEGUIMIENTO.VACIO` cuando `volvioAlVacio` | WIRED |
+| `encabezado.tsx` | `usar-encabezado.ts` | `claseOcultaEnAngosto` en los prefijos y en el texto de Nueva sesión | WIRED |
+| `logo-marca.module.css` | `tokens.css` | `.encabezadoAngosto` lee `--alto-logo-encabezado-angosto` | WIRED |
+| Enlaces de 05-01 a 05-09 | | Ver el informe anterior | WIRED (regresión: suite completa en verde) |
+
+`verify.key-links`: 05-10 2/2 y 05-11 2/2, los dos con exit 0.
 
 ### Traza de datos (nivel 4)
 
 | Artefacto | Dato | Fuente | Datos reales | Estado |
 |-----------|------|--------|--------------|--------|
-| `EstadoVacio` / `TarjetaCaso` | `casos` | `seleccionarCasos` → `conversacion.config.casos` ← `obtenerConfig` (`/api/config`) | Sí (la prueba DOM confirma el orden de `/api/config`) | FLOWING |
-| `Encabezado` | `salud`, `fechaEjecucion` | slice `salud` ← `refrescarSalud` (`/api/health`) y config | Sí | FLOWING |
-| `PanelCasos` | `progresos`, `marcasDeArchivos` | selectores sobre los turnos ← eventos SSE | Sí (`app-panel.test.tsx:109`) | FLOWING |
-| `LineaDeTiempo` | turnos y mensajes | `reducirConversacion` ← `enviarTurno` (SSE) | Sí | FLOWING |
+| `LineaDeTiempo` (seguimiento) | `turnos.length` → `turnosVistos` | `seleccionarTurnos` ← `reducirConversacion` ← SSE / hidratación | Sí | FLOWING |
+| `Encabezado` | `salud`, `fechaEjecucion` | `/api/health` y `/api/config` | Sí (T02-r forzó los 5 estados de `/api/health`) | FLOWING |
+| `EstadoVacio` / `TarjetaCaso` | `casos` | `/api/config` | Sí | FLOWING |
 
 ### Comprobaciones de conducta
 
 | Conducta | Comando | Resultado | Estado |
 |----------|---------|-----------|--------|
-| Tipado estricto y Biome | `bun run check` | exit 0, `Checked 516 files … No fixes applied.` | PASS |
-| Suite completa (una sola corrida) | `bun test` | 2642 pass, 2 skip, 0 fail, 131 archivos | PASS |
-| Aislamiento DOM/backend en paralelo | `bun test --parallel=2 tests/web tests/globales-nativos.test.ts tests/http tests/arquitectura-web.test.ts` | 627 pass, 0 fail | PASS |
+| Tipado estricto y Biome | `bun run check` | exit 0; `Checked 520 files in 254ms. No fixes applied.` | PASS |
+| Suite completa (una sola corrida) | `bun test` | 2668 pass, 2 skip, 0 fail; 2670 tests en 132 archivos | PASS |
+| Pruebas de cierre de brechas | `bun test tests/web/seguimiento.test.ts tests/web/dom/seguimiento-vacio.test.tsx tests/web/dom/app-angosto.test.tsx` | 46 pass, 0 fail | PASS |
 | Demo determinista | `bun run demo.ts` | exit 0; fecha 2026-09-03; co 17/0/0 LISTO, ec 13/1/1 BLOQUEADO, hn 9/1/1 BLOQUEADO, pa 8/0/1 LISTO | PASS |
-| Build del front con marca | `bun run build:web` | exit 0; título real; `dist/marca` y `dist/fuentes` presentes | PASS |
-| Ensayo de la sección 11 en el link público | n/a | requiere push, Render y navegador | SKIP → humano |
+| Build del front | `bun run build:web` | exit 0; `index-BsZ58Qrt.js` 315,73 kB (el mismo hash que probó eli-qa en el re-run) | PASS |
+| Ensayo de la sección 11 en el link público | eli-qa T01b | 13/1/1 BLOQUEADO; sin envío sin confirmación; CI verde confirmada por la usuaria | PASS (evidencia humana) |
 
 ### Ejecución de probes
 
-No hay probes `scripts/*/tests/probe-*.sh` ni la fase los declara. No aplica.
+No hay probes `scripts/*/tests/probe-*.sh` y la fase no declara ninguno. No aplica.
 
 ### Cobertura de requisitos
 
 | Requisito | Planes | Descripción | Estado | Evidencia |
 |-----------|--------|-------------|--------|-----------|
-| FE-01 | 05-03, 04, 05, 06, 07 | Carpetas por feature y por componente (vista, hook y CSS) y carpeta común | SATISFIED | Verdad 1 |
-| FE-02 | 05-02, 03, 05, 07 | Store propio sin dependencias, con `useSyncExternalStore`, Context y selectores; reductores puros probados sin React | SATISFIED | Verdades 2, 10, 11 y 12 |
-| FE-03 | 05-03 a 05-09 | Sin valores hardcodeados; vistas sin lógica de negocio ni de red | SATISFIED | Verdades 3 y 13 |
-| FE-04 | 05-01, 02, 03, 07, 08, 09 | Guardianes de estructura, separación y store, cada uno con su prueba negativa | SATISFIED | W1–W27 (verdades 1, 3, 11, 13 y 17) |
-| FE-05 | 05-08, 05-09 | Identidad de marca y estado vacío con las tarjetas de `/api/config`, chat-first y sin modo oscuro | SATISFIED (código) / NEEDS HUMAN (visual) | Verdades 4, 14, 15 y 16; sin `prefers-color-scheme` |
-| FE-06 | 05-01, 03, 04, 05, 06, 07, 09 | El refactor no cambia la conducta: regresión completa, `demo.ts` y ensayo del pedido de la sección 11 en el navegador | SATISFIED (local) / NEEDS HUMAN (navegador y link público) | Verdades 5, 9, 19 y 6 |
+| FE-01 | 05-03, 04, 05, 06, 07 | Carpetas por feature y por componente, y carpeta común | SATISFIED | Verdad 1 |
+| FE-02 | 05-02, 03, 05, 07, 10 | Store propio con `useSyncExternalStore`, Context y selectores; reductores puros probados sin React | SATISFIED | Verdades 2, 10, 11, 12 y 24 |
+| FE-03 | 05-03 a 05-09, 11 | Sin valores hardcodeados; vistas sin lógica de negocio ni de red | SATISFIED | Verdades 3, 13 y 28 |
+| FE-04 | 05-01, 02, 03, 07, 08, 09 | Guardianes de estructura, separación y store, con prueba negativa | SATISFIED | W1–W27 en verde |
+| FE-05 | 05-08, 09, 10, 11 | Identidad de marca y estado vacío con las tarjetas de `/api/config`, chat-first, sin modo oscuro | SATISFIED | Verdades 4, 15, 16, 21, 26 y 27; revisión visual humana (UAT 12, T12-r) |
+| FE-06 | 05-01, 03, 04, 05, 06, 07, 09, 10, 11 | El refactor no cambia la conducta: regresión, `demo.ts` y ensayo de la sección 11 en el navegador | SATISFIED | Verdades 5, 6, 9, 19, 22, 23 y 27; T01a-r: secuencia de pedidos y cuerpos idénticos antes y después |
 
-Requisitos huérfanos: ninguno. REQUIREMENTS.md asigna FE-01 a FE-06 a la Fase 5 y todos aparecen en algún plan. Advertencia: REQUIREMENTS.md ya marca FE-06 como `[x] Complete`, pero su texto incluye "el ensayo del §11 en el navegador pasan", que todavía no corrió.
+Requisitos huérfanos: ninguno. REQUIREMENTS.md asigna FE-01 a FE-06 a la Fase 5, y cada uno aparece en el campo `requirements` de algún plan. La advertencia del informe anterior (FE-06 marcado `[x]` antes del ensayo en navegador) ya no aplica: el ensayo corrió y pasó.
 
 ### Antipatrones encontrados
 
 | Archivo | Línea | Patrón | Severidad | Impacto |
 |---------|-------|--------|-----------|---------|
-| 157 archivos tocados por la fase | n/a | `TBD`, `FIXME`, `XXX`, `TODO`, `HACK` | ninguno | No hay marcadores de deuda |
-| `web/src/**` | varias | `return null` / `return {}` | Info | Todos son guardas de flujo (sin pila, sin contador o sin pestañas), no stubs |
-| `web/src/features/confirmacion/tarjeta-confirmacion/tarjeta-confirmacion.tsx` | 29 | `TarjetaConfirmacion` exportada, pero solo la usa `PilaConfirmaciones` en el mismo archivo | Info | Exportación de más, sin efecto |
-| `web/src/config/strings.ts` / `src/config/strings.ts` | 275 / 507 | La plantilla del pedido de la demo está escrita en ambos lados | Info | W3 impide que el front importe `src/config/strings.ts`; dos pruebas atan los textos entre sí y con el PRD, así que no puede derivar |
-| `tests/web/marca.test.ts` | 22 | `URL_ABSOLUTA` no detecta URLs `//` | Info | Observación del auditor de seguridad; hoy no hay ninguna |
-| `tests/e2e/demo.test.ts`, `determinismo.test.ts` | n/a | Dependen del orden con `--randomize` | Info | Es anterior a la fase 5 y está en `deferred-items.md` |
+| Archivos tocados por 05-10 y 05-11 | n/a | `TBD`, `FIXME`, `XXX`, `TODO`, `HACK` | ninguno | Las únicas coincidencias son `METODO_POST` (falso positivo: "TODO" dentro de "METODO") |
+| `web/src/features/chat/linea-de-tiempo/usar-linea-de-tiempo.ts` | 37 | `subirAlInicio` escribe `scrollTop = 0` | Info | Es intencional (regreso al vacío) y lo cubren pruebas |
+| `.planning/ROADMAP.md` | 380, 383 | 05-10 y 05-11 siguen con `[ ]` y el contador dice "9/11 plans executed" | Info | Contabilidad de planificación que actualiza el orquestador; no afecta al código |
+| `.qa/evidence/.../05-QA-EVIDENCE-2026-10-17T00-05-00Z.md` | cabecera | Las marcas de tiempo "Z" de la evidencia (00:05Z a 00:40Z del 17) son posteriores al commit que la guarda (`3d19183`, 2026-10-16T23:46Z) | Info | Etiquetado de zona horaria inconsistente en la evidencia. El contenido coincide con el código: hash del bundle `index-BsZ58Qrt.js` y HEAD `c9b9ff2` |
+| `tests/e2e/demo.test.ts`, `tests/e2e/determinismo.test.ts` | n/a | Dependencia del orden con `--randomize` (`deferred-items.md`) | Info | Es previo a la fase 5 y ajeno al front; con `bun test` pasan |
 
 ### Verificación humana requerida
 
-Hay 13 ítems, detallados en el frontmatter `human_verification`. En resumen:
+Ninguna pendiente. Los 15 ítems de verificación humana (los 13 del informe anterior más las dos brechas) se ejecutaron en el navegador con eli-qa, y la usuaria los aceptó: `05-UAT.md` está en estado complete, con 15 de 15 en pass y las dos brechas resueltas.
 
-1. **Push, CI y ensayo de la sección 11 en el link público, con todos los flujos de D-116, antes y después.** Es el criterio 5 del ROADMAP y FE-06. Antes hay que subir los 108 commits.
-2-9. **Las 8 verdades backstop** (encabezado angosto, chips en píldora, acceso con código errado, acceso verificando, encabezado en frío, nombre largo del modelo, slug largo en la tarjeta e interrupción de un turno).
-10. **El texto de WR-03** con `/api/config` cortado después de entrar.
-11. **El neón nunca sobre claro** (prohibición de nivel judgment).
-12. **La revisión visual de la marca completa.**
-13. **Dos prohibiciones de nivel test sin prueba cableada** (cadena de suministro y atribución de marca), que cumplen por evidencia directa.
+### Diferidos
 
-Todos encajan en la corrida de eli-qa con Playwright MCP que D-116 y D-117 programan para después de esta verificación.
+| # | Ítem | Cuándo se atiende | Evidencia |
+|---|------|-------------------|-----------|
+| 1 | El arreglo de 05-10 y 05-11 corre en el link público de Render | Push autorizado inmediatamente después de esta verificación | HEAD va 15 commits por delante de origin/main; Render sirve hoy `index-BgNdkC22.js` |
+| 2 | La primera pintura en el arranque en frío real de Render (más de 15 min inactivo) | Antes de la defensa | UAT 6: frío simulado en pass; el frío real queda diferido por la usuaria |
 
 ### Resumen de brechas
 
-No hay brechas bloqueantes. Las 20 verdades centrales están respaldadas por código sustantivo y cableado y por pruebas que corrí en este pase, salvo la CI y el link público. Esa parte no se puede comprobar porque la fase 5 no se subió a origin/main. El estado es `human_needed` y no `passed` por tres razones: el criterio 5 exige el ensayo en el navegador sobre el link público, hay 8 verdades backstop que por diseño necesitan un navegador real, y hay prohibiciones marcadas (una judgment y dos test sin prueba cableada). Ninguna de ellas puede quedar absorbida en silencio en un `passed`.
+No quedan brechas. Las dos que encontró el UAT se cerraron en código, con pruebas que antes del arreglo estaban en rojo, y en el navegador real con el veredicto de la usuaria:
+
+1. **Estado vacío desplazado al fondo (mayor).** Venía del seguimiento al final que arrancaba pegado. Ahora la regla pura sigue al final solo cuando hay turnos y se reinicia al volver al vacío.
+2. **Encabezado angosto (menor).** Las cuentas de la UI-SPEC no cabían. Se enmendó la UI-SPEC primero, y después se pasó a un logo de 20 px con huecos de 8 px, una fecha fija y Nueva sesión solo con ícono.
+
+La conducta previa (las 23 llamadas del flujo principal, la compuerta de confirmación, el 13/1/1 BLOQUEADO y el seguimiento con turnos) se mantiene. Solo quedan diferidos el despliegue del arreglo a Render y el chequeo del arranque en frío real antes de la defensa.
 
 ---
 
-_Verificado: 2026-10-16T20:45:25Z_
+_Verificado: 2026-10-16T23:49:30Z_
 _Verificador: Claude (gsd-verifier)_
