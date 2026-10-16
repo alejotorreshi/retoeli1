@@ -348,7 +348,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
   5. La regresión completa (`bun run check`, `bun test`, `demo.ts`, `build:web`), la CI y el ensayo del §11 con Playwright sobre el link público pasan sin cambios de conducta.
 
 **Depends on:** Phase 4
-**Plans:** 9/9 plans executed
+**Plans:** 9/11 plans executed
 
 Plans:
 **Wave 1**
@@ -375,3 +375,9 @@ Plans:
 
 **Wave 8** *(blocked on Wave 7 completion)*
 - [x] 05-09-PLAN.md — Estado vacío con las tarjetas de los casos (D-111 a D-114), textos sin el símbolo de sección (D-118, W19) y compuerta final de regresión para eli-qa
+
+**Cierre de brechas de la UAT, Wave 1** *(gap closure)*
+- [ ] 05-10-PLAN.md — El estado vacío abre arriba: el seguimiento al final no actúa sin turnos y se reinicia al volver al estado vacío (Nueva sesión, recarga), con prueba pura y DOM con alturas simuladas (brecha 1 del UAT)
+
+**Cierre de brechas de la UAT, Wave 2** *(blocked on 05-10: comparten web/src/types/ui.type.ts)*
+- [ ] 05-11-PLAN.md — Encabezado angosto: UI-SPEC enmendada contra 288 y 343 px, logo de 20 px con huecos de 8 junto al divisor, fecha que no encoge y "Nueva sesión" solo con ícono en angosto (brecha 2 del UAT)
