@@ -334,7 +334,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 | 2. Agente y compuerta de confirmación | 24/24 | Complete    | 2026-10-14 |
 | 3. Chat web, API SSE y despliegue | 47/47 | Complete    | 2026-10-15 |
 | 4. Módulo, documentación y defensa | 8/8 | Complete    | 2026-10-16 |
-| 5. Front web por features e identidad de marca | 6/9 | In Progress | - |
+| 5. Front web por features e identidad de marca | 7/9 | In Progress | - |
 
 ### Phase 5: Front web por features e identidad de marca
 
@@ -348,7 +348,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
   5. La regresión completa (`bun run check`, `bun test`, `demo.ts`, `build:web`), la CI y el ensayo del §11 con Playwright sobre el link público pasan sin cambios de conducta.
 
 **Depends on:** Phase 4
-**Plans:** 6/9 plans executed
+**Plans:** 7/9 plans executed
 
 Plans:
 **Wave 1**
@@ -368,7 +368,7 @@ Plans:
 - [x] 05-06-PLAN.md — Panel de casos y archivos con la red solo en hooks (D-122)
 
 **Wave 6** *(blocked on Wave 5 completion)*
-- [ ] 05-07-PLAN.md — Disposición y acceso, `app.tsx` solo con providers, fin de la transición, W12 ampliado, W21 y reglas y docs al día
+- [x] 05-07-PLAN.md — Disposición y acceso, `app.tsx` solo con providers, fin de la transición, W12 ampliado, W21 y reglas y docs al día
 
 **Wave 7** *(blocked on Wave 6 completion)*
 - [ ] 05-08-PLAN.md — Identidad de Periferia: logo, favicon, título, fuentes autoalojadas, paleta, píldoras y encabezado y acceso en teal (D-105 a D-110)

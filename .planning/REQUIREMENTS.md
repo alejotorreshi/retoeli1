@@ -91,8 +91,8 @@ Fuente vinculante: `reto-01/PRD.md`, sin modificar. Fixtures: `reto-01/fixtures/
 
 ### Front web por features e identidad de marca (fase 5)
 
-- [ ] **FE-01**: `web/src` se organiza en carpetas por feature (por ejemplo chat, acceso, archivos, confirmación, casos y encabezado). Dentro de cada feature hay una carpeta por componente con la vista (`.tsx`, solo presentación), la lógica (hook `usar-<componente>.ts`) y los estilos (`.module.css`). Lo compartido vive en una carpeta común.
-- [ ] **FE-02**: El estado del front vive en un store propio sin dependencias nuevas, construido con `useSyncExternalStore`, Context y selectores por slice. Los reductores siguen siendo puros y se prueban sin React.
+- [x] **FE-01**: `web/src` se organiza en carpetas por feature (por ejemplo chat, acceso, archivos, confirmación, casos y encabezado). Dentro de cada feature hay una carpeta por componente con la vista (`.tsx`, solo presentación), la lógica (hook `usar-<componente>.ts`) y los estilos (`.module.css`). Lo compartido vive en una carpeta común.
+- [x] **FE-02**: El estado del front vive en un store propio sin dependencias nuevas, construido con `useSyncExternalStore`, Context y selectores por slice. Los reductores siguen siendo puros y se prueban sin React.
 - [ ] **FE-03**: Los componentes no tienen valores hardcodeados: los textos están en `strings.ts`, los valores en `config/constants` y los colores, tamaños y espacios en tokens CSS. Las vistas no contienen lógica de negocio ni de red.
 - [ ] **FE-04**: Los guardianes del front (W1–W13 y los nuevos) exigen la estructura por feature y componente, la separación entre vista y lógica, y el uso del store. Cada regla tiene una prueba que demuestra que detecta la violación.
 - [ ] **FE-05**: El chat tiene identidad de marca (SEED-261014-8dq): logo o ícono propio, un color de acento, tipografía y jerarquía de producto, y un estado vacío con tarjetas de los 4 casos desde `/api/config`. Todo es chat-first y sin modo oscuro.
@@ -257,8 +257,8 @@ Cada requisito v1 está asignado a exactamente una fase del roadmap (`.planning/
 | DOC-02 | Phase 4 | Complete |
 | MOD-01 | Phase 4 | Complete |
 | MOD-02 | Phase 4 | Complete |
-| FE-01 | Phase 5 | Pending |
-| FE-02 | Phase 5 | Pending |
+| FE-01 | Phase 5 | Complete |
+| FE-02 | Phase 5 | Complete |
 | FE-03 | Phase 5 | Pending |
 | FE-04 | Phase 5 | Pending |
 | FE-05 | Phase 5 | Pending |

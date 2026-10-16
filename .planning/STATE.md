@@ -3,16 +3,16 @@ gsd_state_version: "1.0"
 current_phase: 5
 current_phase_name: front-web-por-features-e-identidad-de-marca
 status: executing
-stopped_at: Completed 05-06-PLAN.md
-last_updated: "2026-10-16T18:49:18.226Z"
+stopped_at: Completed 05-07-PLAN.md
+last_updated: "2026-10-16T19:11:52.150Z"
 last_activity: 2026-10-16
 last_activity_desc: Phase 5 execution started
-state_head: ed2b03dac10b5fc7885df0e3c911cc1051b8210f
+state_head: dbd29882c637b2544d54099bdb259ef61c0891e3
 progress:
   total_phases: 5
   completed_phases: 4
   total_plans: 103
-  completed_plans: 100
+  completed_plans: 101
   percent: 80
 ---
 
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-10-16)
 ## Current Position
 
 Phase: 5 (front-web-por-features-e-identidad-de-marca) — EXECUTING
-Plan: 7 of 9
+Plan: 8 of 9
 Status: Ready to execute
 Last activity: 2026-10-16 — Phase 5 execution started
 
@@ -159,6 +159,7 @@ Progress: [████████░░] 80%
 | Phase 05 P04 | 6min | 3 tasks | 33 files |
 | Phase 05 P05 | 6min | 3 tasks | 21 files |
 | Phase 05 P06 | 7min | 3 tasks | 25 files |
+| Phase 05 P07 | 13 min | 4 tasks | 33 files |
 
 ## Accumulated Context
 
@@ -402,6 +403,9 @@ Recent decisions affecting current work:
 - [Phase 05]: 05-06: usePanelCasos returns ready PropsBloqueCaso per case; the panel view only spreads them
 - [Phase 05]: 05-06: OpcionesArchivos and ControlArchivos moved to ui.type.ts as hook types
 - [Phase 05]: 05-06: useBloqueCaso and useDialogoVistaPrevia read vencerAcceso from useAcciones instead of a prop
+- [Phase 05]: 05-07: useColumnas returns the store's acceso union as the screen to show and makes the single useSincronizacion call; usePantallaAcceso owns the access code locally and loads the config after entry
+- [Phase 05]: 05-07: W22 builds CODIGOS_DEL_FRONT from every web/src/config/constants family of lower snake case strings, and W23 imports CODIGOS_DE_NEGOCIO from src/config/constants, so neither guardian copies a code
+- [Phase 05]: 05-07: only docs/convenciones.md and .claude/CLAUDE.md name a front guardian range (interim W1–W18 y W20–W23); the other docs point to the W table
 
 ### Pending Todos
 
@@ -440,6 +444,6 @@ Items acknowledged and deferred at milestone close, most recent first:
 
 ## Session Continuity
 
-Last session: 2026-10-16T18:49:18.010Z
-Stopped at: Completed 05-06-PLAN.md
+Last session: 2026-10-16T19:11:51.996Z
+Stopped at: Completed 05-07-PLAN.md
 Resume file: None
