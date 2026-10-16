@@ -1,5 +1,5 @@
 import { entrar } from "@web/api/cliente-api.ts";
-import { RESULTADO_API } from "@web/config/constants/ui.constants.ts";
+import { RESULTADO_API, TIPO_CAMPO_CODIGO } from "@web/config/constants/ui.constants.ts";
 import { TEXTO_ERROR } from "@web/config/strings.ts";
 import { useAcciones } from "@web/store/usar-almacen.ts";
 import type { ResultadoApi } from "@web/types/chat.type.ts";
@@ -53,6 +53,7 @@ export function usePantallaAcceso(): ControlPantallaAcceso {
     campo,
     codigo,
     visible,
+    tipoCampo: visible ? TIPO_CAMPO_CODIGO.VISIBLE : TIPO_CAMPO_CODIGO.OCULTO,
     pendiente,
     error,
     envioDeshabilitado: codigo.length === 0 || pendiente,

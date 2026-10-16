@@ -11,6 +11,7 @@ export function PantallaAcceso({ aviso }: PropsPantallaAcceso) {
     campo,
     codigo,
     visible,
+    tipoCampo,
     pendiente,
     error,
     envioDeshabilitado,
@@ -34,7 +35,7 @@ export function PantallaAcceso({ aviso }: PropsPantallaAcceso) {
               ref={campo}
               id={idCampo}
               className={estilos.campo}
-              type={visible ? "text" : "password"}
+              type={tipoCampo}
               autoComplete="current-password"
               spellCheck={false}
               value={codigo}

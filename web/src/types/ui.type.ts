@@ -3,6 +3,7 @@ import type {
   PESTANA,
   SENAL_SEGUIMIENTO,
   TAMANO_ICONO,
+  TIPO_CAMPO_CODIGO,
   TONO,
   TONO_CONTADOR,
 } from "@web/config/constants/ui.constants.ts";
@@ -300,12 +301,15 @@ export type PropsPantallaAcceso = {
   readonly aviso: string | null;
 };
 
+export type TipoCampoCodigo = ValorDe<typeof TIPO_CAMPO_CODIGO>;
+
 export type ControlPantallaAcceso = {
   readonly idCampo: string;
   readonly idError: string;
   readonly campo: RefObject<HTMLInputElement | null>;
   readonly codigo: string;
   readonly visible: boolean;
+  readonly tipoCampo: TipoCampoCodigo;
   readonly pendiente: boolean;
   readonly error: string | null;
   readonly envioDeshabilitado: boolean;

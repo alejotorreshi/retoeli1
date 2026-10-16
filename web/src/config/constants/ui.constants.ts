@@ -248,6 +248,11 @@ export const TECLA_PESTANA = {
   ULTIMA: "End",
 } as const;
 
+export const TIPO_CAMPO_CODIGO = {
+  VISIBLE: "text",
+  OCULTO: "password",
+} as const;
+
 export const EVENTO_CAMBIO_DE_MEDIOS = "change";
 
 export const EVENTO_ABORTO = "abort";

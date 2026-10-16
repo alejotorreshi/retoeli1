@@ -14,7 +14,7 @@ import {
   VALOR_EN_ARCHIVO_DE_TIPOS,
 } from "@tests/helpers/escaner-fuentes.helper.ts";
 import type { Importacion } from "@tests/helpers/types/importacion.type.ts";
-import { ESTADO_ACCESO } from "@web/config/constants/ui.constants.ts";
+import { ESTADO_ACCESO, TIPO_CAMPO_CODIGO } from "@web/config/constants/ui.constants.ts";
 import { CODIGO_AGENTE } from "@/config/constants/agent.constants.ts";
 import {
   DECISION_CONFIRMACION,
@@ -699,6 +699,7 @@ describe("guardián de web/ sobre el código real", () => {
 
   test("W22: web/src compara, etiqueta, devuelve y asigna códigos solo con su objeto as const", () => {
     expect(CODIGOS_DEL_FRONT.has(ESTADO_ACCESO.PEDIDO)).toBe(true);
+    expect(CODIGOS_DEL_FRONT.has(TIPO_CAMPO_CODIGO.OCULTO)).toBe(true);
     expect(sobreElCodigo(violacionesDeLiteralesDeCodigo)).toEqual([]);
   });
 
