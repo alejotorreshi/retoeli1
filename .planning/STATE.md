@@ -3,16 +3,16 @@ gsd_state_version: "1.0"
 current_phase: 04
 current_phase_name: m-dulo-documentaci-n-y-defensa
 status: executing
-stopped_at: Completed 04-02-PLAN.md
-last_updated: "2026-10-16T04:27:42.826Z"
+stopped_at: Completed 04-03-PLAN.md
+last_updated: "2026-10-16T04:33:39.995Z"
 last_activity: 2026-10-15
 last_activity_desc: Phase 04 execution started
-state_head: 1ab3994ddb3e18255c6d8a9b33345067d5c4adda
+state_head: b2ffb428f692dd62d258d3b4f4c0f07d7fd74e6a
 progress:
   total_phases: 4
   completed_phases: 3
   total_plans: 93
-  completed_plans: 88
+  completed_plans: 89
   percent: 75
 ---
 
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-10-16)
 ## Current Position
 
 Phase: 04 (m-dulo-documentaci-n-y-defensa) — EXECUTING
-Plan: 3 of 7
+Plan: 4 of 7
 Status: Ready to execute
 Last activity: 2026-10-15 — Phase 04 execution started
 
@@ -146,6 +146,7 @@ Progress: [████████░░] 75%
 | Phase 03 P47 | 2min | 2 tasks | 4 files |
 | Phase 04 P01 | 7min | 2 tasks | 14 files |
 | Phase 04 P02 | 5 min | 2 tasks | 11 files |
+| Phase 04 P03 | 3 min | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -357,6 +358,8 @@ Recent decisions affecting current work:
 - [Phase 04]: 04-01: las descripciones del frontmatter van con JSON.stringify para que Bun.YAML.parse las devuelva intactas
 - [Phase 04]: 04-02: capa modulo solo importa src/tools/proveedor.ts y capa opencode solo modulo/ (alias @modulo/), así .opencode/ nunca se salta modulo/
 - [Phase 04]: 04-02: opencode.json usa {file:./modulo/agent.md} (D-96); el preámbulo de frontmatter y la alternativa {file:./agent/prompt.md} quedan documentados en modulo/README.md para revisión de la usuaria
+- [Phase 04]: 04-03: bun run check ya no corre bun audit; la auditoría va en su propio job de CI con continue-on-error en el paso y anotación ::warning, para no pintar el badge de rojo ni bloquear checksPass
+- [Phase 04]: 04-03: render.yaml usa autoDeployTrigger: checksPass (D-91) en lugar del booleano autoDeploy; rollback autoDeployTrigger: commit
 
 ### Pending Todos
 
@@ -393,6 +396,6 @@ Items acknowledged and deferred at milestone close, most recent first:
 
 ## Session Continuity
 
-Last session: 2026-10-16T04:27:42.695Z
-Stopped at: Completed 04-02-PLAN.md
+Last session: 2026-10-16T04:33:39.864Z
+Stopped at: Completed 04-03-PLAN.md
 Resume file: None
