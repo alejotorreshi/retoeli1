@@ -74,7 +74,7 @@ export async function archivosDelModulo(raiz: string): Promise<LecturaModulo> {
 
 export async function generarModulo({ raiz, escribir }: OpcionesGeneracion): Promise<ResultadoGeneracion> {
   if (!(await Bun.file(join(raiz, ARCHIVO_PROYECTO)).exists())) {
-    escribir(TEXTO_MODULO.fueraDeLaRaiz);
+    escribir(TEXTO_MODULO.fueraDeLaRaiz(raiz));
     return { fallido: true };
   }
   const lectura = await archivosDelModulo(raiz);

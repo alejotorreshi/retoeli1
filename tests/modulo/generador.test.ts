@@ -303,7 +303,7 @@ describe("generarModulo falla fuerte y no escribe nada con una fuente rota", () 
     await rm(join(raiz, ARCHIVO_PROYECTO));
     const { fallido, lineas } = await generarEn(raiz);
     expect(fallido).toBe(true);
-    expect(lineas).toEqual([TEXTO_MODULO.fueraDeLaRaiz]);
+    expect(lineas).toEqual([TEXTO_MODULO.fueraDeLaRaiz(raiz)]);
     expect(await existeModulo(raiz)).toBe(false);
   });
 });

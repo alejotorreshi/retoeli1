@@ -470,7 +470,8 @@ export const TEXTO_MODULO = {
   generado: (ruta: string): string => `Generado: ${ruta}`,
   fuenteAusente: (ruta: string): string => `No existe la fuente del módulo: ${ruta}; no se escribió nada.`,
   fuenteVacia: (ruta: string): string => `La fuente del módulo está vacía: ${ruta}; no se escribió nada.`,
-  fueraDeLaRaiz: `El generador del módulo debe correr en la raíz del proyecto, donde está ${ARCHIVO_PROYECTO}; no se escribió nada.`,
+  fueraDeLaRaiz: (raiz: string): string =>
+    `No se encontró ${ARCHIVO_PROYECTO} en ${raiz}, la raíz que el generador deduce de su propia ubicación y no del directorio actual; revisa que el generador siga dentro del repositorio. No se escribió nada.`,
 } as const;
 
 const SIMULAR_ENVIO = NOMBRE_VISIBLE[HERRAMIENTA.SIMULAR_ENVIO];
