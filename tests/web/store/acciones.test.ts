@@ -474,8 +474,7 @@ describe("acciones del almacén: configuración, acceso y diálogo", () => {
   test("cargarConfig despacha la config recibida y concede el acceso", async () => {
     const falsos = crearFalsos({ config: async () => ({ tipo: RESULTADO_API.OK, valor: CONFIG }) });
     const instancia = crearInstancia(falsos.dependencias);
-    const resultado = await instancia.acciones.cargarConfig(new AbortController().signal);
-    expect(resultado).toEqual({ tipo: RESULTADO_API.OK, valor: CONFIG });
+    await instancia.acciones.cargarConfig(new AbortController().signal);
     expect(conversacion(instancia).config).toEqual(CONFIG);
     expect(conversacion(instancia).acceso).toEqual({ tipo: ESTADO_ACCESO.CONCEDIDO });
   });
@@ -491,6 +490,37 @@ describe("acciones del almacén: configuración, acceso y diálogo", () => {
     const instancia = crearInstancia(falsos.dependencias);
     const antes = instancia.almacen.leer();
     await instancia.acciones.cargarConfig(controlador.signal);
+    expect(instancia.almacen.leer()).toBe(antes);
+  });
+
+  test("cargarConfigTrasEntrar con acceso vencido pide el código con el mensaje del servidor", async () => {
+    const falsos = crearFalsos({
+      config: async () => ({ tipo: RESULTADO_API.ACCESO_VENCIDO, mensaje: RESPUESTA }),
+    });
+    const instancia = crearInstancia(falsos.dependencias);
+    await instancia.acciones.cargarConfigTrasEntrar(new AbortController().signal);
+    expect(conversacion(instancia).acceso).toEqual({ tipo: ESTADO_ACCESO.PEDIDO, aviso: RESPUESTA });
+  });
+
+  test("cargarConfigTrasEntrar con la config recibida concede el acceso", async () => {
+    const falsos = crearFalsos({ config: async () => ({ tipo: RESULTADO_API.OK, valor: CONFIG }) });
+    const instancia = crearInstancia(falsos.dependencias);
+    await instancia.acciones.cargarConfigTrasEntrar(new AbortController().signal);
+    expect(conversacion(instancia).config).toEqual(CONFIG);
+    expect(conversacion(instancia).acceso).toEqual({ tipo: ESTADO_ACCESO.CONCEDIDO });
+  });
+
+  test("cargarConfigTrasEntrar abortada no despacha", async () => {
+    const controlador = new AbortController();
+    const falsos = crearFalsos({
+      config: async () => {
+        controlador.abort();
+        return { tipo: RESULTADO_API.ACCESO_VENCIDO, mensaje: RESPUESTA };
+      },
+    });
+    const instancia = crearInstancia(falsos.dependencias);
+    const antes = instancia.almacen.leer();
+    await instancia.acciones.cargarConfigTrasEntrar(controlador.signal);
     expect(instancia.almacen.leer()).toBe(antes);
   });
 

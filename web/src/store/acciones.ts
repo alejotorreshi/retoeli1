@@ -101,10 +101,20 @@ export function crearAcciones(almacen: AlmacenRaiz, dependencias: Dependencias):
     almacen.despachar(accionDeConfig(resultado));
   }
 
-  async function cargarConfig(signal: AbortSignal): Promise<ResultadoApi<ConfigResponse>> {
+  function vencerAcceso(aviso: string): void {
+    almacen.despachar({ tipo: ACCION_UI.ACCESO_PEDIDO, aviso });
+  }
+
+  async function cargarConfig(signal: AbortSignal): Promise<void> {
     const resultado = await dependencias.obtenerConfig(signal);
     if (!signal.aborted) recibirConfig(resultado);
-    return resultado;
+  }
+
+  async function cargarConfigTrasEntrar(signal: AbortSignal): Promise<void> {
+    const resultado = await dependencias.obtenerConfig(signal);
+    if (signal.aborted) return;
+    if (resultado.tipo === RESULTADO_API.ACCESO_VENCIDO) vencerAcceso(resultado.mensaje);
+    else recibirConfig(resultado);
   }
 
   async function reintentarConfig(signal: AbortSignal): Promise<void> {
@@ -149,13 +159,14 @@ export function crearAcciones(almacen: AlmacenRaiz, dependencias: Dependencias):
     responderConfirmacion,
     recibirConfig,
     cargarConfig,
+    cargarConfigTrasEntrar,
     reintentarConfig,
     cargarSesion,
     detener,
     recargar: () => almacen.despachar({ tipo: ACCION_UI.RECARGAR }),
     nuevaSesion: () => cambiarDeSesion({ tipo: ACCION_UI.NUEVA_SESION }),
     volverASesionAnterior: () => cambiarDeSesion({ tipo: ACCION_UI.VOLVER_SESION_ANTERIOR }),
-    vencerAcceso: (aviso) => almacen.despachar({ tipo: ACCION_UI.ACCESO_PEDIDO, aviso }),
+    vencerAcceso,
     refrescarSalud,
     cancelarSalud,
     abrirNuevaSesion: () => almacen.despachar({ tipo: ACCION_DIALOGO_SESION.ABRIR }),
