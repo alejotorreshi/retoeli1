@@ -374,7 +374,6 @@ export const MENSAJE_HTTP = {
   rutaNoEncontrada: "La ruta pedida no existe en la API.",
   cuerpoAccesoInvalido: "El pedido no es válido: envía un JSON con codigo (texto), sin otros campos.",
   codigoInvalido: "El código no es válido. Revísalo y vuelve a intentarlo.",
-  intentoEnCurso: "Hay otros intentos de acceso en curso desde tu red. Vuelve a intentarlo en unos segundos.",
   accesoVencido: "Tu acceso venció. Escribe el código de nuevo para seguir.",
   tipoNoSoportado: `El pedido no es válido: envíalo como JSON, con Content-Type ${TIPO_CONTENIDO.JSON}.`,
   cuerpoDemasiadoGrande: "El pedido es demasiado grande. Acorta el mensaje y vuelve a enviarlo.",

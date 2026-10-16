@@ -1,6 +1,6 @@
 import type { Hono } from "hono";
 import type { BitacoraEstructurada, DestinoBitacora } from "@/application/types/puertos-agente.type.ts";
-import type { RESULTADO_BEARER, RESULTADO_RESERVA } from "@/config/constants/http.constants.ts";
+import type { RESULTADO_BEARER } from "@/config/constants/http.constants.ts";
 import type { ValorDe } from "@/config/types/valor-de.type.ts";
 import type { ConfigResponse } from "@/http/types/api.type.ts";
 import type { FetchLike } from "@/llm/types/provider.type.ts";
@@ -24,21 +24,14 @@ export type RateLimiterOptions = {
   readonly now: () => number;
 };
 
-export type Reservation = ValorDe<typeof RESULTADO_RESERVA>;
-
 export type RateLimiter = {
   hit(key: string): boolean;
+  release(key: string): void;
   isLocked(key: string): boolean;
   retryAfterMs(key: string): number;
 };
 
-export type AttemptLimiter = RateLimiter & {
-  reserve(key: string): Reservation;
-  release(key: string): void;
-  confirmFailure(key: string): void;
-};
-
-export type ObservableRateLimiter = AttemptLimiter & {
+export type ObservableRateLimiter = RateLimiter & {
   trackedKeys(): number;
 };
 
@@ -85,7 +78,7 @@ export type AccessSettings = {
   readonly ttlMs: number;
   readonly secureCookie: boolean;
   readonly now: () => number;
-  readonly failedAttempts: AttemptLimiter;
+  readonly failedAttempts: RateLimiter;
   readonly lockedMessage: string;
 };
 

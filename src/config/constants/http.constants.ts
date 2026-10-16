@@ -70,16 +70,7 @@ export const RESULTADO_BEARER = {
   VALIDO: "valid",
   INVALIDO: "invalid",
   BLOQUEADO: "locked",
-  OCUPADO: "busy",
 } as const;
-
-export const RESULTADO_RESERVA = {
-  RESERVADO: "reserved",
-  OCUPADO: "busy",
-  BLOQUEADO: "locked",
-} as const;
-
-export const SEGUNDOS_REINTENTO_INTENTO_EN_CURSO = 1;
 
 export const LONGITUD_MINIMA_CODIGO_ACCESO = 12;
 
@@ -163,7 +154,6 @@ export const CABECERA = {
   AUTORIZACION: "Authorization",
   X_FORWARDED_FOR: "X-Forwarded-For",
   CONTENT_DISPOSITION: "Content-Disposition",
-  REINTENTAR_TRAS: "Retry-After",
 } as const;
 
 export const VALOR_CABECERA = {
