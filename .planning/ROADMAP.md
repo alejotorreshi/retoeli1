@@ -334,7 +334,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 | 2. Agente y compuerta de confirmación | 24/24 | Complete    | 2026-10-14 |
 | 3. Chat web, API SSE y despliegue | 47/47 | Complete    | 2026-10-15 |
 | 4. Módulo, documentación y defensa | 8/8 | Complete    | 2026-10-16 |
-| 5. Front web por features e identidad de marca | 0/9 | Planned | - |
+| 5. Front web por features e identidad de marca | 1/9 | In Progress | - |
 
 ### Phase 5: Front web por features e identidad de marca
 
@@ -346,12 +346,13 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
   3. Ningún componente tiene literales de texto, colores, tamaños ni valores mágicos, y los guardianes W lo comprueban.
   4. El chat muestra la identidad de marca del UI-SPEC (logo, acento, tipografía y estado vacío con los 4 casos).
   5. La regresión completa (`bun run check`, `bun test`, `demo.ts`, `build:web`), la CI y el ensayo del §11 con Playwright sobre el link público pasan sin cambios de conducta.
+
 **Depends on:** Phase 4
-**Plans:** 9 plans
+**Plans:** 1/9 plans executed
 
 Plans:
 **Wave 1**
-- [ ] 05-01-PLAN.md — Infraestructura de pruebas DOM por archivo (Testing Library y happy-dom fijados, D-115) y caracterización del front por la red: el `App` real con solo `fetch` falso, para que FE-06 se pruebe igual antes y después de la mudanza
+- [x] 05-01-PLAN.md — Infraestructura de pruebas DOM por archivo (Testing Library y happy-dom fijados, D-115) y caracterización del front por la red: el `App` real con solo `fetch` falso, para que FE-06 se pruebe igual antes y después de la mudanza
 - [ ] 05-02-PLAN.md — Store propio sin dependencias (`useSyncExternalStore`, Context de instancia y selectores memoizados) y reductores puros junto a su feature (D-101, D-120)
 
 **Wave 2** *(blocked on Wave 1 completion)*
