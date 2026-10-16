@@ -20,6 +20,7 @@ import type {
   EstadoHerramienta,
   EstadoListaArchivos,
   EstadoModelo,
+  EstadoVistaPrevia,
   LlamadaDelTurno,
   ProgresoDeCaso,
   ResultadoDeCaso,
@@ -339,7 +340,6 @@ export type ControlBloqueCaso = {
   readonly alCerrarVistaPrevia: () => void;
   readonly discoBorrado: boolean;
   readonly enviarTexto: (mensaje: string) => void;
-  readonly vencerAcceso: (aviso: string) => void;
 };
 
 export type PropsListaArchivos = {
@@ -386,13 +386,24 @@ export type VistaPreviaAbierta = {
   readonly disparador: HTMLElement;
 };
 
-export type PropsDialogoVistaPrevia = {
+export type OpcionesDialogoVistaPrevia = {
   readonly caso: string;
   readonly abierta: VistaPreviaAbierta | null;
-  readonly alCerrar: () => void;
   readonly alDescargar: (archivo: ArchivoUi) => void;
   readonly alNoEncontrado: () => void;
-  readonly alVencerAcceso: (aviso: string) => void;
+};
+
+export type PropsDialogoVistaPrevia = OpcionesDialogoVistaPrevia & {
+  readonly alCerrar: () => void;
+};
+
+export type ControlDialogoVistaPrevia = {
+  readonly dialogo: RefObject<HTMLDialogElement | null>;
+  readonly cerrarBoton: RefObject<HTMLButtonElement | null>;
+  readonly idTitulo: string;
+  readonly estado: EstadoVistaPrevia;
+  readonly cerrar: () => void;
+  readonly descargar: () => void;
 };
 
 export type PropsCuerpoVistaPrevia = {

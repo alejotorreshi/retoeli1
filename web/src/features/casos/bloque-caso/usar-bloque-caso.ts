@@ -38,6 +38,5 @@ export function useBloqueCaso({ progreso, reciente, marca }: OpcionesBloqueCaso)
     alCerrarVistaPrevia,
     discoBorrado: discoBorrado(progreso, archivos.estado, archivos.borrados),
     enviarTexto,
-    vencerAcceso,
   };
 }

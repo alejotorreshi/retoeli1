@@ -1,6 +1,6 @@
 import { IconoChevron } from "@web/compartido/iconos/iconos.tsx";
-import { DialogoVistaPrevia } from "@web/components/dialogo-vista-previa.tsx";
 import { AvisoDiscoEfimero } from "@web/features/archivos/aviso-disco-efimero/aviso-disco-efimero.tsx";
+import { DialogoVistaPrevia } from "@web/features/archivos/dialogo-vista-previa/dialogo-vista-previa.tsx";
 import { ListaArchivos } from "@web/features/archivos/lista-archivos/lista-archivos.tsx";
 import estilos from "@web/features/casos/bloque-caso/bloque-caso.module.css";
 import { useBloqueCaso } from "@web/features/casos/bloque-caso/usar-bloque-caso.ts";
@@ -17,7 +17,6 @@ export function BloqueCaso({ progreso, reciente, marca, envioDeshabilitado }: Pr
     alCerrarVistaPrevia,
     discoBorrado,
     enviarTexto,
-    vencerAcceso,
   } = useBloqueCaso({ progreso, reciente, marca });
 
   return (
@@ -46,7 +45,6 @@ export function BloqueCaso({ progreso, reciente, marca, envioDeshabilitado }: Pr
           alCerrar={alCerrarVistaPrevia}
           alDescargar={archivos.descargar}
           alNoEncontrado={archivos.marcarBorrados}
-          alVencerAcceso={vencerAcceso}
         />
       </details>
     </li>

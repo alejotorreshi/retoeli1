@@ -1,16 +1,13 @@
-import { obtenerVistaPrevia } from "@web/api/cliente-api.ts";
-import estilos from "@web/components/dialogo-vista-previa.module.css";
-import { ESTADO_VISTA_PREVIA, RESULTADO_API } from "@web/config/constants/ui.constants.ts";
+import { ESTADO_VISTA_PREVIA } from "@web/config/constants/ui.constants.ts";
 import { TEXTO_VISTA_PREVIA } from "@web/config/strings.ts";
-import { estadoDeVistaPreviaFallida } from "@web/features/archivos/estado/vista-previa.ts";
-import { esArchivoNoEncontrado } from "@web/features/casos/estado/casos.ts";
-import type { EstadoFilaVistaPrevia, EstadoVistaPrevia } from "@web/types/chat.type.ts";
+import estilos from "@web/features/archivos/dialogo-vista-previa/dialogo-vista-previa.module.css";
+import { useDialogoVistaPrevia } from "@web/features/archivos/dialogo-vista-previa/usar-dialogo-vista-previa.ts";
+import type { EstadoFilaVistaPrevia } from "@web/types/chat.type.ts";
 import type {
   PropsBadgeDeFila,
   PropsCuerpoVistaPrevia,
   PropsDialogoVistaPrevia,
 } from "@web/types/ui.type.ts";
-import { useEffect, useId, useRef, useState } from "react";
 import { TIPO_VISTA_PREVIA } from "@/config/constants/files.constants.ts";
 import { ESTADO_CAMPO } from "@/config/constants/mapping.constants.ts";
 
@@ -19,8 +16,6 @@ const CLASE_DE_ESTADO = {
   [ESTADO_CAMPO.FALTANTE]: estilos.faltante,
   [ESTADO_CAMPO.REQUIERE_CONFIRMACION]: estilos.porConfirmar,
 } as const satisfies Record<EstadoFilaVistaPrevia, string | undefined>;
-
-const VISTA_CARGANDO: EstadoVistaPrevia = { tipo: ESTADO_VISTA_PREVIA.CARGANDO };
 
 function BadgeDeFila({ estado }: PropsBadgeDeFila) {
   return (
@@ -72,43 +67,13 @@ export function DialogoVistaPrevia({
   alCerrar,
   alDescargar,
   alNoEncontrado,
-  alVencerAcceso,
 }: PropsDialogoVistaPrevia) {
-  const dialogo = useRef<HTMLDialogElement>(null);
-  const cerrarBoton = useRef<HTMLButtonElement>(null);
-  const [estado, setEstado] = useState<EstadoVistaPrevia>(VISTA_CARGANDO);
-  const idTitulo = useId();
-
-  useEffect(() => {
-    const elemento = dialogo.current;
-    if (elemento === null) return;
-    if (abierta !== null && !elemento.open) {
-      elemento.showModal();
-      cerrarBoton.current?.focus();
-    }
-    if (abierta === null && elemento.open) elemento.close();
-  }, [abierta]);
-
-  useEffect(() => {
-    if (abierta === null) return;
-    setEstado(VISTA_CARGANDO);
-    const controlador = new AbortController();
-    void obtenerVistaPrevia(caso, abierta.archivo.nombre, controlador.signal).then((resultado) => {
-      if (controlador.signal.aborted) return;
-      if (resultado.tipo === RESULTADO_API.OK) {
-        setEstado({ tipo: ESTADO_VISTA_PREVIA.LISTA, vista: resultado.valor });
-        return;
-      }
-      if (resultado.tipo === RESULTADO_API.ACCESO_VENCIDO) alVencerAcceso(resultado.mensaje);
-      if (esArchivoNoEncontrado(resultado)) alNoEncontrado();
-      setEstado(estadoDeVistaPreviaFallida(resultado));
-    });
-    return () => controlador.abort();
-  }, [caso, abierta, alNoEncontrado, alVencerAcceso]);
-
-  function cerrar(): void {
-    dialogo.current?.close();
-  }
+  const { dialogo, cerrarBoton, idTitulo, estado, cerrar, descargar } = useDialogoVistaPrevia({
+    caso,
+    abierta,
+    alDescargar,
+    alNoEncontrado,
+  });
 
   return (
     <dialog ref={dialogo} className={estilos.dialogo} aria-labelledby={idTitulo} onClose={alCerrar}>
@@ -129,14 +94,7 @@ export function DialogoVistaPrevia({
         {estado.tipo === ESTADO_VISTA_PREVIA.LISTA ? <CuerpoVistaPrevia vista={estado.vista} /> : null}
       </div>
       <div className={estilos.acciones}>
-        <button
-          type="button"
-          className={estilos.secundario}
-          disabled={abierta === null}
-          onClick={() => {
-            if (abierta !== null) alDescargar(abierta.archivo);
-          }}
-        >
+        <button type="button" className={estilos.secundario} disabled={abierta === null} onClick={descargar}>
           {TEXTO_VISTA_PREVIA.descargar}
         </button>
         <button ref={cerrarBoton} type="button" className={estilos.secundario} onClick={cerrar}>
