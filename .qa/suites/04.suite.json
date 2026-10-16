@@ -1,0 +1,84 @@
+{
+  "phase": "04",
+  "generated_at": "2026-10-16T06:00:00Z",
+  "mode": "batch, corrida nocturna desatendida: veredictos automáticos según la recomendación del agente, pendientes de revisión humana",
+  "tests": [
+    {
+      "id": "T01", "uat_ref": 1, "kind": "cli", "surface": "modulo-gen", "isolation": "repo",
+      "name": "modulo/ como fuente única: generador idempotente, igualdad byte a byte, identidad e importación sin env",
+      "recipe": "bun run modulo (dos veces) && git diff --quiet -- modulo; bun test tests/modulo tests/unit/modulo.builder.test.ts; bun -e que compare los bytes del cuerpo de modulo/agent.md con agent/prompt.md y de SKILL.md con src/knowledge/registro-proveedor.md después del frontmatter; grep del frontmatter (description, mode: primary, permission edit/bash deny; name, description)",
+      "asserts": ["exit 0 y diff vacío tras dos corridas", "tests de modulo 0 fail", "cuerpos idénticos byte a byte", "frontmatter con las claves del PRD §9.4"],
+      "human_checks": []
+    },
+    {
+      "id": "T02", "uat_ref": 2, "kind": "cli", "surface": "modulo-gen", "isolation": "scratch-copy",
+      "name": "La deriva se detecta: editar el prompt sin regenerar rompe el test, regenerar lo arregla",
+      "recipe": "en una copia scratch (rsync sin node_modules ni el archivo de entorno, luego bun install --frozen-lockfile): agregar una línea a agent/prompt.md; bun test tests/modulo/generador.test.ts (debe fallar); bun run modulo; bun test tests/modulo/generador.test.ts (debe pasar). Igual con src/knowledge/registro-proveedor.md",
+      "asserts": ["fail antes de regenerar", "pass después de bun run modulo"],
+      "human_checks": []
+    },
+    {
+      "id": "T03", "uat_ref": 3, "kind": "cli", "surface": "api,web", "isolation": "scratch-copy",
+      "name": "Un dev nuevo levanta el proyecto siguiendo solo el README (clon limpio, un comando, < 120 s)",
+      "recipe": "git clone del repo local a una carpeta scratch; seguir solo los pasos del README: bun install --frozen-lockfile, bun run demo.ts (exit 0 sin clave), ACCESS_CODE sintético inline + bun run dev, esperar /api/health en 5173 (proxy) o 3000; medir el tiempo; apagar solo los PIDs propios",
+      "asserts": ["demo exit 0", "health 200 en < 120 s", "los pasos del README coinciden con los scripts de package.json"],
+      "human_checks": []
+    },
+    {
+      "id": "T04", "uat_ref": 4, "kind": "contract", "surface": "repo", "isolation": "repo",
+      "name": "Documentación: SOLUCION.md con las 10 secciones, README §9.2, continuidad e historial Conventional Commits con identidad elianatorres5772",
+      "recipe": "bun test tests/docs; listar los encabezados ## de SOLUCION.md contra PRD §9.1; comprobar que README tiene badge, link, código (sin imprimirlo), un comando, env vars, demo; git log --format='%an <%ae>|%cn <%ce>|%s' | auditar identidad única y regex Conventional Commits",
+      "asserts": ["tests/docs 0 fail", "10 secciones en orden", "identidad única elianatorres5772", "0 asuntos fuera de Conventional Commits"],
+      "human_checks": ["la usuaria revisa la redacción de SOLUCION.md §9 (D-87)"]
+    },
+    {
+      "id": "T05", "uat_ref": 5, "kind": "cli", "surface": "gate-check,gate-test,gate-build-web,gate-audit,ci", "isolation": "scratch-copy",
+      "name": "Regresión y CI local: check, test, demo, build:web, audit y simulación de la CI en copia limpia",
+      "recipe": "bun run check; bun test; bun run demo.ts; bun run build:web; bun run audit; copia limpia sin el archivo de entorno ni .git, bun install --frozen-lockfile y los pasos de .github/workflows/ci.yml en orden",
+      "asserts": ["todos exit 0", "0 fail", "CI_LOCAL_OK"],
+      "human_checks": []
+    },
+    {
+      "id": "T06", "uat_ref": 6, "kind": "http", "surface": "deploy", "isolation": "repo",
+      "name": "Render sirve HEAD tras checksPass (evidencia indirecta de CI verde) y el acceso sigue cerrado",
+      "recipe": "despertar el servicio; GET /api/health; GET / y extraer el nombre del asset JS; comparar con el asset de bun run build:web local en HEAD; si no coincide, reintentar cada 60 s hasta 20 min (deploy en curso); rutas protegidas sin acceso -> 401",
+      "asserts": ["health 200 sin secretos", "bundle == build local de HEAD", "401 en rutas protegidas"],
+      "human_checks": ["confirmar en GitHub Actions la corrida verde de dec6481 (o posterior) y el badge verde; confirmar en Render Events que el deploy esperó los checks"]
+    },
+    {
+      "id": "T07", "uat_ref": 7, "kind": "cli", "surface": "preflight-cli,deploy", "isolation": "repo",
+      "name": "Pre-flight por defecto contra el link público, con el código del README (sin tokens)",
+      "recipe": "PREFLIGHT_ACCESS_CODE leído en memoria del README (igual a .qa/render.token, nunca impreso) bun run preflight -- --url https://registro-proveedor-bfnt.onrender.com ; una sola corrida (no reintentar un 401)",
+      "asserts": ["exit 0", "health ok, acceso aceptado, fecha 2026-09-03, caso ec-corp-andina", "la salida no contiene el código"],
+      "human_checks": []
+    },
+    {
+      "id": "T08", "uat_ref": 8, "kind": "sse", "surface": "preflight-guion,deploy", "isolation": "repo",
+      "name": "Pre-flight --guion: el guion §11 completo por SSE sobre Render (verifica el fix CR-01)",
+      "recipe": "mismo código en memoria; bun run preflight -- --url https://registro-proveedor-bfnt.onrender.com --guion ; gasta tokens del modelo (autorizado por D-92/D-95)",
+      "asserts": ["exit 0", "turno 1: needsConfirmation y bloqueo certificado_cumplimiento_tributario, sin ENVIO-SIMULADO.md", "turno 2: ENVIO-SIMULADO.md presente", "tokens reportados", "SSE por trozos sin depender de X-Accel-Buffering"],
+      "human_checks": []
+    },
+    {
+      "id": "T09", "uat_ref": 9, "kind": "browser", "surface": "deploy", "isolation": "repo",
+      "name": "Ensayo del guion §11 en el navegador sobre el link público (Playwright, D-95)",
+      "recipe": "Playwright MCP a 1280x720 en la URL pública: acceso con el código (escrito desde memoria, nunca en logs); nueva sesión; mensaje 'Procesa el caso ec-corp-andina. Genera el formulario en el formato que pide y arma el paquete para firma. No envíes nada todavía.'; esperar tarjetas de herramientas, tarjeta de resultado y tarjeta de confirmación con los bloqueos; captura; luego 'envía' (o Confirmar); verificar ENVIO-SIMULADO.md en el panel de archivos; captura por paso en screenshots/",
+      "asserts": ["el flujo completo funciona con el modelo real", "confirmación pedida antes del envío", "ENVIO-SIMULADO.md solo tras 'envía'", "sin tarjeta de error"],
+      "human_checks": ["la usuaria ensaya el guion §11 una vez a mano, como en la defensa"]
+    },
+    {
+      "id": "T10", "uat_ref": 10, "kind": "pii", "surface": "repo", "isolation": "repo",
+      "name": "Sin secretos ni PII en lo commiteado de la fase 4 (README solo con el código de acceso por D-94)",
+      "recipe": "comparar en memoria el valor de la clave del LLM del archivo de entorno local contra git grep de los archivos versionados (sin imprimirlo); el código de acceso solo debe aparecer en README.md; escanear docs/evidencia/costo-por-caso.json, SOLUCION.md, README y docs/ contra los valores sensibles del maestro (control positivo requerido)",
+      "asserts": ["clave LLM ausente de git", "código de acceso solo en README", "0 valores del maestro"],
+      "human_checks": []
+    },
+    {
+      "id": "T11", "uat_ref": 11, "kind": "human", "surface": "modulo-opencode", "isolation": "repo",
+      "name": "El módulo funciona dentro de una sesión real de OpenCode",
+      "recipe": "fuera de alcance por D-83 (no se instala OpenCode); evidencia: tests/modulo/opencode.test.ts y modulo/README.md",
+      "asserts": [],
+      "human_checks": ["opcional: abrir el repo en OpenCode y comprobar que aparecen el agente, la skill y las herramientas proveedor_*"]
+    }
+  ]
+}
