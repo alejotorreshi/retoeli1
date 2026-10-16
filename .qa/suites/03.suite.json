@@ -718,7 +718,7 @@
       "name": "Seguimiento de la línea de tiempo a 375×667 y 1280×720 (D-78 y D-78.1)",
       "kind": "browser",
       "surface": "web (local_stack)",
-      "recipe": "Playwright en 3023 a 375x667 y 1280x720: 'Procesa el caso ec-corp-andina' y luego chip de los 4 casos con FAKE_DELAY por defecto; sin tocar, medir distancia al final tras cada turno; durante un turno 'QA-LENTO' o el de 4 casos pulsar ArrowUp de a una con el foco en la línea de tiempo mientras llegan eventos, luego rueda (mouse.wheel -120), luego PageUp; verificar 'Ir al final' 40×40 visible y que la vista no vuelve sola al fondo; mandar otro mensaje → vuelve a pegar. document.scrollingElement.scrollHeight == innerHeight. Nota de la corrida 2026-10-16: no-pass a 375×667 (flecha de 40 px re-pegada por el scroll anchoring; ver G-03-7). Reproducir con un turno de 4 casos y ArrowUp con el foco en la línea de tiempo mientras llegan eventos.",
+      "recipe": "Playwright en 3023 a 375x667 y 1280x720: 'Procesa el caso ec-corp-andina' y luego chip de los 4 casos con FAKE_DELAY por defecto; sin tocar, medir distancia al final tras cada turno; durante un turno 'QA-LENTO' o el de 4 casos pulsar ArrowUp de a una con el foco en la línea de tiempo mientras llegan eventos, luego rueda (mouse.wheel -120), luego PageUp; verificar 'Ir al final' 40×40 visible y que la vista no vuelve sola al fondo; mandar otro mensaje → vuelve a pegar. document.scrollingElement.scrollHeight == innerHeight. Nota de la corrida 2026-10-16: no-pass a 375×667 (flecha de 40 px re-pegada por el scroll anchoring; ver G-03-7). Reproducir con un turno de 4 casos y ArrowUp con el foco en la línea de tiempo mientras llegan eventos. Re-corrida 2026-10-16T02-15-41Z tras quick-261015-t5l: 1280 pass; 375 con una sola flecha vuelve a pegar en el segundo crecimiento (anclaje en dos pasos) — limitación aceptada por la usuaria.",
       "asserts": [
         "sin tocar: distancia <= 96 px y sin 'Ir al final'",
         "primera flecha arriba despega y aparece 'Ir al final' 40×40",
@@ -795,5 +795,13 @@
     "failed": [
       "T30"
     ]
+  },
+  "last_rerun": {
+    "evidence": ".qa/evidence/03-chat-web-api-sse-y-despliegue/03-QA-EVIDENCE-2026-10-16T02-15-41Z.md",
+    "at": "2026-10-16T02:40:00Z",
+    "tests": [
+      "T30"
+    ],
+    "verdict": "pass con override"
   }
 }

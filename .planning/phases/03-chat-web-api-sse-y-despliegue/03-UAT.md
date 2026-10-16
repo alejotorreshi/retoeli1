@@ -1,9 +1,9 @@
 ---
-status: diagnosed
+status: testing
 phase: 03-chat-web-api-sse-y-despliegue
 source: [03-VERIFICATION.md]
 started: 2026-10-15T23:50:00Z
-updated: 2026-10-16T02:05:00Z
+updated: 2026-10-16T02:40:00Z
 ---
 
 ## Current Test
@@ -44,9 +44,8 @@ reported: "QA T29 (4/4): pausa en sin_clave y tope_diario con ayuda; saldo_agota
 
 ### 7. Receta T16: seguimiento de la línea de tiempo (D-78 y D-78.1)
 expected: Con Playwright y el LLM falso a 375×667 y 1280×720, 'Procesa el caso ec-corp-andina' y luego el chip 'Los 4 casos'. Sin tocar nada, la distancia al final es de 96 px o menos tras cada turno y no aparece 'Ir al final'. Durante el turno, la primera pulsación de flecha arriba ya despega y aparece 'Ir al final' de 40×40, igual con la rueda, la barra y PageUp con el foco en un mensaje. Enviar otro mensaje la vuelve a pegar. document.scrollingElement.scrollHeight == innerHeight.
-result: issue
-reported: "QA T30 a 375×667 (3/3 reproducciones): con un turno en curso, una flecha arriba despega 40 px pero con el siguiente evento la vista vuelve al fondo y 'Ir al final' nunca aparece; la rueda y PageUp sí despegan; a 1280×720 pasa 5/5. Traza: al despegarse overflow-anchor vuelve a auto, el scroll anchoring empuja la posición hacia abajo y desplazar() lo lee como bajada a ≤ 96 px del fondo y vuelve a pegar (rompe D-78 y D-78.1)."
-severity: major
+result: pass
+reported: "Aceptado por la usuaria (2026-10-16) tras quick-261015-t5l y la re-corrida QA de T30 (.qa/evidence/03-chat-web-api-sse-y-despliegue/03-QA-EVIDENCE-2026-10-16T02-15-41Z.md): 1280×720 pasa completo; a 375×667 la flecha ya despega y aparece Ir al final, pero cuando el contenido crece en dos renders el anclaje de Chromium corrige en dos pasos (d 40→64→40) y la vista vuelve sola al fondo unos 7 s después. Rueda, PageUp, dos flechas, re-pegado al bajar o enviar y sin scroll de documento pasan. Limitación conocida: una sola flecha de 40 px en una vista angosta con teclado (un teléfono no tiene flechas)."
 
 ### 8. Human-check de 03-42: sesión nueva, recarga y 'Volver a la sesión anterior' (D-73.5.2)
 expected: Procesar ec-corp-andina hasta la tarjeta de confirmación, 'Nueva sesión' → 'Empezar sesión nueva' y recargar → empieza sin sesión y sin la tarjeta anterior. Con NEW_SESSIONS_PER_HOUR=1, abrir una sesión nueva hasta el 429, pulsar 'Volver a la sesión anterior' → trae su historial sin ningún POST /api/chat, y la recarga posterior vuelve a esa sesión.
@@ -71,8 +70,8 @@ reported: "QA T33: obtenerSalud solo desde useSalud().refrescar (montaje, foco, 
 ## Summary
 
 total: 11
-passed: 10
-issues: 1
+passed: 11
+issues: 0
 pending: 0
 skipped: 0
 blocked: 0
@@ -81,7 +80,8 @@ blocked: 0
 
 - gap_id: G-03-7
   truth: "Receta T16 (D-78 y D-78.1): a 375×667, cualquier subida de la usuaria (incluida una flecha de 40 px) despega la línea de tiempo mientras llegan eventos y aparece 'Ir al final'; el anclaje y el encogimiento no cambian el estado"
-  status: failed
+  status: accepted
+  resolution: "quick-261015-t5l (04e0b03, 8aa9bca) corrige el caso de un solo paso de anclaje; el caso de dos pasos se acepta como limitación conocida (override en 03-VERIFICATION.md)"
   reason: "User reported: QA T30 a 375×667 (3/3 reproducciones): con un turno en curso, una flecha arriba despega 40 px pero con el siguiente evento la vista vuelve al fondo y 'Ir al final' nunca aparece; la rueda y PageUp sí despegan; a 1280×720 pasa 5/5. Traza: al despegarse overflow-anchor vuelve a auto, el scroll anchoring empuja la posición hacia abajo y desplazar() lo lee como bajada a ≤ 96 px del fondo y vuelve a pegar (rompe D-78 y D-78.1)."
   severity: major
   test: 7
