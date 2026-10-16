@@ -5,7 +5,8 @@ import { TEXTO_ACCIONES } from "@web/config/strings.ts";
 
 const RAIZ = join(import.meta.dir, "..", "..");
 const PRD = readFileSync(join(RAIZ, "reto-01", "PRD.md"), "utf8");
-const COMPONENTE = readFileSync(join(RAIZ, "web", "src", "components", "acciones-rapidas.tsx"), "utf8");
+const CARPETA_COMPONENTE = join(RAIZ, "web", "src", "features", "chat", "acciones-rapidas");
+const ARCHIVOS_COMPONENTE = ["acciones-rapidas.tsx", "usar-acciones-rapidas.ts"] as const;
 const CASOS_FIXTURE = readdirSync(join(RAIZ, "reto-01", "fixtures", "reto-01", "casos"), {
   withFileTypes: true,
 })
@@ -52,15 +53,11 @@ describe("acciones rápidas (UI-07)", () => {
     }
   });
 
-  test("el chip corto manda el mismo mensaje y conserva el nombre completo como aria-label", () => {
-    expect(COMPONENTE).toContain("aria-label={corta ? TEXTO_ACCIONES.demo : undefined}");
-    expect(COMPONENTE).toContain("aria-label={corta ? TEXTO_ACCIONES.todos(casos.length) : undefined}");
-    expect(COMPONENTE.split("alEnviar(TEXTO_ACCIONES.mensajeDemo)")).toHaveLength(2);
-    expect(COMPONENTE.split("alEnviar(TEXTO_ACCIONES.mensajeTodos(casos))")).toHaveLength(2);
-  });
-
   test("el componente no escribe ningún id de caso", () => {
     expect(CASOS_FIXTURE).toHaveLength(4);
-    expect(CASOS_FIXTURE.filter((caso) => COMPONENTE.includes(caso))).toEqual([]);
+    for (const archivo of ARCHIVOS_COMPONENTE) {
+      const fuente = readFileSync(join(CARPETA_COMPONENTE, archivo), "utf8");
+      expect(CASOS_FIXTURE.filter((caso) => fuente.includes(caso))).toEqual([]);
+    }
   });
 });

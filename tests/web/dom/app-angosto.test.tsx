@@ -1,14 +1,30 @@
 import { describe, expect, test } from "bun:test";
 import { montarApp } from "@tests/helpers/app-dom.helper.ts";
 import { prepararDom } from "@tests/helpers/dom.helper.ts";
-import { crearRedWeb } from "@tests/helpers/red-web.helper.ts";
+import {
+  CASOS_DE_PRUEBA,
+  crearRedWeb,
+  eventoFin,
+  eventoInicio,
+  eventoTexto,
+} from "@tests/helpers/red-web.helper.ts";
+import type { GuionChat } from "@tests/helpers/types/red-web.type.ts";
 import { ORDEN_PESTANAS } from "@web/config/constants/ui.constants.ts";
-import { TEXTO_PESTANAS } from "@web/config/strings.ts";
+import { TEXTO_ACCIONES, TEXTO_PESTANAS } from "@web/config/strings.ts";
 import type { Pestana } from "@web/types/ui.type.ts";
+import { METODO_POST, RUTA_API } from "@/config/constants/http.constants.ts";
 
 const ANCHO_MOVIL = 375;
+const SESION = "sesion-angosta";
+const RESPUESTA = "Listo: el primer turno terminó.";
+
+const turnoConRespuesta: GuionChat = { eventos: [eventoInicio(SESION), eventoTexto(RESPUESTA), eventoFin()] };
 
 const dom = await prepararDom({ ancho: ANCHO_MOVIL });
+
+function habilitado(elemento: HTMLElement): boolean {
+  return !elemento.hasAttribute("disabled");
+}
 
 function vistaDe(pestana: HTMLElement): HTMLElement {
   const vista = document.getElementById(pestana.getAttribute("aria-controls") ?? "");
@@ -54,5 +70,28 @@ describe("App en un teléfono de 375 px", () => {
 
     await usuario.keyboard("{Home}");
     comprobarElegida(primera);
+  });
+
+  test("los chips compactos muestran la etiqueta corta, se anuncian con el nombre completo y mandan el mismo mensaje", async () => {
+    const red = crearRedWeb({ nativos: dom.nativos, guiones: [turnoConRespuesta, turnoConRespuesta] });
+    const { pantalla, usuario } = await montarApp(dom, red);
+    const demo = await pantalla.findByRole("button", { name: TEXTO_ACCIONES.demo });
+    await dom.esperar(() => expect(habilitado(demo)).toBe(true));
+    await usuario.click(demo);
+    expect(await pantalla.findByText(RESPUESTA)).toBeDefined();
+
+    const compacto = await pantalla.findByRole("button", { name: TEXTO_ACCIONES.demo });
+    await dom.esperar(() => expect(habilitado(compacto)).toBe(true));
+    expect(compacto.textContent).toBe(TEXTO_ACCIONES.demoCorto);
+    const todos = pantalla.getByRole("button", { name: TEXTO_ACCIONES.todos(CASOS_DE_PRUEBA.length) });
+    expect(todos.textContent).toBe(TEXTO_ACCIONES.todosCorto(CASOS_DE_PRUEBA.length));
+
+    await usuario.click(compacto);
+
+    await dom.esperar(() => expect(red.pedidosA(RUTA_API.CHAT, METODO_POST)).toHaveLength(2));
+    expect(red.pedidosA(RUTA_API.CHAT, METODO_POST).map((pedido) => pedido.cuerpo)).toEqual([
+      { sessionId: null, message: TEXTO_ACCIONES.mensajeDemo },
+      { sessionId: SESION, message: TEXTO_ACCIONES.mensajeDemo },
+    ]);
   });
 });
