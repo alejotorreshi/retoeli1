@@ -26,18 +26,36 @@
   min-height: var(--alto-control);
   padding: var(--espacio-sm) var(--espacio-md);
   font-size: var(--etiqueta-tamano);
-  font-weight: var(--etiqueta-peso);
+  font-weight: var(--etiqueta-peso-fuerte);
   line-height: var(--etiqueta-interlinea);
   color: var(--texto);
   background: var(--secundario);
   border: var(--borde-ancho) solid var(--borde);
-  border-radius: var(--radio-chico);
+  border-radius: var(--radio-pildora);
   cursor: pointer;
+  transition:
+    background-color var(--duracion-transicion) ease,
+    border-color var(--duracion-transicion) ease,
+    color var(--duracion-transicion) ease;
+}
+
+.chip:active:not(:disabled) {
+  background: var(--acento-tinte);
+  border-color: var(--acento);
 }
 
 .chip:disabled {
   color: var(--texto-tenue);
+  background: var(--secundario);
+  border-color: var(--borde);
   cursor: not-allowed;
+}
+
+@media (hover: hover) {
+  .chip:hover:not(:disabled):not(:active) {
+    background: var(--acento-suave);
+    border-color: var(--acento);
+  }
 }
 
 :global([data-diseno="angosto"]) .franja .chip {

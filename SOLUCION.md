@@ -134,6 +134,8 @@ El agente nunca hace clic en Enviar ni en ningún botón que comprometa a la emp
   Alternativa descartada: guardar el código o un token en `localStorage` y mandarlo como `Bearer`, que queda expuesto a cualquier XSS. `Bearer` se mantiene solo para clientes de línea de comandos.
 - **Render free con Dockerfile como plan B.** Es gratis, tiene secretos en el panel y despliega desde `main` solo si pasa la CI.
   Alternativa descartada: un VPS propio, porque cuesta y suma operación. El mismo `Dockerfile` sirve para migrar a Fly, Koyeb u otro proveedor.
+- **La marca de Periferia va autoalojada (D-105 a D-110).** El logo (`web/public/marca/periferia-it-group.webp`) y el favicon (`web/public/marca/favicon.jpg`) son marcas de Periferia IT Group. Se copiaron una vez de su sitio a `web/public` y se usan porque la herramienta es interna para la empresa. Las fuentes Outfit y Montserrat se sirven desde `web/public/fuentes` bajo la SIL Open Font License 1.1, con `OFL-Outfit.txt` y `OFL-Montserrat.txt` junto a los archivos. Ni el logo, ni el favicon, ni las fuentes se piden a un tercero en tiempo de ejecución, así que la CSP sigue en `'self'`, y los tres se sirven sin el código de acceso porque la pantalla de acceso ya los usa.
+  Alternativa descartada: cargar las fuentes de Google Fonts y el logo del dominio de la empresa. Es menos trabajo, pero cada visita le avisaría a un tercero, abriría la CSP y dejaría la pantalla de acceso sin marca si ese dominio falla.
 
 **Dependencias** (PRD §8). Bun ya trae el runner de pruebas, la lectura de `.env`, TypeScript nativo y el `fetch`, así que no se usan dotenv, jest, ts-node, axios ni uuid.
 

@@ -39,6 +39,7 @@
 .titulo {
   margin: 0;
   min-width: 0;
+  font-family: var(--titulo-fuente);
   font-size: var(--titulo-tamano);
   font-weight: var(--titulo-peso);
   line-height: var(--titulo-interlinea);
@@ -141,8 +142,12 @@
   font-weight: var(--etiqueta-peso-fuerte);
   line-height: var(--etiqueta-interlinea);
   border: var(--borde-ancho) solid;
-  border-radius: var(--radio-chico);
+  border-radius: var(--radio-pildora);
   cursor: pointer;
+  transition:
+    background-color var(--duracion-transicion) ease,
+    border-color var(--duracion-transicion) ease,
+    color var(--duracion-transicion) ease;
 }
 
 .confirmar {
@@ -154,20 +159,46 @@
 .cancelar {
   color: var(--texto);
   background: var(--dominante);
-  border-color: var(--borde);
+  border-color: var(--borde-control);
 }
 
 .boton[aria-disabled="true"] {
   cursor: not-allowed;
 }
 
+.confirmar:active:not([aria-disabled="true"]) {
+  background: var(--acento-activo);
+  border-color: var(--acento-activo);
+}
+
 .confirmar[aria-disabled="true"] {
-  background: var(--texto-tenue);
-  border-color: var(--texto-tenue);
+  color: var(--deshabilitado-texto);
+  background: var(--deshabilitado-fondo);
+  border-color: var(--deshabilitado-fondo);
+  cursor: not-allowed;
+}
+
+@media (hover: hover) {
+  .confirmar:hover:not([aria-disabled="true"]):not(:active) {
+    background: var(--acento-hover);
+    border-color: var(--acento-hover);
+  }
+}
+
+.cancelar:active:not([aria-disabled="true"]) {
+  background: var(--acento-suave);
 }
 
 .cancelar[aria-disabled="true"] {
   color: var(--texto-tenue);
+  border-color: var(--borde);
+  cursor: not-allowed;
+}
+
+@media (hover: hover) {
+  .cancelar:hover:not([aria-disabled="true"]):not(:active) {
+    background: var(--secundario);
+  }
 }
 
 :global([data-diseno="angosto"]) .acciones {

@@ -16,6 +16,7 @@
 
 .titulo {
   margin: 0 0 var(--espacio-md);
+  font-family: var(--titulo-fuente);
   font-size: var(--titulo-tamano);
   font-weight: var(--titulo-peso);
   line-height: var(--titulo-interlinea);

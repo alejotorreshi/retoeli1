@@ -55,7 +55,7 @@
   font-weight: var(--etiqueta-peso-fuerte);
   line-height: var(--etiqueta-interlinea);
   color: var(--acento);
-  text-decoration: underline;
+  text-decoration: none;
   background: none;
   border: 0;
   border-radius: var(--radio-chico);
@@ -92,7 +92,37 @@
   line-height: var(--etiqueta-interlinea);
   color: var(--texto);
   background: var(--dominante);
-  border: var(--borde-ancho) solid var(--borde);
-  border-radius: var(--radio-chico);
+  border: var(--borde-ancho) solid var(--borde-control);
+  border-radius: var(--radio-pildora);
   cursor: pointer;
+  transition:
+    background-color var(--duracion-transicion) ease,
+    border-color var(--duracion-transicion) ease,
+    color var(--duracion-transicion) ease;
+}
+
+.enlace:active {
+  text-decoration: underline;
+}
+
+@media (hover: hover) {
+  .enlace:hover {
+    text-decoration: underline;
+  }
+}
+
+.secundario:active:not(:disabled) {
+  background: var(--acento-suave);
+}
+
+.secundario:disabled {
+  color: var(--texto-tenue);
+  border-color: var(--borde);
+  cursor: not-allowed;
+}
+
+@media (hover: hover) {
+  .secundario:hover:not(:disabled):not(:active) {
+    background: var(--secundario);
+  }
 }

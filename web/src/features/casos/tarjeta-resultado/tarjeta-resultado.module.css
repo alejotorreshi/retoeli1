@@ -18,7 +18,7 @@
 .caso {
   margin: 0;
   min-width: 0;
-  font-family: var(--fuente-base);
+  font-family: var(--titulo-fuente);
   font-size: var(--titulo-tamano);
   font-weight: var(--titulo-peso);
   line-height: var(--titulo-interlinea);

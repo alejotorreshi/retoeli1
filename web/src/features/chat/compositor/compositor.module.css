@@ -26,7 +26,7 @@
   line-height: var(--cuerpo-interlinea);
   color: var(--texto);
   background: var(--dominante);
-  border: var(--borde-ancho) solid var(--borde);
+  border: var(--borde-ancho) solid var(--borde-control);
   border-radius: var(--radio);
 }
 
@@ -87,8 +87,12 @@
   color: var(--sobre-acento);
   background: var(--acento);
   border: var(--borde-ancho) solid var(--acento);
-  border-radius: var(--radio-chico);
+  border-radius: var(--radio-pildora);
   cursor: pointer;
+  transition:
+    background-color var(--duracion-transicion) ease,
+    border-color var(--duracion-transicion) ease,
+    color var(--duracion-transicion) ease;
 }
 
 .detener {
@@ -100,15 +104,48 @@
   line-height: var(--etiqueta-interlinea);
   color: var(--texto);
   background: var(--dominante);
-  border: var(--borde-ancho) solid var(--borde);
-  border-radius: var(--radio-chico);
+  border: var(--borde-ancho) solid var(--borde-control);
+  border-radius: var(--radio-pildora);
   cursor: pointer;
+  transition:
+    background-color var(--duracion-transicion) ease,
+    border-color var(--duracion-transicion) ease,
+    color var(--duracion-transicion) ease;
+}
+
+.enviar:active:not(:disabled) {
+  background: var(--acento-activo);
+  border-color: var(--acento-activo);
 }
 
 .enviar:disabled {
-  background: var(--texto-tenue);
-  border-color: var(--texto-tenue);
+  color: var(--deshabilitado-texto);
+  background: var(--deshabilitado-fondo);
+  border-color: var(--deshabilitado-fondo);
   cursor: not-allowed;
+}
+
+@media (hover: hover) {
+  .enviar:hover:not(:disabled):not(:active) {
+    background: var(--acento-hover);
+    border-color: var(--acento-hover);
+  }
+}
+
+.detener:active:not(:disabled) {
+  background: var(--acento-suave);
+}
+
+.detener:disabled {
+  color: var(--texto-tenue);
+  border-color: var(--borde);
+  cursor: not-allowed;
+}
+
+@media (hover: hover) {
+  .detener:hover:not(:disabled):not(:active) {
+    background: var(--secundario);
+  }
 }
 
 :global([data-diseno="angosto"]) .compositor {

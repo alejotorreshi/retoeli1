@@ -45,12 +45,17 @@
   min-height: var(--alto-control);
   padding-inline: var(--espacio-md);
   font-size: var(--etiqueta-tamano);
+  font-weight: var(--etiqueta-peso-fuerte);
   line-height: var(--etiqueta-interlinea);
   color: var(--texto);
   background: var(--dominante);
-  border: var(--borde-ancho) solid var(--borde);
-  border-radius: var(--radio-chico);
+  border: var(--borde-ancho) solid var(--borde-control);
+  border-radius: var(--radio-pildora);
   cursor: pointer;
+  transition:
+    background-color var(--duracion-transicion) ease,
+    border-color var(--duracion-transicion) ease,
+    color var(--duracion-transicion) ease;
 }
 
 .iconoIrAlFinal {
@@ -77,7 +82,43 @@
   line-height: var(--etiqueta-interlinea);
   color: var(--texto);
   background: var(--dominante);
-  border: var(--borde-ancho) solid var(--borde);
-  border-radius: var(--radio-chico);
+  border: var(--borde-ancho) solid var(--borde-control);
+  border-radius: var(--radio-pildora);
   cursor: pointer;
+  transition:
+    background-color var(--duracion-transicion) ease,
+    border-color var(--duracion-transicion) ease,
+    color var(--duracion-transicion) ease;
+}
+
+.irAlFinal:active:not(:disabled) {
+  background: var(--acento-suave);
+}
+
+.irAlFinal:disabled {
+  color: var(--texto-tenue);
+  border-color: var(--borde);
+  cursor: not-allowed;
+}
+
+@media (hover: hover) {
+  .irAlFinal:hover:not(:disabled):not(:active) {
+    background: var(--secundario);
+  }
+}
+
+.accionAviso:active:not(:disabled) {
+  background: var(--acento-suave);
+}
+
+.accionAviso:disabled {
+  color: var(--texto-tenue);
+  border-color: var(--borde);
+  cursor: not-allowed;
+}
+
+@media (hover: hover) {
+  .accionAviso:hover:not(:disabled):not(:active) {
+    background: var(--secundario);
+  }
 }

@@ -19,7 +19,7 @@
   flex: none;
   margin: 0;
   padding: var(--espacio-lg) var(--espacio-lg) var(--espacio-md);
-  font-family: var(--fuente-mono);
+  font-family: var(--titulo-fuente);
   font-size: var(--titulo-tamano);
   font-weight: var(--titulo-peso);
   line-height: var(--titulo-interlinea);
@@ -155,7 +155,27 @@
   line-height: var(--etiqueta-interlinea);
   color: var(--texto);
   background: var(--dominante);
-  border: var(--borde-ancho) solid var(--borde);
-  border-radius: var(--radio-chico);
+  border: var(--borde-ancho) solid var(--borde-control);
+  border-radius: var(--radio-pildora);
   cursor: pointer;
+  transition:
+    background-color var(--duracion-transicion) ease,
+    border-color var(--duracion-transicion) ease,
+    color var(--duracion-transicion) ease;
+}
+
+.secundario:active:not(:disabled) {
+  background: var(--acento-suave);
+}
+
+.secundario:disabled {
+  color: var(--texto-tenue);
+  border-color: var(--borde);
+  cursor: not-allowed;
+}
+
+@media (hover: hover) {
+  .secundario:hover:not(:disabled):not(:active) {
+    background: var(--secundario);
+  }
 }

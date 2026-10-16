@@ -32,7 +32,7 @@ details[open] > .resumen .chevron {
 .caso {
   min-width: 0;
   margin: 0;
-  font-family: var(--fuente-mono);
+  font-family: var(--titulo-fuente);
   font-size: var(--titulo-tamano);
   font-weight: var(--titulo-peso);
   line-height: var(--titulo-interlinea);

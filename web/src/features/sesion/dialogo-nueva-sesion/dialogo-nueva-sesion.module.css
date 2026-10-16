@@ -11,6 +11,7 @@
 
 .titulo {
   margin: 0 0 var(--espacio-sm);
+  font-family: var(--titulo-fuente);
   font-size: var(--titulo-tamano);
   font-weight: var(--titulo-peso);
   line-height: var(--titulo-interlinea);
@@ -38,18 +39,42 @@
   font-weight: var(--etiqueta-peso-fuerte);
   line-height: var(--etiqueta-interlinea);
   border: var(--borde-ancho) solid;
-  border-radius: var(--radio-chico);
+  border-radius: var(--radio-pildora);
   cursor: pointer;
+  transition:
+    background-color var(--duracion-transicion) ease,
+    border-color var(--duracion-transicion) ease,
+    color var(--duracion-transicion) ease;
 }
 
 .seguir {
   color: var(--texto);
   background: var(--dominante);
-  border-color: var(--borde);
+  border-color: var(--borde-control);
 }
 
 .empezar {
   color: var(--sobre-acento);
   background: var(--destructivo);
   border-color: var(--destructivo);
+}
+
+.seguir:active {
+  background: var(--acento-suave);
+}
+
+.empezar:active {
+  background: var(--destructivo-hover);
+  border-color: var(--destructivo-hover);
+}
+
+@media (hover: hover) {
+  .seguir:hover:not(:active) {
+    background: var(--secundario);
+  }
+
+  .empezar:hover:not(:active) {
+    background: var(--destructivo-hover);
+    border-color: var(--destructivo-hover);
+  }
 }
