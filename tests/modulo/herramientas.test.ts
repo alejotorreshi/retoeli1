@@ -35,6 +35,7 @@ async function importarSinEntorno(ruta: string): Promise<{ codigo: number; salid
   const proceso = Bun.spawn(
     [
       process.execPath,
+      "--no-env-file",
       "-e",
       `const m = await import(${JSON.stringify(ruta)}); console.log(Object.keys(m).sort().join(","));`,
     ],

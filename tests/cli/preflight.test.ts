@@ -259,7 +259,7 @@ describe("entorno del pre-flight (D-92)", () => {
 
 describe("la entrada del comando nunca acepta el código como argumento (T-04-10)", () => {
   async function ejecutarComando(argumentos: readonly string[]) {
-    const proceso = Bun.spawn(["bun", RUNNER, ...argumentos], {
+    const proceso = Bun.spawn(["bun", "--no-env-file", RUNNER, ...argumentos], {
       cwd: RAIZ,
       env: { PATH: process.env.PATH ?? "" },
       stdout: "pipe",
