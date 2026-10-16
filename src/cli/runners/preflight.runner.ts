@@ -30,7 +30,7 @@ import { FECHA_DEMO } from "@/config/constants/demo.constants.ts";
 import { ARCHIVOS_SALIDA } from "@/config/constants/files.constants.ts";
 import {
   CABECERA,
-  DIRECTIVA_SIN_CACHE,
+  DIRECTIVA_CACHE,
   METODO_POST,
   PARAMETRO_CASO,
   PREFIJO_BEARER,
@@ -260,15 +260,19 @@ async function leerTurno(
   return exito(lectura);
 }
 
-function prohibeCache(respuesta: Response): boolean {
-  const directivas = (respuesta.headers.get(CABECERA.CACHE_CONTROL) ?? "").split(SEPARADOR_DIRECTIVAS);
-  return directivas.some((directiva) => directiva.trim().toLowerCase() === DIRECTIVA_SIN_CACHE);
+function prohibeCacheYTransformacion(respuesta: Response): boolean {
+  const presentes = new Set(
+    (respuesta.headers.get(CABECERA.CACHE_CONTROL) ?? "")
+      .split(SEPARADOR_DIRECTIVAS)
+      .map((directiva) => directiva.trim().toLowerCase()),
+  );
+  return Object.values(DIRECTIVA_CACHE).every((directiva) => presentes.has(directiva));
 }
 
 function cabeceraSseFaltante(respuesta: Response): string | null {
   const tipo = respuesta.headers.get(CABECERA.TIPO_CONTENIDO) ?? "";
   if (!tipo.startsWith(TIPO_CONTENIDO.SSE)) return CABECERA.TIPO_CONTENIDO;
-  return prohibeCache(respuesta) ? null : CABECERA.CACHE_CONTROL;
+  return prohibeCacheYTransformacion(respuesta) ? null : CABECERA.CACHE_CONTROL;
 }
 
 function separacionSse(lectura: LecturaTurnoGuion): number {

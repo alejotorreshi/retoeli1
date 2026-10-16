@@ -158,15 +158,18 @@ export const CABECERA = {
   CONTENT_DISPOSITION: "Content-Disposition",
 } as const;
 
+export const DIRECTIVA_CACHE = {
+  SIN_CACHE: "no-cache",
+  SIN_TRANSFORMACION: "no-transform",
+} as const;
+
+export const SEPARADOR_DIRECTIVAS = ",";
+
 export const VALOR_CABECERA = {
-  SIN_CACHE_NI_TRANSFORMACION: "no-cache, no-transform",
+  SIN_CACHE_NI_TRANSFORMACION: Object.values(DIRECTIVA_CACHE).join(`${SEPARADOR_DIRECTIVAS} `),
   SIN_BUFFER: "no",
   SIN_ALMACENAR: "no-store",
 } as const;
-
-export const DIRECTIVA_SIN_CACHE = "no-cache";
-
-export const SEPARADOR_DIRECTIVAS = ",";
 
 export const TIPO_CONTENIDO = {
   JSON: "application/json",

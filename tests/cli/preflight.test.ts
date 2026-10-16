@@ -19,12 +19,13 @@ import { FECHA_DEMO } from "@/config/constants/demo.constants.ts";
 import { ARCHIVOS_SALIDA } from "@/config/constants/files.constants.ts";
 import {
   CABECERA,
-  DIRECTIVA_SIN_CACHE,
+  DIRECTIVA_CACHE,
   LONGITUD_MINIMA_CODIGO_ACCESO,
   METODO_POST,
   RESPUESTA_HTTP,
   RUTA_API,
   TIPO_CONTENIDO,
+  VALOR_CABECERA,
 } from "@/config/constants/http.constants.ts";
 import { ESTADO_LLM, PRESET_DEEPSEEK, PROVEEDOR_DEEPSEEK } from "@/config/constants/llm.constants.ts";
 import {
@@ -72,6 +73,8 @@ const PLAZOS_CON_SEPARACION: PlazosPreflight = {
 const relojReal = () => performance.now();
 
 const TURNO_CORTO_MS = 300;
+
+const CACHE_CONTROL_VISTO_EN_RENDER = "no-cache, no-transform";
 
 type PedidoVisto = { readonly metodo: string; readonly ruta: string; readonly cuerpo: string | null };
 
@@ -400,12 +403,13 @@ function conCabeceras(ajustar: (cabeceras: Headers) => void): FetchPreflight {
   });
 }
 
-const comoElBordeDeRender = conCabeceras((cabeceras) => {
-  cabeceras.delete(CABECERA.X_ACCEL_BUFFERING);
-  cabeceras.set(CABECERA.CACHE_CONTROL, DIRECTIVA_SIN_CACHE);
-});
+const comoElBordeDeRender = conCabeceras((cabeceras) => cabeceras.delete(CABECERA.X_ACCEL_BUFFERING));
 
 const sinCacheControl = conCabeceras((cabeceras) => cabeceras.delete(CABECERA.CACHE_CONTROL));
+
+const sinNoTransform = conCabeceras((cabeceras) =>
+  cabeceras.set(CABECERA.CACHE_CONTROL, DIRECTIVA_CACHE.SIN_CACHE),
+);
 
 const acumulandoElSse = reescribirChat(async (respuesta) => {
   const bytes = await respuesta.arrayBuffer();
@@ -539,7 +543,11 @@ describe("pre-flight con --guion: PRD §11 en dos turnos SSE (D-92)", () => {
     expect(turnosDelChat(pedidos)).toHaveLength(1);
   });
 
-  test("sin X-Accel-Buffering y con Cache-Control no-cache, como llega por el borde de Render, pasa si el SSE llega por partes", async () => {
+  test("el Cache-Control del servidor es el que la evidencia en vivo vio llegar intacto por el borde de Render", () => {
+    expect(VALOR_CABECERA.SIN_CACHE_NI_TRANSFORMACION).toBe(CACHE_CONTROL_VISTO_EN_RENDER);
+  });
+
+  test("sin X-Accel-Buffering y con el Cache-Control intacto, como llega por el borde de Render, pasa si el SSE llega por partes", async () => {
     const url = await servir({}, guionPrd({ conPaquete: true, demoraMs: DEMORA_LLM_MS }));
     const { resultado, lineas, pedidos } = await correr(url, {
       guion: true,
@@ -553,9 +561,17 @@ describe("pre-flight con --guion: PRD §11 en dos turnos SSE (D-92)", () => {
     expect(turnosDelChat(pedidos)).toHaveLength(2);
   });
 
-  test("si el SSE llega sin Cache-Control no-cache, falla nombrando la cabecera", async () => {
+  test("si el SSE llega sin Cache-Control, falla nombrando la cabecera", async () => {
     const url = await servir({}, guionPrd({ conPaquete: true }));
     const { resultado, lineas, pedidos } = await correr(url, { guion: true, envolver: sinCacheControl });
+    expect(resultado.fallido).toBe(true);
+    expect(lineas).toContain(TEXTO_PREFLIGHT.cabeceraSse(CABECERA.CACHE_CONTROL));
+    expect(turnosDelChat(pedidos)).toHaveLength(1);
+  });
+
+  test("si el Cache-Control llega con no-cache pero sin no-transform, falla nombrando la cabecera", async () => {
+    const url = await servir({}, guionPrd({ conPaquete: true }));
+    const { resultado, lineas, pedidos } = await correr(url, { guion: true, envolver: sinNoTransform });
     expect(resultado.fallido).toBe(true);
     expect(lineas).toContain(TEXTO_PREFLIGHT.cabeceraSse(CABECERA.CACHE_CONTROL));
     expect(turnosDelChat(pedidos)).toHaveLength(1);
