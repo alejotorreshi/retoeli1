@@ -1,18 +1,14 @@
 ---
-status: testing
+status: complete
 phase: 03-chat-web-api-sse-y-despliegue
 source: [03-VERIFICATION.md]
 started: 2026-10-15T23:50:00Z
-updated: 2026-10-16T01:45:00Z
+updated: 2026-10-16T01:35:36.915Z
 ---
 
 ## Current Test
 
-number: 1
-name: Push de main y redespliegue en Render
-expected: |
-  El link público sirve la UI de los tres cierres de brechas (03-28 a 03-47): el bundle contiene 'Comprobar de nuevo' y 'Volver a la sesión anterior' y ya no contiene 'bun run demo.ts'; health 200 sin claves; NEW_SESSIONS_PER_HOUR=20 en el panel de Render; curl -N con Bearer sigue recibiendo el SSE por trozos.
-awaiting: user response
+[testing complete]
 
 ## Tests
 
