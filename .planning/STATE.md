@@ -3,16 +3,16 @@ gsd_state_version: "1.0"
 current_phase: 04
 current_phase_name: m-dulo-documentaci-n-y-defensa
 status: executing
-stopped_at: Completed 04-04-PLAN.md
-last_updated: "2026-10-16T04:47:10.589Z"
+stopped_at: Completed 04-05-PLAN.md
+last_updated: "2026-10-16T04:56:03.547Z"
 last_activity: 2026-10-15
 last_activity_desc: Phase 04 execution started
-state_head: 4dc2df729dff15c9a6693f25621d2e118b1aca8e
+state_head: c8cb6ab71f8b7004e40065560148660d58b6ab85
 progress:
   total_phases: 4
   completed_phases: 3
   total_plans: 93
-  completed_plans: 90
+  completed_plans: 91
   percent: 75
 ---
 
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-10-16)
 ## Current Position
 
 Phase: 04 (m-dulo-documentaci-n-y-defensa) — EXECUTING
-Plan: 5 of 7
+Plan: 6 of 7
 Status: Ready to execute
 Last activity: 2026-10-15 — Phase 04 execution started
 
@@ -148,6 +148,7 @@ Progress: [████████░░] 75%
 | Phase 04 P02 | 5 min | 2 tasks | 11 files |
 | Phase 04 P03 | 3 min | 2 tasks | 6 files |
 | Phase 04 P04 | 10 min | 2 tasks | 10 files |
+| Phase 04 P05 | 7 min | 2 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -363,6 +364,7 @@ Recent decisions affecting current work:
 - [Phase 04]: 04-03: render.yaml usa autoDeployTrigger: checksPass (D-91) en lugar del booleano autoDeploy; rollback autoDeployTrigger: commit
 - [Phase 04]: PREFLIGHT_URL acepta https o http solo hacia loopback; el código de acceso solo llega por PREFLIGHT_ACCESS_CODE, se prueba una vez con GET /api/config y 401/429 cortan sin reintentar
 - [Phase 04]: bun run preflight por defecto no abre /api/chat (cero tokens); --guion corre el PRD §11 en dos turnos SSE de una sola sesión y suma los tokens
+- [Phase 04]: 04-05: cost evidence measured once from real usage (2026-10-16T04:54Z, deepseek-flash): 6 turns, 27 calls, 0.009709 USD peak / 0.004854 USD off-peak; costs computed from summed tokens, rounded to 6 decimals, recomputed by tests/docs/evidencia-costo.test.ts
 
 ### Pending Todos
 
@@ -399,6 +401,6 @@ Items acknowledged and deferred at milestone close, most recent first:
 
 ## Session Continuity
 
-Last session: 2026-10-16T04:47:10.458Z
-Stopped at: Completed 04-04-PLAN.md
+Last session: 2026-10-16T04:56:03.417Z
+Stopped at: Completed 04-05-PLAN.md
 Resume file: None

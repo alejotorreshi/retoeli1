@@ -295,7 +295,7 @@ Plans:
   4. GitHub Actions corre `bun test`, `bun run demo.ts`, `tsc --noEmit` y lint en verde, y el README muestra el badge.
   5. El script de pre-flight calienta el servicio en Render y verifica health y SSE, y el guion §11 completo se ensaya con éxito sobre el link público.
 
-**Plans:** 4/7 plans executed
+**Plans:** 5/7 plans executed
 
 Plans:
 **Wave 1**
@@ -309,7 +309,7 @@ Plans:
 - [x] 04-04-PLAN.md — Pre-flight `bun run preflight` (health y código sin tokens) y `--guion` (§11 por SSE en dos turnos con tokens)
 
 **Wave 4** *(blocked on Wave 3 completion)*
-- [ ] 04-05-PLAN.md — Costo por caso medido con `usage` real (`bun run costo`) y evidencia en `docs/evidencia/costo-por-caso.json`
+- [x] 04-05-PLAN.md — Costo por caso medido con `usage` real (`bun run costo`) y evidencia en `docs/evidencia/costo-por-caso.json`
 
 **Wave 5** *(blocked on Wave 4 completion)*
 - [ ] 04-06-PLAN.md — README con badge, link y código; `docs/entrega.md` con pendientes humanos; `docs/arquitectura.md` y `docs/convenciones.md`
@@ -329,4 +329,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 | 1. Núcleo determinista | 15/15 | Complete    | 2026-10-13 |
 | 2. Agente y compuerta de confirmación | 24/24 | Complete    | 2026-10-14 |
 | 3. Chat web, API SSE y despliegue | 47/47 | Complete    | 2026-10-15 |
-| 4. Módulo, documentación y defensa | 4/7 | In Progress | - |
+| 4. Módulo, documentación y defensa | 5/7 | In Progress | - |
