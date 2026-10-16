@@ -4,6 +4,8 @@ created: 2026-10-15
 area: docs
 resolves_phase: 4
 source: 03-REVIEW.md WR-03 (aceptado para el demo por decisión de la usuaria)
+completed: 2026-10-16
+status: completed
 ---
 
 ## Qué
