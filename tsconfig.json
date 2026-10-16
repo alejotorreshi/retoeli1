@@ -25,5 +25,11 @@
       "@modulo/*": ["./modulo/*"]
     }
   },
-  "include": ["src", "tests", "modulo", ".opencode/**/*.ts", "demo.ts"]
+  "include": ["src", "tests", "modulo", ".opencode/**/*.ts", "demo.ts"],
+  "exclude": [
+    "tests/web/dom",
+    "tests/helpers/dom.helper.ts",
+    "tests/helpers/app-dom.helper.ts",
+    "tests/helpers/types/dom.type.ts"
+  ]
 }

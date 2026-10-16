@@ -154,6 +154,13 @@ El agente nunca hace clic en Enviar ni en ningún botón que comprometa a la emp
 | `@types/bun` | 1.4.2 | desarrollo | Tipos de `Bun.*` y de `bun:test`. |
 | `@types/react` | 19.3.0 | desarrollo | Tipos de React. |
 | `@types/react-dom` | 19.3.0 | desarrollo | Tipos de React DOM. |
+| `@testing-library/react` | 16.3.3 | desarrollo | Monta los componentes y la `App` real en las pruebas DOM y los consulta por rol y nombre accesible, como los usa una persona. |
+| `@testing-library/dom` | 10.4.2 | desarrollo | Par obligatorio de `@testing-library/react` 16, que ya no lo trae incluido. Se fija explícito para que la versión no cambie sola. |
+| `@testing-library/user-event` | 14.6.7 | desarrollo | Simula secuencias reales de teclado y clic: Enter contra Shift+Enter en el compositor y las flechas en las pestañas. |
+| `happy-dom` | 20.14.6 | desarrollo | DOM en JavaScript puro para `bun test`, sin navegador. Trae `matchMedia`, `showModal` y `ResizeObserver`, que usa la SPA. |
+| `@happy-dom/global-registrator` | 20.14.6 | desarrollo | Registra happy-dom por archivo de prueba DOM y lo quita al terminar, así las pruebas del backend siguen con el `fetch` nativo. |
+
+Los cinco paquetes de pruebas DOM son solo de desarrollo: la etapa de producción del `Dockerfile` instala con `--production`, así que ninguno llega a la imagen. Se fijaron versiones con al menos 7 días publicadas, sin scripts de instalación y con `bun audit` limpio.
 
 El `overrides` de `uuid` (`^11.1.1`) cierra un aviso moderado de una dependencia transitiva de `exceljs`. `bun audit` corre en un job aparte de la CI que no bloquea el badge.
 
