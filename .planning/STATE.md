@@ -3,10 +3,10 @@ gsd_state_version: "1.0"
 current_phase: 04
 status: completed
 stopped_at: Phase 04 complete — all phases complete
-last_updated: "2026-10-16T15:19:17.707Z"
+last_updated: "2026-10-16T15:36:36.146Z"
 last_activity: 2026-10-16
 last_activity_desc: Phase 04 complete
-state_head: 9716c79668bfc11e6c2392cabed92fb0f6f3a340
+state_head: 8dec08a2c07fe6d3df03fc74503a3ecc96a6a68d
 progress:
   total_phases: 4
   completed_phases: 4
@@ -399,6 +399,7 @@ None yet.
 | 2 | Cerrar el ciclo del limitador de la fase 03: revert de 71d8d20, overrides en 03-VERIFICATION.md y tope por IP documentado como aproximado | 2026-10-15 | 6044e53 | — |
 | 261015-t5l | G-03-7: re-pegar la línea de tiempo por umbral solo si la distancia al final bajó (anclaje con la vista despegada) | 2026-10-15 | 2d5da76 | [261015-t5l-g-03-7-re-pegar-la-l-nea-de-tiempo-por-u](./quick/261015-t5l-g-03-7-re-pegar-la-l-nea-de-tiempo-por-u/) |
 | 4 | Cerrar T-04-22: escaneo de asignaciones de secretos en SOLUCION.md, docs/** y modulo/README.md (6c54c18) | 2026-10-16 | 6c54c18 | — |
+| 5 | Sacar docs/entrega.md del repo con copia local en .local/ (261016-ehz: eab00fd, ea67429, 8dec08a) | 2026-10-16 | 8dec08a | — |
 
 ## Deferred Items
 
