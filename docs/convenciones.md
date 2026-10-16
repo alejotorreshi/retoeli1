@@ -62,6 +62,9 @@ Reglas sin número del mismo archivo, cada una con su prueba de violación:
 | W11 | Las regex viven en `web/src/config/constants/patterns.constants.ts`. | El mismo motivo que G11. |
 | W12 | Los módulos CSS usan variables de `tokens.css` para colores, tamaños y espacios. | Un solo lugar para el sistema visual. |
 | W13 | Cada archivo de `web/src` está en su carpeta de rol con su sufijo. | El mismo motivo que G5. |
+| W14 | Cada carpeta de componente de `web/src/features/<f>/` y `web/src/compartido/` que tiene `usar-<c>.ts` o `<c>.module.css` tiene también la vista `<c>.tsx`, y ninguna carpeta de componente se llama `estado`. | La vista, su hook y sus estilos viajan juntos (D-100), y `estado` queda reservado para los reductores puros de la feature. |
+| W15 | Una vista de `features/` o `compartido/` solo importa su propio `usar-<c>.ts`, otras vistas, `web/src/config`, la config pura de `src/config` y, con `import type`, `web/src/types`, `react` y `src/http/types`. Mientras dure la mudanza también acepta las vistas `.tsx` de `CARPETAS_EN_MUDANZA`. | La vista solo presenta (D-102): la red, el almacén, el estado y los hooks de React llegan por su hook. |
+| W17 | Un `.module.css` lo importa solo la vista `.tsx` de su carpeta con el mismo nombre, y ningún `.ts` importa un módulo CSS. | Cada estilo tiene un único dueño, así que mover o borrar un componente no deja estilos huérfanos ni compartidos por accidente. |
 
 ## Sin comentarios: `tests/sin-comentarios.test.ts`
 

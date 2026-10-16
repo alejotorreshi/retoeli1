@@ -13,6 +13,7 @@ import {
   TEXTO_LEGIBLE,
   VALOR_EN_ARCHIVO_DE_TIPOS,
 } from "@tests/helpers/escaner-fuentes.helper.ts";
+import type { Importacion } from "@tests/helpers/types/importacion.type.ts";
 
 const RAIZ = join(import.meta.dir, "..");
 
@@ -61,6 +62,24 @@ const LONGITUD_EN_PX = /\b\d+(?:\.\d+)?px\b/;
 const KEBAB = "[a-z0-9]+(?:-[a-z0-9]+)*";
 
 const ESTADO_DE_FEATURE = new RegExp(`^web/src/features/${KEBAB}/estado/`);
+
+const CARPETAS_EN_MUDANZA: readonly string[] = ["web/src/components/", "web/src/hooks/"];
+
+const VISTA = new RegExp(`^web/src/(?:features/${KEBAB}|compartido)/(${KEBAB})/\\1\\.tsx$`);
+
+const ARCHIVO_EN_CARPETA_DE_COMPONENTE = new RegExp(
+  `^(web/src/(?:features/${KEBAB}|compartido)/(${KEBAB}))/([^/]+)$`,
+);
+
+const CARPETA_RESERVADA = "estado";
+
+const MODULO_CSS = ".module.css";
+
+const VISTAS_MIGRADAS: readonly string[] = [
+  "web/src/features/sesion/dialogo-nueva-sesion/dialogo-nueva-sesion.tsx",
+  "web/src/features/encabezado/encabezado/encabezado.tsx",
+  "web/src/features/encabezado/aviso-modelo/aviso-modelo.tsx",
+];
 
 function carpetaDeComponente(raiz: string): RegExp {
   return new RegExp(`^web/src/${raiz}/(${KEBAB})/(?:\\1\\.tsx|usar-\\1\\.ts|\\1\\.module\\.css)$`);
@@ -207,6 +226,89 @@ function violacionesDeEstilos(ruta: string, css: string): string[] {
   ];
 }
 
+function carpetaDe(ruta: string): string {
+  return ruta.slice(0, ruta.lastIndexOf("/"));
+}
+
+function rutaDelAlias(especificador: string): string | null {
+  return especificador.startsWith(ALIAS_WEB)
+    ? `${CARPETA_WEB}/${especificador.slice(ALIAS_WEB.length)}`
+    : null;
+}
+
+function enMudanza(ruta: string): boolean {
+  return CARPETAS_EN_MUDANZA.some((carpeta) => ruta.startsWith(carpeta));
+}
+
+function archivosPorCarpetaDeComponente(rutas: readonly string[]): Map<string, Set<string>> {
+  const carpetas = new Map<string, Set<string>>();
+  for (const ruta of rutas) {
+    const partes = ARCHIVO_EN_CARPETA_DE_COMPONENTE.exec(ruta);
+    const carpeta = partes?.[1];
+    const archivo = partes?.[3];
+    if (carpeta === undefined || archivo === undefined) continue;
+    carpetas.set(carpeta, (carpetas.get(carpeta) ?? new Set<string>()).add(archivo));
+  }
+  return carpetas;
+}
+
+function violacionesDeCarpeta(carpeta: string, archivos: ReadonlySet<string>): string[] {
+  const componente = carpeta.slice(carpeta.lastIndexOf("/") + 1);
+  const vista = `${componente}.tsx`;
+  const conHookOEstilos = archivos.has(`usar-${componente}.ts`) || archivos.has(`${componente}${MODULO_CSS}`);
+  if (componente === CARPETA_RESERVADA) {
+    return conHookOEstilos || archivos.has(vista)
+      ? [`${carpeta}: carpeta de componente con el nombre reservado ${CARPETA_RESERVADA}`]
+      : [];
+  }
+  return conHookOEstilos && !archivos.has(vista)
+    ? [`${carpeta}: carpeta de componente sin vista ${vista}`]
+    : [];
+}
+
+function violacionesDeCarpetasDeComponente(rutas: readonly string[]): string[] {
+  return [...archivosPorCarpetaDeComponente(rutas)].flatMap(([carpeta, archivos]) =>
+    violacionesDeCarpeta(carpeta, archivos),
+  );
+}
+
+function esImportacionDeVista(ruta: string, importacion: Importacion): boolean {
+  const { especificador, soloTipo } = importacion;
+  if (especificador.startsWith(`${ALIAS_WEB}config/`) || especificador.endsWith(MODULO_CSS)) return true;
+  if (SRC_DE_VALOR.test(especificador)) return true;
+  if (soloTipo) {
+    return (
+      especificador === "react" ||
+      especificador.startsWith(`${ALIAS_WEB}types/`) ||
+      SRC_DE_SOLO_TIPO.test(especificador)
+    );
+  }
+  const destino = rutaDelAlias(especificador);
+  if (destino === null) return false;
+  const componente = carpetaDe(ruta).slice(carpetaDe(ruta).lastIndexOf("/") + 1);
+  if (destino === `${carpetaDe(ruta)}/usar-${componente}.ts`) return true;
+  return destino !== ruta && (VISTA.test(destino) || (enMudanza(destino) && destino.endsWith(".tsx")));
+}
+
+function violacionesDeImportacionesDeVista(ruta: string, codigo: string): string[] {
+  if (!VISTA.test(ruta)) return [];
+  return extraerImportacionesConTipo(codigo)
+    .filter((importacion) => !esImportacionDeVista(ruta, importacion))
+    .map(({ especificador }) => `${ruta}: la vista no puede importar ${especificador}`);
+}
+
+function violacionesDeEstilosAjenos(ruta: string, codigo: string): string[] {
+  const propios = ruta.endsWith(".tsx") ? `${ruta.slice(0, -".tsx".length)}${MODULO_CSS}` : null;
+  return extraerImportacionesConTipo(codigo)
+    .filter(({ especificador }) => especificador.endsWith(MODULO_CSS))
+    .filter(({ especificador }) => propios === null || rutaDelAlias(especificador) !== propios)
+    .map(({ especificador }) =>
+      propios === null
+        ? `${ruta}: un .ts no importa un módulo CSS ${especificador}`
+        : `${ruta}: la vista importa estilos ajenos ${especificador}`,
+    );
+}
+
 function violacionesDeUbicacion(ruta: string): string[] {
   return UBICACIONES_WEB.some((patron) => patron.test(ruta))
     ? []
@@ -282,6 +384,25 @@ describe("guardián de web/ sobre el código real", () => {
 
   test("W13: cada archivo de web/src está en su carpeta de rol con su sufijo", () => {
     expect(listarTodoWeb().flatMap(violacionesDeUbicacion)).toEqual([]);
+  });
+
+  test("W14: cada carpeta de componente de features/ y compartido/ tiene su vista", () => {
+    const carpetas = [...archivosPorCarpetaDeComponente(listarTodoWeb()).keys()];
+    for (const vista of VISTAS_MIGRADAS) expect(carpetas).toContain(carpetaDe(vista));
+    expect(violacionesDeCarpetasDeComponente(listarTodoWeb())).toEqual([]);
+  });
+
+  test("W15: las vistas solo importan su hook, otras vistas, la config y tipos", () => {
+    const vistas = listarCodigoWeb().filter((ruta) => VISTA.test(ruta));
+    for (const vista of VISTAS_MIGRADAS) expect(vistas).toContain(vista);
+    expect(sobreElCodigo(violacionesDeImportacionesDeVista)).toEqual([]);
+  });
+
+  test("W17: cada módulo CSS lo importa solo la vista de su carpeta con el mismo nombre", () => {
+    for (const vista of VISTAS_MIGRADAS) {
+      expect(listarModulosCss()).toContain(`${vista.slice(0, -".tsx".length)}${MODULO_CSS}`);
+    }
+    expect(sobreElCodigo(violacionesDeEstilosAjenos)).toEqual([]);
   });
 });
 
@@ -527,6 +648,71 @@ describe("el guardián de web/ muerde sobre fuentes de muestra", () => {
       "web/src/features/chat/compositor/usar-otro.ts: no está en una carpeta de rol de web/src con su sufijo",
       "web/src/features/chat/estado/vista.tsx: no está en una carpeta de rol de web/src con su sufijo",
       "web/src/compartido/aviso.tsx: no está en una carpeta de rol de web/src con su sufijo",
+    ]);
+  });
+  test("W14: reporta carpetas de componente sin vista y el nombre reservado estado", () => {
+    const rutas = [
+      "web/src/features/chat/x/usar-x.ts",
+      "web/src/features/chat/y/y.module.css",
+      "web/src/features/chat/z/z.tsx",
+      "web/src/features/chat/w/w.tsx",
+      "web/src/features/chat/w/usar-w.ts",
+      "web/src/features/chat/w/w.module.css",
+      "web/src/features/chat/estado/conversacion.ts",
+      "web/src/features/casos/estado/estado.tsx",
+      "web/src/compartido/aviso/aviso.module.css",
+    ];
+    expect(violacionesDeCarpetasDeComponente(rutas)).toEqual([
+      "web/src/features/chat/x: carpeta de componente sin vista x.tsx",
+      "web/src/features/chat/y: carpeta de componente sin vista y.tsx",
+      "web/src/features/casos/estado: carpeta de componente con el nombre reservado estado",
+      "web/src/compartido/aviso: carpeta de componente sin vista aviso.tsx",
+    ]);
+  });
+
+  test("W15: reporta una vista que importa la red, el almacén, el estado, otro hook o un hook de react", () => {
+    const codigo = [
+      'import { obtenerConfig } from "@web/api/cliente-api.ts";',
+      'import { useSeleccion } from "@web/store/usar-almacen.ts";',
+      'import { progresoPorCaso } from "@web/features/casos/estado/casos.ts";',
+      'import { useY } from "@web/features/chat/y/usar-y.ts";',
+      'import { useState } from "react";',
+      'import { useX } from "@web/features/chat/x/usar-x.ts";',
+      'import estilos from "@web/features/chat/x/x.module.css";',
+      'import { Y } from "@web/features/chat/y/y.tsx";',
+      'import { Aviso } from "@web/compartido/aviso/aviso.tsx";',
+      'import { IconoAlerta } from "@web/components/icons/iconos.tsx";',
+      'import { TEXTO_CHAT } from "@web/config/strings.ts";',
+      'import { TONO } from "@web/config/constants/ui.constants.ts";',
+      'import { ESTADO_LLM } from "@/config/constants/llm.constants.ts";',
+      'import type { PropsX } from "@web/types/ui.type.ts";',
+      'import type { ReactNode } from "react";',
+      'import type { HealthResponse } from "@/http/types/api.type.ts";',
+    ].join("\n");
+    const vista = "web/src/features/chat/x/x.tsx";
+    expect(violacionesDeImportacionesDeVista(vista, codigo)).toEqual([
+      `${vista}: la vista no puede importar @web/api/cliente-api.ts`,
+      `${vista}: la vista no puede importar @web/store/usar-almacen.ts`,
+      `${vista}: la vista no puede importar @web/features/casos/estado/casos.ts`,
+      `${vista}: la vista no puede importar @web/features/chat/y/usar-y.ts`,
+      `${vista}: la vista no puede importar react`,
+    ]);
+    expect(violacionesDeImportacionesDeVista("web/src/features/chat/x/usar-x.ts", codigo)).toEqual([]);
+    expect(violacionesDeImportacionesDeVista("web/src/components/x.tsx", codigo)).toEqual([]);
+  });
+
+  test("W17: reporta una vista con estilos ajenos y un .ts que importa un módulo CSS", () => {
+    const codigo = [
+      'import propios from "@web/features/chat/x/x.module.css";',
+      'import ajenos from "@web/features/chat/y/y.module.css";',
+      'import "@web/styles/global.css";',
+    ].join("\n");
+    expect(violacionesDeEstilosAjenos("web/src/features/chat/x/x.tsx", codigo)).toEqual([
+      "web/src/features/chat/x/x.tsx: la vista importa estilos ajenos @web/features/chat/y/y.module.css",
+    ]);
+    expect(violacionesDeEstilosAjenos("web/src/features/chat/x/usar-x.ts", codigo)).toEqual([
+      "web/src/features/chat/x/usar-x.ts: un .ts no importa un módulo CSS @web/features/chat/x/x.module.css",
+      "web/src/features/chat/x/usar-x.ts: un .ts no importa un módulo CSS @web/features/chat/y/y.module.css",
     ]);
   });
 });
