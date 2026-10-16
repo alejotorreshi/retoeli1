@@ -3,7 +3,12 @@ import { guardarEnElEquipo } from "@web/api/descarga-local.ts";
 import { ESTADO_LISTA_ARCHIVOS, RESULTADO_API } from "@web/config/constants/ui.constants.ts";
 import { esArchivoNoEncontrado } from "@web/features/casos/estado/casos.ts";
 import type { ArchivoUi, EstadoListaArchivos } from "@web/types/chat.type.ts";
-import type { ControlArchivos, ControlFilaArchivo, OpcionesArchivos } from "@web/types/ui.type.ts";
+import type {
+  AlVerArchivo,
+  ControlArchivos,
+  ControlFilaArchivo,
+  OpcionesArchivos,
+} from "@web/types/ui.type.ts";
 import { type MouseEvent, useCallback, useEffect, useRef, useState } from "react";
 
 const LISTA_CARGANDO: EstadoListaArchivos = { tipo: ESTADO_LISTA_ARCHIVOS.CARGANDO };
@@ -71,8 +76,13 @@ export function useArchivos({ caso, activo, marca, alVencerAcceso }: OpcionesArc
 export function useFilaArchivo(
   caso: string,
   archivo: ArchivoUi,
+  alVer: AlVerArchivo,
   alDescargar: (archivo: ArchivoUi) => void,
 ): ControlFilaArchivo {
+  function alPulsarVer(evento: MouseEvent<HTMLButtonElement>): void {
+    alVer(archivo, evento.currentTarget);
+  }
+
   function alPulsarDescargar(evento: MouseEvent<HTMLAnchorElement>): void {
     evento.preventDefault();
     alDescargar(archivo);
@@ -81,6 +91,7 @@ export function useFilaArchivo(
   return {
     ruta: rutaDeDescarga(caso, archivo.nombre),
     nombreDescarga: nombreDeDescarga(archivo.nombre),
+    alPulsarVer,
     alPulsarDescargar,
   };
 }

@@ -10,7 +10,7 @@ import {
 } from "@web/store/selectores.ts";
 import { useAcciones, useSeleccion } from "@web/store/usar-almacen.ts";
 import type { ContadorCompositor, ControlCompositor } from "@web/types/ui.type.ts";
-import { type FormEvent, type KeyboardEvent, useId } from "react";
+import { type ChangeEvent, type FormEvent, type KeyboardEvent, useId } from "react";
 
 function esEnvioPorTeclado(evento: KeyboardEvent<HTMLTextAreaElement>): boolean {
   return evento.key === TECLA_ENVIAR && !evento.shiftKey && !evento.nativeEvent.isComposing;
@@ -38,6 +38,10 @@ export function useCompositor(): ControlCompositor {
   const contador = contadorDe(valor.length, maximo);
   const deshabilitado = bloqueado || pausado;
 
+  function alCambiar(evento: ChangeEvent<HTMLTextAreaElement>): void {
+    cambiarBorrador(evento.target.value);
+  }
+
   function alEnviarFormulario(evento: FormEvent<HTMLFormElement>): void {
     evento.preventDefault();
     enviar();
@@ -61,7 +65,7 @@ export function useCompositor(): ControlCompositor {
     ayuda: pausado ? TEXTO_CHAT.enPausa : TEXTO_CHAT.ayuda,
     contador,
     uso: uso === null ? null : TEXTO_CHAT.uso(uso.usados, uso.tope),
-    alCambiar: cambiarBorrador,
+    alCambiar,
     alEnviarFormulario,
     alPresionarTecla,
     alDetener: detener,

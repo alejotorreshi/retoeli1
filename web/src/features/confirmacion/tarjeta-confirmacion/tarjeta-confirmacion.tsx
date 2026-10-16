@@ -12,7 +12,6 @@ import {
 } from "@web/features/confirmacion/tarjeta-confirmacion/usar-tarjeta-confirmacion.ts";
 import type { EstadoFirma, EstadoTarjetaConfirmacion } from "@web/types/chat.type.ts";
 import type { PropsPilaConfirmaciones, PropsTarjetaConfirmacion } from "@web/types/ui.type.ts";
-import { TIPO_ACCION } from "@/config/constants/confirmation.constants.ts";
 
 const CLASE_DE_FIRMA = {
   [ESTADO_FIRMA.LISTO]: estilos.exito,
@@ -39,7 +38,8 @@ export function TarjetaConfirmacion(props: PropsTarjetaConfirmacion) {
     ayuda,
     textoConfirmar,
     textoCancelar,
-    responder,
+    alConfirmar,
+    alCancelar,
   } = useTarjetaConfirmacion(props);
 
   return (
@@ -83,7 +83,7 @@ export function TarjetaConfirmacion(props: PropsTarjetaConfirmacion) {
               className={`${estilos.boton} ${estilos.confirmar}`}
               aria-disabled={bloqueada}
               aria-describedby={bloqueada ? idAyuda : undefined}
-              onClick={() => responder(TIPO_ACCION.CONFIRMAR)}
+              onClick={alConfirmar}
             >
               {textoConfirmar}
             </button>
@@ -92,7 +92,7 @@ export function TarjetaConfirmacion(props: PropsTarjetaConfirmacion) {
               className={`${estilos.boton} ${estilos.cancelar}`}
               aria-disabled={bloqueada}
               aria-describedby={bloqueada ? idAyuda : undefined}
-              onClick={() => responder(TIPO_ACCION.CANCELAR)}
+              onClick={alCancelar}
             >
               {textoCancelar}
             </button>

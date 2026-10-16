@@ -17,15 +17,14 @@ import type {
   PropsTurno,
 } from "@web/types/ui.type.ts";
 
-function ErrorDelTurno({ error, alAccionDeAviso }: PropsErrorDelTurno) {
-  const { accion } = error;
+function ErrorDelTurno({ mensaje, accion }: PropsErrorDelTurno) {
   return (
     <AvisoError
-      mensaje={error.mensaje}
+      mensaje={mensaje}
       acciones={
         accion === null ? undefined : (
-          <button type="button" className={estilos.accionAviso} onClick={() => alAccionDeAviso(accion)}>
-            {TEXTO_AVISO.accion(accion)}
+          <button type="button" className={estilos.accionAviso} onClick={accion.alPulsar}>
+            {TEXTO_AVISO.accion(accion.accion)}
           </button>
         )
       }
@@ -33,8 +32,8 @@ function ErrorDelTurno({ error, alAccionDeAviso }: PropsErrorDelTurno) {
   );
 }
 
-function Turno({ entrada, alAccionDeAviso }: PropsTurno) {
-  const { turno, enCurso, resultados, confirmaciones } = entrada;
+function Turno({ entrada }: PropsTurno) {
+  const { turno, enCurso, resultados, confirmaciones, accionDelError } = entrada;
   return (
     <>
       <MensajeUsuaria texto={turno.mensaje} />
@@ -48,7 +47,7 @@ function Turno({ entrada, alAccionDeAviso }: PropsTurno) {
       <PilaConfirmaciones {...confirmaciones} />
       {turno.error === null ? null : (
         <li>
-          <ErrorDelTurno error={turno.error} alAccionDeAviso={alAccionDeAviso} />
+          <ErrorDelTurno mensaje={turno.error.mensaje} accion={accionDelError} />
         </li>
       )}
     </>
@@ -63,13 +62,13 @@ function AvisoInicial({ aviso }: PropsAvisoInicial) {
   );
 }
 
-function CuerpoLinea({ turnos, cargando, alAccionDeAviso }: PropsCuerpoLinea) {
+function CuerpoLinea({ turnos, cargando }: PropsCuerpoLinea) {
   if (cargando) return <IndicadorPensando etiqueta={TEXTO_CHAT.cargandoConversacion} marca={0} />;
   if (turnos.length === 0) return <EstadoVacio />;
   return (
     <ol className={estilos.lista}>
       {turnos.map((entrada) => (
-        <Turno key={entrada.turno.clave} entrada={entrada} alAccionDeAviso={alAccionDeAviso} />
+        <Turno key={entrada.turno.clave} entrada={entrada} />
       ))}
     </ol>
   );
@@ -86,7 +85,6 @@ export function LineaDeTiempo() {
     aviso,
     cargando,
     turnos,
-    alAccionDeAviso,
     indicador,
     anuncio,
   } = useLineaDeTiempo();
@@ -101,7 +99,7 @@ export function LineaDeTiempo() {
       >
         <div ref={contenido} className={estilos.contenido}>
           {aviso === null ? null : <AvisoInicial aviso={aviso} />}
-          <CuerpoLinea turnos={turnos} cargando={cargando} alAccionDeAviso={alAccionDeAviso} />
+          <CuerpoLinea turnos={turnos} cargando={cargando} />
           {indicador === null ? null : (
             <IndicadorPensando etiqueta={indicador.etiqueta} marca={indicador.marca} />
           )}

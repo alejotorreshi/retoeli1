@@ -34,6 +34,14 @@ export function useTarjetaConfirmacion({
     alResponder({ tipo, caso: tarjeta.caso });
   }
 
+  function alConfirmar(): void {
+    responder(TIPO_ACCION.CONFIRMAR);
+  }
+
+  function alCancelar(): void {
+    responder(TIPO_ACCION.CANCELAR);
+  }
+
   return {
     idTitulo,
     idAyuda,
@@ -44,7 +52,8 @@ export function useTarjetaConfirmacion({
     ayuda: ayudaDeBloqueo(ocupada, tarjeta.enviando),
     textoConfirmar: textoDelBoton(TIPO_ACCION.CONFIRMAR, tarjeta.enviando, TEXTO_CONFIRMACION.confirmar),
     textoCancelar: textoDelBoton(TIPO_ACCION.CANCELAR, tarjeta.enviando, TEXTO_CONFIRMACION.cancelar),
-    responder,
+    alConfirmar,
+    alCancelar,
   };
 }
 

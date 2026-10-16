@@ -6,7 +6,12 @@ import { useFilaArchivo } from "@web/features/archivos/lista-archivos/usar-lista
 import type { PropsFilaArchivo, PropsListaArchivos } from "@web/types/ui.type.ts";
 
 function FilaArchivo({ caso, archivo, alVer, alDescargar }: PropsFilaArchivo) {
-  const { ruta, nombreDescarga, alPulsarDescargar } = useFilaArchivo(caso, archivo, alDescargar);
+  const { ruta, nombreDescarga, alPulsarVer, alPulsarDescargar } = useFilaArchivo(
+    caso,
+    archivo,
+    alVer,
+    alDescargar,
+  );
 
   return (
     <li className={estilos.fila}>
@@ -20,7 +25,7 @@ function FilaArchivo({ caso, archivo, alVer, alDescargar }: PropsFilaArchivo) {
             type="button"
             className={estilos.enlace}
             aria-label={TEXTO_ARCHIVOS.verArchivo(archivo.nombre)}
-            onClick={(evento) => alVer(archivo, evento.currentTarget)}
+            onClick={alPulsarVer}
           >
             <IconoOjo />
             {TEXTO_ARCHIVOS.ver}

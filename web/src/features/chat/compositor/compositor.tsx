@@ -33,7 +33,7 @@ export function Compositor() {
           placeholder={TEXTO_CHAT.placeholder}
           value={valor}
           disabled={deshabilitado}
-          onChange={(evento) => alCambiar(evento.target.value)}
+          onChange={alCambiar}
           onKeyDown={alPresionarTecla}
         />
         <div className={estilos.pie}>

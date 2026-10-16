@@ -208,6 +208,9 @@ const NUMERO_MAGICO = /(?<![\w$.])(?!(?:0|1)\b(?!\.))\d+(?:\.\d+)?/;
 
 const ATRIBUTO_STYLE = /\bstyle=/;
 
+const FUNCION_EN_ATRIBUTO =
+  /\b[A-Za-z][\w-]*=\{\s*(?:async\s+)?(?:function\b|(?:\([^()]*\)|[A-Za-z_$][\w$]*)\s*=>)/;
+
 const IMPORTACION_DE_REACT = /import\s+(?!type\b)\{([^}]*)\}\s+from\s+["']react["']/g;
 
 const PRIMITIVAS_DEL_ALMACEN: ReadonlySet<string> = new Set([
@@ -641,6 +644,16 @@ function violacionesDeValoresMagicos(ruta: string, codigo: string): string[] {
   ].sort(porLinea);
 }
 
+function violacionesDeFuncionesEnAtributos(ruta: string, codigo: string): string[] {
+  if (!VISTA.test(ruta)) return [];
+  return lineasQueCumplen(
+    ruta,
+    sinCadenas(codigo),
+    FUNCION_EN_ATRIBUTO,
+    "la vista declara una función en un atributo JSX; el manejador llega listo de su hook",
+  );
+}
+
 function finDeLiteral(linea: string, inicio: number): number {
   const comilla = linea.charAt(inicio);
   let indice = inicio + 1;
@@ -855,6 +868,10 @@ describe("guardián de web/ sobre el código real", () => {
   test("W18: las vistas no llevan números mágicos, style= ni colores sueltos", () => {
     expect(listarCodigoWeb().filter((ruta) => VISTA.test(ruta)).length).toBeGreaterThan(0);
     expect(sobreElCodigo(violacionesDeValoresMagicos)).toEqual([]);
+  });
+
+  test("W24: las vistas no declaran funciones en atributos JSX; enlazan los manejadores de su hook", () => {
+    expect(sobreElCodigo(violacionesDeFuncionesEnAtributos)).toEqual([]);
   });
 
   test("W22: web/src compara, etiqueta, devuelve y asigna códigos solo con su objeto as const", () => {
@@ -1280,6 +1297,28 @@ describe("el guardián de web/ muerde sobre fuentes de muestra", () => {
     ].join("\n");
     expect(violacionesDeValoresMagicos(vista, limpia)).toEqual([]);
     expect(violacionesDeValoresMagicos("web/src/features/chat/x/usar-x.ts", sucia)).toEqual([]);
+  });
+
+  test("W24: reporta una función en línea en un atributo JSX de una vista y acepta los manejadores con nombre", () => {
+    const vista = "web/src/features/chat/x/x.tsx";
+    const codigo = [
+      "<textarea onChange={(evento) => alCambiar(evento.target.value)} />",
+      "<button onClick={() => responder(TIPO_ACCION.CONFIRMAR)}>",
+      "<button onClick={async () => await enviar()}>",
+      "<div ref={nodo => registrar(nodo)} />",
+      "<form onSubmit={function (evento) { evento.preventDefault(); }}>",
+      "<button onClick={alConfirmar} disabled={deshabilitado}>",
+      "{casos.map((slug) => (",
+      '<p title="a => b">{TEXTO.flecha}</p>',
+    ].join("\n");
+    expect(violacionesDeFuncionesEnAtributos(vista, codigo)).toEqual([
+      `${vista}:1: la vista declara una función en un atributo JSX; el manejador llega listo de su hook`,
+      `${vista}:2: la vista declara una función en un atributo JSX; el manejador llega listo de su hook`,
+      `${vista}:3: la vista declara una función en un atributo JSX; el manejador llega listo de su hook`,
+      `${vista}:4: la vista declara una función en un atributo JSX; el manejador llega listo de su hook`,
+      `${vista}:5: la vista declara una función en un atributo JSX; el manejador llega listo de su hook`,
+    ]);
+    expect(violacionesDeFuncionesEnAtributos("web/src/features/chat/x/usar-x.ts", codigo)).toEqual([]);
   });
 
   test("W20: reporta las primitivas del almacén fuera de web/src/store", () => {

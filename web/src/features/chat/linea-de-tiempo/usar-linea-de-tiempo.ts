@@ -14,8 +14,13 @@ import {
   seleccionarTurnos,
 } from "@web/store/selectores.ts";
 import { useAcciones, useSeleccion } from "@web/store/usar-almacen.ts";
-import type { AccionDeAviso } from "@web/types/chat.type.ts";
-import type { ControlLineaDeTiempo, SenalSeguimiento, TurnoEnLinea } from "@web/types/ui.type.ts";
+import type { AccionDeAviso, TurnoConversacion } from "@web/types/chat.type.ts";
+import type {
+  AccionDelError,
+  ControlLineaDeTiempo,
+  SenalSeguimiento,
+  TurnoEnLinea,
+} from "@web/types/ui.type.ts";
 import type { SyntheticEvent } from "react";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 
@@ -98,6 +103,11 @@ export function useLineaDeTiempo(): ControlLineaDeTiempo {
     if (accion === ACCION_AVISO.VOLVER_SESION_ANTERIOR) volverASesionAnterior();
   }
 
+  function accionDelError(turno: TurnoConversacion): AccionDelError | null {
+    const accion = turno.error?.accion ?? null;
+    return accion === null ? null : { accion, alPulsar: () => alAccionDeAviso(accion) };
+  }
+
   const entradas: readonly TurnoEnLinea[] = turnos.map((turno, indice) => ({
     turno,
     enCurso: enCurso && indice === turnos.length - 1,
@@ -109,6 +119,7 @@ export function useLineaDeTiempo(): ControlLineaDeTiempo {
       pausada,
       alResponder: responderConfirmacion,
     },
+    accionDelError: accionDelError(turno),
   }));
 
   return {
@@ -121,7 +132,6 @@ export function useLineaDeTiempo(): ControlLineaDeTiempo {
     aviso,
     cargando,
     turnos: entradas,
-    alAccionDeAviso,
     indicador: enCurso ? { etiqueta: etiquetaPensando, marca: eventosDelTurno } : null,
     anuncio: anuncioDeEstado({ turnos, enCurso, tarjetasConfirmacion }),
   };

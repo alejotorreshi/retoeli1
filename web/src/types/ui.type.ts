@@ -15,7 +15,6 @@ import type {
   ArchivoUi,
   AvisoDeSesion,
   ContadorDeCaso,
-  ErrorVisible,
   EstadoAcceso,
   EstadoCampoUi,
   EstadoEtapa,
@@ -30,7 +29,6 @@ import type {
   ResultadoDeCaso,
   SaludModelo,
   TarjetaDeConfirmacion,
-  TipoAccion,
   TurnoConversacion,
   VistaPreviaUi,
 } from "@web/types/chat.type.ts";
@@ -90,7 +88,6 @@ export type PropsAvisoInicial = {
 export type PropsCuerpoLinea = {
   readonly turnos: readonly TurnoEnLinea[];
   readonly cargando: boolean;
-  readonly alAccionDeAviso: (accion: AccionDeAviso) => void;
 };
 
 export type PropsAccionesRapidas = {
@@ -107,16 +104,21 @@ export type ControlAccionesRapidas = {
   readonly alPedirListado: () => void;
 };
 
+export type AccionDelError = {
+  readonly accion: AccionDeAviso;
+  readonly alPulsar: () => void;
+};
+
 export type TurnoEnLinea = {
   readonly turno: TurnoConversacion;
   readonly enCurso: boolean;
   readonly resultados: readonly ResultadoDeCaso[];
   readonly confirmaciones: PropsPilaConfirmaciones;
+  readonly accionDelError: AccionDelError | null;
 };
 
 export type PropsTurno = {
   readonly entrada: TurnoEnLinea;
-  readonly alAccionDeAviso: (accion: AccionDeAviso) => void;
 };
 
 export type ControlLineaDeTiempo = {
@@ -129,14 +131,13 @@ export type ControlLineaDeTiempo = {
   readonly aviso: AvisoDeSesion | null;
   readonly cargando: boolean;
   readonly turnos: readonly TurnoEnLinea[];
-  readonly alAccionDeAviso: (accion: AccionDeAviso) => void;
   readonly indicador: PropsIndicadorPensando | null;
   readonly anuncio: string;
 };
 
 export type PropsErrorDelTurno = {
-  readonly error: ErrorVisible;
-  readonly alAccionDeAviso: (accion: AccionDeAviso) => void;
+  readonly mensaje: string;
+  readonly accion: AccionDelError | null;
 };
 
 export type PropsPilaConfirmaciones = {
@@ -170,7 +171,8 @@ export type ControlTarjetaConfirmacion = {
   readonly ayuda: string;
   readonly textoConfirmar: string;
   readonly textoCancelar: string;
-  readonly responder: (tipo: TipoAccion) => void;
+  readonly alConfirmar: () => void;
+  readonly alCancelar: () => void;
 };
 
 export type PropsTarjetaResultado = {
@@ -244,7 +246,7 @@ export type ControlCompositor = {
   readonly ayuda: string;
   readonly contador: ContadorCompositor | null;
   readonly uso: string | null;
-  readonly alCambiar: (valor: string) => void;
+  readonly alCambiar: (evento: ChangeEvent<HTMLTextAreaElement>) => void;
   readonly alEnviarFormulario: (evento: FormEvent<HTMLFormElement>) => void;
   readonly alPresionarTecla: (evento: KeyboardEvent<HTMLTextAreaElement>) => void;
   readonly alDetener: () => void;
@@ -394,6 +396,7 @@ export type PropsFilaArchivo = {
 export type ControlFilaArchivo = {
   readonly ruta: string;
   readonly nombreDescarga: string;
+  readonly alPulsarVer: (evento: MouseEvent<HTMLButtonElement>) => void;
   readonly alPulsarDescargar: (evento: MouseEvent<HTMLAnchorElement>) => void;
 };
 
@@ -481,6 +484,10 @@ export type PropsAvisoDiscoEfimero = {
   readonly caso: string;
   readonly deshabilitado: boolean;
   readonly alProcesar: (mensaje: string) => void;
+};
+
+export type ControlAvisoDiscoEfimero = {
+  readonly alProcesarDeNuevo: () => void;
 };
 
 export type PropsApp = {
