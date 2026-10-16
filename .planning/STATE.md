@@ -3,16 +3,16 @@ gsd_state_version: "1.0"
 current_phase: 5
 current_phase_name: front-web-por-features-e-identidad-de-marca
 status: executing
-stopped_at: Completed 05-03-PLAN.md
-last_updated: "2026-10-16T18:21:45.359Z"
+stopped_at: Completed 05-04-PLAN.md
+last_updated: "2026-10-16T18:30:10.267Z"
 last_activity: 2026-10-16
 last_activity_desc: Phase 5 execution started
-state_head: c415712f5d4079b574f91962dc52f2de5327112a
+state_head: 5d1993a31ff0b243caa3c34250933f21fc7e5601
 progress:
   total_phases: 5
   completed_phases: 4
   total_plans: 103
-  completed_plans: 97
+  completed_plans: 98
   percent: 80
 ---
 
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-10-16)
 ## Current Position
 
 Phase: 5 (front-web-por-features-e-identidad-de-marca) — EXECUTING
-Plan: 4 of 9
+Plan: 5 of 9
 Status: Ready to execute
 Last activity: 2026-10-16 — Phase 5 execution started
 
@@ -156,6 +156,7 @@ Progress: [████████░░] 80%
 | Phase 05 P01 | 15 min | 3 tasks | 17 files |
 | Phase 05 P02 | 13 min | 3 tasks | 45 files |
 | Phase 05 P03 | 9 min | 3 tasks | 25 files |
+| Phase 05 P04 | 6min | 3 tasks | 33 files |
 
 ## Accumulated Context
 
@@ -390,6 +391,9 @@ Recent decisions affecting current work:
 - [Phase 05]: The App runs on the store: main.tsx creates crearInstancia(dependenciasReales) once and App({ instancia }) renders ProveedorAlmacen around Pantalla; usar-chat, usar-salud and usar-reintento-config are deleted
 - [Phase 05]: montarApp fails a DOM test on any console.error through onTestFinished, and returns the store instance
 - [Phase 05]: Component folders are view (JSX, aria, classes, TEXTO_*), usar-<c>.ts hook (store, actions, refs, ids, effects) and CSS module; W14, W15, W16, W17, W18 and W20 guard them, with CARPETAS_EN_MUDANZA exempting components/ and hooks/ until 05-07
+- [Phase 05]: 05-04: compartido/iconos stays out of VISTAS_MIGRADAS because it has no CSS module and W17 would demand one
+- [Phase 05]: 05-04: useTarjetaResultado returns a TonoContador key per counter (TONO_CONTADOR.TENUE for null or 0); the view maps keys to classes
+- [Phase 05]: 05-04: leaf REDs are guardian expectations (new paths in VISTAS_MIGRADAS) since a missing-module failure is INVALID_RED
 
 ### Pending Todos
 
@@ -428,6 +432,6 @@ Items acknowledged and deferred at milestone close, most recent first:
 
 ## Session Continuity
 
-Last session: 2026-10-16T18:21:45.212Z
-Stopped at: Completed 05-03-PLAN.md
+Last session: 2026-10-16T18:30:10.123Z
+Stopped at: Completed 05-04-PLAN.md
 Resume file: None
