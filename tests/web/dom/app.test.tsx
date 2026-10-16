@@ -70,6 +70,41 @@ describe("App en escritorio, con la red simulada en fetch", () => {
     expect(localStorage.getItem(CLAVE_SESION_LOCAL)).toBe(SESION);
   });
 
+  test("la línea de tiempo muestra el estado vacío con los tres chips y el indicador mientras corre el turno", async () => {
+    const red = crearRedWeb({
+      nativos: dom.nativos,
+      guiones: [{ eventos: [eventoInicio(SESION)], retenidos: [eventoTexto(RESPUESTA), eventoFin()] }],
+    });
+    const { pantalla, usuario } = await montarApp(dom, red);
+    const linea = await pantalla.findByRole("region", { name: TEXTO_CHAT.lineaDeTiempo });
+
+    expect(linea.contains(await pantalla.findByRole("heading", { name: TEXTO_CHAT.vacioTitulo }))).toBe(true);
+    expect(linea.contains(pantalla.getByText(TEXTO_CHAT.vacioCuerpo))).toBe(true);
+    const grupo = pantalla.getByRole("group", { name: TEXTO_ACCIONES.grupo });
+    expect(linea.contains(grupo)).toBe(true);
+    const demo = pantalla.getByRole("button", { name: TEXTO_ACCIONES.demo });
+    expect(grupo.contains(demo)).toBe(true);
+    expect(
+      grupo.contains(
+        pantalla.getByRole("button", { name: TEXTO_ACCIONES.todos(CONFIG_DE_PRUEBA.casos.length) }),
+      ),
+    ).toBe(true);
+    expect(grupo.contains(pantalla.getByRole("button", { name: TEXTO_ACCIONES.listar }))).toBe(true);
+    await dom.esperar(() => expect(habilitado(demo)).toBe(true));
+
+    await usuario.click(demo);
+
+    const pensando = await pantalla.findByText(TEXTO_CHAT.pensando);
+    expect(linea.contains(pensando)).toBe(true);
+    expect(pensando.closest("[role='status']")).not.toBeNull();
+    await dom.act(async () => {
+      red.soltar();
+      await Bun.sleep(PAUSA_TRAS_SOLTAR_MS);
+    });
+    expect(await pantalla.findByText(RESPUESTA)).toBeDefined();
+    expect(pantalla.queryByText(TEXTO_CHAT.pensando)).toBeNull();
+  });
+
   test("Enter en el compositor envía el borrador", async () => {
     const red = crearRedWeb({ nativos: dom.nativos, guiones: [turnoConRespuesta] });
     const { pantalla, usuario } = await montarApp(dom, red);
