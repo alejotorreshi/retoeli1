@@ -158,7 +158,7 @@
   }
 }
 
-@media (min-width: 40em) {
+@media (min-width: 640px) {
   .pantalla {
     padding-block-start: var(--espacio-3xl);
   }

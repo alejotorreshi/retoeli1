@@ -22,7 +22,13 @@ import {
 } from "@tests/helpers/red-web.helper.ts";
 import type { Importacion } from "@tests/helpers/types/importacion.type.ts";
 import { MARCADOR_TITULO } from "@web/config/constants/marca.constants.ts";
-import { ACCION_UI, ESTADO_ACCESO, TIPO_CAMPO_CODIGO } from "@web/config/constants/ui.constants.ts";
+import {
+  ACCION_UI,
+  CONSULTA_DE_ANCHO,
+  DISENO,
+  ESTADO_ACCESO,
+  TIPO_CAMPO_CODIGO,
+} from "@web/config/constants/ui.constants.ts";
 import { estadoRaizInicial, reducirRaiz } from "@web/store/raiz.ts";
 import * as selectores from "@web/store/selectores.ts";
 import type { AccionRaiz, EstadoRaiz } from "@web/types/store.type.ts";
@@ -95,6 +101,14 @@ const UNIDAD_SUELTA = /\b\d+(?:\.\d+)?(?:rem|em|dvh|svh|lvh|vh|vw|ms|s|deg)\b/;
 const PORCENTAJE_SUELTO = /(?<![\w.])(?!(?:0|50|100)%)\d+(?:\.\d+)?%/;
 
 const REGLA_MEDIA = "@media";
+
+const CONSULTA_DE_ANCHO_EN_CSS = /\((?:min|max)-width:[^)]*\)/g;
+
+const SELECTOR_DE_DISENO = /\[data-diseno=["']([^"']*)["']\]/g;
+
+const CONSULTAS_DEL_FRONT: ReadonlySet<string> = new Set(Object.values(CONSULTA_DE_ANCHO));
+
+const DISENOS_DEL_FRONT: ReadonlySet<string> = new Set(Object.values(DISENO));
 
 const DUENO_DE_TOKENS = "web/src/styles/tokens.css";
 
@@ -497,6 +511,22 @@ function violacionDeSelector(linea: string, importados: ReadonlySet<string>): st
   return `useSeleccion recibe ${nombre}, que no se importa de web/src/store/selectores.ts`;
 }
 
+function violacionesDeDisenoEnCss(ruta: string, css: string): string[] {
+  return css.split("\n").flatMap((linea, indice) => {
+    const consultas = [...linea.matchAll(CONSULTA_DE_ANCHO_EN_CSS)]
+      .map(([consulta]) => consulta)
+      .filter((consulta) => !CONSULTAS_DEL_FRONT.has(consulta))
+      .map(
+        (consulta) => `${ruta}:${indice + 1}: la consulta ${consulta} no es un valor de CONSULTA_DE_ANCHO`,
+      );
+    const disenos = [...linea.matchAll(SELECTOR_DE_DISENO)]
+      .map((coincidencia) => coincidencia[1] ?? "")
+      .filter((diseno) => !DISENOS_DEL_FRONT.has(diseno))
+      .map((diseno) => `${ruta}:${indice + 1}: el diseño ${diseno} no es un valor de DISENO`);
+    return [...consultas, ...disenos];
+  });
+}
+
 function violacionesDeSelectorEnLinea(ruta: string, codigo: string): string[] {
   const importados = selectoresImportados(codigo);
   return codigo.split("\n").flatMap((linea, indice) => {
@@ -861,6 +891,10 @@ describe("guardián de web/ sobre el código real", () => {
     expect(listarEstilos().flatMap((ruta) => violacionesDeEstilos(ruta, leer(ruta)))).toEqual([]);
   });
 
+  test("W25: las consultas de ancho y los selectores data-diseno del CSS usan los valores de CONSULTA_DE_ANCHO y DISENO", () => {
+    expect(listarEstilos().flatMap((ruta) => violacionesDeDisenoEnCss(ruta, leer(ruta)))).toEqual([]);
+  });
+
   test("W13: cada archivo de web/src está en su carpeta de rol con su sufijo", () => {
     expect(listarTodoWeb().flatMap(violacionesDeUbicacion)).toEqual([]);
   });
@@ -1159,6 +1193,23 @@ describe("el guardián de web/ muerde sobre fuentes de muestra", () => {
     ]);
     expect(violacionesDeEstilos("web/src/features/chat/x/x.module.css", css)).toHaveLength(7);
     expect(violacionesDeEstilos(DUENO_DE_TOKENS, css)).toEqual([]);
+  });
+
+  test("W25: reporta una consulta de ancho o un diseño que no salen de sus constantes", () => {
+    const ruta = "web/src/features/chat/x/x.module.css";
+    const css = [
+      "@media (min-width: 40em) {",
+      `@media ${CONSULTA_DE_ANCHO.MEDIO} {`,
+      "@media (hover: hover) {",
+      ':global([data-diseno="estrecho"]) .x {',
+      `:global([data-diseno="${DISENO.ANGOSTO}"]) .x {`,
+      "@media (max-width: 1023px) {",
+    ].join("\n");
+    expect(violacionesDeDisenoEnCss(ruta, css)).toEqual([
+      `${ruta}:1: la consulta (min-width: 40em) no es un valor de CONSULTA_DE_ANCHO`,
+      `${ruta}:4: el diseño estrecho no es un valor de DISENO`,
+      `${ruta}:6: la consulta (max-width: 1023px) no es un valor de CONSULTA_DE_ANCHO`,
+    ]);
   });
 
   test("W13: reporta archivos sueltos o con el sufijo equivocado en web/src", () => {
