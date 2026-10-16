@@ -506,7 +506,7 @@ export const TEXTO_PREFLIGHT = {
   resultadoFallido: "Pre-flight fallido.",
   mensajeGuion: `Procesa el caso "${CASO_GUION_PRD}". Dime qué campos quedaron llenos, cuáles faltan, si el paquete está listo para firma y qué soportes debo actualizar. No envíes nada todavía.`,
   mensajeConfirmacion: EJEMPLOS_CONFIRMACION[0],
-  turnoOk: (numero: number): string => `Turno ${numero} del guion del PRD §11 OK.`,
+  turnoOk: (numero: number): string => `Turno ${numero} del guion de la sección 11 del PRD OK.`,
   cabeceraSse: (nombre: string): string =>
     `La respuesta del chat no trae la cabecera ${nombre} esperada; un proxy podría acumular el SSE.`,
   sseAcumulado: (ms: number, minimoMs: number): string =>

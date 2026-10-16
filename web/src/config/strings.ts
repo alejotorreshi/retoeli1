@@ -273,7 +273,7 @@ export const TEXTO_RESULTADO = {
   etiqueta: (caso: string) => `Resultado de ${caso}`,
 } as const;
 
-const DEMO_CORTO = "Demo §11";
+const DEMO_CORTO = "Demo del PRD";
 
 function mensajeDemoDe<Caso extends string>(caso: Caso) {
   return `Procesa el caso "${caso}". Dime qué campos quedaron llenos, cuáles faltan, si el paquete está listo para firma y qué soportes debo actualizar. No envíes nada todavía.` as const;

@@ -320,7 +320,7 @@
         "UI-07",
         "UI-08"
       ],
-      "recipe": "use chip 'Demo §11: ec-corp-andina': result card with counters from tools (13/1/1, 'No listo para firma' for the fixture), Paquete row, dashes for what the turn did not produce; chips disabled during a turn; chip 'Procesar los 4 casos' sends the 4 ids from /api/config; '¿Qué casos hay?' chip sends the question; ProgresoCaso stages update. Screenshots.",
+      "recipe": "use chip 'Demo del PRD: ec-corp-andina': result card with counters from tools (13/1/1, 'No listo para firma' for the fixture), Paquete row, dashes for what the turn did not produce; chips disabled during a turn; chip 'Procesar los 4 casos' sends the 4 ids from /api/config; '¿Qué casos hay?' chip sends the question; ProgresoCaso stages update. Screenshots.",
       "asserts": [
         "result numbers equal tool_end data (compare with SSE capture)",
         "chips disabled mid-turn",
@@ -330,7 +330,7 @@
         "card readable"
       ],
       "isolation": "scratch-copy",
-      "recipe_replay": "Nueva sesión -> observer on role=status texts -> waitForResponse /api/chat + click chip 'Demo §11: ec-corp-andina' -> parse SSE tool_end vs result article text -> send 'QA-LENTO …' and read chip disabled mid-turn -> fetch /api/config -> click 'Procesar los 4 casos' (check message ids) -> click '¿Qué casos hay?' -> read aside [aria-label^='Avance de'] li aria-labels (found ghost empty case)"
+      "recipe_replay": "Nueva sesión -> observer on role=status texts -> waitForResponse /api/chat + click chip 'Demo del PRD: ec-corp-andina' -> parse SSE tool_end vs result article text -> send 'QA-LENTO …' and read chip disabled mid-turn -> fetch /api/config -> click 'Procesar los 4 casos' (check message ids) -> click '¿Qué casos hay?' -> read aside [aria-label^='Avance de'] li aria-labels (found ghost empty case)"
     },
     {
       "id": "T13",
@@ -357,7 +357,7 @@
         "nothing suggests a real email (judgment, VERIFICATION hv5)"
       ],
       "isolation": "scratch-copy",
-      "recipe_replay": "Nueva sesión -> chip Demo §11 -> send 'procesa el caso hn-agroexport-sula' -> wait 2 articles 'Confirmación requerida' -> observer on ec card buttons -> click 'Confirmar envío simulado' in ec card -> 'Envío registrado'; find out/ -name ENVIO-SIMULADO.md -> click 'Cancelar envío' in hn card -> 'Envío cancelado'; GET session pendientes/casosEnviados; find again"
+      "recipe_replay": "Nueva sesión -> chip Demo del PRD -> send 'procesa el caso hn-agroexport-sula' -> wait 2 articles 'Confirmación requerida' -> observer on ec card buttons -> click 'Confirmar envío simulado' in ec card -> 'Envío registrado'; find out/ -name ENVIO-SIMULADO.md -> click 'Cancelar envío' in hn card -> 'Envío cancelado'; GET session pendientes/casosEnviados; find again"
     },
     {
       "id": "T14",
@@ -519,7 +519,7 @@
       "source": [
         "VERIFICATION hv1"
       ],
-      "recipe": "Playwright on the public URL at 1280x720: access with code (typed from token file, never logged); 'Fecha de ejecución 2026-09-03'; chip 'Demo §11: ec-corp-andina'; live tool cards and 'Pensando… <herramienta>'; result card; progress; confirmation card; Cancelar or Confirmar; reload mid-way; download a file; open masked preview; header model status. Screenshots per step.",
+      "recipe": "Playwright on the public URL at 1280x720: access with code (typed from token file, never logged); 'Fecha de ejecución 2026-09-03'; chip 'Demo del PRD: ec-corp-andina'; live tool cards and 'Pensando… <herramienta>'; result card; progress; confirmation card; Cancelar or Confirmar; reload mid-way; download a file; open masked preview; header model status. Screenshots per step.",
       "asserts": [
         "every step works with the real model",
         "result card values come from tools",
@@ -529,7 +529,7 @@
         "looks like the local captures; real-model wording acceptable"
       ],
       "isolation": "repo",
-      "recipe_replay": "curl /api/health warm -> write T20 START -> goto remote 1280x720 -> serve token via one-shot 127.0.0.1:47811 python server and read it with page.context().request (never printed) -> fill + Enter -> chat header -> observer on role=status + waitForResponse /api/chat + click 'Demo §11: ec-corp-andina' -> screenshots at 3s/8s -> wait end -> parse SSE tool_end vs result card -> progress -> confirmation card screenshot -> click 'Cancelar envío' -> reload compare -> download formulario.pdf (sha vs direct fetch) -> 'Ver formulario.pdf' masked preview -> Escape -> header + /api/health -> write T20 END"
+      "recipe_replay": "curl /api/health warm -> write T20 START -> goto remote 1280x720 -> serve token via one-shot 127.0.0.1:47811 python server and read it with page.context().request (never printed) -> fill + Enter -> chat header -> observer on role=status + waitForResponse /api/chat + click 'Demo del PRD: ec-corp-andina' -> screenshots at 3s/8s -> wait end -> parse SSE tool_end vs result card -> progress -> confirmation card screenshot -> click 'Cancelar envío' -> reload compare -> download formulario.pdf (sha vs direct fetch) -> 'Ver formulario.pdf' masked preview -> Escape -> header + /api/health -> write T20 END"
     },
     {
       "id": "T21",
