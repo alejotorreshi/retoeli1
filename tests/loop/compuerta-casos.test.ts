@@ -1487,4 +1487,38 @@ describe("D-76.2: los avisos del servidor son exactos", () => {
     expect(await casosConEnvioSimulado(proyecto.raiz)).toEqual([]);
     historialSano(prueba);
   });
+
+  test("WR-02: tras un envío confirmado que falla, un truncado legible del mismo caso dice que falta la confirmación, no que se cortó", async () => {
+    const texto = "No pude registrar el envío simulado.";
+    const prueba = crearAgentePrueba({
+      raiz: proyecto.raiz,
+      guion: [
+        ...armarCaso(EC),
+        respuestaHerramientas(simular("simular-1", { caso: EC })),
+        pasoCortado(simularCrudo("simular-2", JSON.stringify({ caso: EC, confirmado: true }))),
+        respuestaTexto(texto),
+        ...enviar("simular-3", EC),
+      ],
+      herramientas: envioConErrorInterno(1),
+    });
+    await prueba.turno(`procesa ${EC}`);
+    const turno2 = await prueba.turno(`envía ${EC}`);
+    expect(finesDeHerramienta(turno2)).toEqual([falloDeEnvio(CODIGO_ERROR.ERROR_INTERNO)]);
+    const avisos = [
+      avisoDe(DESENLACE_ENVIO.FALLIDO, EC),
+      avisoDe(DESENLACE_ENVIO.REQUIERE_CONFIRMACION, EC),
+    ].join(SALTO_DE_LINEA);
+    expect(textoFinal(turno2)).toBe(
+      `${texto}${SEPARADOR_PARRAFOS}${avisos}${SEPARADOR_PARRAFOS}${PREGUNTA_EC}`,
+    );
+    expect(textoFinal(turno2)).not.toContain(avisoDe(DESENLACE_ENVIO.TRUNCADO_CONFIRMADO, EC));
+    expect(finDeTurno(turno2).needsConfirmation).toBe(true);
+    expect(casosPorConfirmar(turno2)).toEqual([EC]);
+    expect(await casosConEnvioSimulado(proyecto.raiz)).toEqual([]);
+
+    const turno3 = await prueba.turno(`envía ${EC}`);
+    expect(finesDeHerramienta(turno3)).toEqual([exitosa()]);
+    expect(await enviosOk()).toBe(1);
+    historialSano(prueba);
+  });
 });

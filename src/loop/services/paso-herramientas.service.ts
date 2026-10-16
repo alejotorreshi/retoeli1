@@ -3,6 +3,7 @@ import { EVENTO_COMPUERTA } from "@/config/constants/confirmation.constants.ts";
 import { ARGUMENTOS_VACIOS, FIN_LLM, ROL_MENSAJE } from "@/config/constants/llm.constants.ts";
 import { HERRAMIENTA, HERRAMIENTA_POR_NOMBRE_VISIBLE } from "@/config/constants/tools.constants.ts";
 import { MENSAJE_AGENTE } from "@/config/strings.ts";
+import { evaluarEnvio } from "@/domain/policies/compuerta.policy.ts";
 import { redactar } from "@/domain/policies/redaccion.policy.ts";
 import type { LlamadaResumida } from "@/domain/types/cierre-turno.type.ts";
 import type { EventoCompuerta } from "@/domain/types/compuerta.type.ts";
@@ -39,7 +40,7 @@ function esSimularEnvio(llamada: LlamadaHerramienta): boolean {
 
 function eventoDeTruncado(turno: Turno, llamada: LlamadaHerramienta): EventoCompuerta {
   const caso = casoDeLlamada(llamada);
-  if (caso !== null && caso === turno.autorizacion.caso) {
+  if (caso !== null && evaluarEnvio(turno.autorizacion, caso).permitido) {
     return { tipo: EVENTO_COMPUERTA.TRUNCADO_CONFIRMADO, caso };
   }
   return { tipo: EVENTO_COMPUERTA.TRUNCADO, caso };
