@@ -116,7 +116,7 @@ Fuente vinculante: `reto-01/PRD.md`, sin modificar. Fixtures: `reto-01/fixtures/
 
 - [x] **DEP-01**: `bun run dev` levanta el front y el backend en local con un solo comando, en menos de 2 minutos en una máquina limpia con las variables de `.env.example`.
 - [x] **DEP-02**: Un Dockerfile portable y un `render.yaml` despliegan en Render free un único servicio que sirve la API y la SPA, con la clave como secret, `FECHA_EJECUCION=2026-09-03` y el health check en `/api/health`. El link público está activo.
-- [ ] **DEP-03**: Un script de pre-flight calienta el servicio y verifica health y SSE antes de la defensa. El guion §11 se ensaya sobre el link público.
+- [x] **DEP-03**: Un script de pre-flight calienta el servicio y verifica health y SSE antes de la defensa. El guion §11 se ensaya sobre el link público.
 
 ### Documentación de entrega (§9)
 
@@ -243,7 +243,7 @@ Cada requisito v1 está asignado a exactamente una fase del roadmap (`.planning/
 | CAL-05 | Phase 4 | Pending |
 | DEP-01 | Phase 3 | Complete |
 | DEP-02 | Phase 3 | Complete |
-| DEP-03 | Phase 4 | Pending |
+| DEP-03 | Phase 4 | Complete |
 | DOC-01 | Phase 4 | Pending |
 | DOC-02 | Phase 4 | Pending |
 | MOD-01 | Phase 4 | Complete |

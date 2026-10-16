@@ -3,16 +3,16 @@ gsd_state_version: "1.0"
 current_phase: 04
 current_phase_name: m-dulo-documentaci-n-y-defensa
 status: executing
-stopped_at: Completed 04-03-PLAN.md
-last_updated: "2026-10-16T04:33:39.995Z"
+stopped_at: Completed 04-04-PLAN.md
+last_updated: "2026-10-16T04:47:10.589Z"
 last_activity: 2026-10-15
 last_activity_desc: Phase 04 execution started
-state_head: b2ffb428f692dd62d258d3b4f4c0f07d7fd74e6a
+state_head: 4dc2df729dff15c9a6693f25621d2e118b1aca8e
 progress:
   total_phases: 4
   completed_phases: 3
   total_plans: 93
-  completed_plans: 89
+  completed_plans: 90
   percent: 75
 ---
 
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-10-16)
 ## Current Position
 
 Phase: 04 (m-dulo-documentaci-n-y-defensa) — EXECUTING
-Plan: 4 of 7
+Plan: 5 of 7
 Status: Ready to execute
 Last activity: 2026-10-15 — Phase 04 execution started
 
@@ -147,6 +147,7 @@ Progress: [████████░░] 75%
 | Phase 04 P01 | 7min | 2 tasks | 14 files |
 | Phase 04 P02 | 5 min | 2 tasks | 11 files |
 | Phase 04 P03 | 3 min | 2 tasks | 6 files |
+| Phase 04 P04 | 10 min | 2 tasks | 10 files |
 
 ## Accumulated Context
 
@@ -360,6 +361,8 @@ Recent decisions affecting current work:
 - [Phase 04]: 04-02: opencode.json usa {file:./modulo/agent.md} (D-96); el preámbulo de frontmatter y la alternativa {file:./agent/prompt.md} quedan documentados en modulo/README.md para revisión de la usuaria
 - [Phase 04]: 04-03: bun run check ya no corre bun audit; la auditoría va en su propio job de CI con continue-on-error en el paso y anotación ::warning, para no pintar el badge de rojo ni bloquear checksPass
 - [Phase 04]: 04-03: render.yaml usa autoDeployTrigger: checksPass (D-91) en lugar del booleano autoDeploy; rollback autoDeployTrigger: commit
+- [Phase 04]: PREFLIGHT_URL acepta https o http solo hacia loopback; el código de acceso solo llega por PREFLIGHT_ACCESS_CODE, se prueba una vez con GET /api/config y 401/429 cortan sin reintentar
+- [Phase 04]: bun run preflight por defecto no abre /api/chat (cero tokens); --guion corre el PRD §11 en dos turnos SSE de una sola sesión y suma los tokens
 
 ### Pending Todos
 
@@ -396,6 +399,6 @@ Items acknowledged and deferred at milestone close, most recent first:
 
 ## Session Continuity
 
-Last session: 2026-10-16T04:33:39.864Z
-Stopped at: Completed 04-03-PLAN.md
+Last session: 2026-10-16T04:47:10.458Z
+Stopped at: Completed 04-04-PLAN.md
 Resume file: None
