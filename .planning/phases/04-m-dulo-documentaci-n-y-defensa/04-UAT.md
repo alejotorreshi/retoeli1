@@ -62,7 +62,7 @@ result: pass
 ### 11. El módulo dentro de una sesión real de OpenCode
 expected: aparecen el agente, la skill y las herramientas proveedor_*.
 result: skipped
-reason: "Fuera de alcance por D-83: no se instala OpenCode. La evidencia está en tests/modulo/opencode.test.ts. Probarlo es opcional y le corresponde a la usuaria."
+reason: "Deferred follow-up: fuera de alcance por D-83: no se instala OpenCode. La evidencia está en tests/modulo/opencode.test.ts. Probarlo es opcional y le corresponde a la usuaria."
 
 ## Summary
 
@@ -72,6 +72,12 @@ issues: 0
 pending: 0
 skipped: 1
 blocked: 0
+
+## Deferred Follow-Ups
+
+- test: 11
+  idea: "Opcional: abrir el repo en OpenCode y confirmar que aparecen el agente registro-proveedor, la skill y las herramientas proveedor_* desde modulo/ (D-83 no exige un ensayo en vivo)"
+  deferred_at: 2026-10-16
 
 ## Gaps
 
