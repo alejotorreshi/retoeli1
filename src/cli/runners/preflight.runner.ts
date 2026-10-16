@@ -1,28 +1,60 @@
 import { parseArgs } from "node:util";
-import { configSchema, saludSchema } from "@/cli/schemas/preflight.schema.ts";
+import { EventSourceParserStream } from "eventsource-parser/stream";
+import type { z } from "zod";
+import {
+  archivosGuionSchema,
+  configSchema,
+  confirmacionGuionSchema,
+  errorGuionSchema,
+  finHerramientaGuionSchema,
+  finTurnoGuionSchema,
+  inicioTurnoGuionSchema,
+  saludSchema,
+  usoTurnoGuionSchema,
+} from "@/cli/schemas/preflight.schema.ts";
 import type {
+  ConfirmacionGuion,
+  FinHerramientaGuion,
+  FinTurnoGuion,
+  LecturaTurnoGuion,
   OpcionesPreflight,
   PasoPreflight,
   PlazosPreflight,
   ResultadoPreflight,
   UsoGuion,
+  UsoTurnoGuion,
 } from "@/cli/types/preflight.type.ts";
+import { TIPO_EVENTO } from "@/config/constants/agent.constants.ts";
 import { FECHA_DEMO } from "@/config/constants/demo.constants.ts";
-import { CABECERA, PREFIJO_BEARER, RESPUESTA_HTTP, RUTA_API } from "@/config/constants/http.constants.ts";
+import { ARCHIVOS_SALIDA } from "@/config/constants/files.constants.ts";
+import {
+  CABECERA,
+  METODO_POST,
+  PARAMETRO_CASO,
+  PREFIJO_BEARER,
+  RESPUESTA_HTTP,
+  RUTA_API,
+  TIPO_CONTENIDO,
+  VALOR_CABECERA,
+} from "@/config/constants/http.constants.ts";
 import { ESTADO_LLM } from "@/config/constants/llm.constants.ts";
 import {
   CASO_GUION_PRD,
+  HERRAMIENTA_ENVIO_GUION,
+  HERRAMIENTAS_TURNO_PROCESAR,
   MS_POR_SEGUNDO,
   OPCION_CLI,
   PAUSA_SONDEO_MS,
   PLAZO_DESPERTAR_MS,
   TIMEOUT_SONDEO_SALUD_MS,
   TIMEOUT_TURNO_GUION_MS,
+  TIPO_BLOQUEO_GUION,
   TIPO_OPCION_CLI,
+  TURNO_GUION,
 } from "@/config/constants/preflight.constants.ts";
 import { readPreflightEnv } from "@/config/env.ts";
 import { TEXTO_PREFLIGHT } from "@/config/strings.ts";
-import type { HealthResponse } from "@/http/types/api.type.ts";
+import type { ChatBody, HealthResponse } from "@/http/types/api.type.ts";
 
 const PLAZOS_POR_DEFECTO: PlazosPreflight = {
   despertarMs: PLAZO_DESPERTAR_MS,
@@ -32,6 +64,25 @@ const PLAZOS_POR_DEFECTO: PlazosPreflight = {
 };
 
 type SaludLista = { readonly salud: HealthResponse; readonly ms: number };
+
+type LecturaEnCurso = {
+  sesionId: string | null;
+  herramientas: FinHerramientaGuion[];
+  confirmaciones: ConfirmacionGuion[];
+  usos: UsoTurnoGuion[];
+  errores: string[];
+  fin: FinTurnoGuion | null;
+};
+
+const CABECERAS_SSE = [
+  [CABECERA.CACHE_CONTROL, VALOR_CABECERA.SIN_CACHE_NI_TRANSFORMACION],
+  [CABECERA.X_ACCEL_BUFFERING, VALOR_CABECERA.SIN_BUFFER],
+] as const;
+
+const RUTA_ARCHIVOS_GUION = RUTA_API.ARCHIVOS.replace(
+  `:${PARAMETRO_CASO}`,
+  encodeURIComponent(CASO_GUION_PRD),
+);
 
 function exito<T>(valor: T): PasoPreflight<T> {
   return { ok: true, valor };
@@ -133,12 +184,217 @@ async function verificarAcceso(opciones: OpcionesPreflight): Promise<PasoPreflig
   return exito(null);
 }
 
+function leerJsonDeTexto(texto: string): unknown {
+  try {
+    return JSON.parse(texto);
+  } catch {
+    return undefined;
+  }
+}
+
+function anotar<T>(esquema: z.ZodType<T>, datos: unknown, guardar: (valor: T) => void): boolean {
+  const lectura = esquema.safeParse(datos);
+  if (lectura.success) guardar(lectura.data);
+  return lectura.success;
+}
+
+function anotarFrame(lectura: LecturaEnCurso, evento: string | undefined, datos: unknown): boolean {
+  switch (evento) {
+    case TIPO_EVENTO.INICIO_TURNO:
+      return anotar(inicioTurnoGuionSchema, datos, ({ sesionId }) => {
+        lectura.sesionId = sesionId;
+      });
+    case TIPO_EVENTO.FIN_HERRAMIENTA:
+      return anotar(finHerramientaGuionSchema, datos, (fin) => lectura.herramientas.push(fin));
+    case TIPO_EVENTO.CONFIRMACION_REQUERIDA:
+      return anotar(confirmacionGuionSchema, datos, (pendiente) => lectura.confirmaciones.push(pendiente));
+    case TIPO_EVENTO.USO:
+      return anotar(usoTurnoGuionSchema, datos, (uso) => lectura.usos.push(uso));
+    case TIPO_EVENTO.ERROR:
+      return anotar(errorGuionSchema, datos, ({ mensaje }) => lectura.errores.push(mensaje));
+    case TIPO_EVENTO.FIN_TURNO:
+      return anotar(finTurnoGuionSchema, datos, (fin) => {
+        lectura.fin = fin;
+      });
+    default:
+      return true;
+  }
+}
+
+async function leerTurno(cuerpo: NonNullable<Response["body"]>): Promise<PasoPreflight<LecturaTurnoGuion>> {
+  const lectura: LecturaEnCurso = {
+    sesionId: null,
+    herramientas: [],
+    confirmaciones: [],
+    usos: [],
+    errores: [],
+    fin: null,
+  };
+  try {
+    const frames = cuerpo.pipeThrough(new TextDecoderStream()).pipeThrough(new EventSourceParserStream());
+    for await (const frame of frames) {
+      if (!anotarFrame(lectura, frame.event, leerJsonDeTexto(frame.data))) {
+        return fallido(TEXTO_PREFLIGHT.respuestaInvalida(RUTA_API.CHAT));
+      }
+    }
+  } catch {
+    return fallido(TEXTO_PREFLIGHT.errorDeRed(RUTA_API.CHAT));
+  }
+  return exito(lectura);
+}
+
+function cabeceraSseFaltante(respuesta: Response): string | null {
+  const tipo = respuesta.headers.get(CABECERA.TIPO_CONTENIDO) ?? "";
+  if (!tipo.startsWith(TIPO_CONTENIDO.SSE)) return CABECERA.TIPO_CONTENIDO;
+  const faltante = CABECERAS_SSE.find(([nombre, valor]) => respuesta.headers.get(nombre) !== valor);
+  return faltante?.[0] ?? null;
+}
+
+function cabecerasDelChat(opciones: OpcionesPreflight): Record<string, string> {
+  return {
+    ...autorizacion(opciones),
+    [CABECERA.TIPO_CONTENIDO]: TIPO_CONTENIDO.JSON,
+    [CABECERA.ACCEPT]: TIPO_CONTENIDO.SSE,
+  };
+}
+
+async function enviarTurno(
+  opciones: OpcionesPreflight,
+  sesionId: string | null,
+  mensaje: string,
+): Promise<PasoPreflight<LecturaTurnoGuion>> {
+  const cuerpo: ChatBody = { sessionId: sesionId, message: mensaje };
+  const respuesta = await pedir(opciones, RUTA_API.CHAT, {
+    method: METODO_POST,
+    headers: cabecerasDelChat(opciones),
+    body: JSON.stringify(cuerpo),
+    signal: AbortSignal.timeout(opciones.plazos.turnoMs),
+  });
+  if (respuesta === null) return fallido(TEXTO_PREFLIGHT.errorDeRed(RUTA_API.CHAT));
+  if (respuesta.status !== RESPUESTA_HTTP.OK) {
+    await descartar(respuesta);
+    return fallido(TEXTO_PREFLIGHT.estadoInesperado(RUTA_API.CHAT, respuesta.status));
+  }
+  const faltante = cabeceraSseFaltante(respuesta);
+  if (faltante !== null || respuesta.body === null) {
+    await descartar(respuesta);
+    return fallido(
+      faltante === null
+        ? TEXTO_PREFLIGHT.respuestaInvalida(RUTA_API.CHAT)
+        : TEXTO_PREFLIGHT.cabeceraSse(faltante),
+    );
+  }
+  const lectura = await leerTurno(respuesta.body);
+  if (!lectura.ok) return lectura;
+  const [error] = lectura.valor.errores;
+  if (error !== undefined) return fallido(TEXTO_PREFLIGHT.errorDelAgente(error));
+  if (lectura.valor.fin === null || lectura.valor.sesionId === null) {
+    return fallido(TEXTO_PREFLIGHT.turnoIncompleto);
+  }
+  return lectura;
+}
+
+function terminoBien(lectura: LecturaTurnoGuion, herramienta: string): boolean {
+  return lectura.herramientas.some(
+    (fin) => fin.herramienta === herramienta && fin.caso === CASO_GUION_PRD && fin.ok,
+  );
+}
+
+function fallaDelTurnoProcesar(lectura: LecturaTurnoGuion): string | null {
+  const pendiente = lectura.confirmaciones.filter(({ caso }) => caso === CASO_GUION_PRD).at(-1);
+  if (pendiente === undefined || lectura.fin?.needsConfirmation !== true) {
+    return TEXTO_PREFLIGHT.sinConfirmacion(CASO_GUION_PRD);
+  }
+  if (!pendiente.bloqueos.some((bloqueo) => bloqueo.includes(TIPO_BLOQUEO_GUION))) {
+    return TEXTO_PREFLIGHT.bloqueoAusente(TIPO_BLOQUEO_GUION);
+  }
+  const faltante = HERRAMIENTAS_TURNO_PROCESAR.find((herramienta) => !terminoBien(lectura, herramienta));
+  if (faltante !== undefined) return TEXTO_PREFLIGHT.herramientaFaltante(faltante);
+  if (lectura.herramientas.some(({ herramienta }) => herramienta === HERRAMIENTA_ENVIO_GUION)) {
+    return TEXTO_PREFLIGHT.envioAntesDeTiempo;
+  }
+  return null;
+}
+
+function fallaDelTurnoConfirmar(lectura: LecturaTurnoGuion): string | null {
+  if (!terminoBien(lectura, HERRAMIENTA_ENVIO_GUION)) return TEXTO_PREFLIGHT.envioFaltante;
+  if (lectura.fin?.needsConfirmation !== false) return TEXTO_PREFLIGHT.confirmacionAbierta;
+  return null;
+}
+
+async function archivosDelGuion(opciones: OpcionesPreflight): Promise<PasoPreflight<readonly string[]>> {
+  const respuesta = await pedir(opciones, RUTA_ARCHIVOS_GUION, {
+    headers: autorizacion(opciones),
+    signal: AbortSignal.timeout(opciones.plazos.sondeoMs),
+  });
+  if (respuesta === null) return fallido(TEXTO_PREFLIGHT.errorDeRed(RUTA_ARCHIVOS_GUION));
+  if (respuesta.status !== RESPUESTA_HTTP.OK) {
+    await descartar(respuesta);
+    return fallido(TEXTO_PREFLIGHT.estadoInesperado(RUTA_ARCHIVOS_GUION, respuesta.status));
+  }
+  const lista = archivosGuionSchema.safeParse(await leerJson(respuesta));
+  if (!lista.success) return fallido(TEXTO_PREFLIGHT.respuestaInvalida(RUTA_ARCHIVOS_GUION));
+  return exito(lista.data.archivos.map(({ nombre }) => nombre));
+}
+
+function sumarUsos(usos: readonly UsoTurnoGuion[]): UsoGuion {
+  return {
+    entrada: usos.reduce((total, uso) => total + uso.entrada, 0),
+    cacheHit: usos.reduce((total, uso) => total + uso.cacheHit, 0),
+    salida: usos.reduce((total, uso) => total + uso.salida, 0),
+    totalSesion: usos.at(-1)?.totalSesion ?? 0,
+  };
+}
+
+async function turnoProcesar(opciones: OpcionesPreflight): Promise<PasoPreflight<LecturaTurnoGuion>> {
+  const turno = await enviarTurno(opciones, null, TEXTO_PREFLIGHT.mensajeGuion);
+  if (!turno.ok) return turno;
+  const falla = fallaDelTurnoProcesar(turno.valor);
+  if (falla !== null) return fallido(falla);
+  const archivos = await archivosDelGuion(opciones);
+  if (!archivos.ok) return archivos;
+  if (archivos.valor.includes(ARCHIVOS_SALIDA.ENVIO_SIMULADO)) {
+    return fallido(TEXTO_PREFLIGHT.archivoInesperado(ARCHIVOS_SALIDA.ENVIO_SIMULADO));
+  }
+  opciones.escribir(TEXTO_PREFLIGHT.turnoOk(TURNO_GUION.PROCESAR));
+  return turno;
+}
+
+async function turnoConfirmar(
+  opciones: OpcionesPreflight,
+  sesionId: string | null,
+): Promise<PasoPreflight<LecturaTurnoGuion>> {
+  const turno = await enviarTurno(opciones, sesionId, TEXTO_PREFLIGHT.mensajeConfirmacion);
+  if (!turno.ok) return turno;
+  const falla = fallaDelTurnoConfirmar(turno.valor);
+  if (falla !== null) return fallido(falla);
+  const archivos = await archivosDelGuion(opciones);
+  if (!archivos.ok) return archivos;
+  if (!archivos.valor.includes(ARCHIVOS_SALIDA.ENVIO_SIMULADO)) {
+    return fallido(TEXTO_PREFLIGHT.archivoFaltante(ARCHIVOS_SALIDA.ENVIO_SIMULADO));
+  }
+  opciones.escribir(TEXTO_PREFLIGHT.turnoOk(TURNO_GUION.CONFIRMAR));
+  return turno;
+}
+
+async function correrGuion(opciones: OpcionesPreflight): Promise<PasoPreflight<UsoGuion>> {
+  const procesar = await turnoProcesar(opciones);
+  if (!procesar.ok) return procesar;
+  const confirmar = await turnoConfirmar(opciones, procesar.valor.sesionId);
+  if (!confirmar.ok) return confirmar;
+  const tokens = sumarUsos([...procesar.valor.usos, ...confirmar.valor.usos]);
+  opciones.escribir(
+    TEXTO_PREFLIGHT.tokens(tokens.entrada, tokens.cacheHit, tokens.salida, tokens.totalSesion),
+  );
+  return exito(tokens);
+}
+
 async function recorrer(opciones: OpcionesPreflight): Promise<PasoPreflight<UsoGuion | null>> {
   const salud = await verificarSalud(opciones);
   if (!salud.ok) return salud;
   const acceso = await verificarAcceso(opciones);
   if (!acceso.ok) return acceso;
-  return exito(null);
+  return opciones.guion ? correrGuion(opciones) : exito(null);
 }
 
 export async function ejecutarPreflight(opciones: OpcionesPreflight): Promise<ResultadoPreflight> {

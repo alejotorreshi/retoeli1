@@ -7,6 +7,7 @@ import { CODIGO_PRUEBA, crearServidorPrueba } from "@tests/helpers/servidor-prue
 import type { RespuestaGuion } from "@tests/helpers/types/fetch-falso.type.ts";
 import { TEXTO_ACCIONES } from "@web/config/strings.ts";
 import { ejecutarPreflight } from "@/cli/runners/preflight.runner.ts";
+import { archivosGuionSchema } from "@/cli/schemas/preflight.schema.ts";
 import type {
   FetchPreflight,
   OpcionesPreflight,
@@ -289,7 +290,7 @@ function registrarArchivos(listas: string[][]): FetchPreflight {
   return async (url, init) => {
     const respuesta = await fetch(url, init);
     if (url.pathname === RUTA_ARCHIVOS_GUION) {
-      const lista: { archivos: { nombre: string }[] } = await respuesta.clone().json();
+      const lista = archivosGuionSchema.parse(await respuesta.clone().json());
       listas.push(lista.archivos.map(({ nombre }) => nombre));
     }
     return respuesta;
