@@ -1,6 +1,10 @@
 import { describe, expect, test } from "bun:test";
 import { DISTANCIA_PEGADO_AL_FINAL, SENAL_SEGUIMIENTO } from "@web/config/constants/ui.constants.ts";
-import { reducirSeguimiento, seguimientoInicial } from "@web/features/chat/estado/seguimiento.ts";
+import {
+  debeSeguirAlFinal,
+  reducirSeguimiento,
+  seguimientoInicial,
+} from "@web/features/chat/estado/seguimiento.ts";
 import type { EstadoSeguimiento, SenalSeguimiento } from "@web/types/ui.type.ts";
 
 const POSICION_DE_LECTURA = 1_000;
@@ -41,6 +45,8 @@ const POSICION_TRAS_LA_FLECHA_375 = 8_108;
 const POSICION_TRAS_EL_ANCLAJE_375 = POSICION_TRAS_LA_FLECHA_375 + AJUSTE_DEL_ANCLAJE_375;
 const SUBIDA_DE_RUEDA = 160;
 const PASO_DE_FLECHA_ABAJO = 20;
+const TURNOS_DE_UNA_CONVERSACION = 1;
+const SIN_TURNOS = 0;
 const DISTANCIAS_DEMO_375 = [
   310, 326, 340, 300, 355, 372, 388, 401, 415, 430, 424, 333, 347, 362, 391, 408,
 ] as const;
@@ -53,8 +59,8 @@ function desplazamiento(posicion: number, distancia: number): SenalSeguimiento {
   return { tipo: SENAL_SEGUIMIENTO.DESPLAZAMIENTO, posicion, distancia };
 }
 
-function crecimiento(distancia: number): SenalSeguimiento {
-  return { tipo: SENAL_SEGUIMIENTO.CRECIMIENTO, distancia };
+function crecimiento(distancia: number, turnos = TURNOS_DE_UNA_CONVERSACION): SenalSeguimiento {
+  return { tipo: SENAL_SEGUIMIENTO.CRECIMIENTO, distancia, turnos };
 }
 
 function aplicar(estado: EstadoSeguimiento, senales: readonly SenalSeguimiento[]): EstadoSeguimiento {
@@ -445,5 +451,27 @@ describe("G-03-7: el anclaje con la vista despegada no la vuelve a pegar", () =>
     );
     expect(estado.pegado).toBe(true);
     expect(estado.contenidoNuevo).toBe(false);
+  });
+});
+
+describe("seguimiento con el estado vacío", () => {
+  test("un crecimiento sin turnos no marca contenido nuevo aunque la vista esté despegada", () => {
+    const estado = despegado();
+    expect(reducirSeguimiento(estado, crecimiento(DISTANCIA_TRAS_CRECER, SIN_TURNOS))).toBe(estado);
+  });
+
+  test("un crecimiento con turnos y la vista despegada sigue marcando contenido nuevo", () => {
+    const estado = reducirSeguimiento(despegado(), crecimiento(DISTANCIA_TRAS_CRECER, TURNOS_DE_UNA_CONVERSACION));
+    expect(estado.contenidoNuevo).toBe(true);
+    expect(estado.distancia).toBe(DISTANCIA_TRAS_CRECER);
+  });
+
+  test("sin turnos no sigue al final aunque arranque pegado", () => {
+    expect(debeSeguirAlFinal(seguimientoInicial, SIN_TURNOS)).toBe(false);
+  });
+
+  test("con turnos sigue al final solo si la vista está pegada", () => {
+    expect(debeSeguirAlFinal(seguimientoInicial, TURNOS_DE_UNA_CONVERSACION)).toBe(true);
+    expect(debeSeguirAlFinal(despegado(), TURNOS_DE_UNA_CONVERSACION)).toBe(false);
   });
 });
