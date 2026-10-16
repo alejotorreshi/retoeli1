@@ -18,7 +18,7 @@
     "typecheck": "tsc --noEmit",
     "lint": "biome check .",
     "audit": "bun audit --audit-level=moderate",
-    "check": "tsc --noEmit && tsc --noEmit -p web/tsconfig.json && biome check . && bun audit --audit-level=moderate"
+    "check": "tsc --noEmit && tsc --noEmit -p web/tsconfig.json && biome check ."
   },
   "dependencies": {
     "exceljs": "4.4.0",

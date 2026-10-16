@@ -1,0 +1,53 @@
+name: CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  verificar:
+    name: Verificar
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Checkout (actions/checkout v7.0.1)
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - name: Bun desde .bun-version (oven-sh/setup-bun v2.2.0)
+        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6
+        with:
+          bun-version-file: .bun-version
+      - name: Dependencias (lockfile congelado)
+        run: bun install --frozen-lockfile
+      - name: Tipos (tsc --noEmit, api y web) y lint (Biome)
+        run: bun run check
+      - name: Pruebas (bun test)
+        run: bun test
+      - name: Demo sin modelo (bun run demo.ts)
+        run: bun run demo.ts
+      - name: Build de la SPA
+        run: bun run build:web
+  auditoria:
+    name: Auditoría de dependencias (no bloquea)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Checkout (actions/checkout v7.0.1)
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - name: Bun desde .bun-version (oven-sh/setup-bun v2.2.0)
+        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6
+        with:
+          bun-version-file: .bun-version
+      - name: Dependencias (lockfile congelado)
+        run: bun install --frozen-lockfile
+      - name: Auditoría (bun run audit)
+        id: audit
+        continue-on-error: true
+        run: bun run audit
+      - name: Aviso si hay advisories
+        if: steps.audit.outcome == 'failure'
+        run: echo "::warning title=bun audit::Hay avisos de seguridad en dependencias de terceros"
