@@ -117,7 +117,6 @@ export const ICONO_SVG = {
 export const CLASE_GLOBAL = {
   GIRAR: "girar",
   OCULTO: "sr-only",
-  TRANSICION: "transicion",
 } as const;
 
 export const TONO = {

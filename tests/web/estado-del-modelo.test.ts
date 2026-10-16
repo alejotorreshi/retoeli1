@@ -17,8 +17,12 @@ const ESTADOS_CON_AVISO = [
 ] as const;
 
 describe("estado del modelo en el encabezado", () => {
-  test("cada estado se lee como '{modelo} · {estado}' con la etiqueta del UI-SPEC", () => {
-    expect(Object.values(ESTADO_LLM).map((estado) => TEXTO_MODELO.estado(MODELO, estado))).toEqual([
+  test("el prefijo del modelo y la etiqueta de cada estado se leen como '{modelo} · {estado}' del UI-SPEC", () => {
+    expect(
+      Object.values(ESTADO_LLM).map(
+        (estado) => `${TEXTO_MODELO.prefijoModelo(MODELO)}${TEXTO_MODELO.etiqueta(estado)}`,
+      ),
+    ).toEqual([
       "deepseek-flash · Disponible",
       "deepseek-flash · Sin clave válida",
       "deepseek-flash · Sin saldo",
@@ -27,22 +31,9 @@ describe("estado del modelo en el encabezado", () => {
     ]);
   });
 
-  test("el prefijo del modelo y la etiqueta arman el texto completo de cada estado", () => {
-    for (const estado of Object.values(ESTADO_LLM)) {
-      expect(`${TEXTO_MODELO.prefijoModelo(MODELO)}${TEXTO_MODELO.etiqueta(estado)}`).toBe(
-        TEXTO_MODELO.estado(MODELO, estado),
-      );
-    }
-    expect(TEXTO_MODELO.prefijoModelo(MODELO)).toBe("deepseek-flash · ");
-    expect(TEXTO_MODELO.etiqueta(ESTADO_LLM.DISPONIBLE)).toBe("Disponible");
-  });
-
-  test("el prefijo de la fecha y su valor arman 'Fecha de ejecución {fecha}'", () => {
-    expect(`${TEXTO_APP.prefijoFecha}${TEXTO_APP.valorFecha(FECHA)}`).toBe(TEXTO_APP.fechaEjecucion(FECHA));
-    expect(TEXTO_APP.fechaEjecucion(FECHA)).toBe("Fecha de ejecución 2026-09-03");
-    expect(TEXTO_APP.prefijoFecha).toBe("Fecha de ejecución ");
-    expect(TEXTO_APP.valorFecha(FECHA)).toBe(FECHA);
-    expect(`${TEXTO_APP.prefijoFecha}${TEXTO_APP.valorFecha(null)}`).toBe(TEXTO_APP.fechaEjecucion(null));
+  test("el prefijo de la fecha y su valor arman 'Fecha de ejecución {fecha}', con raya si falta", () => {
+    expect(`${TEXTO_APP.prefijoFecha}${TEXTO_APP.valorFecha(FECHA)}`).toBe("Fecha de ejecución 2026-09-03");
+    expect(`${TEXTO_APP.prefijoFecha}${TEXTO_APP.valorFecha(null)}`).toBe("Fecha de ejecución —");
   });
 
   test("el color sale del estado: éxito, error para clave y saldo, atención para caída y tope", () => {

@@ -88,12 +88,6 @@ textarea {
   white-space: nowrap;
 }
 
-.transicion {
-  transition:
-    opacity var(--duracion-transicion) ease,
-    transform var(--duracion-transicion) ease;
-}
-
 .girar {
   animation: girar var(--duracion-giro) linear infinite;
 }
@@ -107,10 +101,6 @@ textarea {
 @media (prefers-reduced-motion: reduce) {
   :root {
     --duracion-transicion: var(--duracion-nula);
-  }
-
-  .transicion {
-    transition: none;
   }
 
   .girar {

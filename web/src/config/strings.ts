@@ -52,7 +52,6 @@ export const TEXTO_APP = {
   tituloDocumento: `${TITULO_APP} ${SEPARADOR} ${SUBTITULO_APP}`,
   prefijoFecha: PREFIJO_FECHA,
   valorFecha,
-  fechaEjecucion: (fecha: string | null) => `${PREFIJO_FECHA}${valorFecha(fecha)}`,
   cargando: "Cargando el agente…",
 } as const;
 
@@ -175,7 +174,6 @@ const AVISO_DEL_MODELO = {
 export const TEXTO_MODELO = {
   prefijoModelo: prefijoDelModelo,
   etiqueta: etiquetaDelModelo,
-  estado: (modelo: string, estado: EstadoModelo) => `${prefijoDelModelo(modelo)}${etiquetaDelModelo(estado)}`,
   aviso: (estado: EstadoModeloConAviso, zona: string | null): PartesAvisoModelo =>
     AVISO_DEL_MODELO[estado](zona),
   comprobar: COMPROBAR_MODELO,
@@ -270,7 +268,6 @@ export const TEXTO_RESULTADO = {
   sinBloqueos: "Sin bloqueos",
   ruta: "Ruta de salida",
   portal: "Formato no soportado: se generaron los valores para cargar a mano en el portal.",
-  etiqueta: (caso: string) => `Resultado de ${caso}`,
 } as const;
 
 const DEMO_CORTO = "Demo del PRD";
@@ -443,5 +440,4 @@ export const TEXTO_CONFIRMACION = {
   desenlace: (estado: EstadoTarjetaConfirmacion) => DESENLACE_DE_TARJETA[estado],
   mensaje: ({ tipo, caso }: AccionDeTarjeta) => MENSAJE_DE_ACCION[tipo](caso),
   anuncio: (casos: readonly string[]) => `Confirmación requerida para ${casos.join(SEPARADOR_LISTA_CASOS)}`,
-  etiqueta: (caso: string) => `Confirmación de ${caso}`,
 } as const;
