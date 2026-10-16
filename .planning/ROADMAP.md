@@ -342,7 +342,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 **Requirements**: FE-01, FE-02, FE-03, FE-04, FE-05, FE-06
 **Success Criteria** (what must be TRUE):
   1. `web/src` está organizado por feature, con una carpeta por componente que separa la vista, el hook de lógica y los estilos. Un guardián falla si un componente queda suelto o si una vista importa red o estado fuera de su hook.
-  2. El estado vive en un store propio con `useSyncExternalStore` y selectores. Los reductores puros siguen con sus pruebas. No hay dependencias de runtime nuevas en `package.json`; las únicas devDependencies nuevas son las de prueba del front (Testing Library y happy-dom, D-16 de 05-CONTEXT), con versión exacta y justificadas en `SOLUCION.md`.
+  2. El estado vive en un store propio con `useSyncExternalStore` y selectores. Los reductores puros siguen con sus pruebas. No hay dependencias de runtime nuevas en `package.json`; las únicas devDependencies nuevas son las de prueba del front (Testing Library y happy-dom, D-115 de 05-CONTEXT), con versión exacta y justificadas en `SOLUCION.md`.
   3. Ningún componente tiene literales de texto, colores, tamaños ni valores mágicos, y los guardianes W lo comprueban.
   4. El chat muestra la identidad de marca del UI-SPEC (logo, acento, tipografía y estado vacío con los 4 casos).
   5. La regresión completa (`bun run check`, `bun test`, `demo.ts`, `build:web`), la CI y el ensayo del §11 con Playwright sobre el link público pasan sin cambios de conducta.
