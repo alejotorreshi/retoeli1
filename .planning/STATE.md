@@ -3,16 +3,16 @@ gsd_state_version: "1.0"
 current_phase: 5
 current_phase_name: front-web-por-features-e-identidad-de-marca
 status: executing
-stopped_at: Completed 05-04-PLAN.md
-last_updated: "2026-10-16T18:30:10.267Z"
+stopped_at: Completed 05-05-PLAN.md
+last_updated: "2026-10-16T18:39:35.133Z"
 last_activity: 2026-10-16
 last_activity_desc: Phase 5 execution started
-state_head: 5d1993a31ff0b243caa3c34250933f21fc7e5601
+state_head: ccbbfcf146f60510adb527b158bc291776380c70
 progress:
   total_phases: 5
   completed_phases: 4
   total_plans: 103
-  completed_plans: 98
+  completed_plans: 99
   percent: 80
 ---
 
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-10-16)
 ## Current Position
 
 Phase: 5 (front-web-por-features-e-identidad-de-marca) — EXECUTING
-Plan: 5 of 9
+Plan: 6 of 9
 Status: Ready to execute
 Last activity: 2026-10-16 — Phase 5 execution started
 
@@ -157,6 +157,7 @@ Progress: [████████░░] 80%
 | Phase 05 P02 | 13 min | 3 tasks | 45 files |
 | Phase 05 P03 | 9 min | 3 tasks | 25 files |
 | Phase 05 P04 | 6min | 3 tasks | 33 files |
+| Phase 05 P05 | 6min | 3 tasks | 21 files |
 
 ## Accumulated Context
 
@@ -394,6 +395,9 @@ Recent decisions affecting current work:
 - [Phase 05]: 05-04: compartido/iconos stays out of VISTAS_MIGRADAS because it has no CSS module and W17 would demand one
 - [Phase 05]: 05-04: useTarjetaResultado returns a TonoContador key per counter (TONO_CONTADOR.TENUE for null or 0); the view maps keys to classes
 - [Phase 05]: 05-04: leaf REDs are guardian expectations (new paths in VISTAS_MIGRADAS) since a missing-module failure is INVALID_RED
+- [Phase 05]: 05-05: chat containers (compositor, acciones-rapidas, linea-de-tiempo) read their slice with useSeleccion and named selectors in their own hook; app.tsx passes them only layout flags
+- [Phase 05]: 05-05: EstadoVacio is its own feature component and renders the full-label chips itself
+- [Phase 05]: 05-05: useLineaDeTiempo returns per-turn TurnoEnLinea with ready PilaConfirmaciones props, and decides the thinking indicator (moved from a Pantalla child)
 
 ### Pending Todos
 
@@ -432,6 +436,6 @@ Items acknowledged and deferred at milestone close, most recent first:
 
 ## Session Continuity
 
-Last session: 2026-10-16T18:30:10.123Z
-Stopped at: Completed 05-04-PLAN.md
+Last session: 2026-10-16T18:39:34.991Z
+Stopped at: Completed 05-05-PLAN.md
 Resume file: None
