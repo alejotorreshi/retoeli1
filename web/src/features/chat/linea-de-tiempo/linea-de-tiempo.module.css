@@ -34,27 +34,6 @@
   list-style: none;
 }
 
-.vacio {
-  margin-block-start: var(--espacio-2xl);
-  text-align: center;
-}
-
-.vacioTitulo {
-  margin: 0 0 var(--espacio-sm);
-  font-size: var(--titulo-tamano);
-  font-weight: var(--titulo-peso);
-  line-height: var(--titulo-interlinea);
-}
-
-.vacioCuerpo {
-  margin: 0;
-  color: var(--texto-tenue);
-}
-
-.vacioAcciones {
-  margin-block-start: var(--espacio-lg);
-}
-
 .irAlFinal {
   position: absolute;
   inset-block-end: var(--espacio-md);

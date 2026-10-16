@@ -1,8 +1,6 @@
-import { LineaDeTiempo } from "@web/components/linea-de-tiempo.tsx";
 import { PanelCasos } from "@web/components/panel-casos.tsx";
 import { PantallaAcceso } from "@web/components/pantalla-acceso.tsx";
 import {
-  ACCION_AVISO,
   CLASE_GLOBAL,
   DISENO,
   ESTADO_ACCESO,
@@ -14,7 +12,7 @@ import {
 import { TEXTO_APP, TEXTO_PESTANAS } from "@web/config/strings.ts";
 import { AccionesRapidas } from "@web/features/chat/acciones-rapidas/acciones-rapidas.tsx";
 import { Compositor } from "@web/features/chat/compositor/compositor.tsx";
-import { IndicadorPensando } from "@web/features/chat/indicador-pensando/indicador-pensando.tsx";
+import { LineaDeTiempo } from "@web/features/chat/linea-de-tiempo/linea-de-tiempo.tsx";
 import { AvisoModelo } from "@web/features/encabezado/aviso-modelo/aviso-modelo.tsx";
 import { Encabezado } from "@web/features/encabezado/encabezado/encabezado.tsx";
 import { DialogoNuevaSesion } from "@web/features/sesion/dialogo-nueva-sesion/dialogo-nueva-sesion.tsx";
@@ -23,22 +21,13 @@ import { usePestanas } from "@web/hooks/usar-pestanas.ts";
 import { ProveedorAlmacen } from "@web/store/proveedor-almacen.tsx";
 import {
   seleccionarAcceso,
-  seleccionarAvisoSesion,
   seleccionarConHistorial,
-  seleccionarEnCurso,
   seleccionarEnvioDeshabilitado,
-  seleccionarEnvioEnPausa,
-  seleccionarEtiquetaPensando,
-  seleccionarEventosDelTurno,
   seleccionarFirmaDelProgreso,
-  seleccionarHidratando,
   seleccionarMarcasDeArchivos,
   seleccionarProgresos,
-  seleccionarTarjetasConfirmacion,
-  seleccionarTurnos,
 } from "@web/store/selectores.ts";
 import { useAcciones, useSeleccion, useSincronizacion } from "@web/store/usar-almacen.ts";
-import type { AccionDeAviso } from "@web/types/chat.type.ts";
 import type {
   ControlPestanas,
   IdsDePestanas,
@@ -135,16 +124,8 @@ function Pantalla() {
   useSincronizacion();
   const acciones = useAcciones();
   const acceso = useSeleccion(seleccionarAcceso);
-  const turnos = useSeleccion(seleccionarTurnos);
   const conHistorial = useSeleccion(seleccionarConHistorial);
-  const enCurso = useSeleccion(seleccionarEnCurso);
-  const hidratando = useSeleccion(seleccionarHidratando);
-  const avisoSesion = useSeleccion(seleccionarAvisoSesion);
-  const tarjetasConfirmacion = useSeleccion(seleccionarTarjetasConfirmacion);
-  const enPausa = useSeleccion(seleccionarEnvioEnPausa);
   const envioDeshabilitado = useSeleccion(seleccionarEnvioDeshabilitado);
-  const etiquetaPensando = useSeleccion(seleccionarEtiquetaPensando);
-  const eventosDelTurno = useSeleccion(seleccionarEventosDelTurno);
   const progresos = useSeleccion(seleccionarProgresos);
   const firmaDelProgreso = useSeleccion(seleccionarFirmaDelProgreso);
   const marcas = useSeleccion(seleccionarMarcasDeArchivos);
@@ -156,12 +137,6 @@ function Pantalla() {
     pestana: (pestana) => `${base}${SUFIJO_ID.PESTANA}${pestana}`,
     vista: (pestana) => `${base}${SUFIJO_ID.VISTA}${pestana}`,
   };
-
-  function alAccionDeAviso(accion: AccionDeAviso): void {
-    if (accion === ACCION_AVISO.RECARGAR) acciones.recargar();
-    if (accion === ACCION_AVISO.NUEVA_SESION) acciones.abrirNuevaSesion();
-    if (accion === ACCION_AVISO.VOLVER_SESION_ANTERIOR) acciones.volverASesionAnterior();
-  }
 
   function alEntrar(): Promise<void> {
     return acciones.cargarConfig(new AbortController().signal);
@@ -192,19 +167,7 @@ function Pantalla() {
           {...atributosDeVista(conPestanas, pestanas, ids, PESTANA.CHAT)}
         >
           <main className={CLASE_GLOBAL.CHAT}>
-            <LineaDeTiempo
-              turnos={turnos}
-              cargando={hidratando}
-              aviso={avisoSesion}
-              enCurso={enCurso}
-              pausada={enPausa}
-              tarjetasConfirmacion={tarjetasConfirmacion}
-              alResponderConfirmacion={acciones.responderConfirmacion}
-              alAccionDeAviso={alAccionDeAviso}
-              acciones={<AccionesRapidas compactas={false} angosto={false} />}
-            >
-              {enCurso ? <IndicadorPensando etiqueta={etiquetaPensando} marca={eventosDelTurno} /> : null}
-            </LineaDeTiempo>
+            <LineaDeTiempo />
             {conHistorial ? <AccionesRapidas compactas={true} angosto={diseno === DISENO.ANGOSTO} /> : null}
             <Compositor />
           </main>

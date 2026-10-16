@@ -51,19 +51,6 @@ export type PropsAviso = {
   readonly acciones?: ReactNode;
 };
 
-export type PropsLineaDeTiempo = {
-  readonly turnos: readonly TurnoConversacion[];
-  readonly cargando: boolean;
-  readonly aviso: AvisoDeSesion | null;
-  readonly enCurso: boolean;
-  readonly pausada: boolean;
-  readonly tarjetasConfirmacion: readonly TarjetaDeConfirmacion[];
-  readonly alResponderConfirmacion: (accion: AccionDeTarjeta) => void;
-  readonly alAccionDeAviso: (accion: AccionDeAviso) => void;
-  readonly acciones: ReactNode;
-  readonly children?: ReactNode;
-};
-
 export type EstadoSeguimiento = {
   readonly pegado: boolean;
   readonly contenidoNuevo: boolean;
@@ -87,18 +74,9 @@ export type PropsAvisoInicial = {
 };
 
 export type PropsCuerpoLinea = {
-  readonly turnos: readonly TurnoConversacion[];
+  readonly turnos: readonly TurnoEnLinea[];
   readonly cargando: boolean;
-  readonly enCurso: boolean;
-  readonly pausada: boolean;
-  readonly tarjetasConfirmacion: readonly TarjetaDeConfirmacion[];
-  readonly alResponderConfirmacion: (accion: AccionDeTarjeta) => void;
   readonly alAccionDeAviso: (accion: AccionDeAviso) => void;
-  readonly acciones: ReactNode;
-};
-
-export type PropsEstadoVacio = {
-  readonly acciones: ReactNode;
 };
 
 export type PropsAccionesRapidas = {
@@ -115,12 +93,31 @@ export type ControlAccionesRapidas = {
   readonly alPedirListado: () => void;
 };
 
-export type PropsTurno = {
+export type TurnoEnLinea = {
   readonly turno: TurnoConversacion;
   readonly enCurso: boolean;
   readonly resultados: readonly ResultadoDeCaso[];
-  readonly confirmaciones: ReactNode;
+  readonly confirmaciones: PropsPilaConfirmaciones;
+};
+
+export type PropsTurno = {
+  readonly entrada: TurnoEnLinea;
   readonly alAccionDeAviso: (accion: AccionDeAviso) => void;
+};
+
+export type ControlLineaDeTiempo = {
+  readonly zona: RefObject<HTMLElement | null>;
+  readonly contenido: RefObject<HTMLDivElement | null>;
+  readonly siguiendo: boolean;
+  readonly contenidoNuevo: boolean;
+  readonly alDesplazar: (evento: SyntheticEvent<HTMLElement>) => void;
+  readonly irAlFinal: () => void;
+  readonly aviso: AvisoDeSesion | null;
+  readonly cargando: boolean;
+  readonly turnos: readonly TurnoEnLinea[];
+  readonly alAccionDeAviso: (accion: AccionDeAviso) => void;
+  readonly indicador: PropsIndicadorPensando | null;
+  readonly anuncio: string;
 };
 
 export type PropsErrorDelTurno = {
