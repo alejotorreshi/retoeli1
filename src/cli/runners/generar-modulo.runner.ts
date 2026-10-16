@@ -1,5 +1,7 @@
+import { rename, rm } from "node:fs/promises";
 import { join } from "node:path";
 import type {
+  ArchivoModulo,
   LecturaModulo,
   MotivoFuenteModulo,
   OpcionesGeneracion,
@@ -19,10 +21,14 @@ import {
   DIRECTORIO_SKILLS_MODULO,
   MOTIVO_FUENTE_MODULO,
   NOMBRE_SKILL,
+  SALTOS_HASTA_LA_RAIZ_DESDE_RUNNERS,
+  SUFIJO_TEMPORAL_MODULO,
 } from "@/config/constants/modulo.constants.ts";
 import { PATRON_TEXTO_NO_VACIO } from "@/config/constants/patterns.constants.ts";
 import { TEXTO_MODULO } from "@/config/strings.ts";
 import { conFrontmatter, frontmatterAgente, frontmatterSkill } from "@/domain/builders/modulo.builder.ts";
+
+const RAIZ_DEL_PROYECTO = join(import.meta.dir, ...SALTOS_HASTA_LA_RAIZ_DESDE_RUNNERS);
 
 type Fuente =
   | { readonly ok: true; readonly bytes: Uint8Array }
@@ -76,14 +82,27 @@ export async function generarModulo({ raiz, escribir }: OpcionesGeneracion): Pro
     escribir(MENSAJE_POR_MOTIVO[lectura.motivo](lectura.ruta));
     return { fallido: true };
   }
-  for (const { ruta, contenido } of lectura.archivos) {
-    await Bun.write(join(raiz, ruta), contenido);
-    escribir(TEXTO_MODULO.generado(ruta));
-  }
+  await escribirJuntos(raiz, lectura.archivos);
+  for (const { ruta } of lectura.archivos) escribir(TEXTO_MODULO.generado(ruta));
   return { fallido: false };
 }
 
+async function escribirJuntos(raiz: string, archivos: readonly ArchivoModulo[]): Promise<void> {
+  const destinos = archivos.map(({ ruta, contenido }) => ({
+    final: join(raiz, ruta),
+    temporal: join(raiz, `${ruta}${SUFIJO_TEMPORAL_MODULO}`),
+    contenido,
+  }));
+  try {
+    await Promise.all(destinos.map(({ temporal, contenido }) => Bun.write(temporal, contenido)));
+  } catch (error) {
+    await Promise.all(destinos.map(({ temporal }) => rm(temporal, { force: true })));
+    throw error;
+  }
+  for (const { temporal, final } of destinos) await rename(temporal, final);
+}
+
 if (import.meta.main) {
-  const resultado = await generarModulo({ raiz: process.cwd(), escribir: console.log });
+  const resultado = await generarModulo({ raiz: RAIZ_DEL_PROYECTO, escribir: console.log });
   if (resultado.fallido) process.exitCode = 1;
 }

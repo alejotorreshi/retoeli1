@@ -17,6 +17,7 @@ import {
   DIRECTORIO_MODULO,
   DIRECTORIO_SKILLS_MODULO,
   NOMBRE_SKILL,
+  SUFIJO_TEMPORAL_MODULO,
 } from "@/config/constants/modulo.constants.ts";
 import { TEXTO_MODULO } from "@/config/strings.ts";
 import { conFrontmatter, frontmatterAgente, frontmatterSkill } from "@/domain/builders/modulo.builder.ts";
@@ -240,6 +241,17 @@ describe("generarModulo falla fuerte y no escribe nada con una fuente rota", () 
     expect(fallido).toBe(true);
     expect(lineas).toEqual([TEXTO_MODULO.fueraDeLaRaiz]);
     expect(await existeModulo(raiz)).toBe(false);
+  });
+});
+
+describe("generarModulo escribe por archivo temporal y renombre", () => {
+  test("no deja archivos temporales y solo escribe agent.md y SKILL.md", async () => {
+    const raiz = await raizTemporal(await fuentesReales());
+    expect((await generarEn(raiz)).fallido).toBe(false);
+    const entradas = await readdir(join(raiz, DIRECTORIO_MODULO), { recursive: true });
+    expect(entradas.filter((entrada) => entrada.endsWith(SUFIJO_TEMPORAL_MODULO))).toEqual([]);
+    const relativas = [RUTA_AGENTE, RUTA_SKILL].map((ruta) => ruta.slice(DIRECTORIO_MODULO.length + 1));
+    expect(entradas.filter((entrada) => entrada.endsWith(".md")).sort()).toEqual(relativas.sort());
   });
 });
 

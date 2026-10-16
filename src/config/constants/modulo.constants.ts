@@ -4,6 +4,10 @@ export const DIRECTORIO_SKILLS_MODULO = "skill";
 export const NOMBRE_SKILL = "registro-proveedor";
 export const ARCHIVO_SKILL = "SKILL.md";
 
+export const SUFIJO_TEMPORAL_MODULO = ".tmp";
+
+export const SALTOS_HASTA_LA_RAIZ_DESDE_RUNNERS = ["..", "..", ".."] as const;
+
 export const DELIMITADOR_FRONTMATTER = "---";
 export const SANGRIA_YAML = "  ";
 
