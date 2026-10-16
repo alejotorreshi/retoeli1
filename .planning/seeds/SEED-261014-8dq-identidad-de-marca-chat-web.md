@@ -1,6 +1,7 @@
 ---
 id: SEED-261014-8dq
-status: dormant
+status: incorporated
+incorporated_into: Phase 05 (front web por features e identidad de marca), 2026-10-16
 planted: 2026-10-14
 planted_during: Phase 03 (Chat web, API SSE y despliegue) — executing, after plan 03-11
 trigger_when: cuando terminen los planes de UI de la fase 03 (03-27) y se pueda ver la interfaz completa

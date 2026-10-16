@@ -155,6 +155,10 @@ Progress: [██████████] 100%
 
 ## Accumulated Context
 
+### Roadmap Evolution
+
+- Phase 5 added (2026-10-16): Front web por features e identidad de marca. Lo pidió la usuaria tras la fase 4: refactor por features con carpeta por componente, store propio sin dependencias, cero hardcode e identidad de marca (SEED-261014-8dq).
+
 ### Decisions
 
 Decisions are logged in PROJECT.md Key Decisions table.

@@ -16,6 +16,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 2: Agente y compuerta de confirmación** - Adaptador DeepSeek con resiliencia, ciclo propio con topes, sesiones y compuerta de confirmación decidida por el servidor (completed 2026-10-14)
 - [x] **Phase 3: Chat web, API SSE y despliegue** - API Hono con SSE y código de acceso, chat React con tool calls visibles y link público activo en Render (completed 2026-10-15)
 - [x] **Phase 4: Módulo, documentación y defensa** - Bonus `modulo/` como fuente única, README, SOLUCION.md, CI y pre-flight de la defensa (completed 2026-10-16)
+- [ ] **Phase 5: Front web por features e identidad de marca** - Refactor del front por features y componentes, store propio, cero hardcode, guardianes e identidad de marca
 
 ## Phase Details
 
@@ -333,3 +334,20 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 | 2. Agente y compuerta de confirmación | 24/24 | Complete    | 2026-10-14 |
 | 3. Chat web, API SSE y despliegue | 47/47 | Complete    | 2026-10-15 |
 | 4. Módulo, documentación y defensa | 8/8 | Complete    | 2026-10-16 |
+| 5. Front web por features e identidad de marca | 0/0 | Not started | - |
+
+### Phase 5: Front web por features e identidad de marca
+
+**Goal:** El front se puede mantener y defender como código de nivel industria: organizado por features y componentes, con la vista separada de la lógica, un estado predecible en un store propio, cero valores hardcodeados y una identidad de marca propia. Todo sin cambiar la conducta que ya pasó la QA.
+**Requirements**: FE-01, FE-02, FE-03, FE-04, FE-05, FE-06
+**Success Criteria** (what must be TRUE):
+  1. `web/src` está organizado por feature, con una carpeta por componente que separa la vista, el hook de lógica y los estilos. Un guardián falla si un componente queda suelto o si una vista importa red o estado fuera de su hook.
+  2. El estado vive en un store propio con `useSyncExternalStore` y selectores. Los reductores puros siguen con sus pruebas, y no hay dependencias nuevas en `package.json`.
+  3. Ningún componente tiene literales de texto, colores, tamaños ni valores mágicos, y los guardianes W lo comprueban.
+  4. El chat muestra la identidad de marca del UI-SPEC (logo, acento, tipografía y estado vacío con los 4 casos).
+  5. La regresión completa (`bun run check`, `bun test`, `demo.ts`, `build:web`), la CI y el ensayo del §11 con Playwright sobre el link público pasan sin cambios de conducta.
+**Depends on:** Phase 4
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd-plan-phase 5 to break down)
