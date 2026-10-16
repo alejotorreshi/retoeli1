@@ -8,7 +8,7 @@ import {
 import { ESTADO_HERRAMIENTA } from "@web/config/constants/ui.constants.ts";
 import { TEXTO_HERRAMIENTA } from "@web/config/strings.ts";
 import estilos from "@web/features/herramientas/tarjeta-herramienta/tarjeta-herramienta.module.css";
-import { useTarjetaHerramienta } from "@web/features/herramientas/tarjeta-herramienta/usar-tarjeta-herramienta.ts";
+import { controlTarjetaHerramienta } from "@web/features/herramientas/tarjeta-herramienta/usar-tarjeta-herramienta.ts";
 import type { EstadoHerramienta } from "@web/types/chat.type.ts";
 import type { PropsIconoDeEstado, PropsTarjetaHerramienta } from "@web/types/ui.type.ts";
 
@@ -47,7 +47,7 @@ function IconoDeEstado({ estado }: PropsIconoDeEstado) {
 }
 
 export function TarjetaHerramienta({ llamada }: PropsTarjetaHerramienta) {
-  const { fallida, argumentos } = useTarjetaHerramienta(llamada);
+  const { fallida, argumentos } = controlTarjetaHerramienta(llamada);
   return (
     <li>
       <details className={estilos.tarjeta}>

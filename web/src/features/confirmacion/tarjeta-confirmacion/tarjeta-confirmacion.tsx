@@ -7,7 +7,7 @@ import {
 import { TEXTO_CONFIRMACION, TEXTO_RESULTADO } from "@web/config/strings.ts";
 import estilos from "@web/features/confirmacion/tarjeta-confirmacion/tarjeta-confirmacion.module.css";
 import {
-  usePilaConfirmaciones,
+  tarjetasEnPila,
   useTarjetaConfirmacion,
 } from "@web/features/confirmacion/tarjeta-confirmacion/usar-tarjeta-confirmacion.ts";
 import type { EstadoFirma, EstadoTarjetaConfirmacion } from "@web/types/chat.type.ts";
@@ -121,7 +121,7 @@ export function PilaConfirmaciones({
   pausada,
   alResponder,
 }: PropsPilaConfirmaciones) {
-  const pila = usePilaConfirmaciones(tarjetas, turnos);
+  const pila = tarjetasEnPila(tarjetas, turnos);
   if (pila.length === 0) return null;
   return (
     <li className={estilos.pila}>

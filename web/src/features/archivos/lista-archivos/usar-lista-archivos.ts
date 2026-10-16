@@ -15,7 +15,7 @@ const LISTA_CARGANDO: EstadoListaArchivos = { tipo: ESTADO_LISTA_ARCHIVOS.CARGAN
 
 const LISTA_CON_ERROR: EstadoListaArchivos = { tipo: ESTADO_LISTA_ARCHIVOS.ERROR };
 
-export function useArchivos({ caso, activo, marca, alVencerAcceso }: OpcionesArchivos): ControlArchivos {
+export function useListaArchivos({ caso, activo, marca, alVencerAcceso }: OpcionesArchivos): ControlArchivos {
   const [estado, setEstado] = useState<EstadoListaArchivos>(LISTA_CARGANDO);
   const [borrados, setBorrados] = useState(false);
   const pedidoActivo = useRef<AbortController | null>(null);
@@ -73,7 +73,7 @@ export function useArchivos({ caso, activo, marca, alVencerAcceso }: OpcionesArc
   return { estado, borrados, reintentar, descargar, marcarBorrados };
 }
 
-export function useFilaArchivo(
+export function controlFilaArchivo(
   caso: string,
   archivo: ArchivoUi,
   alVer: AlVerArchivo,

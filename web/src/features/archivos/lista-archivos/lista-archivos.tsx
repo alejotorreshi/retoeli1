@@ -2,11 +2,11 @@ import { IconoDescargar, IconoOjo } from "@web/compartido/iconos/iconos.tsx";
 import { ESTADO_LISTA_ARCHIVOS } from "@web/config/constants/ui.constants.ts";
 import { TEXTO_ARCHIVOS } from "@web/config/strings.ts";
 import estilos from "@web/features/archivos/lista-archivos/lista-archivos.module.css";
-import { useFilaArchivo } from "@web/features/archivos/lista-archivos/usar-lista-archivos.ts";
+import { controlFilaArchivo } from "@web/features/archivos/lista-archivos/usar-lista-archivos.ts";
 import type { PropsFilaArchivo, PropsListaArchivos } from "@web/types/ui.type.ts";
 
 function FilaArchivo({ caso, archivo, alVer, alDescargar }: PropsFilaArchivo) {
-  const { ruta, nombreDescarga, alPulsarVer, alPulsarDescargar } = useFilaArchivo(
+  const { ruta, nombreDescarga, alPulsarVer, alPulsarDescargar } = controlFilaArchivo(
     caso,
     archivo,
     alVer,

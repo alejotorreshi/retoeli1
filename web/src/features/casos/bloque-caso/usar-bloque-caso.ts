@@ -1,4 +1,4 @@
-import { useArchivos } from "@web/features/archivos/lista-archivos/usar-lista-archivos.ts";
+import { useListaArchivos } from "@web/features/archivos/lista-archivos/usar-lista-archivos.ts";
 import { discoBorrado } from "@web/features/casos/estado/casos.ts";
 import { useAcciones } from "@web/store/usar-almacen.ts";
 import type { ArchivoUi } from "@web/types/chat.type.ts";
@@ -9,7 +9,12 @@ export function useBloqueCaso({ progreso, reciente, marca }: OpcionesBloqueCaso)
   const { enviarTexto, vencerAcceso } = useAcciones();
   const [abierto, setAbierto] = useState(reciente);
   const [vistaPrevia, setVistaPrevia] = useState<VistaPreviaAbierta | null>(null);
-  const archivos = useArchivos({ caso: progreso.caso, activo: abierto, marca, alVencerAcceso: vencerAcceso });
+  const archivos = useListaArchivos({
+    caso: progreso.caso,
+    activo: abierto,
+    marca,
+    alVencerAcceso: vencerAcceso,
+  });
 
   function alVer(archivo: ArchivoUi, disparador: HTMLElement): void {
     setVistaPrevia({ archivo, disparador });

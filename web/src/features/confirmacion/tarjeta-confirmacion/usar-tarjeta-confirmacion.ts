@@ -57,7 +57,7 @@ export function useTarjetaConfirmacion({
   };
 }
 
-export function usePilaConfirmaciones(
+export function tarjetasEnPila(
   tarjetas: readonly TarjetaDeConfirmacion[],
   turnos: readonly TurnoConversacion[],
 ): readonly TarjetaEnPila[] {
