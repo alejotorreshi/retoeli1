@@ -1,5 +1,4 @@
 import { AccionesRapidas } from "@web/components/acciones-rapidas.tsx";
-import { Compositor } from "@web/components/compositor.tsx";
 import { LineaDeTiempo } from "@web/components/linea-de-tiempo.tsx";
 import { PanelCasos } from "@web/components/panel-casos.tsx";
 import { PantallaAcceso } from "@web/components/pantalla-acceso.tsx";
@@ -14,6 +13,7 @@ import {
   TECLA_PESTANA,
 } from "@web/config/constants/ui.constants.ts";
 import { TEXTO_APP, TEXTO_PESTANAS } from "@web/config/strings.ts";
+import { Compositor } from "@web/features/chat/compositor/compositor.tsx";
 import { IndicadorPensando } from "@web/features/chat/indicador-pensando/indicador-pensando.tsx";
 import { AvisoModelo } from "@web/features/encabezado/aviso-modelo/aviso-modelo.tsx";
 import { Encabezado } from "@web/features/encabezado/encabezado/encabezado.tsx";
@@ -24,7 +24,6 @@ import { ProveedorAlmacen } from "@web/store/proveedor-almacen.tsx";
 import {
   seleccionarAcceso,
   seleccionarAvisoSesion,
-  seleccionarBorrador,
   seleccionarCasos,
   seleccionarConHistorial,
   seleccionarEnCurso,
@@ -35,11 +34,9 @@ import {
   seleccionarFirmaDelProgreso,
   seleccionarHidratando,
   seleccionarMarcasDeArchivos,
-  seleccionarMensajeMaximo,
   seleccionarProgresos,
   seleccionarTarjetasConfirmacion,
   seleccionarTurnos,
-  seleccionarUsoDeSesion,
 } from "@web/store/selectores.ts";
 import { useAcciones, useSeleccion, useSincronizacion } from "@web/store/usar-almacen.ts";
 import type { AccionDeAviso } from "@web/types/chat.type.ts";
@@ -140,17 +137,14 @@ function Pantalla() {
   const acciones = useAcciones();
   const acceso = useSeleccion(seleccionarAcceso);
   const casos = useSeleccion(seleccionarCasos);
-  const mensajeMaximo = useSeleccion(seleccionarMensajeMaximo);
   const turnos = useSeleccion(seleccionarTurnos);
   const conHistorial = useSeleccion(seleccionarConHistorial);
   const enCurso = useSeleccion(seleccionarEnCurso);
   const hidratando = useSeleccion(seleccionarHidratando);
   const avisoSesion = useSeleccion(seleccionarAvisoSesion);
   const tarjetasConfirmacion = useSeleccion(seleccionarTarjetasConfirmacion);
-  const borrador = useSeleccion(seleccionarBorrador);
   const enPausa = useSeleccion(seleccionarEnvioEnPausa);
   const envioDeshabilitado = useSeleccion(seleccionarEnvioDeshabilitado);
-  const uso = useSeleccion(seleccionarUsoDeSesion);
   const etiquetaPensando = useSeleccion(seleccionarEtiquetaPensando);
   const eventosDelTurno = useSeleccion(seleccionarEventosDelTurno);
   const progresos = useSeleccion(seleccionarProgresos);
@@ -230,17 +224,7 @@ function Pantalla() {
                 alEnviar={acciones.enviarTexto}
               />
             ) : null}
-            <Compositor
-              valor={borrador}
-              maximo={mensajeMaximo}
-              enCurso={enCurso}
-              bloqueado={hidratando}
-              pausado={enPausa}
-              uso={uso}
-              alCambiar={acciones.cambiarBorrador}
-              alEnviar={acciones.enviar}
-              alDetener={acciones.detener}
-            />
+            <Compositor />
           </main>
         </div>
         <div

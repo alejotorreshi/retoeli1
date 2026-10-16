@@ -27,11 +27,10 @@ import type {
   TarjetaDeConfirmacion,
   TipoAccion,
   TurnoConversacion,
-  UsoDeSesion,
   VistaPreviaUi,
 } from "@web/types/chat.type.ts";
 import type { InstanciaAlmacen } from "@web/types/store.type.ts";
-import type { ReactNode, RefObject, SyntheticEvent } from "react";
+import type { FormEvent, KeyboardEvent, ReactNode, RefObject, SyntheticEvent } from "react";
 import type { ESTADO_LLM } from "@/config/constants/llm.constants.ts";
 import type { ValorDe } from "@/config/types/valor-de.type.ts";
 
@@ -211,15 +210,25 @@ export type PropsMensaje = {
   readonly texto: string;
 };
 
-export type PropsCompositor = {
+export type ContadorCompositor = {
+  readonly texto: string;
+  readonly enElLimite: boolean;
+};
+
+export type ControlCompositor = {
+  readonly idAyuda: string;
+  readonly idContador: string;
+  readonly descritoPor: string;
   readonly valor: string;
-  readonly maximo: number | null;
+  readonly maximo: number | undefined;
   readonly enCurso: boolean;
-  readonly bloqueado: boolean;
-  readonly pausado: boolean;
-  readonly uso: UsoDeSesion | null;
+  readonly deshabilitado: boolean;
+  readonly ayuda: string;
+  readonly contador: ContadorCompositor | null;
+  readonly uso: string | null;
   readonly alCambiar: (valor: string) => void;
-  readonly alEnviar: () => void;
+  readonly alEnviarFormulario: (evento: FormEvent<HTMLFormElement>) => void;
+  readonly alPresionarTecla: (evento: KeyboardEvent<HTMLTextAreaElement>) => void;
   readonly alDetener: () => void;
 };
 
