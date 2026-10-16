@@ -3,7 +3,7 @@ status: testing
 phase: 03-chat-web-api-sse-y-despliegue
 source: [03-VERIFICATION.md]
 started: 2026-10-15T23:50:00Z
-updated: 2026-10-15T23:50:00Z
+updated: 2026-10-16T00:45:00Z
 ---
 
 ## Current Test
@@ -17,12 +17,13 @@ awaiting: user response
 ## Tests
 
 ### 1. Push de main y redespliegue en Render
-expected: Hacer push de main (113 commits por delante de origin/main = 80c2b3d) y esperar el autoDeploy. El bundle servido contiene 'Comprobar de nuevo' y 'Volver a la sesión anterior' y ya no contiene 'bun run demo.ts'; health 200 sin claves; NEW_SESSIONS_PER_HOUR=20 en el panel; curl -N con Bearer recibe el SSE por trozos.
+expected: Hacer push de main (por delante de origin/main = 80c2b3d) y esperar el autoDeploy. El bundle servido contiene 'Comprobar de nuevo' y 'Volver a la sesión anterior' y ya no contiene 'bun run demo.ts'; health 200 sin claves; NEW_SESSIONS_PER_HOUR=20 en el panel; curl -N con Bearer recibe el SSE por trozos.
 result: [pending]
 
-### 2. Decidir WR-01 y WR-02 del review incremental (03-REVIEW.md)
-expected: Arreglar ahora, diferir a la Fase 4 o aceptarlos y registrarlo en 03-REVIEW-DISPOSITION.md. WR-01: 10 Bearer correctos simultáneos sin fallos previos dan [400×5, 429×5] con 'Espera 15 minutos…' y el pedido siguiente entra con 204; 10 POST /api/acceso correctos simultáneos dan [204×5, 429×5]. WR-02: un envío FALLIDO seguido de un truncado del mismo caso con la autorización gastada deja los avisos FALLIDO y TRUNCADO_CONFIRMADO, y la compuerta queda pendiente con su pregunta.
-result: [pending]
+### 2. Decidir los hallazgos del limitador y del aviso de envío cortado
+expected: Arreglar ahora, diferir o aceptarlos y registrarlo.
+result: pass
+reported: "Decisión 2026-10-16: cortar el ciclo. Se revierte 71d8d20 (5f07e7c); el cruce de ventana de D-77.2 y el aviso tras un envío confirmado que falló y se cortó (fec1e85) se aceptan con override en 03-VERIFICATION.md, y docs/limites-del-demo.md documenta el tope por IP como aproximado y la corrección de un despliegue real."
 
 ### 3. Receta T12 con el LLM falso: chip '¿Qué casos hay?'
 expected: El panel no agrega un bloque en blanco y la consola no registra GET /api/casos//archivos (G-03-17).
@@ -63,9 +64,9 @@ result: [pending]
 ## Summary
 
 total: 11
-passed: 0
+passed: 1
 issues: 0
-pending: 11
+pending: 10
 skipped: 0
 blocked: 0
 
