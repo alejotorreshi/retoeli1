@@ -1,9 +1,11 @@
 import { afterAll, afterEach, beforeAll, describe, expect, test } from "bun:test";
 import { join } from "node:path";
-import { crearFetchFalso } from "@tests/helpers/fetch-falso.helper.ts";
+import { crearFetchFalso, cuerpoConHerramientas, cuerpoConTexto } from "@tests/helpers/fetch-falso.helper.ts";
+import { mapearProyectado } from "@tests/helpers/flujo.helper.ts";
 import { crearProyectoTemporal } from "@tests/helpers/proyecto-temporal.helper.ts";
 import { CODIGO_PRUEBA, crearServidorPrueba } from "@tests/helpers/servidor-prueba.helper.ts";
 import type { RespuestaGuion } from "@tests/helpers/types/fetch-falso.type.ts";
+import { TEXTO_ACCIONES } from "@web/config/strings.ts";
 import { ejecutarPreflight } from "@/cli/runners/preflight.runner.ts";
 import type {
   FetchPreflight,
@@ -12,15 +14,20 @@ import type {
   ResultadoPreflight,
 } from "@/cli/types/preflight.type.ts";
 import { FECHA_DEMO } from "@/config/constants/demo.constants.ts";
+import { ARCHIVOS_SALIDA } from "@/config/constants/files.constants.ts";
 import {
+  CABECERA,
   LONGITUD_MINIMA_CODIGO_ACCESO,
   METODO_POST,
   RESPUESTA_HTTP,
   RUTA_API,
 } from "@/config/constants/http.constants.ts";
 import { ESTADO_LLM, PRESET_DEEPSEEK, PROVEEDOR_DEEPSEEK } from "@/config/constants/llm.constants.ts";
+import { CASO_GUION_PRD } from "@/config/constants/preflight.constants.ts";
+import { HERRAMIENTA, NOMBRE_VISIBLE } from "@/config/constants/tools.constants.ts";
 import { parsePreflightEnv, pinExecutionDate } from "@/config/env.ts";
 import { TEXTO_PREFLIGHT } from "@/config/strings.ts";
+import { crearHerramientas } from "@/tools/factories/herramientas.factory.ts";
 
 const RAIZ = join(import.meta.dir, "..", "..");
 const RUNNER = join(RAIZ, "src", "cli", "runners", "preflight.runner.ts");
@@ -28,6 +35,12 @@ const CODIGO_AJENO = "codigo-ajeno-Zq8L-0000";
 const CODIGO_CORTO = "corto-Q1";
 const VALOR_SECRETO_EN_ARGV = "secreto-en-argv-Xw4P-9876";
 const METODO_GET = "GET";
+const LEER = NOMBRE_VISIBLE[HERRAMIENTA.LEER_SOLICITUD];
+const MAPEAR = NOMBRE_VISIBLE[HERRAMIENTA.MAPEAR_CAMPOS];
+const GENERAR = NOMBRE_VISIBLE[HERRAMIENTA.GENERAR_FORMULARIO];
+const ARMAR = NOMBRE_VISIBLE[HERRAMIENTA.ARMAR_PAQUETE];
+const SIMULAR = NOMBRE_VISIBLE[HERRAMIENTA.SIMULAR_ENVIO];
+const RUTA_ARCHIVOS_GUION = `/api/casos/${CASO_GUION_PRD}/archivos`;
 
 const PLAZOS_PRUEBA: PlazosPreflight = {
   despertarMs: 30_000,
@@ -36,7 +49,9 @@ const PLAZOS_PRUEBA: PlazosPreflight = {
   turnoMs: 30_000,
 };
 
-type PedidoVisto = { readonly metodo: string; readonly ruta: string };
+type PedidoVisto = { readonly metodo: string; readonly ruta: string; readonly cuerpo: string | null };
+
+type ArmarGuion = (raiz: string) => Promise<readonly RespuestaGuion[]>;
 
 type Corrida = {
   readonly resultado: ResultadoPreflight;
@@ -61,11 +76,11 @@ afterEach(async () => {
 
 async function servir(
   entorno: Readonly<Record<string, string>> = {},
-  guion: readonly RespuestaGuion[] = [],
+  armarGuion: ArmarGuion = async () => [],
 ): Promise<URL> {
   const proyecto = await crearProyectoTemporal();
   limpiezas.push(proyecto.limpiar);
-  const falso = crearFetchFalso(guion);
+  const falso = crearFetchFalso(await armarGuion(proyecto.raiz));
   const servidor = crearServidorPrueba({ raiz: proyecto.raiz, fetch: falso.fetch, entorno });
   const real = Bun.serve({ port: 0, fetch: servidor.app.fetch });
   limpiezas.push(() => real.stop(true));
@@ -80,7 +95,8 @@ function servirSiempre(estado: number): URL {
 
 function contarPedidos(pedidos: PedidoVisto[], base: FetchPreflight = fetch): FetchPreflight {
   return async (url, init) => {
-    pedidos.push({ metodo: init?.method ?? METODO_GET, ruta: url.pathname });
+    const cuerpo = typeof init?.body === "string" ? init.body : null;
+    pedidos.push({ metodo: init?.method ?? METODO_GET, ruta: url.pathname, cuerpo });
     return base(url, init);
   };
 }
@@ -242,5 +258,105 @@ describe("la entrada del comando nunca acepta el código como argumento (T-04-10
     const { codigo, salida } = await ejecutarComando([VALOR_SECRETO_EN_ARGV]);
     expect(codigo).toBe(1);
     expect(salida).not.toContain(VALOR_SECRETO_EN_ARGV);
+  });
+});
+
+async function mapeoProyectado(raiz: string) {
+  return mapearProyectado(
+    crearHerramientas(),
+    { directory: raiz, sessionId: "preparacion-preflight" },
+    CASO_GUION_PRD,
+  );
+}
+
+function guionPrd({ conPaquete }: { readonly conPaquete: boolean }): ArmarGuion {
+  return async (raiz) => {
+    const mapeo = await mapeoProyectado(raiz);
+    const caso = { caso: CASO_GUION_PRD };
+    return [
+      { cuerpo: cuerpoConHerramientas({ nombre: LEER, argumentos: caso }) },
+      { cuerpo: cuerpoConHerramientas({ nombre: MAPEAR, argumentos: { ...caso, campos: [] } }) },
+      { cuerpo: cuerpoConHerramientas({ nombre: GENERAR, argumentos: { ...caso, mapeo } }) },
+      ...(conPaquete ? [{ cuerpo: cuerpoConHerramientas({ nombre: ARMAR, argumentos: caso }) }] : []),
+      { cuerpo: cuerpoConTexto(`Procesé ${CASO_GUION_PRD}. ¿Confirmas el envío simulado?`) },
+      { cuerpo: cuerpoConHerramientas({ nombre: SIMULAR, argumentos: caso }) },
+      { cuerpo: cuerpoConTexto("Envío simulado registrado.") },
+    ];
+  };
+}
+
+function registrarArchivos(listas: string[][]): FetchPreflight {
+  return async (url, init) => {
+    const respuesta = await fetch(url, init);
+    if (url.pathname === RUTA_ARCHIVOS_GUION) {
+      const lista: { archivos: { nombre: string }[] } = await respuesta.clone().json();
+      listas.push(lista.archivos.map(({ nombre }) => nombre));
+    }
+    return respuesta;
+  };
+}
+
+const sinCabeceraDeBuffer: FetchPreflight = async (url, init) => {
+  const respuesta = await fetch(url, init);
+  if (url.pathname !== RUTA_API.CHAT) return respuesta;
+  const cabeceras = new Headers(respuesta.headers);
+  cabeceras.delete(CABECERA.X_ACCEL_BUFFERING);
+  return new Response(respuesta.body, { status: respuesta.status, headers: cabeceras });
+};
+
+function turnosDelChat(pedidos: readonly PedidoVisto[]): { sessionId: string | null; message: string }[] {
+  return pedidosA(pedidos, RUTA_API.CHAT).map((pedido) => JSON.parse(pedido.cuerpo ?? "null"));
+}
+
+describe("pre-flight con --guion: PRD §11 en dos turnos SSE (D-92)", () => {
+  test("corre el guion completo en una sola sesión y reporta los tokens", async () => {
+    const url = await servir({}, guionPrd({ conPaquete: true }));
+    const listas: string[][] = [];
+    const { resultado, lineas, pedidos } = await correr(url, {
+      guion: true,
+      envolver: registrarArchivos(listas),
+    });
+    expect(resultado.fallido).toBe(false);
+    const tokens = resultado.tokens;
+    expect(tokens).not.toBeNull();
+    if (tokens === null) throw new Error("faltan los tokens del guion");
+    expect(tokens.entrada).toBeGreaterThan(0);
+    expect(lineas).toContain(
+      TEXTO_PREFLIGHT.tokens(tokens.entrada, tokens.cacheHit, tokens.salida, tokens.totalSesion),
+    );
+    expect(lineas).toContain(TEXTO_PREFLIGHT.turnoOk(1));
+    expect(lineas).toContain(TEXTO_PREFLIGHT.turnoOk(2));
+    expect(lineas.at(-1)).toBe(TEXTO_PREFLIGHT.resultadoOk);
+    expect(listas).toHaveLength(2);
+    expect(listas[0]).not.toContain(ARCHIVOS_SALIDA.ENVIO_SIMULADO);
+    expect(listas[1]).toContain(ARCHIVOS_SALIDA.ENVIO_SIMULADO);
+    const turnos = turnosDelChat(pedidos);
+    expect(turnos.map(({ message }) => message)).toEqual([
+      TEXTO_PREFLIGHT.mensajeGuion,
+      TEXTO_PREFLIGHT.mensajeConfirmacion,
+    ]);
+    expect(turnos[0]?.sessionId).toBeNull();
+    expect(turnos[1]?.sessionId).toEqual(expect.any(String));
+  });
+
+  test("si el turno 1 no deja la confirmación pendiente falla y nunca manda el segundo turno", async () => {
+    const url = await servir({}, guionPrd({ conPaquete: false }));
+    const { resultado, lineas, pedidos } = await correr(url, { guion: true });
+    expect(resultado.fallido).toBe(true);
+    expect(lineas).toContain(TEXTO_PREFLIGHT.sinConfirmacion(CASO_GUION_PRD));
+    expect(turnosDelChat(pedidos)).toHaveLength(1);
+  });
+
+  test("si el SSE llega sin X-Accel-Buffering no, falla nombrando la cabecera", async () => {
+    const url = await servir({}, guionPrd({ conPaquete: true }));
+    const { resultado, lineas, pedidos } = await correr(url, { guion: true, envolver: sinCabeceraDeBuffer });
+    expect(resultado.fallido).toBe(true);
+    expect(lineas).toContain(TEXTO_PREFLIGHT.cabeceraSse(CABECERA.X_ACCEL_BUFFERING));
+    expect(turnosDelChat(pedidos)).toHaveLength(1);
+  });
+
+  test("el mensaje del guion es el del chip de la SPA (mensajeDemo) y la confirmación es envía", () => {
+    expect(TEXTO_PREFLIGHT.mensajeGuion).toBe(TEXTO_ACCIONES.mensajeDemo);
+    expect(TEXTO_PREFLIGHT.mensajeConfirmacion).toBe("envía");
   });
 });
