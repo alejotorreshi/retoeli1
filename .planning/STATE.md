@@ -4,10 +4,10 @@ current_phase: 03
 current_phase_name: Chat web, API SSE y despliegue
 status: executing
 stopped_at: Completed 03-47-PLAN.md
-last_updated: "2026-10-16T01:05:48.825Z"
+last_updated: "2026-10-16T02:15:15.169Z"
 last_activity: 2026-10-15
 last_activity_desc: Phase 03 execution started
-state_head: 6044e53f7e7f98bb36b3e4d8d9e1a0c2be5410cd
+state_head: 2d5da761be453503d8c0cdd0a1b0512cd02da861
 progress:
   total_phases: 4
   completed_phases: 2
@@ -30,7 +30,7 @@ See: .planning/PROJECT.md (updated 2026-10-14)
 Phase: 03 (Chat web, API SSE y despliegue) — EXECUTING
 Plan: 5 of 47
 Status: Ready to execute
-Last activity: 2026-10-15 — Phase 03 execution started
+Last activity: 2026-10-16 - Completed quick task 261015-t5l: G-03-7 re-pegado por anclaje de la línea de tiempo
 
 Progress: [█████░░░░░] 50%
 
@@ -373,6 +373,7 @@ None yet.
 |---|-------------|------|--------|-----------|
 | 261014-jz4 | Aceptar la regla de primera palabra (D-63.11) para CR-06 / T-02-83 y alinear prompt, RN4 y registros | 2026-10-14 | 7b5ed7d | [261014-jz4-aceptar-la-regla-de-primera-palabra-para](./quick/261014-jz4-aceptar-la-regla-de-primera-palabra-para/) |
 | 2 | Cerrar el ciclo del limitador de la fase 03: revert de 71d8d20, overrides en 03-VERIFICATION.md y tope por IP documentado como aproximado | 2026-10-15 | 6044e53 | — |
+| 261015-t5l | G-03-7: re-pegar la línea de tiempo por umbral solo si la distancia al final bajó (anclaje con la vista despegada) | 2026-10-15 | 2d5da76 | [261015-t5l-g-03-7-re-pegar-la-l-nea-de-tiempo-por-u](./quick/261015-t5l-g-03-7-re-pegar-la-l-nea-de-tiempo-por-u/) |
 
 ## Deferred Items
 
