@@ -13,7 +13,7 @@ import {
 } from "@tests/helpers/red-web.helper.ts";
 import type { GuionChat } from "@tests/helpers/types/red-web.type.ts";
 import { PAIS } from "@web/config/constants/pais.constants.ts";
-import { CASO_DEMO_PRD, CLAVE_SESION_LOCAL, EVENTO_VISIBILIDAD } from "@web/config/constants/ui.constants.ts";
+import { CLAVE_SESION_LOCAL, EVENTO_VISIBILIDAD } from "@web/config/constants/ui.constants.ts";
 import {
   TEXTO_ACCIONES,
   TEXTO_APP,
@@ -29,6 +29,7 @@ import { CODIGO_AGENTE, TIPO_EVENTO } from "@/config/constants/agent.constants.t
 import { TIPO_ACCION } from "@/config/constants/confirmation.constants.ts";
 import { METODO_POST, RUTA_API } from "@/config/constants/http.constants.ts";
 import { ESTADO_LLM } from "@/config/constants/llm.constants.ts";
+import { CASO_GUION_PRD } from "@/config/constants/preflight.constants.ts";
 import type { AccionEstructurada } from "@/loop/types/turno.type.ts";
 
 const ANCHO_ESCRITORIO = 1280;
@@ -205,7 +206,7 @@ describe("App en escritorio, con la red simulada en fetch", () => {
     expect(TEXTO_ESTADO_VACIO.acciones).toBe(TEXTO_ACCIONES.grupo);
     expect(casos.compareDocumentPosition(acciones) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(pantalla.getByText(TEXTO_CHAT.vacioCuerpo)).toBeDefined();
-    expect(TEXTO_CHAT.vacioCuerpo).toContain(`"procesa el caso ${CASO_DEMO_PRD}"`);
+    expect(TEXTO_CHAT.vacioCuerpo).toContain(`"procesa el caso ${CASO_GUION_PRD}"`);
   });
 
   test("con /api/config sin casos la sección Casos disponibles no se pinta y quedan el título, el cuerpo y los chips", async () => {

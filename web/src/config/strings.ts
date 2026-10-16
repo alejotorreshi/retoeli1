@@ -1,7 +1,6 @@
 import { PAIS } from "@web/config/constants/pais.constants.ts";
 import {
   ACCION_AVISO,
-  CASO_DEMO_PRD,
   ESTADO_ETAPA,
   ESTADO_FIRMA,
   ESTADO_HERRAMIENTA,
@@ -32,6 +31,7 @@ import { FORMATO } from "@/config/constants/forms.constants.ts";
 import { VIGENCIA_ACCESO_HORAS_POR_DEFECTO } from "@/config/constants/http.constants.ts";
 import { ESTADO_LLM } from "@/config/constants/llm.constants.ts";
 import { ESTADO_CAMPO } from "@/config/constants/mapping.constants.ts";
+import { CASO_GUION_PRD } from "@/config/constants/preflight.constants.ts";
 import { HERRAMIENTA, HERRAMIENTA_POR_NOMBRE_VISIBLE } from "@/config/constants/tools.constants.ts";
 import type { ValorDe } from "@/config/types/valor-de.type.ts";
 
@@ -74,7 +74,7 @@ export const TEXTO_ACCESO = {
 export const TEXTO_CHAT = {
   lineaDeTiempo: "Conversación con el agente",
   vacioTitulo: "¿Qué caso procesamos?",
-  vacioCuerpo: `Elige un caso para procesarlo o escribe una instrucción, por ejemplo "procesa el caso ${CASO_DEMO_PRD}". El agente lee la solicitud, mapea cada campo contra el maestro, genera el formulario y arma el paquete para firma. No registra ningún envío sin tu confirmación.`,
+  vacioCuerpo: `Elige un caso para procesarlo o escribe una instrucción, por ejemplo "procesa el caso ${CASO_GUION_PRD}". El agente lee la solicitud, mapea cada campo contra el maestro, genera el formulario y arma el paquete para firma. No registra ningún envío sin tu confirmación.`,
   pensando: "Pensando…",
   cargandoConversacion: "Cargando la conversación…",
   pensandoEn: (gerundio: string, caso: string | null) =>
@@ -287,10 +287,10 @@ const ACCIONES_RAPIDAS = "Acciones rápidas";
 
 export const TEXTO_ACCIONES = {
   grupo: ACCIONES_RAPIDAS,
-  demo: `${DEMO_CORTO}: ${CASO_DEMO_PRD}`,
+  demo: `${DEMO_CORTO}: ${CASO_GUION_PRD}`,
   demoCorto: DEMO_CORTO,
   mensajeDemoDe,
-  mensajeDemo: mensajeDemoDe(CASO_DEMO_PRD),
+  mensajeDemo: mensajeDemoDe(CASO_GUION_PRD),
   todos: (cantidad: number) => `Procesar ${losCasos(cantidad).toLowerCase()}`,
   todosCorto: losCasos,
   mensajeTodos: (casos: readonly string[]) =>

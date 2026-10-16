@@ -2,9 +2,9 @@ import { describe, expect, test } from "bun:test";
 import { readdirSync } from "node:fs";
 import { join } from "node:path";
 import { PAIS } from "@web/config/constants/pais.constants.ts";
-import { CASO_DEMO_PRD } from "@web/config/constants/ui.constants.ts";
 import { TEXTO_ACCIONES, TEXTO_PAIS, TEXTO_TARJETA_CASO } from "@web/config/strings.ts";
 import { datosDeTarjetaCaso, esPaisConocido } from "@web/features/chat/estado/tarjeta-caso.ts";
+import { CASO_GUION_PRD } from "@/config/constants/preflight.constants.ts";
 
 const RAIZ = join(import.meta.dir, "..", "..");
 const CASOS_FIXTURE = readdirSync(join(RAIZ, "reto-01", "fixtures", "reto-01", "casos"), {
@@ -84,7 +84,7 @@ describe("datos de la tarjeta de caso derivados del slug (D-113)", () => {
 describe("mensaje y nombre accesible de la tarjeta (D-112)", () => {
   test("la plantilla de la demo aplicada al caso del PRD es mensajeDemo, que sigue siendo un string", () => {
     expect(typeof TEXTO_ACCIONES.mensajeDemo).toBe("string");
-    expect(TEXTO_ACCIONES.mensajeDemoDe(CASO_DEMO_PRD)).toBe(TEXTO_ACCIONES.mensajeDemo);
+    expect(TEXTO_ACCIONES.mensajeDemoDe(CASO_GUION_PRD)).toBe(TEXTO_ACCIONES.mensajeDemo);
     expect(TEXTO_ACCIONES.mensajeDemoDe("co-industrias-delta")).toBe(
       'Procesa el caso "co-industrias-delta". Dime qué campos quedaron llenos, cuáles faltan, si el paquete está listo para firma y qué soportes debo actualizar. No envíes nada todavía.',
     );
