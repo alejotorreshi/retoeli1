@@ -46,7 +46,7 @@ const paso = z.object({
   id: z.string().optional(),
   if: z.string().optional(),
   uses: z.string().optional(),
-  with: z.record(z.string(), z.string()).optional(),
+  with: z.record(z.string(), z.union([z.string(), z.boolean()])).optional(),
   run: z.string().optional(),
   env: z.record(z.string(), z.string()).optional(),
   "continue-on-error": z.boolean().optional(),
@@ -157,6 +157,14 @@ describe(".github/workflows/ci.yml (DEMO-05, D-90)", () => {
     expect(auditoria?.id).toBeDefined();
     expect(aviso?.if).toBe(`steps.${auditoria?.id}.outcome == 'failure'`);
     expect(aviso?.run).toContain(ANOTACION_DE_AVISO);
+  });
+
+  test("cada checkout deja de guardar el GITHUB_TOKEN en .git/config (persist-credentials: false)", () => {
+    const checkouts = Object.values(flujo().jobs).flatMap((t) =>
+      t.steps.filter((p) => p.uses === ACCION_CHECKOUT),
+    );
+    expect(checkouts).toHaveLength(2);
+    for (const checkout of checkouts) expect(checkout.with).toEqual({ "persist-credentials": false });
   });
 
   test("cada acción de terceros está fijada por el SHA completo de su commit", () => {
