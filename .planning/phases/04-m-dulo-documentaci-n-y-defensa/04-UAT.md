@@ -1,9 +1,9 @@
 ---
-status: diagnosed
+status: complete
 phase: 04-m-dulo-documentaci-n-y-defensa
 source: [04-VERIFICATION.md, 04-REVIEW-FIX.md]
 started: 2026-10-16T05:53:02Z
-updated: 2026-10-16T06:40:00Z
+updated: 2026-10-16T06:30:00Z
 ---
 
 ## Current Test
@@ -33,9 +33,9 @@ note: "Pendiente humano: la usuaria revisa la redacción de SOLUCION.md §9 (D-8
 
 ### 5. Regresión y CI local en una copia limpia
 expected: check, test, demo, build:web y audit terminan con 0, y la simulación de la CI da CI_LOCAL_OK.
-result: issue
-reported: "En una copia sin .git (como un ZIP descargado de GitHub), bun test da 2475 pass y 1 fail: el test WR-02 de tests/modulo/generador.test.ts llama a `git check-attr`, que termina con 128 fuera de un repo. Con git init, que es como corre la CI real, pasa con 2476/0."
-severity: minor
+result: pass
+note: "Re-corrida del 2026-10-16T06:26:20Z, después de 04-08: CI_LOCAL_OK en una copia hecha con git archive y sin .git (2477 pass, 3 skip, 0 fail); en el checkout, 2478 pass, 2 skip, 0 fail."
+previous_report: "En una copia sin .git (como un ZIP descargado de GitHub), bun test da 2475 pass y 1 fail: el test WR-02 de tests/modulo/generador.test.ts llama a `git check-attr`, que termina con 128 fuera de un repo. Con git init, que es como corre la CI real, pasa con 2476/0."
 
 ### 6. Render sirve HEAD tras checksPass y el acceso sigue cerrado
 expected: health 200 sin secretos, el bundle servido es igual al build local de HEAD y las rutas protegidas responden 401.
@@ -67,8 +67,8 @@ reason: "Fuera de alcance por D-83: no se instala OpenCode. La evidencia está e
 ## Summary
 
 total: 11
-passed: 9
-issues: 1
+passed: 10
+issues: 0
 pending: 0
 skipped: 1
 blocked: 0
@@ -77,10 +77,11 @@ blocked: 0
 
 - gap_id: G-04-1
   truth: "Un dev nuevo que descarga el repo y corre `bun test` obtiene 0 fallos (criterios 2 y 4 de la Fase 4)"
-  status: failed
+  status: resolved
   reason: "QA T05: en una copia sin .git, bun test da 2475 pass y 1 fail en el test WR-02 (.gitattributes fija LF), porque `git check-attr` termina con 128 fuera de un repo de git."
   severity: minor
   test: 5
+  resolution: "04-08 (6ed1804): el test WR-02 lee .gitattributes directamente y usa git check-attr solo dentro del checkout del proyecto; la re-corrida de QA T05 pasa sin .git"
   root_cause: "tests/modulo/generador.test.ts (alrededor de L108-109, el test agregado por el fix WR-02 de 04-REVIEW-FIX) da por hecho que existe un checkout de git y depende de `git check-attr` para resolver el atributo eol."
   artifacts:
     - path: "tests/modulo/generador.test.ts"
@@ -91,7 +92,8 @@ blocked: 0
 
 - gap_id: G-04-2
   truth: "En la defensa, una sesión nueva no muestra archivos viejos de otra sesión que puedan confundirse con un envío ya hecho (criterio 5: la defensa sin sorpresas)"
-  status: failed
+  status: resolved
+  resolution: "04-08 (0d42f41), solo documentación: docs/entrega.md pasa --guion y los ensayos a la víspera y explica qué son los archivos viejos; SOLUCION.md §10 registra el riesgo y el arreglo para producción; el README ya lo refleja. La parte operativa (que Render vacíe out/ al dormirse entre la víspera y la defensa) queda para que la usuaria la observe ese día"
   reason: "QA T09: después de correr --guion (T08), una sesión nueva del navegador mostró por un momento ENVIO-SIMULADO.md y el resto del paquete de la corrida anterior del mismo caso, hasta que armar_paquete lo reconstruyó en el turno 1 (capturas 04-test09-03 y 04-test09-04)."
   severity: minor
   test: 9
