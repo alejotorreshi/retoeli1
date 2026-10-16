@@ -214,7 +214,7 @@ describe("guardián de web/ sobre el código real", () => {
   test("el escáner encuentra web/src/app.tsx y el resto del front", () => {
     const codigo = listarCodigoWeb();
     expect(codigo).toContain("web/src/app.tsx");
-    expect(codigo).toContain("web/src/state/conversacion.ts");
+    expect(codigo).toContain("web/src/features/chat/estado/conversacion.ts");
     expect(listarTodoWeb().length).toBeGreaterThanOrEqual(codigo.length);
   });
 
@@ -230,8 +230,11 @@ describe("guardián de web/ sobre el código real", () => {
     expect(sobreElCodigo(violacionesDeAliasSrc)).toEqual([]);
   });
 
-  test("W4: el estado de web/src/state no importa react ni toca el navegador", () => {
-    expect(listarCodigoWeb().filter((ruta) => ruta.startsWith(CARPETA_DE_ESTADO)).length).toBeGreaterThan(0);
+  test("W4: el estado de features/*/estado y el núcleo del almacén no importan react ni tocan el navegador", () => {
+    const estadoPuro = listarCodigoWeb().filter(esEstadoPuro);
+    expect(estadoPuro).toContain("web/src/features/chat/estado/conversacion.ts");
+    expect(estadoPuro).toContain("web/src/features/encabezado/estado/salud.ts");
+    expect(estadoPuro).toContain("web/src/store/raiz.ts");
     expect(sobreElCodigo(violacionesDeEstado)).toEqual([]);
   });
 
@@ -333,13 +336,23 @@ describe("el guardián de web/ muerde sobre fuentes de muestra", () => {
       "const respuesta = await fetch(ruta);",
       "const estado = { sesionId: null };",
     ].join("\n");
-    expect(violacionesDeEstado("web/src/state/x.ts", codigo)).toEqual([
-      "web/src/state/x.ts: el estado no importa react",
-      "web/src/state/x.ts:2: el estado toca el navegador",
-      "web/src/state/x.ts:3: el estado toca el navegador",
-      "web/src/state/x.ts:4: el estado toca el navegador",
+    expect(violacionesDeEstado("web/src/features/chat/estado/x.ts", codigo)).toEqual([
+      "web/src/features/chat/estado/x.ts: el estado no importa react",
+      "web/src/features/chat/estado/x.ts:2: el estado toca el navegador",
+      "web/src/features/chat/estado/x.ts:3: el estado toca el navegador",
+      "web/src/features/chat/estado/x.ts:4: el estado toca el navegador",
     ]);
     expect(violacionesDeEstado("web/src/api/x.ts", codigo)).toEqual([]);
+    expect(violacionesDeEstado("web/src/features/chat/compositor/usar-compositor.ts", codigo)).toEqual([]);
+  });
+
+  test("W4: acepta un estado de feature que solo importa la config y los tipos del front", () => {
+    const codigo = [
+      'import { ACCION_UI } from "@web/config/constants/ui.constants.ts";',
+      'import type { AccionUi } from "@web/types/chat.type.ts";',
+      "export const esEnviar = (accion: AccionUi) => accion.tipo === ACCION_UI.ENVIAR;",
+    ].join("\n");
+    expect(violacionesDeEstado("web/src/features/chat/estado/x.ts", codigo)).toEqual([]);
   });
 
   test("W4: el núcleo puro del almacén tampoco importa react ni toca el navegador", () => {
@@ -480,6 +493,18 @@ describe("el guardián de web/ muerde sobre fuentes de muestra", () => {
       "web/src/store/proveedor-almacen.tsx",
       "web/src/store/otra-vista.tsx",
       "web/src/store/Raiz.ts",
+      "web/src/features/chat/estado/conversacion.ts",
+      "web/src/features/sesion/estado/dialogo-sesion.ts",
+      "web/src/features/chat/compositor/compositor.tsx",
+      "web/src/features/chat/compositor/usar-compositor.ts",
+      "web/src/features/chat/compositor/compositor.module.css",
+      "web/src/compartido/aviso/aviso.tsx",
+      "web/src/compartido/aviso/aviso.module.css",
+      "web/src/features/chat/x.tsx",
+      "web/src/features/chat/a/b.tsx",
+      "web/src/features/chat/compositor/usar-otro.ts",
+      "web/src/features/chat/estado/vista.tsx",
+      "web/src/compartido/aviso.tsx",
     ];
     expect(rutas.flatMap(violacionesDeUbicacion)).toEqual([
       "web/src/aviso.tsx: no está en una carpeta de rol de web/src con su sufijo",
@@ -487,8 +512,14 @@ describe("el guardián de web/ muerde sobre fuentes de muestra", () => {
       "web/src/components/aviso.css: no está en una carpeta de rol de web/src con su sufijo",
       "web/src/types/chat.ts: no está en una carpeta de rol de web/src con su sufijo",
       "web/src/config/ui.ts: no está en una carpeta de rol de web/src con su sufijo",
+      "web/src/state/conversacion.ts: no está en una carpeta de rol de web/src con su sufijo",
       "web/src/store/otra-vista.tsx: no está en una carpeta de rol de web/src con su sufijo",
       "web/src/store/Raiz.ts: no está en una carpeta de rol de web/src con su sufijo",
+      "web/src/features/chat/x.tsx: no está en una carpeta de rol de web/src con su sufijo",
+      "web/src/features/chat/a/b.tsx: no está en una carpeta de rol de web/src con su sufijo",
+      "web/src/features/chat/compositor/usar-otro.ts: no está en una carpeta de rol de web/src con su sufijo",
+      "web/src/features/chat/estado/vista.tsx: no está en una carpeta de rol de web/src con su sufijo",
+      "web/src/compartido/aviso.tsx: no está en una carpeta de rol de web/src con su sufijo",
     ]);
   });
 });
