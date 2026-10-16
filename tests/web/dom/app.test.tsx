@@ -13,7 +13,7 @@ import {
 } from "@tests/helpers/red-web.helper.ts";
 import type { GuionChat } from "@tests/helpers/types/red-web.type.ts";
 import { PAIS } from "@web/config/constants/pais.constants.ts";
-import { CLAVE_SESION_LOCAL, EVENTO_VISIBILIDAD } from "@web/config/constants/ui.constants.ts";
+import { CLASE_GLOBAL, CLAVE_SESION_LOCAL, EVENTO_VISIBILIDAD } from "@web/config/constants/ui.constants.ts";
 import {
   TEXTO_ACCIONES,
   TEXTO_APP,
@@ -407,6 +407,15 @@ describe("App en escritorio, con la red simulada en fetch", () => {
     expect(await pantalla.findByRole("heading", { name: TEXTO_CHAT.vacioTitulo })).toBeDefined();
     expect(pantalla.queryByText(RESPUESTA)).toBeNull();
     expect(red.pedidosA(RUTA_API.CHAT, METODO_POST)).toHaveLength(1);
+  });
+
+  test("Nueva sesión muestra su texto en escritorio", async () => {
+    const red = crearRedWeb({ nativos: dom.nativos });
+    const { pantalla } = await montarApp(dom, red);
+    const abrir = await pantalla.findByRole("button", { name: TEXTO_NUEVA_SESION.abrir });
+    const texto = dom.dentroDe(abrir).getByText(TEXTO_NUEVA_SESION.abrir);
+    expect(texto).not.toBe(abrir);
+    expect(texto.classList.contains(CLASE_GLOBAL.OCULTO)).toBe(false);
   });
 
   test("el aviso del modelo sin clave pausa los chips y Comprobar de nuevo vuelve a pedir la salud", async () => {

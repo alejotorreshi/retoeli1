@@ -10,10 +10,11 @@ import {
 } from "@tests/helpers/red-web.helper.ts";
 import type { GuionChat } from "@tests/helpers/types/red-web.type.ts";
 import { PAIS } from "@web/config/constants/pais.constants.ts";
-import { ORDEN_PESTANAS } from "@web/config/constants/ui.constants.ts";
+import { CLASE_GLOBAL, ORDEN_PESTANAS } from "@web/config/constants/ui.constants.ts";
 import {
   TEXTO_ACCIONES,
   TEXTO_ESTADO_VACIO,
+  TEXTO_NUEVA_SESION,
   TEXTO_PAIS,
   TEXTO_PESTANAS,
   TEXTO_TARJETA_CASO,
@@ -122,5 +123,25 @@ describe("App en un teléfono de 375 px", () => {
       { sessionId: null, message: TEXTO_ACCIONES.mensajeDemo },
       { sessionId: SESION, message: TEXTO_ACCIONES.mensajeDemo },
     ]);
+  });
+
+  test("Nueva sesión va solo con ícono, conserva su nombre accesible y abre el diálogo de confirmación", async () => {
+    const red = crearRedWeb({ nativos: dom.nativos, guiones: [turnoConRespuesta] });
+    const { pantalla, usuario } = await montarApp(dom, red);
+    const demo = await pantalla.findByRole("button", { name: TEXTO_ACCIONES.demo });
+    await dom.esperar(() => expect(habilitado(demo)).toBe(true));
+    await usuario.click(demo);
+    expect(await pantalla.findByText(RESPUESTA)).toBeDefined();
+
+    const abrir = pantalla.getByRole("button", { name: TEXTO_NUEVA_SESION.abrir });
+    await dom.esperar(() => expect(habilitado(abrir)).toBe(true));
+    const icono = abrir.querySelector("svg");
+    expect(icono?.getAttribute("aria-hidden")).toBe("true");
+    const texto = dom.dentroDe(abrir).getByText(TEXTO_NUEVA_SESION.abrir);
+    expect(texto).not.toBe(abrir);
+    expect(texto.classList.contains(CLASE_GLOBAL.OCULTO)).toBe(true);
+
+    await usuario.click(abrir);
+    expect(await pantalla.findByRole("dialog", { name: TEXTO_NUEVA_SESION.titulo })).toBeDefined();
   });
 });
