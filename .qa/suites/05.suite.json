@@ -376,7 +376,7 @@
   ],
   "last_run": {
     "evidence": ".qa/evidence/05-front-web-por-features-e-identidad-de-marca/05-QA-EVIDENCE-2026-10-16T22-05-00Z.md",
-    "at": "2026-10-16T22:45:00Z",
+    "at": "2026-10-16T22:40:00Z",
     "pass": 17,
     "issues": 2,
     "failed": [
@@ -389,8 +389,8 @@
     "scripts": ".qa/evidence/05-front-web-por-features-e-identidad-de-marca/seeds/playwright-ab (T01a/T09a/402 templates: set BASE to 3124 before or 3123 after) and seeds/playwright-c (measurement helpers for T02/T11/T12; lib.head + body + lib.tail are concatenated into one browser_run_code_unsafe snippet)"
   },
   "last_rerun": {
-    "evidence": ".qa/evidence/05-front-web-por-features-e-identidad-de-marca/05-QA-EVIDENCE-2026-10-17T00-05-00Z.md",
-    "at": "2026-10-17T00:40:00Z",
+    "evidence": ".qa/evidence/05-front-web-por-features-e-identidad-de-marca/05-QA-EVIDENCE-2026-10-16T23-31-00Z.md",
+    "at": "2026-10-16T23:45:00Z",
     "scope": "failed {T01a,T02} ∪ codegraph affected by 3b51af9..HEAD: T06,T07,T09a,T11,T12",
     "tests": [
       "T01a-r",

@@ -16,7 +16,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 2: Agente y compuerta de confirmación** - Adaptador DeepSeek con resiliencia, ciclo propio con topes, sesiones y compuerta de confirmación decidida por el servidor (completed 2026-10-14)
 - [x] **Phase 3: Chat web, API SSE y despliegue** - API Hono con SSE y código de acceso, chat React con tool calls visibles y link público activo en Render (completed 2026-10-15)
 - [x] **Phase 4: Módulo, documentación y defensa** - Bonus `modulo/` como fuente única, README, SOLUCION.md, CI y pre-flight de la defensa (completed 2026-10-16)
-- [ ] **Phase 5: Front web por features e identidad de marca** - Refactor del front por features y componentes, store propio, cero hardcode, guardianes e identidad de marca
+- [x] **Phase 5: Front web por features e identidad de marca** - Refactor del front por features y componentes, store propio, cero hardcode, guardianes e identidad de marca (completed 2026-10-16)
 
 ## Phase Details
 
@@ -334,7 +334,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 | 2. Agente y compuerta de confirmación | 24/24 | Complete    | 2026-10-14 |
 | 3. Chat web, API SSE y despliegue | 47/47 | Complete    | 2026-10-15 |
 | 4. Módulo, documentación y defensa | 8/8 | Complete    | 2026-10-16 |
-| 5. Front web por features e identidad de marca | 9/9 | In Progress | - |
+| 5. Front web por features e identidad de marca | 11/11 | Complete    | 2026-10-16 |
 
 ### Phase 5: Front web por features e identidad de marca
 
@@ -348,7 +348,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
   5. La regresión completa (`bun run check`, `bun test`, `demo.ts`, `build:web`), la CI y el ensayo del §11 con Playwright sobre el link público pasan sin cambios de conducta.
 
 **Depends on:** Phase 4
-**Plans:** 9/11 plans executed
+**Plans:** 11/11 plans complete
 
 Plans:
 **Wave 1**
@@ -377,7 +377,7 @@ Plans:
 - [x] 05-09-PLAN.md — Estado vacío con las tarjetas de los casos (D-111 a D-114), textos sin el símbolo de sección (D-118, W19) y compuerta final de regresión para eli-qa
 
 **Cierre de brechas de la UAT, Wave 1** *(gap closure)*
-- [ ] 05-10-PLAN.md — El estado vacío abre arriba: el seguimiento al final no actúa sin turnos y se reinicia al volver al estado vacío (Nueva sesión, recarga), con prueba pura y DOM con alturas simuladas (brecha 1 del UAT)
+- [x] 05-10-PLAN.md — El estado vacío abre arriba: el seguimiento al final no actúa sin turnos y se reinicia al volver al estado vacío (Nueva sesión, recarga), con prueba pura y DOM con alturas simuladas (brecha 1 del UAT)
 
 **Cierre de brechas de la UAT, Wave 2** *(blocked on 05-10: comparten web/src/types/ui.type.ts)*
-- [ ] 05-11-PLAN.md — Encabezado angosto: UI-SPEC enmendada contra 288 y 343 px, logo de 20 px con huecos de 8 junto al divisor, fecha que no encoge y "Nueva sesión" solo con ícono en angosto (brecha 2 del UAT)
+- [x] 05-11-PLAN.md — Encabezado angosto: UI-SPEC enmendada contra 288 y 343 px, logo de 20 px con huecos de 8 junto al divisor, fecha que no encoge y "Nueva sesión" solo con ícono en angosto (brecha 2 del UAT)

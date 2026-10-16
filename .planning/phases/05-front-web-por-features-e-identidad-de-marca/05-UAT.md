@@ -3,7 +3,7 @@ status: complete
 phase: 05-front-web-por-features-e-identidad-de-marca
 source: [05-VERIFICATION.md, 05-REVIEW-FIX.md]
 started: 2026-10-16T20:48:18Z
-updated: 2026-10-17T00:40:00Z
+updated: 2026-10-16T23:45:00Z
 ---
 
 ## Current Test
@@ -15,7 +15,7 @@ updated: 2026-10-17T00:40:00Z
 ### 1. Subir los 108 commits de la fase 5 a origin/main, esperar la CI y el autodeploy de Render, y correr con Playwright MCP (eli-qa) el ensayo del pedido de la sección 11 del PRD sobre el link público, más todos los flujos de D-116 (acceso, estado vacío y tarjetas, turno con herramientas, confirmación, panel de casos, archivos y vista previa, nueva sesión, errores y avisos, layouts ancho y angosto), en local y en el link público, comparando la conducta antes y después del refactor
 expected: La CI pasa en verde; el ensayo de la sección 11 da el mismo resultado que en la Fase 3 y 4 (ec-corp-andina BLOQUEADO 13/1/1, sin envío sin confirmación); ningún flujo cambia de conducta
 result: pass
-retest: "re-run tras el cierre de brechas (05-10, 05-11): T01a-r pass, .qa/evidence/05-front-web-por-features-e-identidad-de-marca/05-QA-EVIDENCE-2026-10-17T00-05-00Z.md"
+retest: "re-run tras el cierre de brechas (05-10, 05-11): T01a-r pass, .qa/evidence/05-front-web-por-features-e-identidad-de-marca/05-QA-EVIDENCE-2026-10-16T23-31-00Z.md"
 previous_result: issue
 reported: "El ensayo de la sección 11 en el link público da 13/1/1 BLOQUEADO sin envío sin confirmación y la CI está en verde (confirmado por la usuaria), y los flujos de D-116 hacen las mismas 23 llamadas antes y después; pero el estado vacío con las tarjetas nuevas abre desplazado al fondo a 1280x720 y 375x667, con '¿Qué caso procesamos?' (y a 375 las tarjetas CO y EC) fuera de la vista; antes del refactor cabía sin scroll"
 severity: major
@@ -24,7 +24,7 @@ evidence: .qa/evidence/05-front-web-por-features-e-identidad-de-marca/05-QA-EVID
 ### 2. Encabezado angosto con logo a 375 x 667 y 320 x 568
 expected: La línea 1 (logo de 24 px, divisor neón, título Outfit 16) cabe en una sola línea sin tapar el logo; la línea 2 sigue en una fila con elipsis
 result: pass
-retest: "re-run tras el cierre de brechas (05-10, 05-11): T02-r pass, .qa/evidence/05-front-web-por-features-e-identidad-de-marca/05-QA-EVIDENCE-2026-10-17T00-05-00Z.md"
+retest: "re-run tras el cierre de brechas (05-10, 05-11): T02-r pass, .qa/evidence/05-front-web-por-features-e-identidad-de-marca/05-QA-EVIDENCE-2026-10-16T23-31-00Z.md"
 previous_result: issue
 reported: "A 320x568 el título 'Registro como proveedor' se parte en dos líneas (38,4 px, el encabezado crece a 102 px), contra 05-UI-SPEC.md:509; además a 375 y 320 la fecha y el estado del modelo se truncan ('2026-09-…', 'Disponi…')"
 severity: minor
