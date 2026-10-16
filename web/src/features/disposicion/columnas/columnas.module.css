@@ -1,0 +1,36 @@
+.app,
+.vistaChat,
+.chat {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+}
+
+.columnas {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+
+.vistaCasos {
+  display: flex;
+  flex: none;
+  width: var(--ancho-panel);
+  min-height: 0;
+  border-inline-start: var(--borde-ancho) solid var(--borde);
+}
+
+.vistaChat[hidden],
+.vistaCasos[hidden] {
+  display: none;
+}
+
+:global([data-diseno="medio"]) .vistaCasos,
+:global([data-diseno="angosto"]) .vistaCasos {
+  flex: 1;
+  width: auto;
+  min-width: 0;
+  border-inline-start: 0;
+}

@@ -541,9 +541,9 @@ describe("guardián de web/ sobre el código real", () => {
   });
 
   test("W20: createContext, useContext, useReducer y useSyncExternalStore viven en web/src/store", () => {
-    expect(
-      violacionesDePrimitivasDelAlmacen("web/src/hooks/usar-diseno.ts", leer("web/src/hooks/usar-diseno.ts")),
-    ).toEqual([]);
+    const columnas = "web/src/features/disposicion/columnas/usar-columnas.ts";
+    expect(nombresImportadosDeReact(leer(columnas))).toContain("useSyncExternalStore");
+    expect(violacionesDePrimitivasDelAlmacen(columnas, leer(columnas))).toEqual([]);
     expect(sobreElCodigo(violacionesDePrimitivasDelAlmacen)).toEqual([]);
   });
 });

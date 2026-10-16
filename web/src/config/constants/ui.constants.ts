@@ -113,14 +113,6 @@ export const ICONO_SVG = {
 } as const;
 
 export const CLASE_GLOBAL = {
-  APP: "app",
-  COLUMNAS: "columnas",
-  VISTA_CHAT: "vista-chat",
-  CHAT: "chat",
-  VISTA_CASOS: "vista-casos",
-  PESTANAS: "pestanas",
-  PESTANA: "pestana",
-  PUNTO_CAMBIOS: "punto-cambios",
   GIRAR: "girar",
   OCULTO: "sr-only",
   TRANSICION: "transicion",

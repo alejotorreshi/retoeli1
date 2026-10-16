@@ -3,7 +3,7 @@ import { ORDEN_PESTANAS, PESTANA, TECLA_PESTANA } from "@web/config/constants/ui
 import { pestanaPorTecla } from "@web/features/disposicion/estado/pestanas.ts";
 
 const PRIMERA = ORDEN_PESTANAS[0];
-const ULTIMA = ORDEN_PESTANAS[ORDEN_PESTANAS.length - 1];
+const ULTIMA = ORDEN_PESTANAS[ORDEN_PESTANAS.length - 1] ?? null;
 
 describe("pestanaPorTecla", () => {
   test("la flecha derecha pasa a la siguiente pestaña y da la vuelta al final", () => {

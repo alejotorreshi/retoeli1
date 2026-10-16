@@ -1,0 +1,42 @@
+.pestanas {
+  display: flex;
+  flex: none;
+  align-items: flex-end;
+  gap: var(--espacio-xs);
+  height: var(--alto-pestanas);
+  padding-inline: var(--espacio-md);
+  background: var(--secundario);
+  border-block-end: var(--borde-ancho) solid var(--borde);
+}
+
+.pestana {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espacio-sm);
+  height: var(--alto-pestanas);
+  margin-block-end: calc(-1 * var(--borde-ancho));
+  padding-inline: var(--espacio-md);
+  font-size: var(--etiqueta-tamano);
+  line-height: var(--etiqueta-interlinea);
+  color: var(--texto-tenue);
+  background: transparent;
+  border: var(--borde-ancho) solid transparent;
+  border-radius: var(--radio-chico) var(--radio-chico) 0 0;
+  cursor: pointer;
+}
+
+.pestana[aria-selected="true"] {
+  font-weight: var(--etiqueta-peso-fuerte);
+  color: var(--texto);
+  background: var(--dominante);
+  border-color: var(--borde);
+  border-block-end-color: var(--dominante);
+}
+
+.puntoCambios {
+  flex: none;
+  width: var(--punto-estado);
+  height: var(--punto-estado);
+  background: var(--acento);
+  border-radius: 50%;
+}

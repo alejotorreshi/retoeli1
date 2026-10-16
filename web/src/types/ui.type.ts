@@ -13,6 +13,7 @@ import type {
   AvisoDeSesion,
   ContadorDeCaso,
   ErrorVisible,
+  EstadoAcceso,
   EstadoCampoUi,
   EstadoEtapa,
   EstadoFilaVistaPrevia,
@@ -31,7 +32,15 @@ import type {
   VistaPreviaUi,
 } from "@web/types/chat.type.ts";
 import type { InstanciaAlmacen } from "@web/types/store.type.ts";
-import type { FormEvent, KeyboardEvent, MouseEvent, ReactNode, RefObject, SyntheticEvent } from "react";
+import type {
+  FormEvent,
+  HTMLAttributes,
+  KeyboardEvent,
+  MouseEvent,
+  ReactNode,
+  RefObject,
+  SyntheticEvent,
+} from "react";
 import type { ESTADO_LLM } from "@/config/constants/llm.constants.ts";
 import type { ValorDe } from "@/config/types/valor-de.type.ts";
 
@@ -376,9 +385,37 @@ export type IdsDePestanas = {
   readonly vista: (pestana: Pestana) => string;
 };
 
-export type PropsBarraDePestanas = {
+export type PropsBarraPestanas = {
   readonly control: ControlPestanas;
   readonly ids: IdsDePestanas;
+};
+
+export type PestanaEnBarra = {
+  readonly pestana: Pestana;
+  readonly id: string;
+  readonly idVista: string;
+  readonly elegida: boolean;
+  readonly conPunto: boolean;
+  readonly registrar: (boton: HTMLButtonElement | null) => void;
+  readonly alElegir: () => void;
+};
+
+export type ControlBarraPestanas = {
+  readonly pestanas: readonly PestanaEnBarra[];
+  readonly alTeclear: (evento: KeyboardEvent<HTMLDivElement>) => void;
+};
+
+export type ControlColumnas = {
+  readonly acceso: EstadoAcceso;
+  readonly diseno: Diseno;
+  readonly angosto: boolean;
+  readonly conPestanas: boolean;
+  readonly conHistorial: boolean;
+  readonly pestanas: ControlPestanas;
+  readonly ids: IdsDePestanas;
+  readonly vistaChat: HTMLAttributes<HTMLDivElement>;
+  readonly vistaCasos: HTMLAttributes<HTMLDivElement>;
+  readonly alEntrar: () => Promise<void>;
 };
 
 export type VistaPreviaAbierta = {
