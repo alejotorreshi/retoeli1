@@ -9,15 +9,19 @@ import {
   eventoTexto,
 } from "@tests/helpers/red-web.helper.ts";
 import type { RespuestaFalsa } from "@tests/helpers/types/red-web.type.ts";
+import { ESTADO_ETAPA, ETAPA, ORDEN_ETAPAS } from "@web/config/constants/ui.constants.ts";
 import {
   TEXTO_ACCESO,
   TEXTO_ACCIONES,
   TEXTO_ARCHIVOS,
+  TEXTO_DISCO,
   TEXTO_PANEL,
+  TEXTO_PROGRESO,
   TEXTO_VISTA_PREVIA,
 } from "@web/config/strings.ts";
 import { ARCHIVOS_SALIDA, TIPO_ARCHIVO_CASO, TIPO_VISTA_PREVIA } from "@/config/constants/files.constants.ts";
 import {
+  METODO_POST,
   PARAMETRO_ARCHIVO,
   PARAMETRO_CASO,
   RESPUESTA_HTTP,
@@ -140,5 +144,57 @@ describe("App en escritorio: panel de casos y archivos", () => {
 
     expect(await pantalla.findByRole("heading", { name: TEXTO_ACCESO.titulo })).toBeDefined();
     expect(await pantalla.findByText(MENSAJE_HTTP.accesoVencido)).toBeDefined();
+  });
+
+  test("un caso hecho sin sus archivos en disco muestra el aviso de reinicio y su chip lo vuelve a procesar", async () => {
+    const red = crearRedWeb({
+      nativos: dom.nativos,
+      guiones: [
+        {
+          eventos: [
+            eventoInicio(SESION),
+            ...eventosDeHerramienta(NOMBRE_VISIBLE[HERRAMIENTA.GENERAR_FORMULARIO], CASO, null),
+            ...eventosDeHerramienta(NOMBRE_VISIBLE[HERRAMIENTA.ARMAR_PAQUETE], CASO, RESULTADO_PAQUETE),
+            eventoTexto(RESPUESTA),
+            eventoFin(),
+          ],
+        },
+        { eventos: [eventoInicio(SESION)], retenidos: [eventoTexto(RESPUESTA), eventoFin()] },
+      ],
+      rutas: { [RUTA_ARCHIVOS]: { estado: RESPUESTA_HTTP.OK, cuerpo: { archivos: [] } } },
+    });
+    const { pantalla, usuario } = await montarApp(dom, red);
+    const listar = await pantalla.findByRole("button", { name: TEXTO_ACCIONES.listar });
+    await dom.esperar(() => expect(listar.hasAttribute("disabled")).toBe(false));
+    await usuario.click(listar);
+    await pantalla.findByText(RESPUESTA);
+
+    const etapas = pantalla.getByRole("list", { name: TEXTO_PROGRESO.lista(CASO) });
+    const hechas: ReadonlySet<string> = new Set([ETAPA.GENERADO, ETAPA.PAQUETE]);
+    expect(
+      dom
+        .dentroDe(etapas)
+        .getAllByRole("listitem")
+        .map((etapa) => etapa.getAttribute("aria-label")),
+    ).toEqual(
+      ORDEN_ETAPAS.map((etapa) =>
+        TEXTO_PROGRESO.aria(etapa, hechas.has(etapa) ? ESTADO_ETAPA.HECHA : ESTADO_ETAPA.PENDIENTE),
+      ),
+    );
+    expect(await pantalla.findByText(TEXTO_DISCO.aviso)).toBeDefined();
+    const chip = pantalla.getByRole("button", { name: TEXTO_DISCO.chip(CASO) });
+
+    await usuario.click(chip);
+
+    await dom.esperar(() => expect(chip.hasAttribute("disabled")).toBe(true));
+    const reprocesos = red
+      .pedidosA(RUTA_API.CHAT, METODO_POST)
+      .filter((pedido) => JSON.stringify(pedido.cuerpo).includes(TEXTO_DISCO.mensaje(CASO)));
+    expect(reprocesos.map((pedido) => pedido.cuerpo)).toEqual([
+      { sessionId: SESION, message: TEXTO_DISCO.mensaje(CASO) },
+    ]);
+
+    red.soltar();
+    await dom.esperar(() => expect(pantalla.getAllByText(RESPUESTA)).toHaveLength(2));
   });
 });
