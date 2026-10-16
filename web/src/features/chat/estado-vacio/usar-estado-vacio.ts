@@ -1,5 +1,5 @@
 import { ID_CAMPO_MENSAJE } from "@web/config/constants/ui.constants.ts";
-import { seleccionarCasos, seleccionarConfigCargada } from "@web/store/selectores.ts";
+import { seleccionarCasos, seleccionarFaltaConfig } from "@web/store/selectores.ts";
 import { useSeleccion } from "@web/store/usar-almacen.ts";
 import type { ControlEstadoVacio } from "@web/types/ui.type.ts";
 import { useId, useLayoutEffect, useRef } from "react";
@@ -11,7 +11,7 @@ function pasarElFocoAlCompositor(contenedor: HTMLDivElement | null): void {
 
 export function useEstadoVacio(): ControlEstadoVacio {
   const casos = useSeleccion(seleccionarCasos);
-  const configCargada = useSeleccion(seleccionarConfigCargada);
+  const faltaConfig = useSeleccion(seleccionarFaltaConfig);
   const idCasos = useId();
   const idAcciones = useId();
   const contenedor = useRef<HTMLDivElement>(null);
@@ -26,7 +26,7 @@ export function useEstadoVacio(): ControlEstadoVacio {
     idCasos,
     idAcciones,
     casos,
-    mostrarCasos: !configCargada || casos.length > 0,
-    cargandoCasos: !configCargada,
+    mostrarCasos: faltaConfig || casos.length > 0,
+    casosNoDisponibles: faltaConfig,
   };
 }

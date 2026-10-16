@@ -392,7 +392,7 @@ Hover solo con `@media (hover: hover)`, para que en pantallas táctiles no quede
 - Contenido en orden: título, cuerpo, sección "Casos disponibles" con la grilla de `TarjetaCaso`, sección "Acciones rápidas" con los 3 chips de `AccionesRapidas` en sus etiquetas completas.
 - Cada sección es un `<section aria-labelledby>` con su rótulo visible (`<h3>` en Label 14/600, `--texto-tenue`). El grupo de chips conserva `role="group"` con `aria-label` "Acciones rápidas".
 - La grilla es una lista (`<ul>` con un `<li>` por caso) para que el lector de pantalla anuncie "lista, 4 elementos".
-- Casos todavía sin cargar (`/api/config` no respondió): en lugar de la grilla, una línea "Cargando los casos…" en Label 14/400, `--texto-tenue`. No hay esqueletos animados. Sigue el reintento de config de la Fase 3 (`REINTENTO_CONFIG_MS`).
+- Casos sin cargar (`/api/config` falló; el estado vacío solo se pinta con el acceso concedido, que llega con la primera respuesta de config, así que una config nula siempre es un fallo): en lugar de la grilla, una línea con `role="status"` "No se pudieron cargar los casos. Se vuelve a intentar en unos segundos; mientras tanto puedes escribir la instrucción." en Label 14/400, `--texto-tenue`. No hay esqueletos animados. Sigue el reintento de config de la Fase 3 (`REINTENTO_CONFIG_MS`), y la grilla reemplaza la línea cuando responde (revisión WR-03).
 - Config cargada con `casos` vacío: la sección "Casos disponibles" no se pinta y quedan el título, el cuerpo y los chips.
 - Si al enviar desde una tarjeta o un chip del estado vacío este se desmonta con el foco dentro, el foco pasa al `textarea` del compositor, para que el teclado no quede en `body`.
 
@@ -445,7 +445,7 @@ Todo en español y en `web/src/config/strings.ts` (o en `src/config/strings.ts` 
 | Empty state body | "Elige un caso para procesarlo o escribe una instrucción, por ejemplo \"procesa el caso {CASO_DEMO_PRD}\". El agente lee la solicitud, mapea cada campo contra el maestro, genera el formulario y arma el paquete para firma. No registra ningún envío sin tu confirmación." (el ejemplo se deriva de `CASO_DEMO_PRD`; hoy muestra "ec-corp-andina") |
 | Rótulo de las tarjetas | "Casos disponibles" |
 | Rótulo de los chips | "Acciones rápidas" (el mismo texto de `TEXTO_ACCIONES.grupo`, ahora también visible) |
-| Casos cargando | "Cargando los casos…" |
+| Casos no disponibles (config que falla) | "No se pudieron cargar los casos. Se vuelve a intentar en unos segundos; mientras tanto puedes escribir la instrucción." |
 | Nombres de país | co "Colombia" · ec "Ecuador" · pe "Perú" · pa "Panamá" · hn "Honduras" |
 | Línea de país y slug (angosto) | "{país} · {slug}" (separador `TEXTO_APP.separador`) |
 | Chip de la demo | "Demo del PRD: {CASO_DEMO_PRD}" · etiqueta corta "Demo del PRD" (reemplaza la etiqueta anterior con el símbolo de sección) |
@@ -498,8 +498,8 @@ Applicable state considerations resolved: 14 covered, 7 backstop, 1 dismissed, 0
 | Category | Element(s) | Status | Resolution / Reason |
 |----------|------------|--------|---------------------|
 | empty | EstadoVacio (config con `casos` vacío) | ✅ covered | Sin casos, la sección "Casos disponibles" no se pinta y quedan el título, el cuerpo y los 3 chips |
-| loading | EstadoVacio (config sin cargar) | ✅ covered | Mientras `/api/config` no responde, la grilla se reemplaza por la línea "Cargando los casos…", sin esqueletos animados; el reintento de config sigue igual |
-| error | EstadoVacio (config que falla) | ✅ covered | Un fallo de config deja "Cargando los casos…" mientras corre el reintento de la Fase 3; los chips y el compositor siguen usables |
+| loading | EstadoVacio (config sin cargar) | ➖ dismissed | No aplica: mientras `/api/config` no responde por primera vez el acceso está en verificación y se ve `PantallaCarga`, no el estado vacío |
+| error | EstadoVacio (config que falla) | ✅ covered | Un fallo de config reemplaza la grilla por la línea `role="status"` de casos no disponibles mientras corre el reintento de la Fase 3; los chips y el compositor siguen usables (revisión WR-03) |
 | populated | Grilla de TarjetaCaso | ✅ covered | Con los 4 casos de los fixtures se ven 4 tarjetas en 2 × 2 en ancho y medio, y 4 filas en angosto, cada una con píldora, país, cliente humanizado y slug, en el orden de `/api/config` |
 | zero-one-many | Grilla de TarjetaCaso | ✅ covered | 0 casos ocultan la sección; 1 caso ocupa una columna sin estirarse; con número impar la última fila queda con una tarjeta alineada al inicio; más de 4 casos siguen el mismo flujo de grilla |
 | partial | TarjetaCaso (prefijo desconocido o slug sin guion) | ✅ covered | La tarjeta muestra solo el slug como título y "Procesar caso", sin píldora ni país, con nombre accesible "Procesar caso {slug}" |

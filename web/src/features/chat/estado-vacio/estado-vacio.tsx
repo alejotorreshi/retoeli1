@@ -5,7 +5,7 @@ import { useEstadoVacio } from "@web/features/chat/estado-vacio/usar-estado-vaci
 import { TarjetaCaso } from "@web/features/chat/tarjeta-caso/tarjeta-caso.tsx";
 
 export function EstadoVacio() {
-  const { contenedor, idCasos, idAcciones, casos, mostrarCasos, cargandoCasos } = useEstadoVacio();
+  const { contenedor, idCasos, idAcciones, casos, mostrarCasos, casosNoDisponibles } = useEstadoVacio();
   return (
     <div ref={contenedor} className={estilos.vacio}>
       <h2 className={estilos.titulo}>{TEXTO_CHAT.vacioTitulo}</h2>
@@ -15,8 +15,10 @@ export function EstadoVacio() {
           <h3 id={idCasos} className={estilos.rotulo}>
             {TEXTO_ESTADO_VACIO.casos}
           </h3>
-          {cargandoCasos ? (
-            <p className={estilos.cargando}>{TEXTO_ESTADO_VACIO.cargandoCasos}</p>
+          {casosNoDisponibles ? (
+            <p role="status" className={estilos.noDisponibles}>
+              {TEXTO_ESTADO_VACIO.casosNoDisponibles}
+            </p>
           ) : (
             <ul className={estilos.grilla}>
               {casos.map((slug) => (

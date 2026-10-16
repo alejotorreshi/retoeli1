@@ -28,7 +28,7 @@
   color: var(--texto-tenue);
 }
 
-.cargando {
+.noDisponibles {
   margin: 0;
   font-size: var(--etiqueta-tamano);
   font-weight: var(--etiqueta-peso);

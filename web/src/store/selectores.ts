@@ -63,10 +63,6 @@ export function seleccionarFaltaConfig(estado: EstadoRaiz): boolean {
   return faltaConfig(estado.conversacion);
 }
 
-export function seleccionarConfigCargada(estado: EstadoRaiz): boolean {
-  return estado.conversacion.config !== null;
-}
-
 export function seleccionarCasos(estado: EstadoRaiz): readonly string[] {
   return estado.conversacion.config?.casos ?? SIN_CASOS;
 }

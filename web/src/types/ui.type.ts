@@ -521,5 +521,5 @@ export type ControlEstadoVacio = {
   readonly idAcciones: string;
   readonly casos: readonly string[];
   readonly mostrarCasos: boolean;
-  readonly cargandoCasos: boolean;
+  readonly casosNoDisponibles: boolean;
 };

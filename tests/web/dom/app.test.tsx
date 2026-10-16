@@ -216,7 +216,7 @@ describe("App en escritorio, con la red simulada en fetch", () => {
     const { pantalla } = await montarApp(dom, red);
     expect(await pantalla.findByRole("heading", { name: TEXTO_CHAT.vacioTitulo })).toBeDefined();
 
-    await dom.esperar(() => expect(pantalla.queryByText(TEXTO_ESTADO_VACIO.cargandoCasos)).toBeNull());
+    await dom.esperar(() => expect(pantalla.queryByText(TEXTO_ESTADO_VACIO.casosNoDisponibles)).toBeNull());
     expect(pantalla.queryByRole("heading", { name: TEXTO_ESTADO_VACIO.casos })).toBeNull();
     expect(pantalla.queryAllByRole("button", { name: esTarjetaDeCaso })).toEqual([]);
     expect(pantalla.getByText(TEXTO_CHAT.vacioCuerpo)).toBeDefined();
@@ -224,11 +224,12 @@ describe("App en escritorio, con la red simulada en fetch", () => {
     expect(pantalla.getByRole("button", { name: TEXTO_ACCIONES.listar })).toBeDefined();
   });
 
-  test("mientras /api/config no responde se lee Cargando los casos y la lista aparece cuando responde", async () => {
+  test("si /api/config falla se anuncia que los casos no están disponibles y la lista aparece cuando el reintento responde", async () => {
     const red = crearRedWeb({ nativos: dom.nativos, configDisponible: false });
     const { pantalla } = await montarApp(dom, red);
 
-    expect(await pantalla.findByText(TEXTO_ESTADO_VACIO.cargandoCasos)).toBeDefined();
+    const aviso = await pantalla.findByText(TEXTO_ESTADO_VACIO.casosNoDisponibles);
+    expect(pantalla.getAllByRole("status")).toContain(aviso);
     expect(pantalla.getByRole("heading", { level: 3, name: TEXTO_ESTADO_VACIO.casos })).toBeDefined();
     expect(pantalla.queryAllByRole("button", { name: esTarjetaDeCaso })).toEqual([]);
     const demo = pantalla.getByRole("button", { name: TEXTO_ACCIONES.demo });
@@ -241,7 +242,7 @@ describe("App en escritorio, con la red simulada en fetch", () => {
     });
 
     expect(await pantalla.findByRole("button", { name: TARJETA_DEMO })).toBeDefined();
-    expect(pantalla.queryByText(TEXTO_ESTADO_VACIO.cargandoCasos)).toBeNull();
+    expect(pantalla.queryByText(TEXTO_ESTADO_VACIO.casosNoDisponibles)).toBeNull();
     expect(pantalla.getAllByRole("button", { name: esTarjetaDeCaso })).toHaveLength(
       NOMBRES_DE_TARJETAS.length,
     );

@@ -302,7 +302,8 @@ export const TEXTO_ACCIONES = {
 export const TEXTO_ESTADO_VACIO = {
   casos: "Casos disponibles",
   acciones: ACCIONES_RAPIDAS,
-  cargandoCasos: "Cargando los casos…",
+  casosNoDisponibles:
+    "No se pudieron cargar los casos. Se vuelve a intentar en unos segundos; mientras tanto puedes escribir la instrucción.",
 } as const;
 
 export const TEXTO_PAIS = {
