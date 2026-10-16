@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test";
-import { MAX_CLAVES_LIMITADOR } from "@/config/constants/http.constants.ts";
+import { MAX_CLAVES_LIMITADOR, RESULTADO_RESERVA } from "@/config/constants/http.constants.ts";
 import { createRateLimiter } from "@/http/services/rate-limiter.service.ts";
-import type { ObservableRateLimiter } from "@/http/types/server.type.ts";
+import type { ObservableRateLimiter, Reservation } from "@/http/types/server.type.ts";
 
 const LIMITE = 5;
 const VENTANA_MS = 900_000;
@@ -300,38 +300,75 @@ describe("D-77.1: la clave nueva hereda los golpes de la libre desalojada", () =
   });
 });
 
+function reservar(limitador: ObservableRateLimiter, clave: string, veces: number): Reservation[] {
+  return Array.from({ length: veces }, () => limitador.reserve(clave));
+}
+
+function fallarConfirmado(limitador: ObservableRateLimiter, clave: string, veces: number): void {
+  for (let fallo = 0; fallo < veces; fallo += 1) {
+    expect(limitador.reserve(clave)).toBe(RESULTADO_RESERVA.RESERVADO);
+    limitador.confirmFailure(clave);
+  }
+}
+
 describe("D-77.2: reserva y devolución del intento", () => {
-  test("un golpe rechazado no cuenta: tres rechazos y una sola devolución dejan pasar el siguiente", () => {
+  test("sin fallos, L reservas en vuelo ocupan el cupo: la siguiente responde ocupado, no bloqueado, y una devolución abre lugar", () => {
     const { limitador } = crearBanco();
-    golpear(limitador, CLAVE, LIMITE);
-    expect(golpear(limitador, CLAVE, 3)).toEqual([false, false, false]);
-    limitador.release(CLAVE);
+    expect(reservar(limitador, CLAVE, LIMITE)).toEqual(Array(LIMITE).fill(RESULTADO_RESERVA.RESERVADO));
+    expect(reservar(limitador, CLAVE, 3)).toEqual(Array(3).fill(RESULTADO_RESERVA.OCUPADO));
     expect(limitador.isLocked(CLAVE)).toBe(false);
-    expect(limitador.hit(CLAVE)).toBe(true);
-    expect(limitador.isLocked(CLAVE)).toBe(true);
+    expect(limitador.retryAfterMs(CLAVE)).toBe(0);
+    limitador.release(CLAVE);
+    expect(limitador.reserve(CLAVE)).toBe(RESULTADO_RESERVA.RESERVADO);
+    expect(limitador.reserve(CLAVE)).toBe(RESULTADO_RESERVA.OCUPADO);
   });
 
-  test("con L − 1 fallos, la reserva bloquea la clave mientras dura la comparación y la devolución la libera", () => {
+  test("con L − 1 fallos, la reserva no bloquea la clave: la segunda responde ocupado y la devolución la libera", () => {
     const { limitador } = crearBanco();
-    golpear(limitador, CLAVE, LIMITE - 1);
-    expect(limitador.hit(CLAVE)).toBe(true);
-    expect(limitador.isLocked(CLAVE)).toBe(true);
-    expect(limitador.hit(CLAVE)).toBe(false);
+    fallarConfirmado(limitador, CLAVE, LIMITE - 1);
+    expect(limitador.reserve(CLAVE)).toBe(RESULTADO_RESERVA.RESERVADO);
+    expect(limitador.isLocked(CLAVE)).toBe(false);
+    expect(limitador.reserve(CLAVE)).toBe(RESULTADO_RESERVA.OCUPADO);
     limitador.release(CLAVE);
     expect(limitador.isLocked(CLAVE)).toBe(false);
     expect(limitador.retryAfterMs(CLAVE)).toBe(0);
+    expect(limitador.reserve(CLAVE)).toBe(RESULTADO_RESERVA.RESERVADO);
   });
 
-  test("release resta un golpe, saca la clave en cero y nunca baja de cero", () => {
+  test("confirmar el fallo pasa la reserva a golpe evaluado: con L fallos la clave queda bloqueada y la reserva responde bloqueado", () => {
     const { limitador } = crearBanco();
-    limitador.hit(CLAVE);
+    fallarConfirmado(limitador, CLAVE, LIMITE - 1);
+    expect(limitador.reserve(CLAVE)).toBe(RESULTADO_RESERVA.RESERVADO);
+    limitador.confirmFailure(CLAVE);
+    expect(limitador.isLocked(CLAVE)).toBe(true);
+    expect(limitador.retryAfterMs(CLAVE)).toBe(VENTANA_MS);
+    expect(limitador.reserve(CLAVE)).toBe(RESULTADO_RESERVA.BLOQUEADO);
+  });
+
+  test("las reservas y los fallos de una clave nunca superan L: la cota de intentos evaluados vale con reservas simultáneas", () => {
+    const { limitador } = crearBanco();
+    fallarConfirmado(limitador, CLAVE, 2);
+    const reservas = reservar(limitador, CLAVE, LIMITE * 2);
+    expect(reservas.filter((reserva) => reserva === RESULTADO_RESERVA.RESERVADO).length).toBe(LIMITE - 2);
+    for (let fallo = 0; fallo < LIMITE - 2; fallo += 1) limitador.confirmFailure(CLAVE);
+    expect(limitador.isLocked(CLAVE)).toBe(true);
+    expect(limitador.reserve(CLAVE)).toBe(RESULTADO_RESERVA.BLOQUEADO);
+  });
+
+  test("release devuelve una reserva, saca la clave en cero y sin reserva en vuelo no hace nada", () => {
+    const { limitador } = crearBanco();
+    limitador.reserve(CLAVE);
     expect(limitador.trackedKeys()).toBe(1);
     limitador.release(CLAVE);
     expect(limitador.trackedKeys()).toBe(0);
     limitador.release(CLAVE);
+    limitador.confirmFailure(CLAVE);
     expect(limitador.trackedKeys()).toBe(0);
-    expect(golpear(limitador, CLAVE, LIMITE)).toEqual(Array(LIMITE).fill(true));
-    expect(limitador.hit(CLAVE)).toBe(false);
+    fallarConfirmado(limitador, CLAVE, LIMITE - 1);
+    limitador.release(CLAVE);
+    limitador.confirmFailure(CLAVE);
+    expect(limitador.reserve(CLAVE)).toBe(RESULTADO_RESERVA.RESERVADO);
+    expect(limitador.reserve(CLAVE)).toBe(RESULTADO_RESERVA.OCUPADO);
   });
 
   test("release de una clave no rastreada no cambia la tabla ni los golpes de otra", () => {
@@ -349,10 +386,28 @@ describe("D-77.2: reserva y devolución del intento", () => {
     avanzar(1);
     limitador.hit(OTRA_CLAVE);
     avanzar(1);
-    expect(limitador.hit(TERCERA_CLAVE)).toBe(true);
+    expect(limitador.reserve(TERCERA_CLAVE)).toBe(RESULTADO_RESERVA.RESERVADO);
     limitador.release(TERCERA_CLAVE);
     expect(golpear(limitador, TERCERA_CLAVE, 2)).toEqual([true, true]);
     expect(limitador.hit(TERCERA_CLAVE)).toBe(false);
+  });
+
+  test("una clave con reservas en vuelo que se desaloja pasa sus reservas como golpes a la nueva, y su devolución tardía no resta nada", () => {
+    const { limitador, avanzar } = crearBanco(1);
+    golpear(limitador, CLAVE, 1);
+    reservar(limitador, CLAVE, LIMITE - 2);
+    avanzar(1);
+    expect(limitador.reserve(OTRA_CLAVE)).toBe(RESULTADO_RESERVA.RESERVADO);
+    limitador.release(CLAVE);
+    expect(limitador.reserve(OTRA_CLAVE)).toBe(RESULTADO_RESERVA.OCUPADO);
+    limitador.confirmFailure(OTRA_CLAVE);
+    expect(limitador.isLocked(OTRA_CLAVE)).toBe(true);
+  });
+
+  test("con la tabla llena de claves bloqueadas, la reserva de una clave nueva responde bloqueado", () => {
+    const { limitador } = crearBanco(1);
+    golpear(limitador, CLAVE, LIMITE);
+    expect(limitador.reserve(IP_NUEVA)).toBe(RESULTADO_RESERVA.BLOQUEADO);
   });
 });
 

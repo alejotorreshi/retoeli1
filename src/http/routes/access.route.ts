@@ -2,18 +2,21 @@ import type { Context, Hono } from "hono";
 import { setSignedCookie } from "hono/cookie";
 import { timingSafeEqual } from "hono/utils/buffer";
 import {
+  CABECERA,
   NOMBRE_COOKIE_ACCESO,
   RESPUESTA_HTTP,
+  RESULTADO_RESERVA,
   RUTA_API,
   RUTA_COOKIE,
   SAME_SITE_COOKIE,
+  SEGUNDOS_REINTENTO_INTENTO_EN_CURSO,
 } from "@/config/constants/http.constants.ts";
 import { MS_POR_SEGUNDO } from "@/config/constants/runtime.constants.ts";
 import { MENSAJE_HTTP } from "@/config/strings.ts";
 import { accessBodySchema } from "@/http/schemas/access-body.schema.ts";
 import { issueAccessToken } from "@/http/services/access-token.service.ts";
 import type { ErrorResponse } from "@/http/types/api.type.ts";
-import type { AccessSettings, HttpEnv } from "@/http/types/server.type.ts";
+import type { AccessSettings, HttpEnv, Reservation } from "@/http/types/server.type.ts";
 
 async function readCode(c: Context<HttpEnv>): Promise<string | null> {
   try {
@@ -51,18 +54,26 @@ async function grantAccess(c: Context<HttpEnv>, access: AccessSettings): Promise
   return c.body(null, RESPUESTA_HTTP.SIN_CONTENIDO);
 }
 
+function rejectReservation(c: Context<HttpEnv>, access: AccessSettings, reservation: Reservation): Response {
+  if (reservation === RESULTADO_RESERVA.BLOQUEADO) {
+    return reject(c, access.lockedMessage, RESPUESTA_HTTP.DEMASIADOS_PEDIDOS);
+  }
+  c.header(CABECERA.REINTENTAR_TRAS, String(SEGUNDOS_REINTENTO_INTENTO_EN_CURSO));
+  return reject(c, MENSAJE_HTTP.intentoEnCurso, RESPUESTA_HTTP.DEMASIADOS_PEDIDOS);
+}
+
 export function registerAccessRoute(app: Hono<HttpEnv>, access: AccessSettings): void {
   app.post(RUTA_API.ACCESO, async (c) => {
     const clientIp = c.get("clientIp");
-    if (!access.failedAttempts.hit(clientIp)) {
-      return reject(c, access.lockedMessage, RESPUESTA_HTTP.DEMASIADOS_PEDIDOS);
-    }
+    const reservation = access.failedAttempts.reserve(clientIp);
+    if (reservation !== RESULTADO_RESERVA.RESERVADO) return rejectReservation(c, access, reservation);
     const codigo = await readCode(c);
     if (codigo === null) {
       access.failedAttempts.release(clientIp);
       return reject(c, MENSAJE_HTTP.cuerpoAccesoInvalido, RESPUESTA_HTTP.PEDIDO_INVALIDO);
     }
     if (!(await timingSafeEqual(codigo, access.code))) {
+      access.failedAttempts.confirmFailure(clientIp);
       return reject(c, MENSAJE_HTTP.codigoInvalido, RESPUESTA_HTTP.NO_AUTORIZADO);
     }
     access.failedAttempts.release(clientIp);

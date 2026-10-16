@@ -28,7 +28,7 @@ import {
   TIPO_VISTA_PREVIA,
 } from "@/config/constants/files.constants.ts";
 import { FORMATO, TIPO_PLANTILLA } from "@/config/constants/forms.constants.ts";
-import { ENTORNO_APP, RESULTADO_BEARER } from "@/config/constants/http.constants.ts";
+import { ENTORNO_APP, RESULTADO_BEARER, RESULTADO_RESERVA } from "@/config/constants/http.constants.ts";
 import { ESTADO_LECTURA, ORIGEN_COPIA } from "@/config/constants/io.constants.ts";
 import { CLAVE_PLANTILLA } from "@/config/constants/knowledge.constants.ts";
 import {
@@ -160,6 +160,7 @@ const FAMILIAS_DE_CODIGOS: readonly Readonly<Record<string, string>>[] = [
   CODIGO_AGENTE,
   ACCION,
   RESULTADO_BEARER,
+  RESULTADO_RESERVA,
   ENTORNO_APP,
   NIVELES_LOG,
   BOOLEANO_ENV,

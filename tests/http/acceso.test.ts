@@ -22,6 +22,7 @@ import {
   PREFIJO_BEARER,
   RESPUESTA_HTTP,
   RUTA_API,
+  SEGUNDOS_REINTENTO_INTENTO_EN_CURSO,
   SEPARADOR_TOKEN,
   TIPO_CONTENIDO,
   VENTANA_FALLOS_ACCESO_MINUTOS_POR_DEFECTO,
@@ -601,8 +602,16 @@ async function esperarBloqueos(respuestas: readonly Response[]): Promise<void> {
   }
 }
 
+async function esperarOcupados(respuestas: readonly Response[]): Promise<void> {
+  for (const respuesta of respuestas) {
+    expect(respuesta.headers.get(CABECERA.REINTENTAR_TRAS)).toBe(String(SEGUNDOS_REINTENTO_INTENTO_EN_CURSO));
+  }
+  const cuerpos = await Promise.all(respuestas.map((respuesta) => respuesta.json()));
+  for (const cuerpo of cuerpos) expect(cuerpo).toEqual({ mensaje: MENSAJE_HTTP.intentoEnCurso });
+}
+
 describe("D-77.2: el intento se reserva antes del primer await", () => {
-  test("50 códigos errados simultáneos desde un cliente evalúan exactamente cinco y el resto responde 429; después el correcto da 429 y otro cliente entra", async () => {
+  test("50 códigos errados simultáneos desde un cliente evalúan exactamente cinco y el resto responde 429 de intentos en curso; después el correcto da 429 de bloqueo y otro cliente entra", async () => {
     const app = appCon();
     const respuestas = await lanzarJuntos(
       app,
@@ -612,16 +621,38 @@ describe("D-77.2: el intento se reserva antes del primer await", () => {
       PEDIDOS_SIMULTANEOS,
     );
     expect(conEstado(respuestas, RESPUESTA_HTTP.NO_AUTORIZADO).length).toBe(FALLOS_PERMITIDOS);
-    const bloqueadas = conEstado(respuestas, RESPUESTA_HTTP.DEMASIADOS_PEDIDOS);
-    expect(bloqueadas.length).toBe(PEDIDOS_SIMULTANEOS - FALLOS_PERMITIDOS);
-    await esperarBloqueos(bloqueadas);
+    const rechazadas = conEstado(respuestas, RESPUESTA_HTTP.DEMASIADOS_PEDIDOS);
+    expect(rechazadas.length).toBe(PEDIDOS_SIMULTANEOS - FALLOS_PERMITIDOS);
+    await esperarOcupados(rechazadas);
     const correcto = await pedirDesde(app, IP_CLIENTE, RUTA_API.ACCESO, pedidoAcceso(CODIGO_PRUEBA));
     expect(correcto.status).toBe(RESPUESTA_HTTP.DEMASIADOS_PEDIDOS);
+    await esperarBloqueos([correcto]);
     const otro = await pedirDesde(app, IP_OTRO_CLIENTE, RUTA_API.ACCESO, pedidoAcceso(CODIGO_PRUEBA));
     expect(otro.status).toBe(RESPUESTA_HTTP.SIN_CONTENIDO);
   });
 
-  test("tras cuatro fallos, diez códigos correctos simultáneos entran al menos una vez y el cliente conserva su último intento", async () => {
+  test("sin fallos previos, diez códigos correctos simultáneos: cinco entran, cinco reciben 429 de intentos en curso sin el plazo de bloqueo, y después el cliente entra y conserva sus cinco intentos", async () => {
+    const app = appCon();
+    const respuestas = await lanzarJuntos(
+      app,
+      IP_CLIENTE,
+      RUTA_API.ACCESO,
+      () => pedidoAcceso(CODIGO_PRUEBA),
+      PEDIDOS_CORRECTOS_SIMULTANEOS,
+    );
+    expect(conEstado(respuestas, RESPUESTA_HTTP.SIN_CONTENIDO).length).toBe(FALLOS_PERMITIDOS);
+    const ocupadas = conEstado(respuestas, RESPUESTA_HTTP.DEMASIADOS_PEDIDOS);
+    expect(ocupadas.length).toBe(PEDIDOS_CORRECTOS_SIMULTANEOS - FALLOS_PERMITIDOS);
+    await esperarOcupados(ocupadas);
+    const despues = await pedirDesde(app, IP_CLIENTE, RUTA_API.ACCESO, pedidoAcceso(CODIGO_PRUEBA));
+    expect(despues.status).toBe(RESPUESTA_HTTP.SIN_CONTENIDO);
+    expect(await fallar(app, IP_CLIENTE, FALLOS_PERMITIDOS)).toEqual(
+      Array(FALLOS_PERMITIDOS).fill(RESPUESTA_HTTP.NO_AUTORIZADO),
+    );
+    expect(await fallar(app, IP_CLIENTE, 1)).toEqual([RESPUESTA_HTTP.DEMASIADOS_PEDIDOS]);
+  });
+
+  test("tras cuatro fallos, diez códigos correctos simultáneos: entra exactamente uno, nueve reciben 429 de intentos en curso y el cliente conserva su último intento", async () => {
     const app = appCon();
     expect(await fallar(app, IP_CLIENTE, FALLOS_PERMITIDOS - 1)).toEqual(
       Array(FALLOS_PERMITIDOS - 1).fill(RESPUESTA_HTTP.NO_AUTORIZADO),
@@ -633,10 +664,10 @@ describe("D-77.2: el intento se reserva antes del primer await", () => {
       () => pedidoAcceso(CODIGO_PRUEBA),
       PEDIDOS_CORRECTOS_SIMULTANEOS,
     );
-    const entradas = conEstado(respuestas, RESPUESTA_HTTP.SIN_CONTENIDO).length;
-    const bloqueadas = conEstado(respuestas, RESPUESTA_HTTP.DEMASIADOS_PEDIDOS).length;
-    expect(entradas).toBeGreaterThanOrEqual(1);
-    expect(entradas + bloqueadas).toBe(PEDIDOS_CORRECTOS_SIMULTANEOS);
+    expect(conEstado(respuestas, RESPUESTA_HTTP.SIN_CONTENIDO).length).toBe(1);
+    const ocupadas = conEstado(respuestas, RESPUESTA_HTTP.DEMASIADOS_PEDIDOS);
+    expect(ocupadas.length).toBe(PEDIDOS_CORRECTOS_SIMULTANEOS - 1);
+    await esperarOcupados(ocupadas);
     expect(await fallar(app, IP_CLIENTE, 1)).toEqual([RESPUESTA_HTTP.NO_AUTORIZADO]);
     expect(await fallar(app, IP_CLIENTE, 1)).toEqual([RESPUESTA_HTTP.DEMASIADOS_PEDIDOS]);
   });
@@ -653,7 +684,7 @@ describe("D-77.2: el intento se reserva antes del primer await", () => {
     expect(await fallar(app, IP_CLIENTE, 1)).toEqual([RESPUESTA_HTTP.DEMASIADOS_PEDIDOS]);
   });
 
-  test("50 Bearer errados simultáneos desde un cliente evalúan exactamente cinco y el resto responde 429; después el Bearer correcto da 429 y otro cliente pasa", async () => {
+  test("50 Bearer errados simultáneos desde un cliente evalúan exactamente cinco y el resto responde 429 de intentos en curso; después el Bearer correcto da 429 de bloqueo y otro cliente pasa", async () => {
     const app = appCon();
     const respuestas = await lanzarJuntos(
       app,
@@ -663,16 +694,37 @@ describe("D-77.2: el intento se reserva antes del primer await", () => {
       PEDIDOS_SIMULTANEOS,
     );
     expect(conEstado(respuestas, RESPUESTA_HTTP.NO_AUTORIZADO).length).toBe(FALLOS_PERMITIDOS);
-    const bloqueadas = conEstado(respuestas, RESPUESTA_HTTP.DEMASIADOS_PEDIDOS);
-    expect(bloqueadas.length).toBe(PEDIDOS_SIMULTANEOS - FALLOS_PERMITIDOS);
-    await esperarBloqueos(bloqueadas);
+    const rechazadas = conEstado(respuestas, RESPUESTA_HTTP.DEMASIADOS_PEDIDOS);
+    expect(rechazadas.length).toBe(PEDIDOS_SIMULTANEOS - FALLOS_PERMITIDOS);
+    await esperarOcupados(rechazadas);
     const correcto = await pedirDesde(app, IP_CLIENTE, RUTA_API.CHAT, chatInvalido(bearer(CODIGO_PRUEBA)));
     expect(correcto.status).toBe(RESPUESTA_HTTP.DEMASIADOS_PEDIDOS);
+    await esperarBloqueos([correcto]);
     const otro = await pedirDesde(app, IP_OTRO_CLIENTE, RUTA_API.CHAT, chatInvalido(bearer(CODIGO_PRUEBA)));
     expect(otro.status).toBe(RESPUESTA_HTTP.PEDIDO_INVALIDO);
   });
 
-  test("tras cuatro fallos, diez Bearer correctos simultáneos pasan al menos una vez y el cliente conserva su último intento", async () => {
+  test("sin fallos previos, diez Bearer correctos simultáneos: cinco pasan, cinco reciben 429 de intentos en curso sin el plazo de bloqueo, y el siguiente pasa", async () => {
+    const app = appCon();
+    const respuestas = await lanzarJuntos(
+      app,
+      IP_CLIENTE,
+      RUTA_API.CHAT,
+      () => chatInvalido(bearer(CODIGO_PRUEBA)),
+      PEDIDOS_CORRECTOS_SIMULTANEOS,
+    );
+    expect(conEstado(respuestas, RESPUESTA_HTTP.PEDIDO_INVALIDO).length).toBe(FALLOS_PERMITIDOS);
+    const ocupadas = conEstado(respuestas, RESPUESTA_HTTP.DEMASIADOS_PEDIDOS);
+    expect(ocupadas.length).toBe(PEDIDOS_CORRECTOS_SIMULTANEOS - FALLOS_PERMITIDOS);
+    await esperarOcupados(ocupadas);
+    const despues = await pedirDesde(app, IP_CLIENTE, RUTA_API.CHAT, chatInvalido(bearer(CODIGO_PRUEBA)));
+    expect(despues.status).toBe(RESPUESTA_HTTP.PEDIDO_INVALIDO);
+    expect(await fallar(app, IP_CLIENTE, FALLOS_PERMITIDOS)).toEqual(
+      Array(FALLOS_PERMITIDOS).fill(RESPUESTA_HTTP.NO_AUTORIZADO),
+    );
+  });
+
+  test("tras cuatro fallos, diez Bearer correctos simultáneos: pasa exactamente uno, nueve reciben 429 de intentos en curso y el cliente conserva su último intento", async () => {
     const app = appCon();
     expect(await fallar(app, IP_CLIENTE, FALLOS_PERMITIDOS - 1)).toEqual(
       Array(FALLOS_PERMITIDOS - 1).fill(RESPUESTA_HTTP.NO_AUTORIZADO),
@@ -684,10 +736,10 @@ describe("D-77.2: el intento se reserva antes del primer await", () => {
       () => chatInvalido(bearer(CODIGO_PRUEBA)),
       PEDIDOS_CORRECTOS_SIMULTANEOS,
     );
-    const pasaron = conEstado(respuestas, RESPUESTA_HTTP.PEDIDO_INVALIDO).length;
-    const bloqueadas = conEstado(respuestas, RESPUESTA_HTTP.DEMASIADOS_PEDIDOS).length;
-    expect(pasaron).toBeGreaterThanOrEqual(1);
-    expect(pasaron + bloqueadas).toBe(PEDIDOS_CORRECTOS_SIMULTANEOS);
+    expect(conEstado(respuestas, RESPUESTA_HTTP.PEDIDO_INVALIDO).length).toBe(1);
+    const ocupadas = conEstado(respuestas, RESPUESTA_HTTP.DEMASIADOS_PEDIDOS);
+    expect(ocupadas.length).toBe(PEDIDOS_CORRECTOS_SIMULTANEOS - 1);
+    await esperarOcupados(ocupadas);
     expect(await fallar(app, IP_CLIENTE, 1)).toEqual([RESPUESTA_HTTP.NO_AUTORIZADO]);
     expect(await fallar(app, IP_CLIENTE, 1)).toEqual([RESPUESTA_HTTP.DEMASIADOS_PEDIDOS]);
   });
