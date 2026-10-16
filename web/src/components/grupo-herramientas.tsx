@@ -1,5 +1,5 @@
+import { IconoChevron } from "@web/compartido/iconos/iconos.tsx";
 import estilos from "@web/components/grupo-herramientas.module.css";
-import { IconoChevron } from "@web/components/icons/iconos.tsx";
 import { TarjetaHerramienta } from "@web/components/tarjeta-herramienta.tsx";
 import { TEXTO_HERRAMIENTA } from "@web/config/strings.ts";
 import { grupoSeCierraAlTerminar, resumenDeLlamadas } from "@web/features/chat/estado/conversacion.ts";

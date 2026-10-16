@@ -4,7 +4,7 @@ import {
   IconoPendiente,
   IconoReloj,
   IconoX,
-} from "@web/components/icons/iconos.tsx";
+} from "@web/compartido/iconos/iconos.tsx";
 import estilos from "@web/components/progreso-caso.module.css";
 import { ESTADO_ETAPA } from "@web/config/constants/ui.constants.ts";
 import { TEXTO_PROGRESO } from "@web/config/strings.ts";

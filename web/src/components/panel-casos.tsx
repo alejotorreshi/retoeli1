@@ -1,6 +1,6 @@
+import { IconoChevron } from "@web/compartido/iconos/iconos.tsx";
 import { AvisoDiscoEfimero } from "@web/components/aviso-disco-efimero.tsx";
 import { DialogoVistaPrevia } from "@web/components/dialogo-vista-previa.tsx";
-import { IconoChevron } from "@web/components/icons/iconos.tsx";
 import { ListaArchivos } from "@web/components/lista-archivos.tsx";
 import estilos from "@web/components/panel-casos.module.css";
 import { ProgresoCaso } from "@web/components/progreso-caso.tsx";

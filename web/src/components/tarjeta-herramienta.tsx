@@ -1,4 +1,10 @@
-import { IconoCheck, IconoChevron, IconoGirando, IconoReloj, IconoX } from "@web/components/icons/iconos.tsx";
+import {
+  IconoCheck,
+  IconoChevron,
+  IconoGirando,
+  IconoReloj,
+  IconoX,
+} from "@web/compartido/iconos/iconos.tsx";
 import estilos from "@web/components/tarjeta-herramienta.module.css";
 import { ESTADO_HERRAMIENTA } from "@web/config/constants/ui.constants.ts";
 import { TEXTO_HERRAMIENTA } from "@web/config/strings.ts";

@@ -1,4 +1,4 @@
-import { IconoGirando, IconoReloj } from "@web/components/icons/iconos.tsx";
+import { IconoGirando, IconoReloj } from "@web/compartido/iconos/iconos.tsx";
 import estilos from "@web/components/indicador-pensando.module.css";
 import { ESPERA_DESPERTAR_MS } from "@web/config/constants/ui.constants.ts";
 import { TEXTO_CHAT } from "@web/config/strings.ts";

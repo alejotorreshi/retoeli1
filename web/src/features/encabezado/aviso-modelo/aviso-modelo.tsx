@@ -1,4 +1,4 @@
-import { IconoAlerta } from "@web/components/icons/iconos.tsx";
+import { IconoAlerta } from "@web/compartido/iconos/iconos.tsx";
 import { TAMANO_ICONO, TONO_DEL_MODELO } from "@web/config/constants/ui.constants.ts";
 import { TEXTO_MODELO } from "@web/config/strings.ts";
 import estilos from "@web/features/encabezado/aviso-modelo/aviso-modelo.module.css";

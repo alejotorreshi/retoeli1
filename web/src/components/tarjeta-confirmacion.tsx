@@ -1,4 +1,4 @@
-import { IconoAlerta } from "@web/components/icons/iconos.tsx";
+import { IconoAlerta } from "@web/compartido/iconos/iconos.tsx";
 import estilos from "@web/components/tarjeta-confirmacion.module.css";
 import {
   ESTADO_FIRMA,

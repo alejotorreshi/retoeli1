@@ -1,5 +1,5 @@
 import { nombreDeDescarga, rutaDeDescarga } from "@web/api/cliente-api.ts";
-import { IconoDescargar, IconoOjo } from "@web/components/icons/iconos.tsx";
+import { IconoDescargar, IconoOjo } from "@web/compartido/iconos/iconos.tsx";
 import estilos from "@web/components/lista-archivos.module.css";
 import { ESTADO_LISTA_ARCHIVOS } from "@web/config/constants/ui.constants.ts";
 import { TEXTO_ARCHIVOS } from "@web/config/strings.ts";

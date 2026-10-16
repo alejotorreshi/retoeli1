@@ -1,6 +1,6 @@
-import { AvisoError, AvisoSistema } from "@web/components/aviso.tsx";
+import { AvisoError, AvisoSistema } from "@web/compartido/aviso/aviso.tsx";
+import { IconoChevron } from "@web/compartido/iconos/iconos.tsx";
 import { GrupoHerramientas } from "@web/components/grupo-herramientas.tsx";
-import { IconoChevron } from "@web/components/icons/iconos.tsx";
 import { IndicadorPensando } from "@web/components/indicador-pensando.tsx";
 import estilos from "@web/components/linea-de-tiempo.module.css";
 import { MensajeAgente, MensajeUsuaria } from "@web/components/mensaje.tsx";

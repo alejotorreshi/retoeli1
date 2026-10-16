@@ -1,5 +1,5 @@
+import { IconoAlerta } from "@web/compartido/iconos/iconos.tsx";
 import estilos from "@web/components/aviso-disco-efimero.module.css";
-import { IconoAlerta } from "@web/components/icons/iconos.tsx";
 import { TEXTO_DISCO } from "@web/config/strings.ts";
 import type { PropsAvisoDiscoEfimero } from "@web/types/ui.type.ts";
 

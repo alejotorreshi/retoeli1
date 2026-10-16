@@ -1,5 +1,5 @@
-import estilos from "@web/components/aviso.module.css";
-import { IconoAlerta, IconoInfo } from "@web/components/icons/iconos.tsx";
+import estilos from "@web/compartido/aviso/aviso.module.css";
+import { IconoAlerta, IconoInfo } from "@web/compartido/iconos/iconos.tsx";
 import { TAMANO_ICONO } from "@web/config/constants/ui.constants.ts";
 import type { PropsAviso } from "@web/types/ui.type.ts";
 

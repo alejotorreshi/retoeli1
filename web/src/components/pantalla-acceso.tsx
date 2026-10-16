@@ -1,5 +1,5 @@
 import { entrar } from "@web/api/cliente-api.ts";
-import { AvisoSistema } from "@web/components/aviso.tsx";
+import { AvisoSistema } from "@web/compartido/aviso/aviso.tsx";
 import estilos from "@web/components/pantalla-acceso.module.css";
 import { RESULTADO_API } from "@web/config/constants/ui.constants.ts";
 import { TEXTO_ACCESO, TEXTO_ERROR } from "@web/config/strings.ts";
