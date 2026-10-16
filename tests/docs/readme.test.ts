@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test";
-import { existsSync, readFileSync } from "node:fs";
-import { dirname, join } from "node:path";
+import { join } from "node:path";
 import { clavesLlm, fugasDeEvidencia } from "@tests/helpers/costo.helper.ts";
+import { enlacesRelativos, enlacesRotos, leerDocumento } from "@tests/helpers/documentos.helper.ts";
 import { sensiblesDelProyecto } from "@tests/helpers/pii.helper.ts";
 import { TIPO_EVENTO } from "@/config/constants/agent.constants.ts";
 import { ESTADO_EVIDENCIA_COSTO, RUTA_EVIDENCIA_COSTO } from "@/config/constants/costo.constants.ts";
@@ -19,9 +19,7 @@ const MARCADOR_CODIGO = "__CODIGO_ACCESO__";
 const MODELOS_RETIRADOS = ["deepseek-chat", "deepseek-reasoner"];
 const VARIABLES_SECRETAS = ["LLM_API_KEY", "DEEPSEEK_API_KEY", "ACCESS_TOKEN_SECRET"];
 const PATRON_LINEA_CODIGO = /^Código de acceso: `([^`]+)`/m;
-const PATRON_ENLACE = /\]\(([^)\s]+)\)/g;
 const PATRON_VARIABLE_ENV = /^([A-Z][A-Z0-9_]*)=/gm;
-const PATRON_EXTERNO = /^(https?:|mailto:|#)/;
 const PATRON_TAREA = /^- \[[ x]\] /m;
 const COMANDOS = [
   "bun install",
@@ -64,8 +62,7 @@ const PENDIENTES_ENTREGA = [
 ];
 
 function leer(ruta: string): string {
-  const absoluta = join(RAIZ, ruta);
-  return existsSync(absoluta) ? readFileSync(absoluta, "utf8") : "";
+  return leerDocumento(RAIZ, ruta);
 }
 
 function primeraLineaConTexto(texto: string): string {
@@ -76,22 +73,6 @@ function variablesDeEnvEjemplo(): string[] {
   return [...leer(ENV_EJEMPLO).matchAll(PATRON_VARIABLE_ENV)].flatMap((coincidencia) =>
     coincidencia[1] === undefined ? [] : [coincidencia[1]],
   );
-}
-
-function enlacesRelativos(texto: string): string[] {
-  return [...texto.matchAll(PATRON_ENLACE)]
-    .flatMap((coincidencia) => (coincidencia[1] === undefined ? [] : [coincidencia[1]]))
-    .filter((destino) => !PATRON_EXTERNO.test(destino))
-    .map((destino) => destino.split("#")[0] ?? destino);
-}
-
-function enlacesRotos(archivo: string): string[] {
-  const base = dirname(join(RAIZ, archivo));
-  return enlacesRelativos(leer(archivo)).filter((destino) => {
-    const absoluta = join(base, destino);
-    if (existsSync(absoluta)) return false;
-    return absoluta !== join(RAIZ, SOLUCION);
-  });
 }
 
 function asignacionesSecretas(texto: string): string[] {
@@ -186,7 +167,7 @@ describe(`${ENTREGA} (D-99)`, () => {
 describe("enlaces y secretos de la documentación de entrega", () => {
   test.each([README, ENTREGA])("cada enlace relativo de %s apunta a una ruta que existe", (archivo) => {
     expect(leer(archivo).length).toBeGreaterThan(0);
-    expect(enlacesRotos(archivo)).toEqual([]);
+    expect(enlacesRotos(RAIZ, archivo, [SOLUCION])).toEqual([]);
   });
 
   test.each([README, ENTREGA])(
