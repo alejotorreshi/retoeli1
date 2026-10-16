@@ -2,9 +2,10 @@ import { MARGEN_AVISO_CONTADOR, TECLA_ENVIAR } from "@web/config/constants/ui.co
 import { TEXTO_CHAT } from "@web/config/strings.ts";
 import {
   seleccionarBorrador,
+  seleccionarCampoBloqueado,
   seleccionarEnCurso,
+  seleccionarEnvioDeshabilitado,
   seleccionarEnvioEnPausa,
-  seleccionarHidratando,
   seleccionarMensajeMaximo,
   seleccionarUsoDeSesion,
 } from "@web/store/selectores.ts";
@@ -29,14 +30,14 @@ export function useCompositor(): ControlCompositor {
   const valor = useSeleccion(seleccionarBorrador);
   const maximo = useSeleccion(seleccionarMensajeMaximo);
   const enCurso = useSeleccion(seleccionarEnCurso);
-  const bloqueado = useSeleccion(seleccionarHidratando);
+  const deshabilitado = useSeleccion(seleccionarCampoBloqueado);
+  const envioDeshabilitado = useSeleccion(seleccionarEnvioDeshabilitado);
   const pausado = useSeleccion(seleccionarEnvioEnPausa);
   const uso = useSeleccion(seleccionarUsoDeSesion);
   const { cambiarBorrador, enviar, detener, registrarCampoDelMensaje } = useAcciones();
   const idAyuda = useId();
   const idContador = useId();
   const contador = contadorDe(valor.length, maximo);
-  const deshabilitado = bloqueado || pausado;
 
   function alCambiar(evento: ChangeEvent<HTMLTextAreaElement>): void {
     cambiarBorrador(evento.target.value);
@@ -50,7 +51,7 @@ export function useCompositor(): ControlCompositor {
   function alPresionarTecla(evento: KeyboardEvent<HTMLTextAreaElement>): void {
     if (!esEnvioPorTeclado(evento)) return;
     evento.preventDefault();
-    if (!enCurso && !deshabilitado) evento.currentTarget.form?.requestSubmit();
+    if (!envioDeshabilitado) evento.currentTarget.form?.requestSubmit();
   }
 
   return {

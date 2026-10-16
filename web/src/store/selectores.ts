@@ -123,8 +123,12 @@ export function seleccionarEnvioEnPausa(estado: EstadoRaiz): boolean {
   return envioEnPausa(seleccionarEstadoLlm(estado));
 }
 
+export function seleccionarCampoBloqueado(estado: EstadoRaiz): boolean {
+  return estado.conversacion.hidratando || seleccionarEnvioEnPausa(estado);
+}
+
 export function seleccionarEnvioDeshabilitado(estado: EstadoRaiz): boolean {
-  return estado.conversacion.enCurso || estado.conversacion.hidratando || seleccionarEnvioEnPausa(estado);
+  return estado.conversacion.enCurso || seleccionarCampoBloqueado(estado);
 }
 
 export function seleccionarUsoDeSesion(estado: EstadoRaiz): UsoDeSesion | null {

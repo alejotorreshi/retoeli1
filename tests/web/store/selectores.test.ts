@@ -184,6 +184,16 @@ describe("selectores del almacén", () => {
     expect(selectores.seleccionarEnvioDeshabilitado(estadoRaizInicial(null))).toBe(false);
   });
 
+  test("el campo bloqueado es el envío deshabilitado sin el turno en curso", () => {
+    const guardada = estadoRaizInicial(SESION);
+    const nueva = estadoRaizInicial(null);
+    const enCurso = { ...nueva, conversacion: { ...nueva.conversacion, enCurso: true } };
+    expect(selectores.seleccionarCampoBloqueado(guardada)).toBe(true);
+    expect(selectores.seleccionarCampoBloqueado(nueva)).toBe(false);
+    expect(selectores.seleccionarCampoBloqueado(enCurso)).toBe(false);
+    expect(selectores.seleccionarEnvioDeshabilitado(enCurso)).toBe(true);
+  });
+
   test("una sesión guardada queda por cargar aunque el acceso no esté concedido", () => {
     const guardada = estadoRaizInicial(SESION);
     expect(selectores.seleccionarHidratando(guardada)).toBe(true);
