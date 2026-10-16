@@ -41,7 +41,7 @@ function comentariosDe(ruta: string, codigo: string): Comentario[] {
 }
 
 describe("sin comentarios en el código real", () => {
-  test("src/, tests/, modulo/, demo.ts y web/ no tienen comentarios", () => {
+  test("src/, tests/, modulo/, .opencode/, demo.ts y web/ no tienen comentarios", () => {
     const hallazgos = listarFuentes().flatMap((ruta) =>
       comentariosDe(ruta, readFileSync(join(RAIZ, ruta), "utf8")).map(
         (comentario) => `${ruta}:${comentario.linea}: comentario de ${comentario.tipo}`,
@@ -54,8 +54,9 @@ describe("sin comentarios en el código real", () => {
     expect(listarFuentes()).toContain("tests/sin-comentarios.test.ts");
   });
 
-  test("el escáner recorre modulo/", () => {
+  test("el escáner recorre modulo/ y .opencode/", () => {
     expect(listarFuentes()).toContain("modulo/tools/proveedor.ts");
+    expect(listarFuentes()).toContain(".opencode/tools/proveedor.ts");
   });
 
   test("el escáner recorre web/ con TS, TSX, CSS e index.html y salta web/dist", () => {

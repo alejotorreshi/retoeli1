@@ -62,6 +62,8 @@ const RAIZ = join(import.meta.dir, "..");
 
 const HERRAMIENTAS_DEL_MODULO = "modulo/tools/proveedor.ts";
 
+const ENLACE_OPENCODE = ".opencode/tools/proveedor.ts";
+
 const RUTA_HERRAMIENTAS_DEL_MODULO = join(RAIZ, DIRECTORIO_MODULO, "tools", "proveedor.ts");
 
 const API_SHELL = /child_process|\bBun\s*\.\s*(?:spawn|\$)|\bBun\s*\[\s*["'`](?:spawn|\$)/;
@@ -740,6 +742,13 @@ describe("reglas de capas sobre el código real", () => {
     expect(violacionesDeCapas(HERRAMIENTAS_DEL_MODULO, leer(HERRAMIENTAS_DEL_MODULO))).toEqual([]);
   });
 
+  test(".opencode/ entra en el escaneo y solo enlaza modulo/ (D-96)", () => {
+    expect(listarFuentes()).toContain(ENLACE_OPENCODE);
+    expect(listarTodasLasFuentes()).toContain(ENLACE_OPENCODE);
+    expect(violacionesDeCapas(ENLACE_OPENCODE, leer(ENLACE_OPENCODE))).toEqual([]);
+    expect(dependenciasLocales(ENLACE_OPENCODE, leer(ENLACE_OPENCODE))).toEqual([HERRAMIENTAS_DEL_MODULO]);
+  });
+
   test("src/ y demo.ts no usan APIs de shell", () => {
     const violaciones = listarFuentes().flatMap((ruta) => violacionesDeShell(ruta, leer(ruta)));
     expect(violaciones).toEqual([]);
@@ -1411,6 +1420,48 @@ describe("el escáner muerde sobre fuentes de muestra", () => {
       "modulo/tools/proveedor.ts: la capa modulo no puede importar @/infra/logging/logger.adapter.ts",
       "modulo/tools/proveedor.ts: la capa modulo no puede importar @/config/env.ts",
       "modulo/tools/proveedor.ts: la capa modulo no puede importar node:path",
+    ]);
+  });
+
+  test("el alias @modulo/ resuelve a modulo/", () => {
+    expect(rutaLocal(ENLACE_OPENCODE, "@modulo/tools/proveedor.ts")).toBe(HERRAMIENTAS_DEL_MODULO);
+  });
+
+  test("la capa opencode solo enlaza modulo/ y nunca salta a src/", () => {
+    const permitido = 'export { leer_solicitud } from "@modulo/tools/proveedor.ts";\n';
+    const prohibido = [
+      'export { leer_solicitud } from "@/tools/proveedor.ts";',
+      'import { crearHerramientas } from "@/tools/factories/herramientas.factory.ts";',
+      'import { join } from "node:path";',
+    ].join("\n");
+    expect(violacionesDeCapas(ENLACE_OPENCODE, permitido)).toEqual([]);
+    expect(violacionesDeCapas(ENLACE_OPENCODE, prohibido)).toEqual([
+      ".opencode/tools/proveedor.ts: la capa opencode no puede importar @/tools/proveedor.ts",
+      ".opencode/tools/proveedor.ts: la capa opencode no puede importar @/tools/factories/herramientas.factory.ts",
+      ".opencode/tools/proveedor.ts: la capa opencode no puede importar node:path",
+    ]);
+  });
+
+  test("ninguna capa de src/ importa modulo/", () => {
+    const codigo = 'import { leer_solicitud } from "@modulo/tools/proveedor.ts";\n';
+    expect(
+      [
+        "src/tools/factories/x.factory.ts",
+        "src/cli/runners/x.runner.ts",
+        "src/http/routes/x.route.ts",
+      ].flatMap((ruta) => violacionesDeCapas(ruta, codigo)),
+    ).toEqual([
+      "src/tools/factories/x.factory.ts: la capa tools no puede importar @modulo/tools/proveedor.ts",
+      "src/cli/runners/x.runner.ts: la capa cli no puede importar @modulo/tools/proveedor.ts",
+      "src/http/routes/x.route.ts: la capa http no puede importar @modulo/tools/proveedor.ts",
+    ]);
+  });
+
+  test("G5: en .opencode/ el único .ts es tools/proveedor.ts", () => {
+    const rutas = [ENLACE_OPENCODE, ".opencode/tools/otra.ts", ".opencode/agents/x.ts"];
+    expect(rutas.flatMap(violacionesDeNombre)).toEqual([
+      ".opencode/tools/otra.ts: el nombre no sigue la tabla de sufijos por carpeta",
+      ".opencode/agents/x.ts: el nombre no sigue la tabla de sufijos por carpeta",
     ]);
   });
 
