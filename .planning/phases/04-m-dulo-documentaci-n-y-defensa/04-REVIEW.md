@@ -1,241 +1,166 @@
 ---
 phase: 04-m-dulo-documentaci-n-y-defensa
-reviewed: 2026-10-16T12:00:00Z
+reviewed: 2026-10-16T14:00:00Z
 depth: standard
-files_reviewed: 50
+review_kind: incremental
+diff_base: 72feb23
+files_reviewed: 22
 files_reviewed_list:
-  - .claude/CLAUDE.md
-  - .env.example
+  - .gitattributes
   - .github/workflows/ci.yml
-  - .opencode/tools/proveedor.ts
   - README.md
   - SOLUCION.md
-  - docs/arquitectura.md
   - docs/convenciones.md
   - docs/entrega.md
   - docs/estructura.md
-  - docs/evidencia/costo-por-caso.json
-  - docs/plantillas.md
-  - modulo/README.md
-  - modulo/agent.md
-  - modulo/skill/registro-proveedor/SKILL.md
-  - modulo/tools/proveedor.ts
-  - opencode.json
-  - package.json
-  - render.yaml
   - src/cli/runners/generar-modulo.runner.ts
   - src/cli/runners/preflight.runner.ts
-  - src/cli/schemas/preflight.schema.ts
-  - src/cli/types/modulo.type.ts
   - src/cli/types/preflight.type.ts
-  - src/config/constants/costo.constants.ts
-  - src/config/constants/files.constants.ts
   - src/config/constants/http.constants.ts
   - src/config/constants/modulo.constants.ts
   - src/config/constants/preflight.constants.ts
   - src/config/env.ts
   - src/config/strings.ts
-  - src/domain/builders/modulo.builder.ts
-  - tests/architecture.test.ts
   - tests/cli/preflight.test.ts
   - tests/despliegue/ci.test.ts
-  - tests/despliegue/contrato-despliegue.test.ts
-  - tests/docs/continuidad.test.ts
-  - tests/docs/evidencia-costo.test.ts
   - tests/docs/readme.test.ts
   - tests/docs/solucion.test.ts
-  - tests/helpers/costo.helper.ts
   - tests/helpers/documentos.helper.ts
-  - tests/helpers/types/costo.type.ts
-  - tests/live/costo-por-caso.test.ts
   - tests/modulo/generador.test.ts
   - tests/modulo/herramientas.test.ts
-  - tests/modulo/opencode.test.ts
-  - tests/sin-comentarios.test.ts
-  - tests/unit/modulo.builder.test.ts
-  - tsconfig.json
 findings:
-  critical: 1
-  warning: 3
-  info: 8
-  total: 12
+  critical: 0
+  warning: 2
+  info: 3
+  total: 5
 status: issues_found
 ---
 
-# Phase 04: Code Review Report
+# Phase 04: Code Review Report (incremental re-review after 04-REVIEW-FIX)
 
-**Reviewed:** 2026-10-16T12:00:00Z
+**Reviewed:** 2026-10-16T14:00:00Z
 **Depth:** standard
-**Files Reviewed:** 50
+**Files Reviewed:** 22
 **Status:** issues_found
 
 ## Narrative Findings (AI reviewer)
 
 ## Summary
 
-I reviewed the new `src/cli` layer (the pre-flight runner and the module generator), the CI workflow, `render.yaml`, the `modulo/` and `.opencode/` re-exports, `opencode.json`, README, SOLUCION and the `docs/` files against the code, the cost evidence JSON, and the new tests. The phase test suites pass locally: 124 tests across `tests/cli`, `tests/modulo`, `tests/docs`, `tests/despliegue` and `tests/unit/modulo.builder.test.ts`.
+This is an incremental re-review. It covers the changes since `72feb23`: the 12 fixes from 04-REVIEW-FIX (commits 97c0dc8 through 202b454), the gap-closure plan 04-08 (G-04-1 and G-04-2), and the T-04-22 test change 6c54c18. It replaces the previous review, whose 12 findings were all addressed.
 
-What checked out:
-- The access code is never printed. It is read only from `PREFLIGHT_ACCESS_CODE`. A failed argv parse prints only the usage text. Zod issue messages never echo the value. The URL is printed only as `origin`, so userinfo is dropped. I confirmed by running it that Bun's `fetch` drops `Authorization` on a cross-origin redirect, and that `AbortSignal.timeout` also aborts a stalled SSE body.
-- URL validation requires `https`, or `http` only for loopback hosts.
-- The SSE stream is parsed with `eventsource-parser`. An early return cancels the stream.
-- The module generator does a byte-exact concatenation. It fails before writing anything when a source is empty or missing, or when it runs outside the project root.
-- The CI actions are pinned to full SHAs. The audit job does not block, because `continue-on-error` is set at step level and the job still succeeds.
-- `render.yaml` uses `autoDeployTrigger: checksPass`.
-- The cost evidence JSON has no PII or keys. Its numbers add up per scenario and in total, and the SOLUCION §4 table matches them.
-- `.qa/render.token` is gitignored and dockerignored.
-- As instructed, the literal access code in the README (D-94) is not flagged.
+Gates I ran on the current `main`: `bun run check` passes (tsc for both projects and Biome over 453 files). `bun test tests/cli tests/modulo tests/docs tests/despliegue` gives 151 pass and 0 fail.
 
-The main defect: the repository's own Phase 3 QA evidence shows that Render or Cloudflare strips `X-Accel-Buffering` before the response reaches the client. `bun run preflight --guion` requires that header. So the scripted §11 rehearsal fails every time it runs against the production link, after it has already spent tokens on turn 1.
+How each prior finding stands:
 
-## Critical Issues
+| Prior | State | Notes |
+|---|---|---|
+| CR-01 | Fixed | The client no longer requires `X-Accel-Buffering`. Arrival times of `turn_start` and `turn_end` are now compared, so a buffering proxy is detected end to end. One new weakening is filed as WR-01 below. |
+| WR-01 | Fixed | Every failure branch of the guion validator has a test, and each test asserts how many chat turns were sent. |
+| WR-02 | Fixed | `.gitattributes` pins LF. `git ls-files --eol` shows all 850 tracked files as `i/lf w/lf`, and no tracked binary is affected. A test also parses `.gitattributes` without git (G-04-1). |
+| WR-03 | Fixed | `fin.motivo === MOTIVO_FIN.FINAL` is required in both turns. A real `AGENT_MAX_ITERATIONS` cap tests it. |
+| IN-01 | Fixed | Both spawned `bun` processes get `--no-env-file`. |
+| IN-02 | Fixed | A 200 JSON response that fails the schema stops polling at once. A 200 that is not JSON keeps polling. The health route returns `c.json`, so `esJson` matches it. |
+| IN-03, IN-04, IN-05 | Fixed | Docs only. I verified the README, convenciones and SOLUCION text against the code. |
+| IN-06 | Fixed | `persist-credentials: false` is on both checkouts, and a test guards it. No later step needs git credentials. |
+| IN-07 | Fixed | The root is now resolved from `import.meta.dir` (`../../..` from `src/cli/runners/`, which is correct), and writes go through a temp file and a rename. Minor leftovers are filed as IN-02 and IN-03 below. |
+| IN-08 | Fixed | An empty or whitespace `--url` falls back to the environment, and a URL with a path, query or fragment is rejected. |
 
-### CR-01: `preflight --guion` always fails against Render because it requires `X-Accel-Buffering: no` at the client, and Render's edge strips it
+I also checked the G-04-2 doc claim in `docs/entrega.md` that turn 1 replaces the previous run's files. It is true: `generar-formulario.use-case.ts:105` calls `limpiarPrevios`, which removes `paquete/` and every `ARCHIVOS_REGENERABLES` entry, `ENVIO-SIMULADO.md` included. As instructed, the literal access code in README.md (D-94) is not flagged.
 
-**File:** `src/cli/runners/preflight.runner.ts:78-81`, `src/cli/runners/preflight.runner.ts:247-252`, `src/cli/runners/preflight.runner.ts:279-287` (also `README.md:173`, `docs/entrega.md:25`, `tests/cli/preflight.test.ts:300-357`)
-
-**Issue:** `cabeceraSseFaltante` fails the turn unless the client sees `X-Accel-Buffering: no`, with an exact match on the value (`CABECERAS_SSE`). `X-Accel-Buffering` is an instruction to the reverse proxy, and nginx-style proxies remove it by default (`proxy_hide_header`). The project's own live evidence shows this happens on the production link. In `.qa/evidence/03-chat-web-api-sse-y-despliegue/03-QA-EVIDENCE-2026-10-15T13-18-49Z.md:66-72,403` the local response carries the header, but the Render/Cloudflare response (`HTTP/2 200 | content-type: text/event-stream | cache-control: no-cache, no-transform | cf-cache-status: DYNAMIC`) does not. The note there reads: "`X-Accel-Buffering: no` no llega al cliente (Cloudflare o el borde de Render lo quitan), aunque no hubo buffering."
-
-The consequences:
-- `bun run preflight -- --url https://registro-proveedor-bfnt.onrender.com --guion` prints `cabeceraSse(X-Accel-Buffering)` and "Pre-flight fallido" every time, even though streaming works. `docs/entrega.md:25` plans exactly this step (eli-qa runs it against Render) before the defense.
-- The check runs after the `POST /api/chat` response arrives, so the turn has already started on the server. That spends tokens and one of the `NEW_SESSIONS_PER_HOUR` slots before the turn is cancelled.
-- The unit test `si el SSE llega sin X-Accel-Buffering no, falla…` writes this wrong expectation into the suite.
-- The README promise that it "comprueba los encabezados SSE sin buffering" cannot be met by a header check through this proxy chain.
-
-**Fix:** Stop requiring the proxy-consumed header at the client. Check what is observable end to end instead: the content type, `Cache-Control`, and that frames arrive incrementally. For example, `turn_start` must arrive well before `turn_end`:
-```ts
-const CABECERAS_SSE = [
-  [CABECERA.CACHE_CONTROL, VALOR_CABECERA.SIN_CACHE_NI_TRANSFORMACION],
-] as const;
-
-// in leerTurno: record opciones.ahora() at the first frame and at turn_end;
-// if turn_end arrives in the same instant as the first frame on a multi-tool turn,
-// fail with TEXTO_PREFLIGHT.cabeceraSse / a new "sseAcumulado" message.
-```
-Then update the unit test, `README.md:173` and `docs/estructura.md:83`. Treat a missing `X-Accel-Buffering` as informational at most.
+I found no blockers. There are two warnings. First, the CR-01 fix loosened the SSE header check more than the evidence justifies. Second, the T-04-22 secret scanner, recorded as closed, misses two of the project's secret variables and most ways of writing an assignment.
 
 ## Warnings
 
-### WR-01: Most of the guion validator's failure branches have no tests
+### WR-01: The CR-01 fix stopped checking `no-transform`, and the "Render edge" test fixture contradicts the project's own evidence
 
-**File:** `tests/cli/preflight.test.ts:312-363` (branches in `src/cli/runners/preflight.runner.ts:237-239, 290-294, 309-316, 321-322, 357-359, 374-376`)
+**File:** `src/cli/runners/preflight.runner.ts:263-272`; `src/config/constants/http.constants.ts:162,167-169`; `tests/cli/preflight.test.ts:403-406`
 
-**Issue:** The `--guion` suite covers only the happy path, `sinConfirmacion` and the X-Accel header case. These failure branches are never exercised:
-- `envioAntesDeTiempo` (the model sends in turn 1);
-- `bloqueoAusente`;
-- `herramientaFaltante`;
-- `errorDelAgente` (an `error` frame);
-- `turnoIncompleto` (no `turn_end`, or no `turn_start`);
-- `respuestaInvalida` for a malformed SSE frame;
-- `archivoInesperado` and `archivoFaltante`;
-- `confirmacionAbierta`;
-- the `turnoMs` timeout and abort path;
-- a wrong `Content-Type`.
+**Issue:** The original CR-01 problem was only `X-Accel-Buffering`. The QA evidence the fix relies on shows that the Render/Cloudflare edge keeps `cache-control: no-cache, no-transform` intact (`.qa/evidence/03-chat-web-api-sse-y-despliegue/03-QA-EVIDENCE-2026-10-15T13-18-49Z.md:395`). The expectation recorded there is "`Cache-Control: no-transform` intacto" (line 389). The fix nevertheless replaced the exact `SIN_CACHE_NI_TRANSFORMACION` check with `prohibeCache`, which accepts any header that contains just `no-cache`. `no-transform` is the directive that tells Cloudflare not to compress or rewrite the body, and compression is a known way an edge ends up buffering SSE. So if the server stopped sending `no-transform`, the pre-flight would no longer report it.
 
-These checks are the reason the pre-flight exists: it is supposed to prove the §11 flow is safe before the defense. A regression in any of them, such as an inverted condition, would go unnoticed. CR-01 shows that a header assumption also slipped through without a realistic test.
+The test fixture `comoElBordeDeRender` makes this worse. It overwrites `Cache-Control` with a bare `no-cache` and labels that "como llega por el borde de Render". The evidence says that is not what Render delivers, so the suite now encodes a false model of production.
 
-**Fix:** Add one test per branch. Use the existing `crearFetchFalso` script, or wrap the fetch so it rewrites the SSE body (drop `turn_end`, inject `event: error`, inject a non-JSON `data:`). For the timeout, use a server that never closes the stream together with `plazos.turnoMs` of a few hundred ms.
+There is also a smaller convention issue. `DIRECTIVA_SIN_CACHE = "no-cache"` repeats a substring of `VALOR_CABECERA.SIN_CACHE_NI_TRANSFORMACION` ("no-cache, no-transform") instead of being derived from it. CLAUDE.md says a text that repeats a datum must be derived from its constant.
 
-### WR-02: The module byte-equality guarantee depends on line endings, and the repo has no `.gitattributes`
-
-**File:** `tests/modulo/generador.test.ts:102-109,137-144`; `src/cli/runners/generar-modulo.runner.ts:36-44`; `src/domain/builders/modulo.builder.ts:10-14` (repository root: `.gitattributes` missing)
-
-**Issue:** The generator writes an LF-only frontmatter followed by the raw bytes of `agent/prompt.md` and `src/knowledge/registro-proveedor.md`. The test then compares the committed `modulo/agent.md` and `SKILL.md` byte for byte. Consider a Windows checkout with `core.autocrlf=true`, which is the Git for Windows default:
-- every committed `.md` file gets CRLF, frontmatter included;
-- the regenerated output has an LF frontmatter followed by a CRLF body;
-- the byte-equality tests therefore fail on a clean checkout;
-- `bun run modulo` writes files with mixed line endings.
-
-An evaluator cloning on Windows gets a red `bun test` without touching anything.
-
-**Fix:** Add a `.gitattributes` that pins these files to LF, for example:
-```
-* text=auto eol=lf
-*.md text eol=lf
-```
-Optionally, also make the generator normalize nothing but assert LF in the source and fail loudly when it finds CRLF.
-
-### WR-03: The pre-flight reports a turn as OK even when it ended on a cap rather than normally
-
-**File:** `src/cli/runners/preflight.runner.ts:292-294, 304-324`
-
-**Issue:** `enviarTurno` only checks that `turn_end` arrived. It never checks `fin.motivo`. In the agent loop, `TOPE_ITERACIONES` and `TOPE_TOKENS` close the turn without an `error` event (`src/loop/services/cierre-error.service.ts:18-20`, `cerrarSinError`). A turn that hits the iteration or token cap after the required tool calls succeeded therefore passes as "Turno N del guion del PRD §11 OK". That is exactly the degraded behavior the defense rehearsal should catch: the analyst gets a truncated answer.
-
-**Fix:** Require `lectura.valor.fin.motivo === MOTIVO_FIN.FINAL` in both turns:
+**Fix:** Define the directives once, build the server value from them, and require both at the client:
 ```ts
-if (lectura.valor.fin.motivo !== MOTIVO_FIN.FINAL) {
-  return fallido(TEXTO_PREFLIGHT.turnoCortado(lectura.valor.fin.motivo));
+export const DIRECTIVA_CACHE = { SIN_CACHE: "no-cache", SIN_TRANSFORMACION: "no-transform" } as const;
+export const SEPARADOR_DIRECTIVAS = ",";
+export const VALOR_CABECERA = {
+  SIN_CACHE_NI_TRANSFORMACION: Object.values(DIRECTIVA_CACHE).join(`${SEPARADOR_DIRECTIVAS} `),
+};
+
+function directivasFaltantes(respuesta: Response): boolean {
+  const presentes = new Set(
+    (respuesta.headers.get(CABECERA.CACHE_CONTROL) ?? "")
+      .split(SEPARADOR_DIRECTIVAS)
+      .map((d) => d.trim().toLowerCase()),
+  );
+  return Object.values(DIRECTIVA_CACHE).some((d) => !presentes.has(d));
 }
 ```
+In `comoElBordeDeRender`, delete only `X-Accel-Buffering` and keep the server's `Cache-Control`. Add a test where a header without `no-transform` fails with `cabeceraSse(Cache-Control)`.
+
+### WR-02: The T-04-22 secret-assignment scanner misses `LLM_FALLBACK_API_KEY` and `PREFLIGHT_ACCESS_CODE`, and only matches `VAR=` at the start of a line
+
+**File:** `tests/helpers/documentos.helper.ts:8,34-41` (used by `tests/docs/readme.test.ts:184` and `tests/docs/solucion.test.ts:210`); `tests/helpers/costo.helper.ts:25`
+
+**Issue:** 04-SECURITY.md marks T-04-22 (information disclosure in the docs) as closed by 6c54c18. The scanner it relies on has three gaps:
+- `VARIABLES_SECRETAS` lists only `LLM_API_KEY`, `DEEPSEEK_API_KEY` and `ACCESS_TOKEN_SECRET`. It leaves out two of the project's secret variables from `.env.example`: `LLM_FALLBACK_API_KEY` (line 16) and `PREFLIGHT_ACCESS_CODE` (line 47).
+- A line matches only when it starts with `VAR=` after trimming. Markdown docs usually write assignments as `export VAR=…`, inside inline code, or after a list marker.
+- The value-based check `clavesLlm` (`VARIABLES_CLAVE`) also leaves out `LLM_FALLBACK_API_KEY`. A real fallback key pasted into a doc would not be caught even on a machine whose `.env` has that key.
+
+I ran the helper against six sample lines. It flagged only the first:
+```
+LLM_API_KEY=sk-a              -> flagged
+LLM_FALLBACK_API_KEY=sk-b     -> missed
+export LLM_API_KEY=sk-c       -> missed
+PREFLIGHT_ACCESS_CODE=abc...  -> missed
+`LLM_API_KEY=sk-d`            -> missed
+- DEEPSEEK_API_KEY=sk-e       -> missed
+```
+The current docs are clean (grep finds no assignment of any of these five variables), so this is a latent gap. The mitigation recorded as closed does not hold.
+
+**Fix:** Match the assignment anywhere in the line and include every secret variable:
+```ts
+const PATRON_ASIGNACION_SECRETA =
+  /\b(LLM_API_KEY|LLM_FALLBACK_API_KEY|DEEPSEEK_API_KEY|ACCESS_TOKEN_SECRET|PREFLIGHT_ACCESS_CODE)\s*[=:]\s*[^\s`'"<]+/;
+export function asignacionesSecretas(texto: string): string[] {
+  return texto.split("\n").filter((linea) => PATRON_ASIGNACION_SECRETA.test(linea));
+}
+```
+Also add `LLM_FALLBACK_API_KEY` to `VARIABLES_CLAVE`, and add a self-test that proves the helper flags each form above. The other guardians already follow that convention. The literal `ACCESS_CODE` in the README (D-94) is not a match, so this does not conflict with D-94.
 
 ## Info
 
-### IN-01: Spawned-process tests claim an "empty environment", but Bun auto-loads `.env` from `cwd`
+### IN-01: The 250 ms production threshold is never exercised, and the docs repeat it as a literal
 
-**File:** `tests/modulo/herramientas.test.ts:34-45`, `tests/cli/preflight.test.ts:240-249`
+**File:** `src/cli/runners/preflight.runner.ts:62-68,321-324`; `tests/cli/preflight.test.ts:60,64-70`; `README.md:54`; `docs/estructura.md:83`; `src/config/strings.ts:511-512`
 
-**Issue:** `Bun.spawn(..., { cwd: RAIZ, env: {} })` still loads `RAIZ/.env`. On a developer machine with a filled `.env`, the test "se importa con el entorno vacío" does not prove what it claims. It only holds in CI, where there is no `.env`.
+**Issue:** Every test overrides `separacionSseMs`: 0 in `PLAZOS_PRUEBA` and 50 in `PLAZOS_CON_SEPARACION`. So `PLAZOS_POR_DEFECTO.separacionSseMs = SEPARACION_MINIMA_SSE_MS` is never run. In the fake guion, turn 2 makes two LLM calls of 80 ms each, about 160 ms, which would fail under the real 250 ms default. The test has to lower the threshold to pass. README and estructura state "250 ms" as a literal, and no doc test ties it to the constant.
 
-**Fix:** Pass `--no-env-file` to the child `bun` (`[process.execPath, "--no-env-file", "-e", …]`).
+Separately, `sseAcumulado` reports a proxy as buffering ("un proxy está acumulando el SSE") whenever the turn was simply faster than the threshold. That is a guess presented as a fact.
 
-### IN-02: The README overstates what the default pre-flight waits for, and an invalid health body keeps the loop polling
+**Fix:** Add a doc test that checks `README.md` and `docs/estructura.md` contain `${SEPARACION_MINIMA_SSE_MS} ms`. Word the message as a suspicion, for example "llegó a X ms… posiblemente un proxy acumula el SSE". Optionally, add one guion test that uses `PLAZOS_POR_DEFECTO`'s separation with an LLM delay large enough to exceed it.
 
-**File:** `README.md:172`; `src/cli/runners/preflight.runner.ts:136-151,158`
+### IN-02: Writing the pair is not atomic as claimed, and a leftover `.tmp` is not gitignored
 
-**Issue:** The README says the pre-flight "espera `/api/health` con el modelo disponible". In fact it waits only for a 200 response and then fails immediately if `llm !== disponible`. Separately, a 200 response whose body fails `saludSchema` (for example a future `llm` state, or `ok: false`) keeps the loop polling for the full 180 s. It then reports `respuestaInvalida` instead of failing fast.
+**File:** `src/cli/runners/generar-modulo.runner.ts:90-103`; `docs/estructura.md:83`; `.gitignore`
 
-**Fix:** Reword the README ("espera a que `/api/health` responda 200 y exige el modelo `disponible`"). Stop polling as soon as a 200 response fails the schema.
+**Issue:** The temp files are cleaned up only when the write step fails. The renames run one after the other (line 102). If the first rename succeeds and the second fails, `agent.md` is new, `SKILL.md` is stale, and `SKILL.md.tmp` stays on disk. That is exactly the mixed state that `docs/estructura.md` says cannot happen ("una falla al escribir no deja un archivo nuevo junto a uno viejo"). Also, if the process is killed between the write and the rename, `modulo/**/*.tmp` files are left behind. `.gitignore` does not cover `*.tmp`, so a later `git add modulo/` could commit them.
 
-### IN-03: The README says the cookie is always `Secure`, but the code drops `Secure` in development
+**Fix:** Add `*.tmp` (or `modulo/**/*.tmp`) to `.gitignore`. Narrow the doc claim to "una falla al escribir los temporales no toca los archivos commiteados", or wrap the rename loop in a try/finally that removes any remaining temp files.
 
-**File:** `README.md:139` (vs `src/http/wiring/server.wiring.ts:110`, `SOLUCION.md:133`)
+### IN-03: `TEXTO_MODULO.fueraDeLaRaiz` still tells the user to run from the project root, which no longer matters
 
-**Issue:** `secureCookie` is `NODE_ENV !== development`. SOLUCION states this correctly ("`Secure` fuera de desarrollo"), but the README lists `Secure` unconditionally.
+**File:** `src/config/strings.ts:473`; `src/cli/runners/generar-modulo.runner.ts:31,76-78,106`
 
-**Fix:** Write "`Secure` fuera de desarrollo" in the README.
+**Issue:** After IN-07, the command entry resolves the root from the runner's own location, so the working directory has no effect. The guard can now fire only when the runner itself has been moved or copied outside the repo. The message still says "debe correr en la raíz del proyecto", and following that advice will not fix the error.
 
-### IN-04: `docs/convenciones.md` G1 omits the `@modulo/` alias
-
-**File:** `docs/convenciones.md:20`
-
-**Issue:** G1 lists only `@/`, `@tests/` and `@web/`. `.claude/CLAUDE.md` (the canonical source) and the guardian both allow `@modulo/`, which `.opencode/` uses.
-
-**Fix:** Add `@modulo/` (used only by `.opencode/`) to the G1 row.
-
-### IN-05: SOLUCION's peak-hour window and its "valle" claim are not backed by any constant or by the evidence
-
-**File:** `SOLUCION.md:76,90`; `src/config/constants/costo.constants.ts:1-8`
-
-**Issue:** The peak hours ("01:00–04:00 y 06:00–10:00 UTC, lunes a viernes") and the statement that the run fell in off-peak hours exist only in prose. `PRECIOS_DEEPSEEK_FLASH` and the evidence JSON do not record the window, so `tests/docs/solucion.test.ts` cannot keep this claim honest. Also, `fechaCorridaUtc` is taken at the end of the run (`tests/live/costo-por-caso.test.ts:110`), not at its start.
-
-**Fix:** Add the window to `PRECIOS_DEEPSEEK_FLASH`, or drop the window and the "cayó en horario valle" sentence and just present both prices.
-
-### IN-06: `actions/checkout` keeps the default `persist-credentials: true`
-
-**File:** `.github/workflows/ci.yml:18-19,39-40`
-
-**Issue:** The `GITHUB_TOKEN` stays in `.git/config` for every later step, including `bun install` and `bun test` with third-party code. Impact is low because `permissions: contents: read`, but it is unnecessary.
-
-**Fix:** Add `with: { persist-credentials: false }` to both checkout steps.
-
-### IN-07: The module generator resolves the root from `process.cwd()` and writes its two files non-atomically
-
-**File:** `src/cli/runners/generar-modulo.runner.ts:69-89`
-
-**Issue:** Running the runner directly from another directory that contains a `package.json` would write `modulo/` there. A failure between the two `Bun.write` calls leaves `agent.md` regenerated and `SKILL.md` stale.
-
-**Fix:** Derive the root from `import.meta.dir`. Optionally, build both buffers first (already done), then write each one to a temp path and rename it.
-
-### IN-08: `--url ""` silently overrides `PREFLIGHT_URL`, and a URL path is silently dropped
-
-**File:** `src/cli/runners/preflight.runner.ts:106,435`; `src/config/env.ts:425-428`
-
-**Issue:** `readPreflightEnv("")` replaces the env value with `""`, which `emptyAsUndefined` then turns into "Falta la URL", even when `PREFLIGHT_URL` is set. Separately, `new URL(RUTA_API.SALUD, url)` discards any path in `--url` (`https://host/prefix` probes `https://host/api/health`) without warning.
-
-**Fix:** Fall back to `process.env.PREFLIGHT_URL` when the argument is empty. Reject a URL with a non-root path, or print a warning for it.
+**Fix:** Reword it to something like "No se encontró `${ARCHIVO_PROYECTO}` en `${raiz}`, la raíz que se deduce de la ubicación del generador; no se escribió nada." Pass `raiz` to the message.
 
 ---
 
-_Reviewed: 2026-10-16T12:00:00Z_
+_Reviewed: 2026-10-16T14:00:00Z_
 _Reviewer: Claude (gsd-code-reviewer)_
 _Depth: standard_
