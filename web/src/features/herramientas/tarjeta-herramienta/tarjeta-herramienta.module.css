@@ -36,15 +36,6 @@
   flex: none;
 }
 
-.giro,
-.quieto {
-  display: inline-flex;
-}
-
-.quieto {
-  display: none;
-}
-
 .icono.enCurso {
   color: var(--acento);
 }
@@ -192,14 +183,4 @@
 
 .resumen:empty {
   display: none;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .giro {
-    display: none;
-  }
-
-  .quieto {
-    display: inline-flex;
-  }
 }

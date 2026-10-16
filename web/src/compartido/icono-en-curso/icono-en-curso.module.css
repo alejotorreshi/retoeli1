@@ -1,0 +1,17 @@
+.giro {
+  display: inline-flex;
+}
+
+.quieto {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .giro {
+    display: none;
+  }
+
+  .quieto {
+    display: inline-flex;
+  }
+}

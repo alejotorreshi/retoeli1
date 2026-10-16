@@ -21,15 +21,6 @@
   flex: none;
 }
 
-.giro,
-.quieto {
-  display: inline-flex;
-}
-
-.quieto {
-  display: none;
-}
-
 .nombre {
   overflow-wrap: anywhere;
 }
@@ -58,16 +49,6 @@
 
 .cancelada {
   color: var(--info-texto);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .giro {
-    display: none;
-  }
-
-  .quieto {
-    display: inline-flex;
-  }
 }
 
 :global([data-diseno="angosto"]) .etapas {

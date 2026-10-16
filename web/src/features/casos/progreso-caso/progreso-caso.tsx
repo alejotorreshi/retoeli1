@@ -1,10 +1,5 @@
-import {
-  IconoCheck,
-  IconoGirando,
-  IconoPendiente,
-  IconoReloj,
-  IconoX,
-} from "@web/compartido/iconos/iconos.tsx";
+import { IconoEnCurso } from "@web/compartido/icono-en-curso/icono-en-curso.tsx";
+import { IconoCheck, IconoPendiente, IconoReloj, IconoX } from "@web/compartido/iconos/iconos.tsx";
 import { ESTADO_ETAPA } from "@web/config/constants/ui.constants.ts";
 import { TEXTO_PROGRESO } from "@web/config/strings.ts";
 import estilos from "@web/features/casos/progreso-caso/progreso-caso.module.css";
@@ -20,22 +15,9 @@ const CLASE_DE_ESTADO = {
   [ESTADO_ETAPA.CANCELADA]: estilos.cancelada,
 } as const satisfies Record<EstadoEtapa, string | undefined>;
 
-function IconoEtapaEnCurso() {
-  return (
-    <>
-      <span className={estilos.giro}>
-        <IconoGirando />
-      </span>
-      <span className={estilos.quieto}>
-        <IconoReloj />
-      </span>
-    </>
-  );
-}
-
 const ICONO_DE_ESTADO = {
   [ESTADO_ETAPA.PENDIENTE]: IconoPendiente,
-  [ESTADO_ETAPA.EN_CURSO]: IconoEtapaEnCurso,
+  [ESTADO_ETAPA.EN_CURSO]: IconoEnCurso,
   [ESTADO_ETAPA.HECHA]: IconoCheck,
   [ESTADO_ETAPA.ERROR]: IconoX,
   [ESTADO_ETAPA.ESPERANDO]: IconoReloj,

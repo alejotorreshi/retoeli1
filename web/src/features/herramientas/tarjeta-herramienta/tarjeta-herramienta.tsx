@@ -1,10 +1,5 @@
-import {
-  IconoCheck,
-  IconoChevron,
-  IconoGirando,
-  IconoReloj,
-  IconoX,
-} from "@web/compartido/iconos/iconos.tsx";
+import { IconoEnCurso } from "@web/compartido/icono-en-curso/icono-en-curso.tsx";
+import { IconoCheck, IconoChevron, IconoX } from "@web/compartido/iconos/iconos.tsx";
 import { ESTADO_HERRAMIENTA } from "@web/config/constants/ui.constants.ts";
 import { TEXTO_HERRAMIENTA } from "@web/config/strings.ts";
 import estilos from "@web/features/herramientas/tarjeta-herramienta/tarjeta-herramienta.module.css";
@@ -18,21 +13,8 @@ const CLASE_DE_ESTADO = {
   [ESTADO_HERRAMIENTA.ERROR]: estilos.error,
 } as const satisfies Record<EstadoHerramienta, string | undefined>;
 
-function IconoHerramientaEnCurso() {
-  return (
-    <>
-      <span className={estilos.giro}>
-        <IconoGirando />
-      </span>
-      <span className={estilos.quieto}>
-        <IconoReloj />
-      </span>
-    </>
-  );
-}
-
 const ICONO_DE_ESTADO = {
-  [ESTADO_HERRAMIENTA.EN_CURSO]: IconoHerramientaEnCurso,
+  [ESTADO_HERRAMIENTA.EN_CURSO]: IconoEnCurso,
   [ESTADO_HERRAMIENTA.CORRECTA]: IconoCheck,
   [ESTADO_HERRAMIENTA.ERROR]: IconoX,
 } as const satisfies Record<EstadoHerramienta, ComponenteIcono>;
