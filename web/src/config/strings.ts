@@ -6,6 +6,7 @@ import {
   ESTADO_HERRAMIENTA,
   ESTADO_TARJETA_CONFIRMACION,
   ETAPA,
+  ID_RAIZ,
   PESTANA,
   SEPARADOR_LISTA_CASOS,
 } from "@web/config/constants/ui.constants.ts";
@@ -53,6 +54,7 @@ export const TEXTO_APP = {
   prefijoFecha: PREFIJO_FECHA,
   valorFecha,
   cargando: "Cargando el agente…",
+  raizAusente: `index.html no tiene el elemento #${ID_RAIZ} donde se monta la app.`,
 } as const;
 
 export const TEXTO_ALMACEN = {

@@ -2,6 +2,7 @@ import { describe, expect, test } from "bun:test";
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { MARCADOR_TITULO, NOMBRE_PLUGIN_TITULO, RUTA_LOGO } from "@web/config/constants/marca.constants.ts";
+import { CLASE_GLOBAL, ID_RAIZ } from "@web/config/constants/ui.constants.ts";
 import { TEXTO_APP } from "@web/config/strings.ts";
 import type { PluginOption, UserConfig } from "vite";
 
@@ -96,6 +97,17 @@ function colorDeTemaDistinto(html: string, tokens: string): boolean {
   return tema === null || tema !== captura(tokens, TOKEN_DE_MARCA)?.trim();
 }
 
+function raizFaltante(html: string, css: string): string[] {
+  return [
+    ...(html.includes(`id="${ID_RAIZ}"`) ? [] : [INDEX_HTML]),
+    ...(new RegExp(`#${ID_RAIZ}(?![\\w-])`).test(css) ? [] : [GLOBAL_CSS]),
+  ];
+}
+
+function clasesGlobalesSinRegla(css: string): string[] {
+  return Object.values(CLASE_GLOBAL).filter((clase) => !new RegExp(`\\.${clase}\\s*[{,]`).test(css));
+}
+
 const FUENTES = fuentesDeFontFace(leer(GLOBAL_CSS));
 const LICENCIAS = licenciasDeFontFace(leer(GLOBAL_CSS));
 const FAVICON = captura(leer(INDEX_HTML), ICONO) ?? "";
@@ -162,6 +174,21 @@ describe("activos de marca autoalojados en web/public", () => {
   test("ni index.html ni web/src cargan nada de un dominio externo", () => {
     const conUrl = [INDEX_HTML, ...archivosDeCodigoWeb()].filter((ruta) => URL_ABSOLUTA.test(leer(ruta)));
     expect(conUrl).toEqual([]);
+  });
+});
+
+describe("la raíz y las clases globales que usa TS existen en index.html y global.css", () => {
+  test("index.html monta la raíz ID_RAIZ, global.css la estiliza y define cada CLASE_GLOBAL", () => {
+    expect(raizFaltante(leer(INDEX_HTML), leer(GLOBAL_CSS))).toEqual([]);
+    expect(clasesGlobalesSinRegla(leer(GLOBAL_CSS))).toEqual([]);
+  });
+
+  test("muerde: una raíz con otro id y una clase global renombrada en el CSS", () => {
+    expect(raizFaltante('<div id="app"></div>', "#app {}")).toEqual([INDEX_HTML, GLOBAL_CSS]);
+    expect(raizFaltante(`<div id="${ID_RAIZ}"></div>`, `#${ID_RAIZ}-x {}`)).toEqual([GLOBAL_CSS]);
+    expect(clasesGlobalesSinRegla(`.solo-lectores {}\n.${CLASE_GLOBAL.GIRAR} {}`)).toEqual([
+      CLASE_GLOBAL.OCULTO,
+    ]);
   });
 });
 
