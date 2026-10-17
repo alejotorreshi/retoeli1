@@ -19,7 +19,7 @@ key-files:
     - web/src/state/seguimiento.ts
     - web/src/components/linea-de-tiempo.tsx
     - tests/web/seguimiento.test.ts
-    - .planning/phases/03-chat-web-api-sse-y-despliegue/03-UI-SPEC.md
+    - .planning/milestones/v1-phases/03-chat-web-api-sse-y-despliegue/03-UI-SPEC.md
 decisions:
   - "G-03-7: el umbral de 96 px re-pega solo si la distancia al final bajó respecto de la última conocida; el scroll de anclaje (distancia constante) no cambia el estado (dirección A del diagnóstico)"
   - "CRECIMIENTO refresca la referencia solo con la vista despegada; pegada, el RO llama a seguirAlFinal enseguida y la medida queda vieja"
@@ -126,5 +126,5 @@ Ninguno.
 - FOUND: web/src/types/ui.type.ts (contiene `readonly distancia: number | null`)
 - FOUND: web/src/components/linea-de-tiempo.tsx (contiene `CRECIMIENTO, distancia: distanciaAlFinal(desplazable)`)
 - FOUND: tests/web/seguimiento.test.ts (contiene G-03-7)
-- FOUND: .planning/phases/03-chat-web-api-sse-y-despliegue/03-UI-SPEC.md (la viñeta cita G-03-7)
+- FOUND: .planning/milestones/v1-phases/03-chat-web-api-sse-y-despliegue/03-UI-SPEC.md (la viñeta cita G-03-7)
 - FOUND commits: fece592, 04e0b03, 8aa9bca, 2d5da76

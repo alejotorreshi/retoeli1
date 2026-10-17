@@ -4,6 +4,10 @@ trigger: "UAT fase 05 test 1 (gap major): el estado vacío con las tarjetas nuev
 created: 2026-10-16T23:00:00Z
 updated: 2026-10-16T23:40:00Z
 goal: find_root_cause_only
+audit_acknowledged:
+  milestone: v1
+  at: 2026-10-16
+  status: diagnosed
 ---
 
 ## Current Focus
@@ -38,7 +42,7 @@ reasoning_checkpoint:
 expected: Al entrar con el código, el estado vacío del chat (título "¿Qué caso procesamos?", explicación, región "Casos disponibles" con 4 tarjetas, "Acciones rápidas") se ve desde arriba, scrollTop 0.
 actual: A 1280x720 scrollTop 183/183 y a 375x667 scrollTop 459; el título y la explicación (y a 375 las tarjetas CO y EC) quedan fuera de la vista. En b7446861 cabía sin scroll; a 1280x1000 cabe.
 errors: ninguno (sin errores de consola).
-reproduction: UAT test 1 (.planning/phases/05-front-web-por-features-e-identidad-de-marca/05-UAT.md), build de producción servido por la API, Playwright a 1280x720 y 375x667, contexto fresco, tras aceptar el código.
+reproduction: UAT test 1 (.planning/milestones/v1-phases/05-front-web-por-features-e-identidad-de-marca/05-UAT.md), build de producción servido por la API, Playwright a 1280x720 y 375x667, contexto fresco, tras aceptar el código.
 started: fase 5 (planes 05-07 disposicion y 05-09 TarjetaCaso/estado vacío). No presente en b7446861.
 
 ## Eliminated

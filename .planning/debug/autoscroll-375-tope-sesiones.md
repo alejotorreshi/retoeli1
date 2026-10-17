@@ -4,6 +4,10 @@ trigger: "G-03-04 y G-03-20 (UAT tests 4 y 20, QA T16): auto-scroll perdido tras
 created: 2026-10-15T14:10:00Z
 updated: 2026-10-15T15:05:00Z
 goal: find_root_cause_only
+audit_acknowledged:
+  milestone: v1
+  at: 2026-10-16
+  status: diagnosed
 ---
 
 ## Current Focus

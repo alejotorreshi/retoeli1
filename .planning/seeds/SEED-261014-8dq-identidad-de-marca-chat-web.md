@@ -33,7 +33,7 @@ Descartado: el modo oscuro. Está fuera de alcance en REQUIREMENTS.md porque no 
 
 ## Breadcrumbs
 
-- `.planning/phases/03-chat-web-api-sse-y-despliegue/03-UI-SPEC.md`: Design System, Color, Layout y el estado vacío de `LineaDeTiempo`.
+- `.planning/milestones/v1-phases/03-chat-web-api-sse-y-despliegue/03-UI-SPEC.md`: Design System, Color, Layout y el estado vacío de `LineaDeTiempo`.
 - `web/src/styles/tokens.css`, `web/src/components/encabezado.tsx` y `web/src/components/linea-de-tiempo.tsx`.
 - `.planning/REQUIREMENTS.md`: fuera de alcance "tema oscuro, pulido móvil".
 - `src/http/routes/config.route.ts`: `/api/config` devuelve `casos`.

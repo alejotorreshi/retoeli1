@@ -3,6 +3,10 @@ status: diagnosed
 trigger: "G-03-10 (UAT test 10, minor): WR-06 — la vista previa 422 (existe pero no tiene vista previa) muestra en el navegador TEXTO_VISTA_PREVIA.error con la pista de reinicio, igual que un 404"
 created: 2026-10-15T14:10:00Z
 updated: 2026-10-15T14:32:00Z
+audit_acknowledged:
+  milestone: v1
+  at: 2026-10-16
+  status: diagnosed
 ---
 
 ## Current Focus

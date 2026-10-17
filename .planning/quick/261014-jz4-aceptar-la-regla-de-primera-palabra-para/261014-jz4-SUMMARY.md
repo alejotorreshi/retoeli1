@@ -13,14 +13,14 @@ tech-stack:
 key-files:
   created: []
   modified:
-    - .planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-CONTEXT.md
+    - .planning/milestones/v1-phases/02-agente-y-compuerta-de-confirmaci-n/02-CONTEXT.md
     - tests/unit/confirmacion.policy.test.ts
     - agent/prompt.md
     - tests/contract/instrucciones-agente.test.ts
     - src/knowledge/registro-proveedor.md
-    - .planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-VERIFICATION.md
-    - .planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-SECURITY.md
-    - .planning/phases/02-agente-y-compuerta-de-confirmaci-n/02-REVIEW-DISPOSITION.md
+    - .planning/milestones/v1-phases/02-agente-y-compuerta-de-confirmaci-n/02-VERIFICATION.md
+    - .planning/milestones/v1-phases/02-agente-y-compuerta-de-confirmaci-n/02-SECURITY.md
+    - .planning/milestones/v1-phases/02-agente-y-compuerta-de-confirmaci-n/02-REVIEW-DISPOSITION.md
 decisions:
   - "D-63.11: la usuaria acepta la regla de primera palabra (2026-10-14); un pedido sobre el caso pendiente con otra palabra delante del verbo cancela, del lado seguro; el clasificador no cambia"
   - "T-02-83 pasa a accept con AR-02-06; CR-06 queda skipped (decisión de no arreglar) y WR-27 fixed"

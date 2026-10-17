@@ -4,6 +4,10 @@ trigger: "G-01-H4b: borrador-correo.md says the form is 'firmado por el represen
 created: 2026-10-13T02:51:39Z
 updated: 2026-10-13T03:02:00Z
 goal: find_root_cause_only
+audit_acknowledged:
+  milestone: v1
+  at: 2026-10-16
+  status: diagnosed
 ---
 
 ## Current Focus
@@ -89,7 +93,7 @@ started: discovered during eli-qa batch UAT of phase 01 (UAT test 20, gap G-01-H
   implication: at armar_paquete time no tool has produced a "firmado" fact for ANY case; the claim is unsupported even for co. It is actively false when BLOQUEADO (not ready for signature) or por confirmar (form content not final)
 
 - timestamp: 2026-10-13T02:58Z
-  checked: .planning/phases/01-n-cleo-determinista/01-10-PLAN.md:113 and :117; 01-CONTEXT.md:74-75 (D-25, D-26)
+  checked: .planning/milestones/v1-phases/01-n-cleo-determinista/01-10-PLAN.md:113 and :117; 01-CONTEXT.md:74-75 (D-25, D-26)
   found: plan line 117 specifies "A body attaching the signed formulario {{formulario}}"; plan line 113 locks DatosBorradorCorreo with no state field; D-26 scopes pendientes to faltantes and ausentes only (vencidos added at discretion), requiere_confirmacion never considered.
   implication: defect introduced at specification time (single post-signature email assumed), implemented faithfully
 

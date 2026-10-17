@@ -4,6 +4,10 @@ trigger: "G-01-H4c: borrador-correo.md shows snake_case support ids like certifi
 created: 2026-10-13T03:00:00Z
 updated: 2026-10-13T03:20:00Z
 goal: find_root_cause_only
+audit_acknowledged:
+  milestone: v1
+  at: 2026-10-16
+  status: diagnosed
 ---
 
 ## Current Focus

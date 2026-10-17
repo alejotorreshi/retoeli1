@@ -4,6 +4,10 @@ trigger: "G-03-26 (UAT test 26, major): 'Sí, envía co-industrias-delta' sin co
 created: 2026-10-15T14:10:00Z
 updated: 2026-10-15T14:45:00Z
 goal: find_root_cause_only
+audit_acknowledged:
+  milestone: v1
+  at: 2026-10-16
+  status: diagnosed
 ---
 
 ## Current Focus

@@ -4,6 +4,10 @@ trigger: "G-03-17 (UAT test 17): '¿Qué casos hay?' hace que el modelo llame pr
 created: 2026-10-15T14:10:00Z
 updated: 2026-10-15T14:36:00Z
 goal: find_root_cause_only
+audit_acknowledged:
+  milestone: v1
+  at: 2026-10-16
+  status: diagnosed
 ---
 
 ## Current Focus

@@ -4,6 +4,10 @@ trigger: "G-03-15 (UAT test 15, major): cuando el modelo no está disponible, el
 created: 2026-10-15T14:45:00Z
 updated: 2026-10-15T15:15:00Z
 goal: find_root_cause_only
+audit_acknowledged:
+  milestone: v1
+  at: 2026-10-16
+  status: diagnosed
 ---
 
 ## Current Focus
@@ -64,12 +68,12 @@ started: Descubierto en UAT (2026-10-15).
   implication: en sin_clave el compositor y los chips quedan habilitados por construcción; cada envío vuelve con un error. No es un bug de implementación: es lo que pide la especificación (ver siguiente entrada).
 
 - timestamp: 2026-10-15T14:50:00Z
-  checked: .planning/phases/03-chat-web-api-sse-y-despliegue/03-UI-SPEC.md L202-206 y L354-358
+  checked: .planning/milestones/v1-phases/03-chat-web-api-sse-y-despliegue/03-UI-SPEC.md L202-206 y L354-358
   found: "El compositor **sigue habilitado** en todos los estados: el servidor decide y responde con su mensaje (D-70: no hay flujo sin IA en la UI)." y la copia del banner sin_clave con `bun run demo.ts` está fijada literalmente en la tabla Copywriting.
   implication: el código cumple la UI-SPEC al pie de la letra; la brecha está en la especificación, no en la ejecución.
 
 - timestamp: 2026-10-15T14:52:00Z
-  checked: .planning/phases/03-chat-web-api-sse-y-despliegue/03-CONTEXT.md D-70 (L41) y Deferred Ideas (L149); REQUIREMENTS.md LLM-06 (L70); ROADMAP.md fase 3 SC4 (L166)
+  checked: .planning/milestones/v1-phases/03-chat-web-api-sse-y-despliegue/03-CONTEXT.md D-70 (L41) y Deferred Ideas (L149); REQUIREMENTS.md LLM-06 (L70); ROADMAP.md fase 3 SC4 (L166)
   found: D-70 decidió "El PRD no pide modo degradado … LLM-06 se reduce a health y aviso … No hay flujo sin IA en la UI, y para correr sin clave está demo.ts". El "procesar sin IA" (LLM-06 completo, DF-15, incluido el envío con el botón Confirmar) quedó diferido "si sobra tiempo antes de la defensa". LLM-06 y SC4 quedaron redactados como "El flujo sin modelo se corre con demo.ts" / "sigue disponible con demo.ts". Specifics: la usuaria pidió seguir lo que dicen los requisitos del reto.
   implication: la mención de demo.ts nace de convertir una verificación técnica para el evaluador (PRD §6.6) en el camino de la persona usuaria final. La decisión de producto se tomó mirando cumplimiento del PRD, no la experiencia de la analista.
 

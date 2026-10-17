@@ -4,6 +4,10 @@ trigger: "G-02-18 (UAT H2/test 18, major, decisión de producto: endurecer): bar
 created: 2026-10-14T00:17:38Z
 updated: 2026-10-14T00:22:02Z
 goal: find_root_cause_only
+audit_acknowledged:
+  milestone: v1
+  at: 2026-10-16
+  status: diagnosed
 ---
 
 ## Current Focus

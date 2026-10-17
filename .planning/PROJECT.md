@@ -1,5 +1,11 @@
 # Agente "Registro como Proveedor" (Reto 01 · Perxia 2.0)
 
+## Current State
+
+**v1 entregado el 2026-10-16** (5 fases, 105 planes y 218 tareas). El agente funciona en el link público de Render (`https://registro-proveedor-bfnt.onrender.com`, con código de acceso), por CLI (`bun run demo.ts`) y como módulo para OpenCode (`modulo/`). La suite tiene 2670 pruebas en verde y la auditoría del milestone dio 79/79 requisitos. Detalle en `.planning/MILESTONES.md` y `.planning/milestones/`.
+
+**Lo que sigue (no hay un milestone siguiente planificado):** la defensa en vivo. Hay que calentar el servicio con un ping a `/api/health`, mirar el arranque en frío real, ensayar a mano la sección 11 del PRD la víspera y revisar el panel de archivos de ec-corp-andina antes del turno 1.
+
 ## What This Is
 
 Agente conversacional completo e independiente que automatiza el llenado de formularios de registro como proveedor de Periferia IT Group ante sus clientes (CO, EC, PE, PA, HN). La analista administrativa conversa en un chat web ("procesa el caso X"). El agente lee la solicitud, mapea cada campo contra el repositorio maestro y genera el formulario en el formato pedido (xlsx, pdf o valores para portal). Después arma el paquete para firma con checklist y borrador de correo, y pide confirmación humana explícita antes de cualquier "envío". Es la entrega de un reto técnico de selección. Lo evalúa una rúbrica de 100 puntos (aprobación con 70, más un bonus de hasta 10), y la especificación fuente es `reto-01/PRD.md`.
@@ -39,6 +45,7 @@ El agente **nunca inventa un dato**. Cada valor de un formulario sale de una her
 - ✓ Bonus `modulo/`: `agent.md` y `SKILL.md` generados byte a byte desde `agent/prompt.md` y `src/knowledge/` (`bun run modulo`), y `tools/proveedor.ts` re-exporta las mismas herramientas de la app (`===`). Lo cubren tests de igualdad, deriva e importación sin env; además hay `.opencode/tools` y `opencode.json`. — Phase 4 (no se ensayó en vivo en OpenCode, D-83)
 - ✓ Tests: unitarios de dominio, contrato de herramientas, ciclo del agente con LLM falso, `demo.ts` como e2e determinista y guardianes; la CI de GitHub Actions los corre en verde (CI #5 sobre ace1a4d). — Phases 1–4
 - ✓ Documentación: `README.md` (badge, un comando, env vars, demo, link y código de acceso), `SOLUCION.md` con las 10 secciones del PRD §9.1 y el costo medido del `usage` real, y continuidad en `docs/arquitectura.md` y `docs/convenciones.md`. — Phase 4
+- ✓ Front de nivel industria: el front está organizado por features y componentes, con la vista separada del hook, un store propio con selectores con nombre, cero valores hardcodeados, guardianes W1–W27 e identidad de marca de Periferia IT Group (logo, Outfit y Montserrat autoalojadas, encabezado teal, tarjetas de caso). La conducta es la misma que antes del refactor, comprobada en el navegador. — v1 (Phase 5; UAT 15/15)
 - ✓ Defensa: `bun run preflight` (por defecto no gasta tokens; `--guion` corre el §11 por SSE) y ensayo del §11 sobre el link público con Playwright, en verde. Render despliega solo con `checksPass`. — Phase 4
 
 ### Active
@@ -68,6 +75,7 @@ El agente **nunca inventa un dato**. Cada valor de un formulario sale de una her
 - **Determinismo**: la vigencia depende de la "fecha de ejecución". El reloj se inyecta (y es configurable) para que `demo.ts` y los tests sean reproducibles.
 - **LLM**: DeepSeek, con API compatible con OpenAI y function calling. La clave es de la usuaria y es prepaga, así que un saldo bajo limita la exposición.
 - **Calidad esperada por la usuaria**: arquitectura limpia y escalable, siguiendo SOLID y Clean Architecture. Que cualquier dev o IA pueda continuarla. Constantes separadas y centralizadas, contratos claros, funciones y documentos pequeños, observabilidad, fallback, resiliencia, protección de PII, tokens y seguridad. Las prácticas se van mejorando sobre la marcha.
+- **Estado del código (v1)**: unas 12,7 k líneas TypeScript en `src/`, 6,6 k en `web/src` y 37,7 k en `tests/`. Stack: Bun 1.4.3, TypeScript 7, Hono, zod 4, React 19 con Vite 8, exceljs, pdf-lib y pino. La deuda conocida está en `.planning/milestones/v1-MILESTONE-AUDIT.md`: 12 ítems no bloqueantes, casi todos verificaciones humanas de la defensa.
 - **Evaluación**: se evalúa la separación entre comportamiento (`agent/prompt.md`), conocimiento (`src/knowledge/`) y ejecución (`src/tools/`). Un cambio de reglas de negocio no debe tocar el servidor.
 
 ## Constraints
@@ -91,7 +99,7 @@ El agente **nunca inventa un dato**. Cada valor de un formulario sale de una her
 | React + Vite con SSE streaming | Hace visible en vivo cada tool call, el texto y el estado de confirmación. Mejor UX y observabilidad | ✓ Good — Fase 3: SSE por Render probado con `curl -N`, respaldo JSON, QA en navegador 11/11 |
 | Minimizar la PII hacia el LLM (rutas y valores enmascarados; las herramientas escriben los valores reales) | Máxima protección de datos. Refuerza CA2: el modelo no puede afirmar valores que no vio | ✓ Good — Fase 2: las corridas en vivo y los escaneos PII no muestran valores del maestro sin máscara |
 | Render free con código de acceso, más Dockerfile portable como plan B | Opción gratuita con secrets en el panel. Docker permite migrar a Koyeb, HF o Fly | ✓ Good — Fase 3: autodeploy al hacer push, `TRUSTED_PROXY_HOPS=3` medido, imagen Docker local verificada; hay que calentar el servicio antes de la defensa |
-| Bonus `modulo/` diseñado desde el inicio como fuente única | +10 puntos. Obliga a separar bien prompt, conocimiento y herramientas | — Pending |
+| Bonus `modulo/` diseñado desde el inicio como fuente única | +10 puntos. Obliga a separar bien prompt, conocimiento y herramientas | ✓ Good — v1: generación byte a byte y re-export por identidad, con pruebas de igualdad y deriva; el ensayo en vivo en OpenCode quedó diferido (D-83) |
 | Código en la raíz del repo y `reto-01/` intacto | Decisión de la usuaria. Los fixtures no se modifican | ✓ Good — los fixtures se leen desde una constante; las pruebas sintéticas usan copias |
 | Identificadores de dominio en español y de infraestructura en inglés; docs en español | Respeta el contrato del PRD y mantiene un vocabulario técnico estándar | ✓ Good — vigilado por los guardianes G1–G14 de `tests/architecture.test.ts` |
 | Reloj inyectable para las vigencias | Determinismo de `demo.ts` y de los tests | ✓ Good — la demo es idéntica byte a byte entre corridas salvo `ts` |
@@ -103,6 +111,8 @@ El agente **nunca inventa un dato**. Cada valor de un formulario sale de una her
 | Cortar el ciclo de cierres de brechas del limitador de acceso: revertir la separación de reservas en vuelo (71d8d20) y aceptar con override el tope por IP aproximado, el aviso tras un envío confirmado fallido y truncado, y la flecha de 40 px a 375×667 | Cada parche del limitador destapaba un caso adversarial más rebuscado; ninguno afectaba el objetivo de la fase, el Core Value ni la SPA, y el riesgo real para el reto era el despliegue desactualizado | ✓ Good — Fase 3 cerrada con verificación passed, UAT 11/11 y SECURITY 87/87; los límites van en docs/limites-del-demo.md y en SOLUCION.md como trabajo futuro |
 | `modulo/` es fuente única: generador byte a byte más re-export por identidad; `.opencode/tools/proveedor.ts` enlaza el módulo porque OpenCode solo carga herramientas desde ahí (D-79..D-83, D-96) | El §9.4 pide las mismas piezas que usa la app, no copias divergentes | Hecho, Phase 4 |
 | CI con la auditoría en un job aparte que no bloquea, y Render con `autoDeployTrigger: checksPass` (D-90, D-91) | Un aviso de terceros la víspera no debe poner el badge en rojo, y solo se despliega lo que pasó la CI | Verde, Phase 4 |
+| Front con store propio (`useSyncExternalStore` y Context) en lugar de una librería de estado, y cada regla de limpieza con un guardián mecánico con prueba negativa (W1–W27, D-123/D-124) | Pedido de la usuaria: un código "muy muy limpio" que se pueda defender línea por línea sin dependencias nuevas | ✓ Good — v1 (Phase 5): 2670 pruebas en verde; la QA antes y después del refactor dio las mismas llamadas a la API |
+| La QA del refactor compara el front de antes (b744686) con el de HEAD con el mismo script de Playwright | Prueba con evidencia que "la conducta no cambia" | ✓ Good — encontró la única regresión (el estado vacío abría al fondo), que se corrigió en 05-10 |
 | Pre-flight sin tokens por defecto y `--guion` para el §11; el chequeo SSE no exige X-Accel-Buffering porque el borde de Render la quita (D-92, D-97, CR-01) | Calentar el servicio sin gastar la clave y no fallar sobre el link público | Verde en vivo, Phase 4 |
 
 ## Evolution
@@ -123,4 +133,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-10-16 after Phase 4*
+*Last updated: 2026-10-16 after v1 milestone*

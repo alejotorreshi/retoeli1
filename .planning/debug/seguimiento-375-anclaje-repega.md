@@ -4,6 +4,10 @@ trigger: "G-03-7 (UAT test 7, QA T30): a 375×667 una flecha arriba de 40 px con
 created: 2026-10-16T02:00:00Z
 updated: 2026-10-16T02:25:00Z
 goal: find_root_cause_only
+audit_acknowledged:
+  milestone: v1
+  at: 2026-10-16
+  status: diagnosed
 ---
 
 ## Current Focus

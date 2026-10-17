@@ -4,6 +4,10 @@ trigger: "G-03-14 (UAT test 14, también referido por test 15; severidad minor):
 created: 2026-10-15T15:30:00Z
 updated: 2026-10-15T15:55:00Z
 goal: find_root_cause_only
+audit_acknowledged:
+  milestone: v1
+  at: 2026-10-16
+  status: diagnosed
 ---
 
 ## Current Focus

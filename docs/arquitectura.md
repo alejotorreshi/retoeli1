@@ -87,6 +87,6 @@ Render despliega solo si pasan los checks de la CI. El `Dockerfile` es también 
 
 1. Leer el `README.md` de la raíz para levantar el proyecto y [convenciones.md](convenciones.md) antes de tocar código.
 2. Correr `bun install`, `bun run check` y `bun test`. Deben quedar verdes antes y después de cada cambio.
-3. El plan y la historia del trabajo viven en `.planning/` (flujo GSD): `PROJECT.md` (decisiones clave), `ROADMAP.md`, `STATE.md` y una carpeta por fase con su contexto, sus planes y sus resúmenes.
+3. El plan y la historia del trabajo viven en `.planning/` (flujo GSD): `PROJECT.md` (decisiones clave), `ROADMAP.md`, `STATE.md`, `MILESTONES.md` y, en `.planning/milestones/v1-phases/`, una carpeta por fase con su contexto, sus planes y sus resúmenes. El roadmap, los requisitos y la auditoría del milestone v1 están archivados en `.planning/milestones/`.
 4. Las suites reproducibles de QA de eli-qa viven en `.qa/suites/`, con la evidencia en `.qa/evidence/`.
 5. Las decisiones del reto se justifican en `SOLUCION.md` (trade-offs, supuestos, riesgos y uso de IA).
